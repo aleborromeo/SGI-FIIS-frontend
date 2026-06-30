@@ -1,0 +1,8 @@
+feat(ui): implementar pantallas del flujo de postulación y tesis
+
+- Rediseñar el área del logotipo en la barra lateral (Sidebar) con estilo institucional.
+- Crear pantalla 'MyEvaluations' para la bandeja de revisiones de jurados.
+- Crear pantalla 'ObservationsPanel' para el proceso de subsanación de proyectos.
+- Crear pantalla 'ReviewProgressReports' para la aprobación de informes trimestrales.
+- Actualizar el enrutamiento (App.tsx) y añadir nueva sección de navegación en la barra lateral.
+- Agregar pruebas unitarias completas para las 3 nuevas pantallas implementadas.
