@@ -1,0 +1,21 @@
+:root {
+  /* Colores institucionales aproximados UNAS */
+  --primary-color: #0b5ed7;
+  --secondary-color: #004aad;
+  --background-color: #f8f9fa;
+  --text-color: #333333;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
