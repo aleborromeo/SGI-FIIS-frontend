@@ -13,6 +13,7 @@ interface AuthContextType {
   logout: () => void;
   switchRole: (role: string) => void;
   clearError: () => void;
+  completeRegistration: (response: LoginResponse) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -100,6 +101,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const completeRegistration = (response: LoginResponse) => {
+    localStorage.setItem('sgi_token', response.token);
+    const userData = {
+      email: response.email,
+      firstNames: response.firstNames,
+      lastNames: response.lastNames,
+      roleCode: response.roleCode,
+    };
+    localStorage.setItem('sgi_user', JSON.stringify(userData));
+    setUser(userData);
+    setRoles([response.roleCode]);
+    setCurrentRole(response.roleCode);
+    setIsAuthenticated(true);
+  };
+
   const logout = () => {
     localStorage.removeItem('sgi_token');
     localStorage.removeItem('sgi_user');
@@ -131,7 +147,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       login,
       logout,
       switchRole,
-      clearError
+      clearError,
+      completeRegistration
     }}>
       {children}
     </AuthContext.Provider>

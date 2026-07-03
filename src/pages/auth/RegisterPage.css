@@ -1,6 +1,6 @@
-/* LoginPage.css - Rediseño Premium con Recuadro Blanco Sólido y Colores Mockup */
+/* RegisterPage.css - Rediseño Premium con Recuadro Blanco Sólido y Colores Mockup */
 
-.login-container {
+.register-container {
   position: relative;
   display: flex;
   align-items: center;
@@ -13,7 +13,7 @@
 }
 
 /* Fondo difuminado de la imagen */
-.login-bg-blur {
+.register-bg-blur {
   position: absolute;
   top: 0;
   left: 0;
@@ -27,8 +27,8 @@
   z-index: 1;
 }
 
-/* Capa de oscurecimiento para mejorar contraste de textos blancos superiores */
-.login-overlay {
+/* Capa de oscurecimiento */
+.register-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -38,14 +38,14 @@
   z-index: 2;
 }
 
-.login-content-wrapper {
+.register-content-wrapper {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 440px; /* Ancho ajustado según mockup */
+  max-width: 580px; /* Ancho ajustado para dos columnas */
   z-index: 3;
 }
 
@@ -74,8 +74,8 @@
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Tarjeta Blanca Sólida de Login (Mockup) */
-.login-card-container {
+/* Tarjeta Blanca Sólida de Registro (Mockup) */
+.register-card-container {
   width: 100%;
   background: #ffffff; /* Blanco sólido absoluto */
   border-radius: 16px; /* Esquinas redondeadas grandes */
@@ -84,10 +84,11 @@
   display: flex;
   flex-direction: column;
   border: 1px solid #e2e8f0;
+  position: relative; /* Para posicionar la flecha de volver */
 }
 
 /* Logo SGI dentro del recuadro */
-.login-card-header {
+.register-card-header {
   text-align: center;
   margin-bottom: 1.5rem;
   display: flex;
@@ -120,10 +121,24 @@
   font-weight: 600;
 }
 
-.login-form {
+.register-form {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+/* Soporte para fila de 2 columnas */
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 500px) {
+  .form-row-2col {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
 }
 
 /* Campos de entrada */
@@ -203,43 +218,60 @@
   color: #475569;
 }
 
-/* Opciones extra */
-.form-options-row {
+/* Campo Correo Split (Mockup) */
+.input-group-email {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  margin: 0.15rem 0;
-}
-
-.remember-me-label {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  color: #475569;
-  cursor: pointer;
-  user-select: none;
-  font-weight: 500;
-}
-
-.remember-me-checkbox {
-  width: 15px;
-  height: 15px;
-  border-radius: 4px;
+  width: 100%;
   border: 1px solid #cbd5e1;
-  cursor: pointer;
+  border-radius: 10px;
+  background: #ffffff;
+  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
-.forgot-password-link {
-  color: #1a365d;
-  text-decoration: none;
+.input-group-email:focus-within {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.input-icon-left-email {
+  padding-left: 0.9rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.form-input-email-prefix {
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 0.8rem 0.5rem 0.8rem 0.75rem;
+  background: transparent;
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.email-addon {
+  background: #f8fafc;
+  border-left: 1px solid #cbd5e1;
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
+  color: #64748b;
   font-weight: 600;
-  transition: color 0.15s ease;
+  user-select: none;
 }
 
-.forgot-password-link:hover {
-  color: #142a4a;
-  text-decoration: underline;
+.email-info-text {
+  font-size: 0.8rem;
+  color: #1a365d;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  display: block;
 }
 
 /* Selector dropdown específico */
@@ -258,8 +290,42 @@
   justify-content: center;
 }
 
-/* Botón Iniciar Sesión Primario (Mockup) */
-.login-submit-btn-custom {
+/* Checkbox Términos y condiciones */
+.terms-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  margin: 0.25rem 0;
+}
+
+.terms-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.terms-label {
+  color: #475569;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.terms-label a {
+  color: #1a365d;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.terms-label a:hover {
+  text-decoration: underline;
+}
+
+/* Botones */
+.register-submit-btn-custom {
   background-color: #1a365d; /* Azul institucional */
   color: #ffffff;
   border: none;
@@ -278,23 +344,22 @@
   width: 100%;
 }
 
-.login-submit-btn-custom:hover:not(:disabled) {
+.register-submit-btn-custom:hover:not(:disabled) {
   background-color: #142a4a;
 }
 
-.login-submit-btn-custom:active:not(:disabled) {
+.register-submit-btn-custom:active:not(:disabled) {
   transform: scale(0.98);
 }
 
-.login-submit-btn-custom:disabled {
+.register-submit-btn-custom:disabled {
   background-color: #94a3b8;
   color: #e2e8f0;
   cursor: not-allowed;
   box-shadow: none;
 }
 
-/* Botón Outline Secundario de "Crear cuenta" */
-.login-secondary-btn-custom {
+.register-secondary-btn-custom {
   background: transparent;
   border: 1.5px solid #1a365d;
   border-radius: 8px;
@@ -310,12 +375,12 @@
   width: 100%;
 }
 
-.login-secondary-btn-custom:hover {
+.register-secondary-btn-custom:hover {
   background: rgba(26, 54, 93, 0.05);
 }
 
-/* Redirecciones y separadores */
-.login-card-footer-redirect {
+/* Redirecciones */
+.register-card-footer-redirect {
   text-align: center;
   margin-top: 1.5rem;
   font-size: 0.88rem;
@@ -329,51 +394,20 @@
   gap: 0.35rem;
 }
 
-.form-separator {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 1.25rem 0;
-  color: #94a3b8;
-  font-size: 0.8rem;
-}
-
-.form-separator::before, .form-separator::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.form-separator:not(:empty)::before { margin-right: .75em; }
-.form-separator:not(:empty)::after { margin-left: .75em; }
-
-.google-login-btn {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  padding: 0.8rem;
-  color: #334155;
-  font-size: 0.95rem;
+.forgot-password-link {
+  color: #1a365d;
+  text-decoration: none;
   font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  transition: all 0.2s ease;
+  transition: color 0.15s ease;
 }
 
-.google-login-btn:hover {
-  background: #f8fafc;
+.forgot-password-link:hover {
+  color: #142a4a;
+  text-decoration: underline;
 }
 
-.google-icon-svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* Error alerts */
-.login-error-alert {
+/* Alertas de error/éxito */
+.register-error-alert {
   background: #fef2f2;
   border: 1px solid #fee2e2;
   border-radius: 10px;
@@ -385,17 +419,54 @@
   font-size: 0.85rem;
 }
 
+.register-success-alert {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #166534;
+  font-size: 0.85rem;
+}
+
 .btn-spinner {
   width: 18px;
   height: 18px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #ffffff;
   border-radius: 50%;
-  animation: login-spin 0.6s linear infinite;
+  animation: register-spin 0.6s linear infinite;
+}
+
+.register-verify-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #1a365d;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+.btn-link.secondary-link {
+  color: #64748b;
 }
 
 /* Footer copyright */
-.login-card-footer {
+.register-footer {
   text-align: center;
   margin-top: 2rem;
   font-size: 0.85rem;
@@ -404,16 +475,136 @@
   font-weight: 500;
 }
 
-@keyframes login-spin {
+@keyframes register-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
 .animate-fade-in {
-  animation: loginFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: registerFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-@keyframes loginFadeIn {
+@keyframes registerFadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Estilos para el Modal de Verificación con Efecto Desenfocado */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); /* Soporte para Safari */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  padding: 2.25rem 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a365d;
+  margin: 0 0 0.5rem 0;
+}
+
+.modal-subtitle {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Fila para input de código y botón reenviar */
+.code-input-row {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.code-input-row .code-input {
+  flex: 1;
+  text-align: center;
+  letter-spacing: 4px;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.btn-resend-inline {
+  background: #f1f5f9;
+  border: 1.5px solid #cbd5e1;
+  color: #1a365d;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  padding: 0 1.25rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-resend-inline:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.btn-resend-inline:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
+  border-color: #cbd5e1;
+}
+
+/* Fila de acciones de botones principales */
+.modal-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1.75rem;
+  width: 100%;
+}
+
+/* Botón de flecha de salida / volver */
+.register-back-btn {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.register-back-btn:hover {
+  background-color: #f1f5f9;
+  color: #1a365d;
 }

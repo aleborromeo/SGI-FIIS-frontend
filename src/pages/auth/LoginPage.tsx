@@ -2,6 +2,8 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import './LoginPage.css';
+import frontisBg from '../../assets/images/frontis_fiis.png';
+import universityIcon from '../../assets/images/icons8-universidad-50 (1).png';
 
 export const LoginPage: React.FC = () => {
   const { login, isAuthenticated, error, clearError } = useContext(AuthContext);
@@ -87,12 +89,19 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="login-container">
+      {/* Fondo difuminado usando la imagen de frontis */}
+      <div 
+        className="login-bg-blur" 
+        style={{ backgroundImage: `url("${frontisBg}")` }}
+      />
+      <div className="login-overlay" />
+
       <div className="login-content-wrapper">
-        {/* Tarjeta de Inicio de Sesión - Gestalt: Región Común y Cierre */}
-        <div className="login-card-container">
+          <div className="login-card-container">
           <div className="login-card-header">
-            <h2 className="login-title">Iniciar sesión</h2>
-            <p className="login-subtitle">Ingresa tus credenciales para continuar</p>
+            <img src={universityIcon} alt="SGI Logo" className="login-logo-img" />
+            <h1 className="login-logo-title">SGI</h1>
+            <p className="login-logo-subtitle">Sistema de Gestión de Investigación</p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
@@ -104,20 +113,20 @@ export const LoginPage: React.FC = () => {
               </div>
             )}
 
-            {/* Input Correo - Proximidad */}
+            {/* Input Correo */}
             <div className="form-group">
-              <label htmlFor="email" className="form-label">Usuario o correo electrónico</label>
-              <div className="input-with-icon">
-                <span className="input-icon">
+              <label htmlFor="email" className="form-label">Correo institucional</label>
+              <div className="input-group-custom">
+                <span className="input-icon-left">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </span>
                 <input
                   type="email"
                   id="email"
-                  className={`form-input ${validationError && !email ? 'input-error' : ''}`}
-                  placeholder="usuario@ejemplo.com"
+                  className={`form-input-custom ${validationError && !email ? 'input-error' : ''}`}
+                  placeholder="ejemplo@unas.edu.pe"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -128,11 +137,11 @@ export const LoginPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Input Contraseña - Proximidad */}
+            {/* Input Contraseña */}
             <div className="form-group">
               <label htmlFor="password" className="form-label">Contraseña</label>
-              <div className="input-with-icon">
-                <span className="input-icon">
+              <div className="input-group-custom">
+                <span className="input-icon-left">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
@@ -140,8 +149,8 @@ export const LoginPage: React.FC = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
-                  className={`form-input ${validationError && !password ? 'input-error' : ''}`}
-                  placeholder="Tu contraseña"
+                  className={`form-input-custom ${validationError && !password ? 'input-error' : ''}`}
+                  placeholder="Ingresa tu contraseña"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -151,7 +160,7 @@ export const LoginPage: React.FC = () => {
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="password-toggle-btn-custom"
                   onClick={() => setShowPassword(!showPassword)}
                   tabIndex={-1}
                 >
@@ -180,9 +189,9 @@ export const LoginPage: React.FC = () => {
               </a>
             </div>
 
-            {/* Selector de Rol - Heurística: Reconocimiento antes que Recuerdo (Asistente Integrado) */}
+            {/* Selector de Rol para prueba */}
             <div className="form-group">
-              <label htmlFor="role" className="form-label">Rol</label>
+              <label htmlFor="role" className="form-label">Rol de Prueba (Autocompletar)</label>
               <div className="select-wrapper">
                 <span className="input-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -196,7 +205,7 @@ export const LoginPage: React.FC = () => {
                   onChange={handleRoleChange}
                   disabled={isSubmitting}
                 >
-                  <option value="">Selecciona tu rol</option>
+                  <option value="">Selecciona para autocompletar</option>
                   <option value="ADMIN">Administrador del sistema</option>
                   <option value="DIRECTOR_INVESTIGACION">Director de Investigación</option>
                   <option value="COORDINADOR_GRUPO">Coordinador de Grupo de Investigación</option>
@@ -205,53 +214,51 @@ export const LoginPage: React.FC = () => {
                   <option value="DECANO">Decano de la Facultad</option>
                   <option value="EVALUADOR">Evaluador de Proyectos</option>
                 </select>
-                <span className="select-arrow">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </span>
+                
               </div>
             </div>
 
-            {/* Botón Iniciar Sesión */}
+            {/* Botón Iniciar Sesión con Icono */}
             <button
               type="submit"
-              className="login-submit-btn"
+              className="login-submit-btn-custom"
               disabled={isSubmitting || !email || !password}
             >
               {isSubmitting ? (
                 <span className="btn-spinner"></span>
               ) : (
-                <span>Iniciar sesión</span>
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h3a3 3 0 013 3v1" />
+                  </svg>
+                  <span>Iniciar sesión</span>
+                </>
               )}
             </button>
-
-            {/* Separador */}
-            <div className="form-separator">o continuar con</div>
-
-            {/* Botón continuar con Google */}
-            <button
-              type="button"
-              className="google-login-btn"
-              onClick={() => alert('Autenticación de Google no configurada en entorno local (Usa los roles de prueba).')}
-              disabled={isSubmitting}
-            >
-              <svg className="google-icon-svg" viewBox="0 0 48 48">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                <path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.53 2.87-2.14 5.31-4.57 6.94l7.1 5.51C43.46 36.56 46.5 30.93 46.5 24z"/>
-                <path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.1-5.51c-1.97 1.33-4.49 2.12-8.79 2.12-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-              </svg>
-              <span>Continuar con Google</span>
-            </button>
           </form>
+
+          <div className="login-card-footer-redirect">
+            ¿No tienes una cuenta?
+            <a 
+              href="/register" 
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/register');
+              }} 
+              className="forgot-password-link"
+            >
+              Regístrate
+            </a>
+          </div>
         </div>
 
         {/* Footer Centrado */}
         <div className="login-card-footer">
-          <p>© 2026 SGI-FIIS. Todos los derechos reservados.</p>
+          <p>© 2025 SGI - Universidad Nacional Agraria de la Selva</p>
         </div>
       </div>
     </div>
   );
 };
+
+export default LoginPage;

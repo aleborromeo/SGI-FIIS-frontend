@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext.tsx';
+import { WelcomePage } from './pages/WelcomePage.tsx';
 import { LoginPage } from './pages/auth/LoginPage.tsx';
+import { RegisterPage } from './pages/auth/RegisterPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
@@ -40,37 +42,19 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   return <>{children}</>;
 };
 
-// Componente para redirigir la ruta raíz según el estado de autenticación
-const RootRouteRedirect = () => {
-  const { isAuthenticated, loading } = useContext(AuthContext);
-
-  if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        height: '100vh',
-        backgroundColor: '#f8f9fa' 
-      }}>
-        <Spinner size="large" />
-      </div>
-    );
-  }
-
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
-};
-
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Ruta raíz redirige dinámicamente */}
-          <Route path="/" element={<RootRouteRedirect />} />
+          {/* Ruta raíz (Página de Bienvenida) */}
+          <Route path="/" element={<WelcomePage />} />
 
           {/* Ruta de Login (Pública) */}
           <Route path="/login" element={<LoginPage />} />
+
+          {/* Ruta de Registro (Pública) */}
+          <Route path="/register" element={<RegisterPage />} />
 
           {/* Rutas Protegidas de Administración e Investigación */}
           <Route 
