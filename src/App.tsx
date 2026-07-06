@@ -1,3 +1,4 @@
+import { useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext.tsx';
 import { WelcomePage } from './pages/WelcomePage.tsx';
@@ -6,7 +7,18 @@ import { RegisterPage } from './pages/auth/RegisterPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
-import { useContext } from 'react';
+
+// Views from feature/postulaciones
+import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
+import { ProjectMonitoring } from './pages/projects/ProjectMonitoring.tsx';
+import { ProjectAudit } from './pages/projects/ProjectAudit.tsx';
+import { ProjectsList } from './pages/projects/ProjectsList.tsx';
+import { NewProposal } from './pages/projects/NewProposal.tsx';
+import { AssignReviewers } from './pages/projects/AssignReviewers.tsx';
+import { EvaluationForm } from './pages/projects/EvaluationForm.tsx';
+import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
+import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
+import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
 
 // Componente para proteger las rutas privadas del sistema
 interface ProtectedRouteProps {
@@ -67,6 +79,18 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          
+          {/* Vistas específicas de postulaciones y seguimiento */}
+          <Route path="/thesis/plan/:id" element={<ProtectedRoute><DashboardContainer><ThesisTraceability /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/projects" element={<ProtectedRoute><DashboardContainer><ProjectsList /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/projects/new" element={<ProtectedRoute><DashboardContainer><NewProposal /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/projects/assign" element={<ProtectedRoute><DashboardContainer><AssignReviewers /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/projects/evaluate" element={<ProtectedRoute><DashboardContainer><EvaluationForm /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/projects/:id" element={<ProtectedRoute><DashboardContainer><ProjectMonitoring /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/projects/audit" element={<ProtectedRoute><DashboardContainer><ProjectAudit /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/evaluations/my-evaluations" element={<ProtectedRoute><DashboardContainer><MyEvaluations /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/observations/panel" element={<ProtectedRoute><DashboardContainer><ObservationsPanel /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/progressreports/review" element={<ProtectedRoute><DashboardContainer><ReviewProgressReports /></DashboardContainer></ProtectedRoute>} />
 
           {/* Redirección por defecto para cualquier ruta inválida */}
           <Route path="*" element={<Navigate to="/" replace />} />
