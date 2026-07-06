@@ -51,6 +51,7 @@ export const ProjectsList: React.FC = () => {
             </div>
             <Button variant="secondary" icon={<Filter size={18} />}>Filtros</Button>
           </div>
+          {error && <div style={{ color: 'var(--error)', marginBottom: '16px' }}>{error}</div>}
 
           <TableContainer>
             <TableHead>
