@@ -25,6 +25,33 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
+const PublicRoute = ({ children }: ProtectedRouteProps) => {
+  const { isAuthenticated, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100vh',
+        gap: '1rem',
+        backgroundColor: '#f8f9fa'
+      }}>
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, loading } = useContext(AuthContext);
 
@@ -60,13 +87,13 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Ruta raíz (Página de Bienvenida) */}
-          <Route path="/" element={<WelcomePage />} />
+          <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
 
           {/* Ruta de Login (Pública) */}
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
 
           {/* Ruta de Registro (Pública) */}
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
           {/* Rutas Protegidas de Administración e Investigación */}
           <Route 

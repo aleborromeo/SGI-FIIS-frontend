@@ -46,6 +46,14 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
       try {
         const errorData = await response.json();
         errorMessage = errorData.message || errorData.error || errorMessage;
+        
+        // Si hay detalles de validación (ej. MethodArgumentNotValidException), agregarlos
+        if (errorData.details && typeof errorData.details === 'object') {
+          const detailMessages = Object.values(errorData.details).join(', ');
+          if (detailMessages) {
+            errorMessage = `${errorMessage}: ${detailMessages}`;
+          }
+        }
       } catch (e) {
         // No es JSON, intentar leer texto plano
         try {
