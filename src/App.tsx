@@ -20,6 +20,12 @@ import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
 import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
 
+// Admin Views
+import { ResearchLines } from './pages/admin/ResearchLines.tsx';
+import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
+import { ResearchGroups } from './pages/admin/ResearchGroups.tsx';
+import { NewResearchGroup } from './pages/admin/NewResearchGroup.tsx';
+
 // Componente para proteger las rutas privadas del sistema
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -110,6 +116,12 @@ function App() {
             <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
             <Route path="/observations/panel" element={<ObservationsPanel />} />
             <Route path="/progressreports/review" element={<ReviewProgressReports />} />
+            
+            {/* Vistas de Administración */}
+            <Route path="/lines" element={<ResearchLines />} />
+            <Route path="/lines/new" element={<NewResearchLine />} />
+            <Route path="/groups" element={<ResearchGroups />} />
+            <Route path="/groups/new" element={<NewResearchGroup />} />
             
             {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

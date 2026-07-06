@@ -30,6 +30,7 @@ const navGroups = [
     title: 'Administración',
     items: [
       { id: 'users', label: 'Directorio', icon: <Users size={20} />, path: '/users' },
+      { id: 'groups', label: 'Grupos Inv.', icon: <Users size={20} />, path: '/groups' },
       { id: 'lines', label: 'Líneas Inv.', icon: <BookOpen size={20} />, path: '/lines' },
     ]
   }
