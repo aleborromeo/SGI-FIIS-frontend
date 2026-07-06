@@ -1,12 +1,79 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Timeline, TimelineItem } from '../../components/ui/Timeline';
+import { Alert } from '../../components/ui/Alert';
 import { FileText, Upload, Download, Search, Bell, HelpCircle, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { projectService } from '../../services/projectService';
+import { thesisService } from '../../services/thesisService';
+import type { Project } from '../../services/projectService';
 
 export const ProjectMonitoring: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (id) {
+      Promise.all([
+        projectService.getById(id),
+        // Normally we'd use thesisService.getReportByPlanId(id), assuming id is also plan id or related
+        thesisService.getReportByPlanId(id).catch(() => []) // Fallback to empty array if endpoint errors
+      ])
+        .then(([projData, _reportData]) => {
+          setProject(projData);
+        })
+        .catch(err => console.error('Error fetching data', err))
+        .finally(() => setLoading(false));
+    }
+  }, [id]);
+
+  const handleUpdateStatus = () => {
+    if (id) {
+      projectService.updateStatus(id, 'En Revisión')
+        .then(() => alert('Estado actualizado'))
+        .catch(() => alert('Error al actualizar'));
+    }
+  };
+
+  const handleUploadReport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+
+    setUploading(true);
+    try {
+      // Create a report object. Usually you'd upload the file to FileController first and get an ID.
+      // Assuming thesisService.createReport accepts a basic payload for now.
+      await thesisService.createReport({
+        id: `REP-${Math.floor(Math.random()*1000)}`,
+        status: 'ENVIADO'
+        // Ideally we'd send the file path or ID here
+      });
+      alert('Informe trimestral subido exitosamente.');
+      // Refresh logic would go here
+    } catch (err) {
+      console.error(err);
+      alert('Error al subir informe.');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  if (loading) {
+    return <div style={{ padding: '32px' }}>Cargando...</div>;
+  }
+
+  if (!project) {
+    return <div style={{ padding: '32px' }}>Proyecto no encontrado.</div>;
+  }
+
   return (
     <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
       {/* Top Header */}
@@ -24,17 +91,18 @@ export const ProjectMonitoring: React.FC = () => {
         </div>
       </div>
 
-      <Link to="/projects/audit" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--on-surface-variant)', textDecoration: 'none', marginBottom: '24px' }}>
-        <ArrowLeft size={16} /> Volver al Expediente
+      <Link to="/projects" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--on-surface-variant)', textDecoration: 'none', marginBottom: '24px' }}>
+        <ArrowLeft size={16} /> Volver a Proyectos
       </Link>
 
       {/* Title & Progress */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
-          <h1 className="text-headline-lg" style={{ color: 'var(--primary)', marginBottom: '8px' }}>Seguimiento de Proyecto y Control Trimestral</h1>
+          <h1 className="text-headline-lg" style={{ color: 'var(--primary)', marginBottom: '8px' }}>Seguimiento de Proyecto</h1>
           <div className="text-body-md" style={{ color: 'var(--on-surface-variant)' }}>
-            <strong>Código: FIIS-2026-001</strong> | Proyecto: Sistema de detección de enfermedades en hojas de banana
+            <strong>Código: {project.id}</strong> | Proyecto: {project.title} | Estado: <Badge variant="neutral">{project.status}</Badge>
           </div>
+          <Button variant="secondary" style={{ marginTop: '16px' }} onClick={handleUpdateStatus}>Cambiar Estado (Test)</Button>
         </div>
         <div style={{ width: '200px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -84,7 +152,16 @@ export const ProjectMonitoring: React.FC = () => {
                   <div style={{ border: '2px dashed var(--outline-variant)', borderRadius: 'var(--radius-md)', padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: 'var(--surface-container-lowest)' }}>
                     <Upload size={32} color="var(--on-surface-variant)" style={{ marginBottom: '16px' }} />
                     <p style={{ marginBottom: '16px' }}>Haga clic o arrastre aquí su informe</p>
-                    <Button variant="primary">Subir Informe Trimestral</Button>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      style={{ display: 'none' }} 
+                      onChange={handleUploadReport}
+                      accept=".pdf,.doc,.docx"
+                    />
+                    <Button variant="primary" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                      {uploading ? 'Subiendo...' : 'Subir Informe Trimestral'}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

@@ -1,13 +1,71 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { Upload, Save, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { projectService } from '../../services/projectService';
+import { thesisService } from '../../services/thesisService';
 
 export const NewProposal: React.FC = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    type: '',
+    line: '',
+    title: '',
+    abstract: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errorMsg) setErrorMsg(''); // clear error when typing
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.type) {
+      setErrorMsg('Por favor seleccione un tipo de propuesta.');
+      return;
+    }
+    if (!formData.line) {
+      setErrorMsg('Por favor seleccione una línea de investigación.');
+      return;
+    }
+    if (!formData.title || formData.title.length < 5) {
+      setErrorMsg('El título debe tener al menos 5 caracteres.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      if (formData.type === 'tesis') {
+        await thesisService.createPlan({
+          title: formData.title,
+          // map other fields
+        });
+        navigate('/thesis'); // redirect to thesis dashboard
+      } else {
+        await projectService.create({
+          title: formData.title,
+          line: formData.line,
+          type: formData.type,
+          status: 'Activo'
+        });
+        navigate('/projects');
+      }
+    } catch (error: any) {
+      console.error('Error creating proposal', error);
+      setErrorMsg(error.message || 'Error al crear la propuesta. Verifica tu conexión.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={{ paddingTop: '32px', paddingBottom: '64px', maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
@@ -20,7 +78,13 @@ export const NewProposal: React.FC = () => {
         </Link>
       </div>
 
-      <Card style={{ marginBottom: '32px' }}>
+      {errorMsg && (
+        <div style={{ backgroundColor: 'var(--error-container)', color: 'var(--on-error-container)', padding: '16px', borderRadius: 'var(--radius-md)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <strong>Error:</strong> {errorMsg}
+        </div>
+      )}
+
+      <Card style={{ marginBottom: '32px', border: errorMsg && !formData.type ? '1px solid var(--error)' : undefined }}>
         <CardHeader>
           <h2 className="text-title-lg">Datos Generales</h2>
         </CardHeader>
@@ -28,6 +92,8 @@ export const NewProposal: React.FC = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <Select 
               label="Tipo de Propuesta" 
+              value={formData.type}
+              onChange={(e) => handleChange('type', e.target.value)}
               options={[
                 { value: '', label: 'Seleccione un tipo...' },
                 { value: 'tesis', label: 'Plan de Tesis' },
@@ -36,6 +102,8 @@ export const NewProposal: React.FC = () => {
             />
             <Select 
               label="Línea de Investigación" 
+              value={formData.line}
+              onChange={(e) => handleChange('line', e.target.value)}
               options={[
                 { value: '', label: 'Seleccione una línea...' },
                 { value: 'sw', label: 'Ingeniería de Software' },
@@ -45,8 +113,21 @@ export const NewProposal: React.FC = () => {
             />
           </div>
           
-          <Input label="Título del Proyecto" placeholder="Ingrese el título completo..." style={{ marginTop: '16px' }} />
-          <Textarea label="Resumen (Abstract)" placeholder="Breve descripción del proyecto..." rows={4} style={{ marginTop: '16px' }} />
+          <Input 
+            label="Título del Proyecto" 
+            placeholder="Ingrese el título completo..." 
+            style={{ marginTop: '16px' }} 
+            value={formData.title}
+            onChange={(e) => handleChange('title', e.target.value)}
+          />
+          <Textarea 
+            label="Resumen (Abstract)" 
+            placeholder="Breve descripción del proyecto..." 
+            rows={4} 
+            style={{ marginTop: '16px' }} 
+            value={formData.abstract}
+            onChange={(e) => handleChange('abstract', e.target.value)}
+          />
         </CardContent>
       </Card>
 
@@ -80,9 +161,9 @@ export const NewProposal: React.FC = () => {
         <Link to="/projects">
           <Button variant="secondary">Guardar Borrador</Button>
         </Link>
-        <Link to="/projects/audit">
-          <Button variant="primary" icon={<Save size={18} />}>Enviar Propuesta</Button>
-        </Link>
+        <Button variant="primary" icon={<Save size={18} />} onClick={handleSubmit} disabled={loading}>
+          {loading ? 'Enviando...' : 'Enviar Propuesta'}
+        </Button>
       </div>
     </div>
   );

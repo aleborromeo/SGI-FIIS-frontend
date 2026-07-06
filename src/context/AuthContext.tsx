@@ -1,4 +1,4 @@
-import { createContext, useState, type ReactNode } from 'react';
+import { createContext, useState, useEffect, type ReactNode } from 'react';
 
 // TODO: Mover esta interfaz a src/types/index.ts en el futuro
 interface AuthContextType {
@@ -6,7 +6,7 @@ interface AuthContextType {
   user: any | null;
   roles: string[];
   currentRole: string | null;
-  login: (token: string) => void;
+  login: (token: string, userData?: any) => void;
   logout: () => void;
   switchRole: (role: string) => void;
 }
@@ -15,17 +15,45 @@ export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
   const [currentRole, setCurrentRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = (token: string) => {
-    // TODO: Implementar decodificación del JWT y seteo de usuario
-    console.log("Login con token:", token);
+  useEffect(() => {
+    // Check if token exists on load
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    if (token && storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setRoles(parsedUser.roles || []);
+        setCurrentRole(parsedUser.roles?.[0] || null);
+        setIsAuthenticated(true);
+      } catch (e) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  const login = (token: string, userData?: any) => {
+    localStorage.setItem('token', token);
+    if (userData) {
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+      setRoles(userData.roles || []);
+      setCurrentRole(userData.roles?.[0] || null);
+    }
     setIsAuthenticated(true);
   };
 
   const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
     setRoles([]);
@@ -37,6 +65,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setCurrentRole(role);
     }
   };
+
+  if (loading) {
+    return <div>Cargando sesión...</div>;
+  }
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, roles, currentRole, login, logout, switchRole }}>

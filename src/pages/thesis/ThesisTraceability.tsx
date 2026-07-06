@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Stepper, type StepStatus } from '../../components/ui/Stepper';
 import { Timeline, TimelineItem } from '../../components/ui/Timeline';
-import { FileText, Download, Bell, HelpCircle, ArrowLeft, Send, AlertCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { FileText, Download, Bell, HelpCircle, ArrowLeft, Send } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { thesisService } from '../../services/thesisService';
+import type { ThesisPlan } from '../../services/thesisService';
 
 const steps = [
   { id: '1', label: 'Estudiante', status: 'listo' as StepStatus, sublabel: 'Listo' },
@@ -15,6 +17,43 @@ const steps = [
 ];
 
 export const ThesisTraceability: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const [plan, setPlan] = useState<ThesisPlan | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      thesisService.getPlanById(id)
+        .then(data => setPlan(data))
+        .catch(err => console.error('Error fetching plan', err))
+        .finally(() => setLoading(false));
+    }
+  }, [id]);
+
+  const handleApprove = () => {
+    if (id) {
+      thesisService.approveDirector(id)
+        .then(() => alert('Aprobado con éxito'))
+        .catch(() => alert('Error al aprobar'));
+    }
+  };
+
+  const handleObserve = () => {
+    if (id) {
+      thesisService.observeDirector(id, 'Observación general')
+        .then(() => alert('Observado con éxito'))
+        .catch(() => alert('Error al observar'));
+    }
+  };
+
+  if (loading) {
+    return <div style={{ padding: '32px' }}>Cargando...</div>;
+  }
+
+  if (!plan) {
+    return <div style={{ padding: '32px' }}>Plan de tesis no encontrado.</div>;
+  }
+
   return (
     <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
       {/* Top Header */}
@@ -26,25 +65,25 @@ export const ThesisTraceability: React.FC = () => {
         </div>
       </div>
 
-      <Link to="/projects/audit" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--on-surface-variant)', textDecoration: 'none', marginBottom: '24px' }}>
-        <ArrowLeft size={16} /> Volver al Expediente
+      <Link to="/projects" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--on-surface-variant)', textDecoration: 'none', marginBottom: '24px' }}>
+        <ArrowLeft size={16} /> Volver a Proyectos
       </Link>
 
       {/* Main Title Area */}
       <div style={{ marginBottom: '32px' }}>
-        <Badge variant="info" style={{ marginBottom: '12px' }}>PROYECTO ID: 2024-GIN-082</Badge>
+        <Badge variant="info" style={{ marginBottom: '12px' }}>PLAN ID: {plan.id}</Badge>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 className="text-headline-lg" style={{ color: 'var(--primary)', marginBottom: '8px' }}>Gestión de trazabilidad de proyectos de tesis</h1>
+            <h1 className="text-headline-lg" style={{ color: 'var(--primary)', marginBottom: '8px' }}>{plan.title}</h1>
             <div style={{ display: 'flex', gap: '24px', color: 'var(--on-surface-variant)' }}>
-              <span className="text-body-md"><strong style={{ color: 'var(--on-surface)' }}>Tesista:</strong> Alex Avila</span>
-              <span className="text-body-md"><strong style={{ color: 'var(--on-surface)' }}>Grupo:</strong> GINSOFT</span>
+              <span className="text-body-md"><strong style={{ color: 'var(--on-surface)' }}>Estado actual:</strong> {plan.status}</span>
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className="text-caption" style={{ color: 'var(--on-surface-variant)', marginBottom: '4px' }}>Estado del Flujo</div>
-            <div style={{ backgroundColor: 'var(--error-container)', color: 'var(--error)', padding: '8px 16px', borderRadius: 'var(--radius-full)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-               <AlertCircle size={16} /> Observado por Dirección
+            <div className="text-caption" style={{ color: 'var(--on-surface-variant)', marginBottom: '4px' }}>Acciones Rápidas</div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+               <Button variant="secondary" onClick={handleObserve}>Observar</Button>
+               <Button variant="primary" onClick={handleApprove}>Aprobar</Button>
             </div>
           </div>
         </div>
@@ -55,7 +94,7 @@ export const ThesisTraceability: React.FC = () => {
         <CardContent>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--outline-variant)', paddingBottom: '16px', marginBottom: '16px' }}>
             <h3 className="text-title-lg">Trazabilidad del Proceso</h3>
-            <Badge variant="error">Observación Técnica</Badge>
+            <Badge variant="error">{plan.status}</Badge>
           </div>
           <Stepper steps={steps} />
         </CardContent>

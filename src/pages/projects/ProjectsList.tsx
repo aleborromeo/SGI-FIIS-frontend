@@ -1,19 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { TableContainer, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../../components/ui/Table';
 import { Search, Filter, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const dummyData = [
-  { id: 'FIIS-2026-001', title: 'Sistema de detección de enfermedades en hojas de banana', type: 'Proyecto', line: 'Inteligencia Artificial', status: 'Activo', statusVariant: 'success' },
-  { id: 'FIIS-2026-002', title: 'Optimización de rutas de transporte usando algoritmos genéticos', type: 'Tesis', line: 'Computación', status: 'En Evaluación', statusVariant: 'warning' },
-  { id: 'FIIS-2026-003', title: 'Aplicación de Blockchain en registros académicos', type: 'Proyecto', line: 'Ingeniería de Software', status: 'Observado', statusVariant: 'error' },
-  { id: 'FIIS-2026-004', title: 'Impacto del teletrabajo en la productividad local', type: 'Tesis', line: 'Sistemas de Información', status: 'Finalizado', statusVariant: 'neutral' },
-];
+import { projectService } from '../../services/projectService';
+import type { Project } from '../../services/projectService';
 
 export const ProjectsList: React.FC = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    projectService.getAll()
+      .then(data => {
+        setProjects(data);
+      })
+      .catch(err => {
+        console.error('Error fetching projects', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
@@ -53,20 +64,30 @@ export const ProjectsList: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {dummyData.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell style={{ fontWeight: 600 }}>{item.id}</TableCell>
-                  <TableCell>{item.title}</TableCell>
-                  <TableCell><Badge variant="info">{item.type}</Badge></TableCell>
-                  <TableCell>{item.line}</TableCell>
-                  <TableCell><Badge variant={item.statusVariant as any}>{item.status}</Badge></TableCell>
-                  <TableCell style={{ textAlign: 'right' }}>
-                    <Link to="/projects/audit">
-                      <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>Ver</Button>
-                    </Link>
-                  </TableCell>
+              {loading ? (
+                <TableRow>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '16px', color: 'var(--on-surface-variant)' }}>Cargando...</td>
                 </TableRow>
-              ))}
+              ) : projects.length === 0 ? (
+                <TableRow>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '16px', color: 'var(--on-surface-variant)' }}>No se encontraron proyectos.</td>
+                </TableRow>
+              ) : (
+                projects.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell style={{ fontWeight: 600 }}>{item.id}</TableCell>
+                    <TableCell>{item.title}</TableCell>
+                    <TableCell><Badge variant="info">{item.type}</Badge></TableCell>
+                    <TableCell>{item.line}</TableCell>
+                    <TableCell><Badge variant="neutral">{item.status}</Badge></TableCell>
+                    <TableCell style={{ textAlign: 'right' }}>
+                      <Link to={`/projects/${item.id}`}>
+                        <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>Ver</Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </TableContainer>
         </CardContent>
