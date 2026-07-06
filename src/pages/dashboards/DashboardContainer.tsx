@@ -3,8 +3,10 @@ import './DashboardContainer.css';
 import { Sidebar } from '../../layout/Sidebar';
 import { Menu, GraduationCap } from 'lucide-react';
 
+import { Outlet } from 'react-router-dom';
+
 interface DashboardContainerProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children }) => {
@@ -34,7 +36,7 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children
         {/* Contenido Principal */}
         <main className="sgi-main-content">
           <div className="sgi-content-card animate-fade-in">
-            {children}
+            {children || <Outlet />}
           </div>
         </main>
 

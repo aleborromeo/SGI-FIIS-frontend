@@ -95,29 +95,22 @@ function App() {
           {/* Ruta de Registro (Pública) */}
           <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
-          {/* Rutas Protegidas de Administración e Investigación */}
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <RoleDashboards />
-                </DashboardContainer>
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Vistas específicas de postulaciones y seguimiento */}
-          <Route path="/thesis/plan/:id" element={<ProtectedRoute><DashboardContainer><ThesisTraceability /></DashboardContainer></ProtectedRoute>} />
-          <Route path="/projects" element={<ProtectedRoute><DashboardContainer><ProjectsList /></DashboardContainer></ProtectedRoute>} />
-          <Route path="/projects/new" element={<ProtectedRoute><DashboardContainer><NewProposal /></DashboardContainer></ProtectedRoute>} />
-          <Route path="/projects/assign" element={<ProtectedRoute><DashboardContainer><AssignReviewers /></DashboardContainer></ProtectedRoute>} />
-          <Route path="/projects/evaluate" element={<ProtectedRoute><DashboardContainer><EvaluationForm /></DashboardContainer></ProtectedRoute>} />
-          <Route path="/projects/:id" element={<ProtectedRoute><DashboardContainer><ProjectMonitoring /></DashboardContainer></ProtectedRoute>} />
-          <Route path="/projects/audit" element={<ProtectedRoute><DashboardContainer><ProjectAudit /></DashboardContainer></ProtectedRoute>} />
-          <Route path="/evaluations/my-evaluations" element={<ProtectedRoute><DashboardContainer><MyEvaluations /></DashboardContainer></ProtectedRoute>} />
-          <Route path="/observations/panel" element={<ProtectedRoute><DashboardContainer><ObservationsPanel /></DashboardContainer></ProtectedRoute>} />
-          <Route path="/progressreports/review" element={<ProtectedRoute><DashboardContainer><ReviewProgressReports /></DashboardContainer></ProtectedRoute>} />
+          {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
+          <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
+            <Route path="/dashboard" element={<RoleDashboards />} />
+            
+            {/* Vistas específicas de postulaciones y seguimiento */}
+            <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
+            <Route path="/projects" element={<ProjectsList />} />
+            <Route path="/projects/new" element={<NewProposal />} />
+            <Route path="/projects/assign" element={<AssignReviewers />} />
+            <Route path="/projects/evaluate" element={<EvaluationForm />} />
+            <Route path="/projects/:id" element={<ProjectMonitoring />} />
+            <Route path="/projects/audit" element={<ProjectAudit />} />
+            <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
+            <Route path="/observations/panel" element={<ObservationsPanel />} />
+            <Route path="/progressreports/review" element={<ReviewProgressReports />} />
+          </Route>
 
           {/* Redirección por defecto para cualquier ruta inválida */}
           <Route path="*" element={<Navigate to="/" replace />} />
