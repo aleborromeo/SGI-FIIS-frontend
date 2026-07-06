@@ -11,16 +11,16 @@ import type { Project } from '../../services/projectService';
 export const ProjectsList: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     projectService.getAll()
-      .then(data => {
+      .then((data: any) => {
         setProjects(data);
+        setLoading(false);
       })
-      .catch(err => {
-        console.error('Error fetching projects', err);
-      })
-      .finally(() => {
+      .catch((err: any) => {
+        setError(err.message || 'Error al cargar los proyectos');
         setLoading(false);
       });
   }, []);

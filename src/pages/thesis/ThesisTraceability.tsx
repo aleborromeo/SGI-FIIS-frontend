@@ -24,8 +24,8 @@ export const ThesisTraceability: React.FC = () => {
   useEffect(() => {
     if (id) {
       thesisService.getPlanById(id)
-        .then(data => setPlan(data))
-        .catch(err => console.error('Error fetching plan', err))
+        .then((data: any) => setPlan(data))
+        .catch((err: any) => console.error('Error fetching plan', err))
         .finally(() => setLoading(false));
     }
   }, [id]);
