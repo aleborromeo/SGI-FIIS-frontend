@@ -1,0 +1,419 @@
+/* LoginPage.css - Rediseño Premium con Recuadro Blanco Sólido y Colores Mockup */
+
+.login-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 3rem 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* Fondo difuminado de la imagen */
+.login-bg-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(8px) brightness(0.9); /* Desenfoque medio */
+  transform: scale(1.05);
+  z-index: 1;
+}
+
+/* Capa de oscurecimiento para mejorar contraste de textos blancos superiores */
+.login-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.45); /* Oscurece el fondo */
+  z-index: 2;
+}
+
+.login-content-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 440px; /* Ancho ajustado según mockup */
+  z-index: 3;
+}
+
+/* Grupo de Títulos en Blanco sobre el Recuadro */
+.auth-header-group {
+  text-align: center;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.auth-header-title {
+  font-size: 1.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.auth-header-subtitle {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0.4rem 0 0;
+  font-weight: 500;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Tarjeta Blanca Sólida de Login (Mockup) */
+.login-card-container {
+  width: 100%;
+  background: #ffffff; /* Blanco sólido absoluto */
+  border-radius: 16px; /* Esquinas redondeadas grandes */
+  padding: 1.75rem 2.25rem 2.25rem 2.25rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+}
+
+/* Logo SGI dentro del recuadro */
+.login-card-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-logo-img {
+  width: 72px;
+  height: auto;
+  margin-bottom: 0.5rem;
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.login-logo-title {
+  font-size: 2.3rem;
+  font-weight: 900;
+  color: #1a365d; /* Azul institucional */
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.login-logo-subtitle {
+  font-size: 0.88rem;
+  color: #64748b; /* Gris oscuro muted */
+  margin: 0.35rem 0 0;
+  font-weight: 600;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Campos de entrada */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 700; /* Texto en negrita */
+  color: #1e293b; /* Color oscuro */
+  margin-bottom: 0.15rem;
+}
+
+.input-group-custom {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-icon-left {
+  position: absolute;
+  left: 0.9rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.form-input-custom, .form-select {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 2.6rem;
+  background: #f8fafc;
+  border: 1.5px solid #94a3b8;
+  border-radius: 8px; /* Bordes suaves según mockup */
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.form-input-custom::placeholder {
+  color: #94a3b8;
+}
+
+.form-input-custom:focus, .form-select:focus {
+  outline: none;
+  border-color: #1a365d;
+  background: #ffffff;
+  box-shadow: 0 0 0 3.5px rgba(26, 54, 93, 0.15);
+}
+
+.form-input-custom.input-error {
+  border-color: #ef4444;
+}
+
+/* Ojo de contraseña */
+.password-toggle-btn-custom {
+  position: absolute;
+  right: 0.9rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+
+.password-toggle-btn-custom:hover {
+  color: #475569;
+}
+
+/* Opciones extra */
+.form-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin: 0.15rem 0;
+}
+
+.remember-me-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #475569;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+}
+
+.remember-me-checkbox {
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+}
+
+.forgot-password-link {
+  color: #1a365d;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.forgot-password-link:hover {
+  color: #142a4a;
+  text-decoration: underline;
+}
+
+/* Selector dropdown específico */
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 0.9rem;
+  pointer-events: none;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Botón Iniciar Sesión Primario (Mockup) */
+.login-submit-btn-custom {
+  background-color: #1a365d; /* Azul institucional */
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.9rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2);
+  width: 100%;
+}
+
+.login-submit-btn-custom:hover:not(:disabled) {
+  background-color: #142a4a;
+}
+
+.login-submit-btn-custom:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.login-submit-btn-custom:disabled {
+  background-color: #94a3b8;
+  color: #e2e8f0;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Botón Outline Secundario de "Crear cuenta" */
+.login-secondary-btn-custom {
+  background: transparent;
+  border: 1.5px solid #1a365d;
+  border-radius: 8px;
+  padding: 0.85rem;
+  color: #1a365d;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.login-secondary-btn-custom:hover {
+  background: rgba(26, 54, 93, 0.05);
+}
+
+/* Redirecciones y separadores */
+.login-card-footer-redirect {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.88rem;
+  color: #64748b;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1.5rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.form-separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.25rem 0;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.form-separator::before, .form-separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.form-separator:not(:empty)::before { margin-right: .75em; }
+.form-separator:not(:empty)::after { margin-left: .75em; }
+
+.google-login-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.8rem;
+  color: #334155;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: all 0.2s ease;
+}
+
+.google-login-btn:hover {
+  background: #f8fafc;
+}
+
+.google-icon-svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Error alerts */
+.login-error-alert {
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #991b1b;
+  font-size: 0.85rem;
+}
+
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: login-spin 0.6s linear infinite;
+}
+
+/* Footer copyright */
+.login-card-footer {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8); /* Blanco de alto contraste sobre fondo */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
+}
+
+@keyframes login-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-fade-in {
+  animation: loginFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes loginFadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
