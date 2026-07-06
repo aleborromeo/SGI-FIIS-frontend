@@ -8,6 +8,7 @@ interface DashboardContainerProps {
 }
 
 import { type ReactNode } from 'react';
+import { Sidebar } from '../../layout/Sidebar';
 
 export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children }) => {
   const { user, currentRole, logout } = useContext(AuthContext);
@@ -42,51 +43,55 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children
   const roleInfo = getRoleLabel(currentRole);
 
   return (
-    <div className="sgi-dashboard-layout">
-      {/* Barra de Navegación Superior Premium */}
-      <header className="sgi-navbar">
-        <div className="sgi-navbar-brand">
-          <span className="unas-logo-mini">🎓</span>
-          <div className="brand-texts">
-            <h1 className="brand-title">SGI-FIIS</h1>
-            <span className="brand-subtitle">Facultad de Ingeniería en Informática y Sistemas</span>
-          </div>
-        </div>
-
-        <div className="sgi-navbar-user-panel">
-          {/* Indicador de Rol (Gestalt - Similitud / Nielsen - Visibilidad) */}
-          <div className={`role-badge ${roleInfo.colorClass}`}>
-            <span className="role-icon">{roleInfo.icon}</span>
-            <span className="role-text">{roleInfo.label}</span>
-          </div>
-
-          <div className="user-details-wrapper">
-            <div className="user-avatar">
-              {user ? `${user.firstNames.charAt(0)}${user.lastNames.charAt(0)}` : 'US'}
-            </div>
-            <div className="user-text-info">
-              <span className="user-name">{user ? `${user.firstNames} ${user.lastNames}` : 'Cargando...'}</span>
-              <span className="user-email">{user?.email}</span>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
+      <Sidebar />
+      
+      <div className="sgi-dashboard-layout" style={{ flex: 1, minHeight: '100vh' }}>
+        {/* Barra de Navegación Superior Premium */}
+        <header className="sgi-navbar">
+          <div className="sgi-navbar-brand">
+            <span className="unas-logo-mini">🎓</span>
+            <div className="brand-texts">
+              <h1 className="brand-title">SGI-FIIS</h1>
+              <span className="brand-subtitle">Facultad de Ingeniería en Informática y Sistemas</span>
             </div>
           </div>
 
-          <button onClick={handleLogout} className="sgi-logout-btn" title="Cerrar Sesión">
-            <span className="logout-icon">🚪</span>
-            <span className="logout-text">Salir</span>
-          </button>
-        </div>
-      </header>
+          <div className="sgi-navbar-user-panel">
+            {/* Indicador de Rol */}
+            <div className={`role-badge ${roleInfo.colorClass}`}>
+              <span className="role-icon">{roleInfo.icon}</span>
+              <span className="role-text">{roleInfo.label}</span>
+            </div>
 
-      {/* Contenido Principal */}
-      <main className="sgi-main-content">
-        <div className="sgi-content-card animate-fade-in">
-          {children}
-        </div>
-      </main>
+            <div className="user-details-wrapper">
+              <div className="user-avatar">
+                {user ? `${user.firstNames?.charAt(0) || ''}${user.lastNames?.charAt(0) || ''}` : 'US'}
+              </div>
+              <div className="user-text-info">
+                <span className="user-name">{user ? `${user.firstNames} ${user.lastNames}` : 'Cargando...'}</span>
+                <span className="user-email">{user?.email}</span>
+              </div>
+            </div>
 
-      <footer className="sgi-dashboard-footer">
-        <p>© 2026 Sistema de Gestión de Investigación FIIS - Universidad Nacional Agraria de la Selva</p>
-      </footer>
+            <button onClick={handleLogout} className="sgi-logout-btn" title="Cerrar Sesión">
+              <span className="logout-icon">🚪</span>
+              <span className="logout-text">Salir</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Contenido Principal */}
+        <main className="sgi-main-content">
+          <div className="sgi-content-card animate-fade-in">
+            {children}
+          </div>
+        </main>
+
+        <footer className="sgi-dashboard-footer">
+          <p>© 2026 Sistema de Gestión de Investigación FIIS - Universidad Nacional Agraria de la Selva</p>
+        </footer>
+      </div>
     </div>
   );
 };

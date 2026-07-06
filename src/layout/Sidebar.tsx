@@ -14,7 +14,7 @@ const navGroups = [
     title: 'Gestión Académica',
     items: [
       { id: 'proposals', label: 'Proyectos y Tesis', icon: <FileText size={20} />, path: '/projects' },
-      { id: 'traceability', label: 'Trazabilidad', icon: <History size={20} />, path: '/thesis/traceability' },
+      { id: 'traceability', label: 'Trazabilidad', icon: <History size={20} />, path: '/thesis/plan/1' },
       { id: 'observations', label: 'Mis Observaciones', icon: <AlertCircle size={20} />, path: '/observations/panel' },
     ]
   },
