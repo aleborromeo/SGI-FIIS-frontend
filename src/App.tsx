@@ -110,6 +110,9 @@ function App() {
             <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
             <Route path="/observations/panel" element={<ObservationsPanel />} />
             <Route path="/progressreports/review" element={<ReviewProgressReports />} />
+            
+            {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
 
           {/* Redirección por defecto para cualquier ruta inválida */}
