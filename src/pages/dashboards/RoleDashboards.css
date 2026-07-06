@@ -418,3 +418,28 @@
     gap: 2rem;
   }
 }
+
+@media (max-width: 640px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .metric-card {
+    padding: 1.25rem;
+  }
+
+  .metric-icon {
+    font-size: 1.8rem;
+    width: 46px;
+    height: 46px;
+  }
+  
+  .metric-value {
+    font-size: 1.7rem;
+  }
+
+  .view-title {
+    font-size: 1.5rem;
+  }
+}

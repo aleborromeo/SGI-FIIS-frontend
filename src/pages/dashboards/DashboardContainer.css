@@ -1,14 +1,98 @@
 /* DashboardContainer.css - Estilos del Layout del Dashboard */
 
+.sgi-dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f3f4f6; /* Fondo gris claro */
+}
+
 .sgi-dashboard-layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f3f4f6; /* Fondo gris claro, contrastando con el contenido */
-  color: #1f2937;
+  flex: 1;
+  width: 100%;
 }
 
-/* Barra superior */
+/* Sidebar Styles (moved from inline to CSS) */
+.sidebar-container {
+  width: 280px;
+  height: 100vh;
+  background-color: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+.sidebar-close-btn {
+  display: none;
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+}
+
+/* Mobile Topbar */
+.sgi-mobile-topbar {
+  display: none;
+  align-items: center;
+  background: #0f172a;
+  padding: 0.85rem 1.5rem;
+  color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sgi-mobile-menu-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+}
+
+.sgi-mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.unas-logo-mini-mobile {
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, #0b5ed7 0%, #004aad 100%);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.brand-title-mobile {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
 .sgi-navbar {
   display: flex;
   align-items: center;
@@ -222,33 +306,54 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
-  .sgi-navbar {
-    padding: 0.85rem 1rem;
-    flex-direction: column;
-    gap: 0.85rem;
-    align-items: stretch;
+@media (max-width: 1024px) {
+  .sgi-mobile-topbar {
+    display: flex;
   }
 
-  .sgi-navbar-brand {
-    justify-content: center;
+  .sidebar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 100;
+    transform: translateX(-100%);
   }
 
-  .sgi-navbar-user-panel {
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+  .sidebar-container.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebar-close-btn {
+    display: block;
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 90;
+    animation: fadeIn 0.3s ease-out;
   }
 
   .sgi-main-content {
-    padding: 1.5rem 1rem;
+    padding: 1.5rem 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .sgi-main-content {
+    padding: 1.25rem 1rem;
   }
 
   .sgi-content-card {
-    padding: 1.5rem;
-  }
-
-  .logout-text {
-    display: none;
+    padding: 1.25rem;
+    border-radius: 12px;
   }
 }

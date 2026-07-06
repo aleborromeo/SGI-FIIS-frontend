@@ -1,4 +1,9 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { 
+  Users, Building, FileText, Scale, GraduationCap, RefreshCw, FolderOpen, 
+  Megaphone, Microscope, BarChart2, BookOpen, Building2, Calendar, 
+  PenTool, ScrollText, ClipboardList, AlertTriangle, XCircle, CheckCircle 
+} from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
 import { Spinner } from '../../components/common/Spinner';
@@ -50,7 +55,7 @@ export const RoleDashboards: React.FC = () => {
   if (error) {
     return (
       <div className="dashboard-error-card">
-        <span className="error-icon">❌</span>
+        <span className="error-icon"><XCircle size={48} color="#991b1b" /></span>
         <h3 className="error-title">Error al Cargar Dashboard</h3>
         <p className="error-desc">{error}</p>
         <button onClick={() => window.location.reload()} className="error-retry-btn">
@@ -65,7 +70,7 @@ export const RoleDashboards: React.FC = () => {
     if (!alerts || alerts.length === 0) {
       return (
         <div className="empty-alerts">
-          <span className="empty-icon">✅</span>
+          <span className="empty-icon"><CheckCircle size={32} color="#15803d" /></span>
           <p>No tiene notificaciones ni alertas pendientes en este momento.</p>
         </div>
       );
@@ -97,7 +102,7 @@ export const RoleDashboards: React.FC = () => {
 
         <div className="metrics-grid">
           <div className="metric-card bg-blue">
-            <span className="metric-icon">👥</span>
+            <span className="metric-icon"><Users size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{adminData.totalUsers}</span>
               <span className="metric-label">Usuarios Registrados</span>
@@ -106,7 +111,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-green">
-            <span className="metric-icon">🏫</span>
+            <span className="metric-icon"><Building size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{adminData.totalGroups}</span>
               <span className="metric-label">Grupos de Investigación</span>
@@ -115,7 +120,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-purple">
-            <span className="metric-icon">📄</span>
+            <span className="metric-icon"><FileText size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{adminData.totalProjects}</span>
               <span className="metric-label">Proyectos Registrados</span>
@@ -124,7 +129,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-orange">
-            <span className="metric-icon">⚖️</span>
+            <span className="metric-icon"><Scale size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{adminData.issuedResolutions}</span>
               <span className="metric-label">Resoluciones Emitidas</span>
@@ -187,7 +192,7 @@ export const RoleDashboards: React.FC = () => {
 
         <div className="metrics-grid">
           <div className="metric-card bg-blue">
-            <span className="metric-icon">🎓</span>
+            <span className="metric-icon"><GraduationCap size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{studentData.submittedThesisPlans}</span>
               <span className="metric-label">Planes de Tesis Presentados</span>
@@ -196,7 +201,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-orange">
-            <span className="metric-icon">🔄</span>
+            <span className="metric-icon"><RefreshCw size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{studentData.pendingProcedures}</span>
               <span className="metric-label">Trámites en Curso</span>
@@ -205,7 +210,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-purple">
-            <span className="metric-icon">📁</span>
+            <span className="metric-icon"><FolderOpen size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{studentData.uploadedDocuments}</span>
               <span className="metric-label">Documentos Subidos</span>
@@ -214,7 +219,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-green">
-            <span className="metric-icon">📣</span>
+            <span className="metric-icon"><Megaphone size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{studentData.openCallsForApplication}</span>
               <span className="metric-label">Convocatorias Abiertas</span>
@@ -228,7 +233,7 @@ export const RoleDashboards: React.FC = () => {
             <h3 className="section-title">Información de Afiliación</h3>
             <div className="affiliation-card">
               <div className="affiliation-header">
-                <span className="affiliation-icon">🏫</span>
+                <span className="affiliation-icon"><Building size={24} /></span>
                 <div>
                   <h4>{studentData.groupName || 'Sin Grupo Asignado'}</h4>
                   <p>Código del Grupo: <strong>{studentData.groupCode || 'N/A'}</strong></p>
@@ -260,7 +265,7 @@ export const RoleDashboards: React.FC = () => {
 
         <div className="metrics-grid">
           <div className="metric-card bg-blue">
-            <span className="metric-icon">🔬</span>
+            <span className="metric-icon"><Microscope size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{teacherData.projectsAsLead}</span>
               <span className="metric-label">Proyectos como Responsable</span>
@@ -269,7 +274,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-purple">
-            <span className="metric-icon">👥</span>
+            <span className="metric-icon"><Users size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{teacherData.projectsAsMember}</span>
               <span className="metric-label">Proyectos como Integrante</span>
@@ -278,7 +283,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-orange">
-            <span className="metric-icon">📊</span>
+            <span className="metric-icon"><BarChart2 size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{teacherData.pendingProgressReports}</span>
               <span className="metric-label">Informes de Avance Pendientes</span>
@@ -287,7 +292,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-green">
-            <span className="metric-icon">⚖️</span>
+            <span className="metric-icon"><Scale size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{teacherData.receivedResolutions}</span>
               <span className="metric-label">Resoluciones Recibidas</span>
@@ -359,7 +364,7 @@ export const RoleDashboards: React.FC = () => {
 
         <div className="metrics-grid">
           <div className="metric-card bg-blue">
-            <span className="metric-icon">👥</span>
+            <span className="metric-icon"><Users size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{coordData.totalMembers}</span>
               <span className="metric-label">Investigadores del Grupo</span>
@@ -368,7 +373,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-purple">
-            <span className="metric-icon">📄</span>
+            <span className="metric-icon"><FileText size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{coordData.totalGroupProjects}</span>
               <span className="metric-label">Proyectos del Grupo</span>
@@ -377,7 +382,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-orange">
-            <span className="metric-icon">🔄</span>
+            <span className="metric-icon"><RefreshCw size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{coordData.pendingGroupProcedures}</span>
               <span className="metric-label">Trámites Pendientes de Revisión</span>
@@ -386,7 +391,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-green">
-            <span className="metric-icon">📖</span>
+            <span className="metric-icon"><BookOpen size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{coordData.groupThesisPlans}</span>
               <span className="metric-label">Planes de Tesis Adscritos</span>
@@ -458,7 +463,7 @@ export const RoleDashboards: React.FC = () => {
 
         <div className="metrics-grid">
           <div className="metric-card bg-blue">
-            <span className="metric-icon">🏢</span>
+            <span className="metric-icon"><Building2 size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{directorData.totalProjects}</span>
               <span className="metric-label">Proyectos Totales FIIS</span>
@@ -467,7 +472,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-purple">
-            <span className="metric-icon">🔄</span>
+            <span className="metric-icon"><RefreshCw size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{directorData.pendingReviewProcedures}</span>
               <span className="metric-label">Trámites Pendientes en Dirección</span>
@@ -476,7 +481,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-orange">
-            <span className="metric-icon">📅</span>
+            <span className="metric-icon"><Calendar size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{directorData.reportsNearingDeadline}</span>
               <span className="metric-label">Informes Cerca del Vencimiento</span>
@@ -485,7 +490,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-green">
-            <span className="metric-icon">📣</span>
+            <span className="metric-icon"><Megaphone size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{directorData.openCallsForApplication}</span>
               <span className="metric-label">Convocatorias de Investigación</span>
@@ -557,7 +562,7 @@ export const RoleDashboards: React.FC = () => {
 
         <div className="metrics-grid">
           <div className="metric-card bg-blue">
-            <span className="metric-icon">⚖️</span>
+            <span className="metric-icon"><Scale size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{deanData.totalFacultyProjects}</span>
               <span className="metric-label">Proyectos en la Facultad</span>
@@ -566,7 +571,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-purple">
-            <span className="metric-icon">✍️</span>
+            <span className="metric-icon"><PenTool size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{deanData.pendingSignatureProcedures}</span>
               <span className="metric-label">Trámites Pendientes de Firma</span>
@@ -575,7 +580,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-orange">
-            <span className="metric-icon">📜</span>
+            <span className="metric-icon"><ScrollText size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{deanData.issuedResolutions}</span>
               <span className="metric-label">Resoluciones Emitidas</span>
@@ -584,7 +589,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-green">
-            <span className="metric-icon">🏫</span>
+            <span className="metric-icon"><Building size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{deanData.totalActiveGroups}</span>
               <span className="metric-label">Grupos de Investigación Activos</span>
@@ -647,7 +652,7 @@ export const RoleDashboards: React.FC = () => {
 
         <div className="metrics-grid">
           <div className="metric-card bg-blue">
-            <span className="metric-icon">📋</span>
+            <span className="metric-icon"><ClipboardList size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{evalData.assignedEvaluations}</span>
               <span className="metric-label">Evaluaciones Asignadas</span>
@@ -656,7 +661,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-green">
-            <span className="metric-icon">✅</span>
+            <span className="metric-icon"><CheckCircle size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{evalData.completedEvaluations}</span>
               <span className="metric-label">Evaluaciones Completadas</span>
@@ -665,7 +670,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-purple">
-            <span className="metric-icon">🔬</span>
+            <span className="metric-icon"><Microscope size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{evalData.assignedProjects}</span>
               <span className="metric-label">Proyectos Asignados</span>
@@ -674,7 +679,7 @@ export const RoleDashboards: React.FC = () => {
           </div>
 
           <div className="metric-card bg-orange">
-            <span className="metric-icon">⚠️</span>
+            <span className="metric-icon"><AlertTriangle size={28} /></span>
             <div className="metric-info">
               <span className="metric-value">{evalData.evaluationsWithObservations}</span>
               <span className="metric-label">Con Observaciones</span>
@@ -735,8 +740,8 @@ export const RoleDashboards: React.FC = () => {
       return renderEvaluator(data as DashboardEvaluatorResponse);
     default:
       return (
-        <div className="unsupported-role-view">
-          <span className="unsupported-icon">⚠️</span>
+      <div className="unsupported-role-view">
+          <span className="unsupported-icon"><AlertTriangle size={48} color="#64748b" /></span>
           <h3>Rol no Soportado</h3>
           <p>El rol "{currentRole}" no tiene una vista de dashboard implementada.</p>
         </div>
