@@ -7,7 +7,7 @@ const navGroups = [
   {
     title: 'Principal',
     items: [
-      { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/' },
+      { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
       { id: 'metrics', label: 'Métricas y Reportes', icon: <BarChart2 size={20} />, path: '/metrics' },
     ]
   },

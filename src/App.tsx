@@ -7,6 +7,7 @@ import { LoginPage } from './pages/auth/LoginPage.tsx';
 import { RegisterPage } from './pages/auth/RegisterPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
+import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
 
 // Views from feature/postulaciones
@@ -77,6 +78,19 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Métricas y reportes */}
+          <Route
+            path="/metrics"
+            element={
+              <ProtectedRoute>
+                <DashboardContainer>
+                  <MetricsReportsPage />
+                </DashboardContainer>
+              </ProtectedRoute>
+            }
+          />
+
           {/* Compatibilidad con rutas antiguas del módulo dashboards */}
           <Route path="/dashboards" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboards/*" element={<Navigate to="/dashboard" replace />} />
@@ -92,6 +106,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/projects"
             element={
@@ -102,6 +117,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/projects/new"
             element={
@@ -112,6 +128,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/projects/assign"
             element={
@@ -122,6 +139,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/projects/evaluate"
             element={
@@ -132,6 +150,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/projects/:id"
             element={
@@ -142,6 +161,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/projects/audit"
             element={
@@ -152,6 +172,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/evaluations/my-evaluations"
             element={
@@ -162,6 +183,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/observations/panel"
             element={
@@ -172,6 +194,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/progressreports/review"
             element={
