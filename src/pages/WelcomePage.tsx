@@ -77,6 +77,16 @@ export const WelcomePage: React.FC = () => {
     proyectosCulminados: 58
   });
 
+  const [groups, setGroups] = useState([
+    { codigo: 'GINSOFT', nombre: 'Grupo de Investigación en Ingeniería de Software', investigaciones: 18, miembros: 3, publicaciones: 18 },
+    { codigo: 'RESEGTI', nombre: 'Red de Seguridad y Gestión de TI', investigaciones: 12, miembros: 2, publicaciones: 12 },
+    { codigo: 'GISI', nombre: 'Grupo de Investigación en Sistemas de Información', investigaciones: 15, miembros: 2, publicaciones: 15 },
+    { codigo: 'CICO', nombre: 'Círculo de Computación', investigaciones: 22, miembros: 4, publicaciones: 22 },
+    { codigo: 'EAP', nombre: 'Estadística Aplicada', investigaciones: 8, miembros: 1, publicaciones: 8 },
+    { codigo: 'MAP', nombre: 'Matemática Aplicada', investigaciones: 10, miembros: 1, publicaciones: 10 },
+    { codigo: 'EU', nombre: 'Emprendimiento Universitario', investigaciones: 6, miembros: 1, publicaciones: 6 }
+  ]);
+
   const researchLines = [
     {
       title: 'Computación',
@@ -132,20 +142,24 @@ export const WelcomePage: React.FC = () => {
       .catch((err) => {
         console.warn('Error loading public stats, using mock values', err);
       });
+
+    api.get<any[]>('/auth/public-groups')
+      .then((data) => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          const mappedGroups = data.map(g => ({
+            ...g,
+            investigaciones: g.publicaciones ?? 0
+          }));
+          setGroups(mappedGroups);
+        }
+      })
+      .catch((err) => {
+        console.warn('Error loading public groups, using mock values', err);
+      });
   }, []);
 
-  const groups = [
-    { codigo: 'GINSOFT', nombre: 'Grupo de Investigación en Ingeniería de Software', investigaciones: 18 },
-    { codigo: 'RESEGTI', nombre: 'Red de Seguridad y Gestión de TI', investigaciones: 12 },
-    { codigo: 'GISI', nombre: 'Grupo de Investigación en Sistemas de Información', investigaciones: 15 },
-    { codigo: 'CICO', nombre: 'Círculo de Computación', investigaciones: 22 },
-    { codigo: 'EAP', nombre: 'Estadística Aplicada', investigaciones: 8 },
-    { codigo: 'MAP', nombre: 'Matemática Aplicada', investigaciones: 10 },
-    { codigo: 'EU', nombre: 'Emprendimiento Universitario', investigaciones: 6 }
-  ];
-
   // Calcular el máximo de investigaciones para escalar las estrellas
-  const maxInvestigaciones = Math.max(...groups.map(g => g.investigaciones));
+  const maxInvestigaciones = groups.length > 0 ? Math.max(...groups.map(g => g.investigaciones ?? 0)) : 1;
 
   // Componente inline de estrellas de satisfacción/progreso
   const StarRating = ({ value, max, isActive }: { value: number; max: number; isActive: boolean }) => {
@@ -445,8 +459,24 @@ export const WelcomePage: React.FC = () => {
                       cursor: 'pointer',
                     }}
                   >
-                  <div className="group-card-badge">{group.codigo}</div>
+                    <div className="group-card-badge">{group.codigo}</div>
                     <div className="group-card-name">{group.nombre}</div>
+
+                    <div className="group-card-stats">
+                      <div className="group-stat-item" title="Investigadores / Miembros">
+                        <svg className="group-stat-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span className="group-stat-number">{group.miembros ?? 0}</span>
+                      </div>
+                      <div className="group-stat-item" title="Publicaciones / Proyectos">
+                        <svg className="group-stat-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        <span className="group-stat-number">{group.publicaciones ?? 0}</span>
+                      </div>
+                    </div>
+
                     <StarRating value={group.investigaciones} max={maxInvestigaciones} isActive={isActive} />
                   </div>
                 );
