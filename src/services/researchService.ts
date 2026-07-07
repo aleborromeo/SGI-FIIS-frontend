@@ -17,18 +17,18 @@ export interface ResearchLineRequest {
 
 export interface ResearchGroup {
   id: number;
-  code: string;
-  name: string;
-  acronym: string;
-  description: string;
-  coordinator?: any; // Assuming it returns a user object
+  groupCode: string;
+  groupName: string;
+  currentCoordinatorId?: number;
+  coordinatorFirstNames?: string;
+  coordinatorLastNames?: string;
+  active: boolean;
+  coordinator?: any; // kept for legacy compatibility if mapped, though backend returns flattened
 }
 
 export interface ResearchGroupRequest {
-  code: string;
-  name: string;
-  acronym: string;
-  description: string;
+  groupCode: string;
+  groupName: string;
 }
 
 export const researchService = {

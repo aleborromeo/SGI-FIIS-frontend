@@ -99,28 +99,25 @@ export const ResearchGroups: React.FC = () => {
                   backgroundColor: 'var(--secondary-container)',
                   color: 'var(--on-secondary-container)'
                 }}>
-                  {group.acronym || group.code}
+                  {group.groupCode}
                 </span>
               </div>
               
               <div>
                 <div className="text-label-sm" style={{ color: 'var(--primary)', fontWeight: 700, marginBottom: '4px' }}>
-                  {group.code}
+                  {group.groupCode}
                 </div>
                 <h3 className="text-title-md" style={{ color: 'var(--on-surface)', fontWeight: 700, marginBottom: '8px' }}>
-                  {group.name}
+                  {group.groupName}
                 </h3>
-                <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                  {group.description}
-                </p>
               </div>
 
               <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--outline-variant)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--on-surface-variant)' }}>
                   <Shield size={16} />
                   <span className="text-body-sm">
-                    {group.coordinator ? 
-                      `${group.coordinator.firstNames} ${group.coordinator.lastNames}` : 
+                    {group.currentCoordinatorId ? 
+                      `${group.coordinatorFirstNames || ''} ${group.coordinatorLastNames || ''}` : 
                       'Sin coordinador asignado'}
                   </span>
                 </div>

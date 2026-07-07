@@ -44,8 +44,8 @@ export const ResearchGroupDetail: React.FC = () => {
       setLines(linesData);
       setUsers(allUsers);
       
-      if (groupData.coordinator) {
-        setSelectedCoordinator(groupData.coordinator.id.toString());
+      if (groupData.currentCoordinatorId) {
+        setSelectedCoordinator(groupData.currentCoordinatorId.toString());
       }
     } catch (err: any) {
       setError(err.message || 'Error al cargar los detalles del grupo');
@@ -138,7 +138,7 @@ export const ResearchGroupDetail: React.FC = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
             <h1 className="text-display-sm" style={{ color: 'var(--on-surface)', margin: 0, fontWeight: 700 }}>
-              {group.name}
+              {group.groupName}
             </h1>
             <span style={{ 
               padding: '4px 12px', 
@@ -148,11 +148,11 @@ export const ResearchGroupDetail: React.FC = () => {
               backgroundColor: 'var(--secondary-container)',
               color: 'var(--on-secondary-container)'
             }}>
-              {group.acronym}
+              {group.groupCode}
             </span>
           </div>
           <p className="text-body-lg" style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
-            {group.code}
+            Código del Grupo
           </p>
         </div>
       </div>
@@ -198,7 +198,7 @@ export const ResearchGroupDetail: React.FC = () => {
           <div>
             <h3 className="text-title-md" style={{ marginBottom: '16px' }}>Descripción del Grupo</h3>
             <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '32px' }}>
-              {group.description || 'Sin descripción'}
+              Este grupo de investigación está enfocado en generar aportes significativos a la comunidad científica a través de proyectos especializados.
             </p>
 
             <h3 className="text-title-md" style={{ marginBottom: '16px', borderTop: '1px solid var(--outline-variant)', paddingTop: '24px' }}>
@@ -221,7 +221,7 @@ export const ResearchGroupDetail: React.FC = () => {
               <Button 
                 variant="primary" 
                 onClick={handleAssignCoordinator} 
-                disabled={!selectedCoordinator || submitting || (group.coordinator && group.coordinator.id.toString() === selectedCoordinator)}
+                disabled={!selectedCoordinator || submitting || (group.currentCoordinatorId?.toString() === selectedCoordinator)}
               >
                 Asignar
               </Button>

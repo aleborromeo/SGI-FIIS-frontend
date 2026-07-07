@@ -10,10 +10,8 @@ export const NewResearchGroup: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    code: '',
-    name: '',
-    acronym: '',
-    description: ''
+    groupCode: '',
+    groupName: ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -71,11 +69,11 @@ export const NewResearchGroup: React.FC = () => {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ display: 'flex', gap: '20px' }}>
             <div style={{ flex: 1 }}>
-              <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Código</label>
+              <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Código del Grupo</label>
               <input 
                 type="text" 
-                name="code"
-                value={formData.code}
+                name="groupCode"
+                value={formData.groupCode}
                 onChange={handleChange}
                 required
                 placeholder="Ej: GI-01"
@@ -84,43 +82,17 @@ export const NewResearchGroup: React.FC = () => {
             </div>
 
             <div style={{ flex: 1 }}>
-              <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Acrónimo</label>
+              <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Nombre del Grupo</label>
               <input 
                 type="text" 
-                name="acronym"
-                value={formData.acronym}
+                name="groupName"
+                value={formData.groupName}
                 onChange={handleChange}
                 required
-                placeholder="Ej: GIA"
+                placeholder="Ej: Grupo de Inteligencia Artificial"
                 style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)', fontSize: '16px' }} 
               />
             </div>
-          </div>
-
-          <div>
-            <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Nombre del Grupo</label>
-            <input 
-              type="text" 
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              placeholder="Ej: Grupo de Inteligencia Artificial"
-              style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)', fontSize: '16px' }} 
-            />
-          </div>
-
-          <div>
-            <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Descripción</label>
-            <textarea 
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-              rows={4}
-              placeholder="Descripción detallada del grupo de investigación..."
-              style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)', fontSize: '16px', resize: 'vertical' }} 
-            />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
