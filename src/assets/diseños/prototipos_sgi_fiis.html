@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prototipos SGI-FIIS</title>
+  <style>
+    :root{
+      --primary:#0d6efd;
+      --primary-dark:#084298;
+      --bg:#f4f6f9;
+      --card:#ffffff;
+      --line:#e5e7eb;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --success:#198754;
+      --warning:#f59e0b;
+      --danger:#dc3545;
+      --info:#0dcaf0;
+      --purple:#6f42c1;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .topbar{
+      height:58px;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 22px;
+      position:sticky;
+      top:0;
+      z-index:20;
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--primary-dark)}
+    .logo{
+      width:36px;height:36px;border-radius:10px;
+      background:linear-gradient(135deg,var(--primary),#004aad);
+      color:#fff;display:flex;align-items:center;justify-content:center;
+      font-weight:800;
+    }
+    .layout{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 58px)}
+    .sidebar{
+      background:#0b5ed7;color:#fff;padding:18px 14px;
+    }
+    .sidebar small{opacity:.8;display:block;margin:4px 10px 16px}
+    .nav button{
+      width:100%;
+      border:0;
+      background:transparent;
+      color:#fff;
+      padding:11px 12px;
+      border-radius:10px;
+      text-align:left;
+      cursor:pointer;
+      margin-bottom:4px;
+      font-weight:600;
+    }
+    .nav button:hover,.nav button.active{background:rgba(255,255,255,.18)}
+    .content{padding:24px}
+    .screen{display:none}
+    .screen.active{display:block}
+    .section-title{margin:0 0 6px;font-size:26px}
+    .section-subtitle{color:var(--muted);margin:0 0 22px}
+    .grid{display:grid;gap:16px}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .card{
+      background:var(--card);border:1px solid var(--line);border-radius:16px;
+      padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.05);
+    }
+    .metric{display:flex;justify-content:space-between;align-items:flex-start}
+    .metric .number{font-size:28px;font-weight:800;color:var(--primary-dark)}
+    .metric .label{color:var(--muted);font-size:14px}
+    .badge{
+      display:inline-block;padding:5px 9px;border-radius:999px;
+      font-size:12px;font-weight:700;
+    }
+    .b-success{background:#d1e7dd;color:#0f5132}
+    .b-warning{background:#fff3cd;color:#664d03}
+    .b-danger{background:#f8d7da;color:#842029}
+    .b-info{background:#cff4fc;color:#055160}
+    .b-purple{background:#ede7f6;color:#4527a0}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{border-bottom:1px solid var(--line);padding:12px;text-align:left;vertical-align:top}
+    th{background:#f8fafc;color:#374151}
+    .btn{
+      border:0;border-radius:10px;padding:9px 13px;font-weight:700;cursor:pointer;
+      background:var(--primary);color:#fff;display:inline-block;text-decoration:none;
+    }
+    .btn.secondary{background:#e9ecef;color:#1f2937}
+    .btn.success{background:var(--success)}
+    .btn.warning{background:var(--warning);color:#111827}
+    .btn.danger{background:var(--danger)}
+    .btn.outline{background:#fff;color:var(--primary);border:1px solid var(--primary)}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .field label{display:block;font-weight:700;margin-bottom:6px;font-size:14px}
+    .field input,.field select,.field textarea{
+      width:100%;border:1px solid #d1d5db;border-radius:10px;padding:10px;background:#fff;
+      font-family:inherit;
+    }
+    .field textarea{min-height:92px;resize:vertical}
+    .full{grid-column:1/-1}
+    .workflow{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 0}
+    .step{
+      background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:13px;
+    }
+    .step.done{background:#d1e7dd;color:#0f5132;border-color:#badbcc}
+    .step.current{background:#cfe2ff;color:#084298;border-color:#9ec5fe;font-weight:700}
+    .login-wrap{
+      display:grid;grid-template-columns:1.3fr .7fr;min-height:650px;background:#fff;border-radius:20px;overflow:hidden;
+      border:1px solid var(--line);box-shadow:0 12px 35px rgba(15,23,42,.08)
+    }
+    .login-left{
+      background:linear-gradient(135deg,#0d6efd,#004aad);
+      color:#fff;padding:58px;display:flex;flex-direction:column;justify-content:center;
+    }
+    .login-card{padding:58px;display:flex;flex-direction:column;justify-content:center;background:#f8fafc}
+    .feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:22px}
+    .feature{border:1px solid rgba(255,255,255,.35);border-radius:12px;padding:14px;background:rgba(255,255,255,.10)}
+    .timeline{position:relative;padding-left:22px}
+    .timeline:before{content:"";position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:#d1d5db}
+    .tl-item{position:relative;margin:0 0 15px}
+    .tl-item:before{content:"";position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--primary)}
+    .note{border-left:4px solid var(--primary);background:#eef5ff;padding:14px;border-radius:12px;color:#1e3a8a}
+    .wireframe-label{
+      text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:8px
+    }
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .prototype-note{font-size:12px;color:var(--muted);margin-top:6px}
+    .mobile-hint{display:none}
+    @media(max-width:980px){
+      .layout{grid-template-columns:1fr}
+      .sidebar{position:relative}
+      .grid-2,.grid-3,.grid-4,.form-grid,.login-wrap{grid-template-columns:1fr}
+      .mobile-hint{display:block;background:#fff3cd;color:#664d03;padding:10px;border-radius:10px;margin-bottom:12px}
+    }
+    @media print{
+      .sidebar,.topbar{display:none}
+      .layout{display:block}
+      .screen{display:block;page-break-after:always}
+      .content{padding:0}
+      .card,.login-wrap{box-shadow:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><div class="logo">SGI</div><div>Sistema de Gestión de Investigación FIIS</div></div>
+    <div><span class="badge b-info">Prototipo navegable</span></div>
+  </div>
+  <div class="layout">
+    <aside class="sidebar">
+      <strong>Prototipos por módulo</strong>
+      <small>Seleccione una pantalla para revisar el flujo institucional.</small>
+      <div class="nav">
+        <button class="active" onclick="showScreen('login', this)">01. Acceso institucional</button>
+        <button onclick="showScreen('dashboard', this)">02. Dashboard general</button>
+        <button onclick="showScreen('convocatorias', this)">03. Convocatorias</button>
+        <button onclick="showScreen('postulacion', this)">04. Postular proyecto</button>
+        <button onclick="showScreen('misproyectos', this)">05. Mis proyectos</button>
+        <button onclick="showScreen('tramites', this)">06. Mis trámites</button>
+        <button onclick="showScreen('coordinador', this)">07. Coordinador</button>
+        <button onclick="showScreen('director', this)">08. Director Investigación</button>
+        <button onclick="showScreen('decano', this)">09. Decanato</button>
+        <button onclick="showScreen('resolucion', this)">10. Resolución y cronograma</button>
+        <button onclick="showScreen('informes', this)">11. Informes trimestrales</button>
+        <button onclick="showScreen('documentos', this)">12. Documentos y auditoría</button>
+      </div>
+    </aside>
+    <main class="content">
+      <div class="mobile-hint">En pantallas pequeñas el prototipo se muestra en una sola columna.</div>
+
+      <section id="login" class="screen active">
+        <div class="wireframe-label">Pantalla 01</div>
+        <h1 class="section-title">Acceso institucional</h1>
+        <p class="section-subtitle">Ingreso para docentes investigadores, estudiantes/tesistas, coordinadores, director y decano.</p>
+        <div class="login-wrap">
+          <div class="login-left">
+            <div class="logo" style="width:54px;height:54px;margin-bottom:22px">SGI</div>
+            <h2 style="font-size:32px;margin:0 0 12px">Sistema de Gestión de Investigación FIIS</h2>
+            <p style="line-height:1.6;max-width:680px">Plataforma para registrar, dar seguimiento, evaluar y aprobar proyectos, planes de tesis, informes trimestrales, informes finales y resoluciones de investigación.</p>
+            <div class="feature-grid">
+              <div class="feature"><strong>Docentes investigadores</strong><br><small>Postulación, proyectos, informes y documentos.</small></div>
+              <div class="feature"><strong>Estudiantes / Tesistas</strong><br><small>Registro y seguimiento del plan de tesis.</small></div>
+              <div class="feature"><strong>Coordinadores</strong><br><small>Revisión inicial por grupo de investigación.</small></div>
+              <div class="feature"><strong>Dirección y Decanato</strong><br><small>Aprobación, resolución y control institucional.</small></div>
+            </div>
+          </div>
+          <div class="login-card">
+            <span class="badge b-info" style="width:max-content">Acceso institucional</span>
+            <h2>Iniciar sesión</h2>
+            <div class="field"><label>Correo institucional</label><input placeholder="usuario@unas.edu.pe"></div><br>
+            <div class="field"><label>Contraseña</label><input type="password" placeholder="Ingrese su contraseña"></div><br>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px">
+              <label><input type="checkbox"> Recordarme</label>
+              <a href="#">¿Olvidó su contraseña?</a>
+            </div><br>
+            <button class="btn" style="width:100%">Ingresar al sistema</button>
+            <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
+            <small><strong>Formato sugerido:</strong><br>primer_nombre.primer_apellido@unas.edu.pe</small>
+          </div>
+        </div>
+      </section>
+
+      <section id="dashboard" class="screen">
+        <div class="wireframe-label">Pantalla 02</div>
+        <h1 class="section-title">Dashboard general</h1>
+        <p class="section-subtitle">Vista inicial según rol del usuario autenticado.</p>
+        <div class="grid grid-4">
+          <div class="card metric"><div><div class="number">12</div><div class="label">Proyectos activos</div></div><span class="badge b-success">+3</span></div>
+          <div class="card metric"><div><div class="number">07</div><div class="label">Trámites pendientes</div></div><span class="badge b-warning">Revisión</span></div>
+          <div class="card metric"><div><div class="number">04</div><div class="label">Informes por vencer</div></div><span class="badge b-danger">Alerta</span></div>
+          <div class="card metric"><div><div class="number">18</div><div class="label">Resoluciones emitidas</div></div><span class="badge b-info">2026</span></div>
+        </div>
+        <div class="grid grid-2" style="margin-top:16px">
+          <div class="card">
+            <h3>Flujo institucional</h3>
+            <div class="workflow">
+              <span class="step done">Investigador</span>
+              <span class="step current">Coordinador</span>
+              <span class="step">Director</span>
+              <span class="step">Decano</span>
+              <span class="step">Resolución</span>
+              <span class="step">Seguimiento</span>
+            </div>
+            <p class="prototype-note">Cada trámite muestra el estado, el responsable actual y las observaciones.</p>
+          </div>
+          <div class="card">
+            <h3>Alertas</h3>
+            <div class="timeline">
+              <div class="tl-item"><strong>Informe trimestral pendiente</strong><br><small>Proyecto “Sistema de detección de enfermedades...” vence en 10 días.</small></div>
+              <div class="tl-item"><strong>Proyecto observado</strong><br><small>Debe subsanar presupuesto y cronograma.</small></div>
+              <div class="tl-item"><strong>Convocatoria activa</strong><br><small>Fondo concursable FIIS 2026 disponible.</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="convocatorias" class="screen">
+        <div class="wireframe-label">Pantalla 03</div>
+        <h1 class="section-title">Convocatorias disponibles</h1>
+        <p class="section-subtitle">El investigador visualiza convocatorias vigentes y acciones permitidas.</p>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px">
+            <div>
+              <strong>Filtros</strong>
+              <p class="prototype-note">Tipo, vigencia, línea de investigación y estado.</p>
+            </div>
+            <button class="btn secondary">Limpiar filtros</button>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Tipo</label><select><option>Todos</option><option>Proyecto de investigación</option><option>Informe trimestral</option><option>Informe final</option></select></div>
+            <div class="field"><label>Búsqueda</label><input placeholder="Buscar convocatoria"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <table>
+            <thead><tr><th>Convocatoria</th><th>Tipo</th><th>Vigencia</th><th>Acciones permitidas</th><th>Estado</th><th>Acción</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Convocatoria de Proyectos FIIS 2026</strong><br><small>Investigación docente y grupos de investigación.</small></td>
+                <td>Proyecto de investigación</td>
+                <td>01/06/2026 - 30/06/2026</td>
+                <td><span class="badge b-info">Registrar nuevo proyecto</span></td>
+                <td><span class="badge b-success">Vigente</span></td>
+                <td><button class="btn">Postular</button></td>
+              </tr>
+              <tr>
+                <td><strong>Presentación de avance trimestral</strong><br><small>Para proyectos con resolución aprobada.</small></td>
+                <td>Trimestral</td>
+                <td>01/07/2026 - 15/07/2026</td>
+                <td><span class="badge b-warning">Presentar avance</span></td>
+                <td><span class="badge b-info">Próxima</span></td>
+                <td><button class="btn secondary">Ver detalle</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="postulacion" class="screen">
+        <div class="wireframe-label">Pantalla 04</div>
+        <h1 class="section-title">Postular proyecto de investigación</h1>
+        <p class="section-subtitle">Formulario para registrar la primera versión del proyecto y enviarlo a revisión.</p>
+        <div class="note"><strong>Convocatoria:</strong> Convocatoria de Proyectos FIIS 2026. El trámite iniciará en estado <strong>PENDIENTE_COORDINADOR</strong>.</div>
+        <div class="card" style="margin-top:16px">
+          <h3>Datos generales del proyecto</h3>
+          <div class="form-grid">
+            <div class="field full"><label>Título del proyecto</label><input placeholder="Ingrese el título completo"></div>
+            <div class="field"><label>Línea de investigación</label><select><option>Ingeniería de Software</option><option>Inteligencia Artificial</option><option>Redes y Seguridad</option><option>Sistemas de Información</option></select></div>
+            <div class="field"><label>Tipo de proyecto</label><select><option>Docente investigador</option><option>Grupo de investigación</option><option>Iniciación científica</option></select></div>
+            <div class="field full"><label>Resumen ejecutivo</label><textarea placeholder="Problema, objetivo, metodología y producto esperado"></textarea></div>
+            <div class="field"><label>Fecha de inicio propuesta</label><input type="date"></div>
+            <div class="field"><label>Fecha de fin propuesta</label><input type="date"></div>
+            <div class="field"><label>Presupuesto solicitado</label><input placeholder="S/ 0.00"></div>
+            <div class="field"><label>¿Recibirá apoyo FIF?</label><select><option>Sí</option><option>No</option></select></div>
+            <div class="field full"><label>Archivo del proyecto</label><input type="file"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Equipo de investigación</h3>
+          <table>
+            <thead><tr><th>Integrante</th><th>Rol</th><th>Correo</th><th>Condición</th></tr></thead>
+            <tbody>
+              <tr><td>Docente responsable</td><td>Investigador principal</td><td>usuario@unas.edu.pe</td><td><span class="badge b-success">Activo</span></td></tr>
+              <tr><td>Co-investigador</td><td>Miembro</td><td>coautor@unas.edu.pe</td><td><span class="badge b-info">Por confirmar</span></td></tr>
+            </tbody>
+          </table>
+          <br>
+          <div class="actions">
+            <button class="btn secondary">Guardar borrador</button>
+            <button class="btn">Enviar a coordinador</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="misproyectos" class="screen">
+        <div class="wireframe-label">Pantalla 05</div>
+        <h1 class="section-title">Mis proyectos</h1>
+        <p class="section-subtitle">Listado de proyectos postulados, aprobados, observados y en seguimiento.</p>
+        <div class="card">
+          <table>
+            <thead><tr><th>Código</th><th>Proyecto</th><th>Resolución</th><th>Duración</th><th>Estado</th><th>Avance</th><th>Acción</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>FIIS-2026-001</td>
+                <td><strong>Sistema de detección automática de enfermedades en hojas de banana usando CNN</strong><br><small>Línea: Inteligencia Artificial</small></td>
+                <td>R.D. N.° 045-2026-FIIS</td>
+                <td>12 meses</td>
+                <td><span class="badge b-success">Aprobado</span></td>
+                <td>25%</td>
+                <td><button class="btn secondary">Ver</button></td>
+              </tr>
+              <tr>
+                <td>FIIS-2026-002</td>
+                <td><strong>Gestión de trazabilidad de proyectos de tesis</strong><br><small>Línea: Ingeniería de Software</small></td>
+                <td>--</td>
+                <td>--</td>
+                <td><span class="badge b-warning">En revisión</span></td>
+                <td>--</td>
+                <td><button class="btn secondary">Ver trámite</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="grid grid-2" style="margin-top:16px">
+          <div class="card">
+            <h3>Cronograma trimestral</h3>
+            <div class="workflow">
+              <span class="step done">Trimestre 1</span>
+              <span class="step current">Trimestre 2</span>
+              <span class="step">Trimestre 3</span>
+              <span class="step">Informe final</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Alerta de artículo final</h3>
+            <p>Cuando falte un trimestre para finalizar, el sistema solicita evidencia de preparación del artículo científico.</p>
+            <span class="badge b-warning">Regla FIF activa</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="tramites" class="screen">
+        <div class="wireframe-label">Pantalla 06</div>
+        <h1 class="section-title">Mis trámites</h1>
+        <p class="section-subtitle">Seguimiento del flujo de aprobación de proyectos, informes y documentos.</p>
+        <div class="card">
+          <table>
+            <thead><tr><th>Trámite</th><th>Proyecto</th><th>Estado actual</th><th>Revisor actual</th><th>Última observación</th><th>Acción</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Postulación de proyecto</td>
+                <td>Sistema de detección automática...</td>
+                <td><span class="badge b-warning">PENDIENTE_COORDINADOR</span></td>
+                <td>Coordinador de grupo</td>
+                <td>Sin observaciones</td>
+                <td><button class="btn secondary">Ver detalle</button></td>
+              </tr>
+              <tr>
+                <td>Informe trimestral</td>
+                <td>Gestión de trazabilidad...</td>
+                <td><span class="badge b-danger">OBSERVADO</span></td>
+                <td>Director de Investigación</td>
+                <td>Adjuntar evidencias de actividades realizadas.</td>
+                <td><button class="btn warning">Subsanar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="coordinador" class="screen">
+        <div class="wireframe-label">Pantalla 07</div>
+        <h1 class="section-title">Bandeja del Coordinador de Grupo</h1>
+        <p class="section-subtitle">Revisión inicial de proyectos y documentos antes de pasar a Dirección de Investigación.</p>
+        <div class="card">
+          <table>
+            <thead><tr><th>Solicitante</th><th>Tipo</th><th>Proyecto</th><th>Documentos</th><th>Estado</th><th>Decisión</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Docente investigador</td>
+                <td>Postulación</td>
+                <td>Sistema de detección automática...</td>
+                <td><span class="badge b-info">Proyecto PDF</span> <span class="badge b-info">Anexos</span></td>
+                <td><span class="badge b-warning">Pendiente</span></td>
+                <td class="actions"><button class="btn success">Aprobar</button><button class="btn danger">Observar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Formulario de observación</h3>
+          <div class="field full"><label>Observación técnica o documental</label><textarea placeholder="Describir observaciones para subsanación"></textarea></div><br>
+          <button class="btn danger">Enviar observación</button>
+        </div>
+      </section>
+
+      <section id="director" class="screen">
+        <div class="wireframe-label">Pantalla 08</div>
+        <h1 class="section-title">Dirección de Investigación</h1>
+        <p class="section-subtitle">Gestión de convocatorias, revisión de proyectos y derivación a Decanato.</p>
+        <div class="grid grid-3">
+          <div class="card metric"><div><div class="number">03</div><div class="label">Convocatorias activas</div></div><span class="badge b-success">Vigentes</span></div>
+          <div class="card metric"><div><div class="number">05</div><div class="label">Proyectos para revisión</div></div><span class="badge b-warning">Pendientes</span></div>
+          <div class="card metric"><div><div class="number">02</div><div class="label">Informes finales</div></div><span class="badge b-info">Revisar</span></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Crear / editar convocatoria</h3>
+          <div class="form-grid">
+            <div class="field full"><label>Título</label><input placeholder="Nombre de la convocatoria"></div>
+            <div class="field"><label>Tipo</label><select><option>PROYECTO_INVESTIGACION</option><option>TRIMESTRAL</option><option>ANUAL</option><option>FONDO_CONCURSABLE</option></select></div>
+            <div class="field"><label>Vigencia</label><input placeholder="01/06/2026 - 30/06/2026"></div>
+            <div class="field full"><label>Acciones permitidas</label>
+              <label><input type="checkbox" checked> Registrar nuevo proyecto</label>
+              <label><input type="checkbox"> Presentar avance trimestral</label>
+              <label><input type="checkbox"> Presentar informe final</label>
+            </div>
+          </div><br>
+          <button class="btn">Guardar convocatoria</button>
+        </div>
+      </section>
+
+      <section id="decano" class="screen">
+        <div class="wireframe-label">Pantalla 09</div>
+        <h1 class="section-title">Decanato</h1>
+        <p class="section-subtitle">Aprobación final del trámite y emisión de resolución institucional.</p>
+        <div class="card">
+          <table>
+            <thead><tr><th>Trámite</th><th>Proyecto</th><th>Solicitante</th><th>Revisión previa</th><th>Estado</th><th>Acción</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Proyecto de investigación</td>
+                <td>Sistema de detección automática...</td>
+                <td>Docente investigador</td>
+                <td><span class="badge b-success">Director aprobado</span></td>
+                <td><span class="badge b-warning">PENDIENTE_DECANO</span></td>
+                <td><button class="btn">Emitir resolución</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Decisión del Decano</h3>
+          <div class="form-grid">
+            <div class="field"><label>Resultado</label><select><option>Aprobar</option><option>Observar</option><option>Rechazar</option></select></div>
+            <div class="field"><label>Fecha de decisión</label><input type="date"></div>
+            <div class="field full"><label>Observación o sustento</label><textarea></textarea></div>
+          </div><br>
+          <div class="actions"><button class="btn success">Aprobar y generar resolución</button><button class="btn danger">Observar</button></div>
+        </div>
+      </section>
+
+      <section id="resolucion" class="screen">
+        <div class="wireframe-label">Pantalla 10</div>
+        <h1 class="section-title">Registro de resolución y ejecución</h1>
+        <p class="section-subtitle">Datos administrativos para activar el proyecto y generar el cronograma de informes trimestrales.</p>
+        <div class="card">
+          <h3>Datos de resolución</h3>
+          <div class="form-grid">
+            <div class="field"><label>Número de resolución</label><input placeholder="R.D. N.° 045-2026-FIIS"></div>
+            <div class="field"><label>Fecha de emisión</label><input type="date"></div>
+            <div class="field full"><label>Título de la resolución</label><input placeholder="Aprobar el proyecto de investigación..."></div>
+            <div class="field"><label>Emisor</label><input value="Decanato FIIS"></div>
+            <div class="field"><label>Archivo PDF</label><input type="file"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Datos de ejecución del proyecto</h3>
+          <div class="form-grid">
+            <div class="field"><label>Inicio de ejecución</label><input type="date"></div>
+            <div class="field"><label>Fin de ejecución</label><input type="date"></div>
+            <div class="field"><label>Duración en meses</label><input value="12"></div>
+            <div class="field"><label>Recibe FIF</label><select><option>Sí</option><option>No</option></select></div>
+            <div class="field"><label>Estado FIF</label><select><option>Activo</option><option>Suspendido</option><option>No aplica</option></select></div>
+            <div class="field"><label>Requiere artículo final</label><select><option>Sí</option><option>No</option></select></div>
+          </div><br>
+          <button class="btn success">Aprobar proyecto y generar cronograma</button>
+        </div>
+      </section>
+
+      <section id="informes" class="screen">
+        <div class="wireframe-label">Pantalla 11</div>
+        <h1 class="section-title">Informes trimestrales y final</h1>
+        <p class="section-subtitle">Control del cumplimiento de avances, evidencias, observaciones y suspensión FIF.</p>
+        <div class="card">
+          <table>
+            <thead><tr><th>Periodo</th><th>Fecha límite</th><th>Documento</th><th>Estado</th><th>Observación</th><th>Acción</th></tr></thead>
+            <tbody>
+              <tr><td>Trimestre 1</td><td>30/09/2026</td><td>avance_t1.pdf</td><td><span class="badge b-success">Aprobado</span></td><td>Conforme</td><td><button class="btn secondary">Ver</button></td></tr>
+              <tr><td>Trimestre 2</td><td>31/12/2026</td><td>--</td><td><span class="badge b-warning">Pendiente</span></td><td>Faltan evidencias</td><td><button class="btn">Subir informe</button></td></tr>
+              <tr><td>Trimestre 3</td><td>31/03/2027</td><td>--</td><td><span class="badge b-info">Programado</span></td><td>--</td><td><button class="btn secondary">Ver</button></td></tr>
+              <tr><td>Informe final</td><td>30/06/2027</td><td>--</td><td><span class="badge b-purple">Artículo requerido</span></td><td>Debe adjuntar artículo o constancia de envío</td><td><button class="btn secondary">Ver regla</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note" style="margin-top:16px"><strong>Regla institucional:</strong> La omisión de informes trimestrales puede suspender el apoyo FIF hasta la regularización del avance.</div>
+      </section>
+
+      <section id="documentos" class="screen">
+        <div class="wireframe-label">Pantalla 12</div>
+        <h1 class="section-title">Documentos y auditoría</h1>
+        <p class="section-subtitle">Repositorio documental del trámite, historial de acciones y trazabilidad.</p>
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>Documentos del trámite</h3>
+            <table>
+              <thead><tr><th>Documento</th><th>Subido por</th><th>Fecha</th><th>Acción</th></tr></thead>
+              <tbody>
+                <tr><td>Proyecto inicial.pdf</td><td>Investigador</td><td>08/06/2026</td><td><button class="btn secondary">Descargar</button></td></tr>
+                <tr><td>Resolución.pdf</td><td>Decanato</td><td>20/06/2026</td><td><button class="btn secondary">Descargar</button></td></tr>
+                <tr><td>Informe_T1.pdf</td><td>Investigador</td><td>30/09/2026</td><td><button class="btn secondary">Descargar</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <h3>Historial de trazabilidad</h3>
+            <div class="timeline">
+              <div class="tl-item"><strong>Postulación enviada</strong><br><small>08/06/2026 10:25 - Docente investigador</small></div>
+              <div class="tl-item"><strong>Aprobado por coordinador</strong><br><small>09/06/2026 15:40 - Coordinador de grupo</small></div>
+              <div class="tl-item"><strong>Aprobado por dirección</strong><br><small>12/06/2026 11:10 - Director de Investigación</small></div>
+              <div class="tl-item"><strong>Resolución emitida</strong><br><small>20/06/2026 09:30 - Decanato</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+  <script>
+    function showScreen(id, btn){
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+services:
+  db_fiis:
+    image: postgres:15-alpine
+    container_name: sgifiis-postgres-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-fiis_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_fiis_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-fiis_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - sgifiis-network
+
+  api_fiis:
+    build: ../SGI-FIIS-backend
+    container_name: sgifiis-backend-api
+    ports:
+      - "8085:8080"
+    env_file:
+      - ../SGI-FIIS-backend/.env
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_fiis:5432/${DB_NAME:-fiis_db}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-postgres}
+      - SPRING_FLYWAY_ENABLED=true
+    depends_on:
+      db_fiis:
+        condition: service_healthy
+    volumes:
+      - uploads_fiis_data:/app/uploads-fiis
+    networks:
+      - sgifiis-network
+
+  frontend_fiis:
+    build: .
+    container_name: sgifiis-frontend
+    ports:
+      - "8086:80"
+    depends_on:
+      - api_fiis
+    networks:
+      - sgifiis-network
+
+volumes:
+  postgres_fiis_data:
+  uploads_fiis_data:
+
+networks:
+  sgifiis-network:
+    driver: bridge
