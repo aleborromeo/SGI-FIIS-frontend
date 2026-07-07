@@ -17,6 +17,7 @@ export const NewProposal: React.FC = () => {
     title: '',
     abstract: ''
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [errorMsg, setErrorMsg] = useState('');
@@ -45,17 +46,25 @@ export const NewProposal: React.FC = () => {
     try {
       if (formData.type === 'tesis') {
         await thesisService.createPlan({
-          title: formData.title,
-          // map other fields
-        });
+          tituloTesis: formData.title,
+          resumen: formData.abstract || 'Sin resumen',
+          idLinea: 1,
+          idGrupo: 1
+        } as any);
         navigate('/thesis'); // redirect to thesis dashboard
       } else {
         await projectService.create({
           title: formData.title,
-          line: formData.line,
-          type: formData.type,
-          status: 'Activo'
-        });
+          summary: formData.abstract || 'Sin resumen',
+          generalObjective: 'Objetivo general predeterminado',
+          researchLineId: 1, // dummy id
+          budget: 1000.0,
+          startDate: '2026-01-01',
+          endDate: '2026-12-31',
+          executionPlace: 'FIIS UNAS',
+          responsibleId: 1, // normally fetched from user
+          researchGroupId: 1 // dummy group
+        } as any);
         navigate('/projects');
       }
     } catch (error: any) {
@@ -150,8 +159,22 @@ export const NewProposal: React.FC = () => {
             </p>
             <div style={{ position: 'relative', display: 'inline-block' }}>
               <Button variant="secondary">Seleccionar Archivo</Button>
-              <input type="file" style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} />
+              <input 
+                type="file" 
+                accept=".pdf"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setSelectedFile(e.target.files[0]);
+                  }
+                }}
+                style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} 
+              />
             </div>
+            {selectedFile && (
+              <div style={{ marginTop: '16px', padding: '12px', backgroundColor: 'var(--primary-fixed)', borderRadius: 'var(--radius-md)', color: 'var(--on-primary-fixed)' }}>
+                <strong>Archivo seleccionado:</strong> {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+              </div>
+            )}
             <p className="text-caption" style={{ marginTop: '16px', color: 'var(--on-surface-variant)' }}>Tamaño máximo: 10MB. Solo formato PDF.</p>
           </div>
         </CardContent>

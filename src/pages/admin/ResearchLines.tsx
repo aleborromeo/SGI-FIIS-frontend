@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, BookOpen, CheckCircle, XCircle } from 'lucide-react';
-import { researchService, ResearchLine } from '../../services/researchService';
-import { Spinner } from '../../components/ui/Spinner';
+import { researchService, type ResearchLine } from '../../services/researchService';
+import { Spinner } from '../../components/common/Spinner';
 
 export const ResearchLines: React.FC = () => {
   const navigate = useNavigate();

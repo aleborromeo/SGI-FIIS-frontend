@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, Shield } from 'lucide-react';
-import { researchService, ResearchGroup } from '../../services/researchService';
-import { Spinner } from '../../components/ui/Spinner';
+import { researchService, type ResearchGroup } from '../../services/researchService';
+import { Spinner } from '../../components/common/Spinner';
 
 export const ResearchGroups: React.FC = () => {
   const navigate = useNavigate();
