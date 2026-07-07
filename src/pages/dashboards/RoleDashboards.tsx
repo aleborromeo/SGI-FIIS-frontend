@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
   BarChart2,
@@ -75,6 +76,180 @@ interface DashboardLayoutProps {
   alerts?: AlertItem[];
 }
 
+interface QuickAction {
+  to: string;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+  tone: MetricTone;
+}
+
+function getQuickActions(role: string | null): QuickAction[] {
+  switch (role) {
+    case 'ADMIN':
+      return [
+        {
+          to: '/projects',
+          label: 'Gestionar proyectos',
+          description: 'Consultar proyectos registrados y su estado actual.',
+          icon: FileText,
+          tone: 'blue',
+        },
+        {
+          to: '/projects/assign',
+          label: 'Asignar revisores',
+          description: 'Derivar proyectos o trámites para evaluación.',
+          icon: ClipboardList,
+          tone: 'purple',
+        },
+        {
+          to: '/progressreports/review',
+          label: 'Revisar informes',
+          description: 'Supervisar informes de avance pendientes.',
+          icon: BarChart2,
+          tone: 'orange',
+        },
+        {
+          to: '/projects/audit',
+          label: 'Auditoría de proyectos',
+          description: 'Revisar trazabilidad y cambios del proceso.',
+          icon: Scale,
+          tone: 'green',
+        },
+      ];
+
+    case 'EVALUADOR':
+      return [
+        {
+          to: '/evaluations/my-evaluations',
+          label: 'Mis evaluaciones',
+          description: 'Revisar evaluaciones asignadas y pendientes.',
+          icon: ClipboardList,
+          tone: 'blue',
+        },
+        {
+          to: '/projects/evaluate',
+          label: 'Evaluar proyecto',
+          description: 'Registrar resultado, puntaje u observaciones.',
+          icon: CheckCircle,
+          tone: 'green',
+        },
+        {
+          to: '/observations/panel',
+          label: 'Observaciones',
+          description: 'Consultar observaciones realizadas o recibidas.',
+          icon: AlertTriangle,
+          tone: 'orange',
+        },
+      ];
+
+    case 'DOCENTE_INVESTIGADOR':
+      return [
+        {
+          to: '/projects',
+          label: 'Mis proyectos',
+          description: 'Consultar proyectos donde participa como responsable o integrante.',
+          icon: Microscope,
+          tone: 'blue',
+        },
+        {
+          to: '/projects/new',
+          label: 'Nueva propuesta',
+          description: 'Registrar una nueva propuesta de investigación.',
+          icon: FileText,
+          tone: 'green',
+        },
+        {
+          to: '/observations/panel',
+          label: 'Mis observaciones',
+          description: 'Revisar observaciones asociadas a sus trámites.',
+          icon: AlertTriangle,
+          tone: 'orange',
+        },
+      ];
+
+    case 'COORDINADOR_GRUPO':
+      return [
+        {
+          to: '/projects',
+          label: 'Proyectos del grupo',
+          description: 'Supervisar proyectos vinculados al grupo de investigación.',
+          icon: Building,
+          tone: 'blue',
+        },
+        {
+          to: '/progressreports/review',
+          label: 'Informes del grupo',
+          description: 'Revisar avances e información enviada por integrantes.',
+          icon: BookOpen,
+          tone: 'purple',
+        },
+        {
+          to: '/observations/panel',
+          label: 'Observaciones',
+          description: 'Atender observaciones de trámites del grupo.',
+          icon: AlertTriangle,
+          tone: 'orange',
+        },
+      ];
+
+    case 'DIRECTOR_INVESTIGACION':
+    case 'DECANO':
+      return [
+        {
+          to: '/projects',
+          label: 'Proyectos institucionales',
+          description: 'Revisar proyectos registrados en la facultad.',
+          icon: Building2,
+          tone: 'blue',
+        },
+        {
+          to: '/progressreports/review',
+          label: 'Informes pendientes',
+          description: 'Consultar informes que requieren revisión jerárquica.',
+          icon: BarChart2,
+          tone: 'orange',
+        },
+        {
+          to: '/projects/audit',
+          label: 'Trazabilidad',
+          description: 'Ver seguimiento y auditoría de procesos.',
+          icon: Scale,
+          tone: 'green',
+        },
+      ];
+
+    case 'ESTUDIANTE':
+      return [
+        {
+          to: '/projects/new',
+          label: 'Nueva propuesta',
+          description: 'Iniciar el registro de una propuesta o trámite académico.',
+          icon: GraduationCap,
+          tone: 'blue',
+        },
+        {
+          to: '/observations/panel',
+          label: 'Mis observaciones',
+          description: 'Consultar observaciones pendientes de atención.',
+          icon: AlertTriangle,
+          tone: 'orange',
+        },
+      ];
+
+    default:
+      return [
+        {
+          to: '/projects',
+          label: 'Ver proyectos',
+          description: 'Consultar información disponible del sistema.',
+          icon: FolderOpen,
+          tone: 'blue',
+        },
+      ];
+  }
+}
+
 function formatNumber(value: number | null | undefined): string {
   return new Intl.NumberFormat('es-PE').format(Number(value ?? 0));
 }
@@ -134,6 +309,45 @@ function translateAlertDescription(description: string): string {
     .replace(/pending/gi, 'pendiente');
 
   return translated.replace(/^1 trámites/i, '1 trámite');
+}
+
+function QuickActionsSection() {
+  const { currentRole } = useContext(AuthContext);
+  const actions = getQuickActions(currentRole);
+
+  return (
+    <section className="quick-actions-section">
+      <div className="quick-actions-header">
+        <div>
+          <h3>Accesos rápidos</h3>
+          <p>Atajos operativos según tu rol dentro del sistema.</p>
+        </div>
+      </div>
+
+      <div className="quick-actions-grid">
+        {actions.map((action) => {
+          const Icon = action.icon;
+
+          return (
+            <Link
+              key={`${action.to}-${action.label}`}
+              to={action.to}
+              className={`quick-action-card quick-action-${action.tone}`}
+            >
+              <span className="quick-action-icon">
+                <Icon size={22} />
+              </span>
+
+              <div>
+                <strong>{action.label}</strong>
+                <p>{action.description}</p>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 function MetricCard({ icon: Icon, value, label, sublabel, tone }: MetricCardProps) {
@@ -235,6 +449,8 @@ function DashboardLayout({
           <AlertsList alerts={alerts} />
         </div>
       </div>
+
+      <QuickActionsSection />
     </div>
   );
 }
