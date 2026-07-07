@@ -1,344 +1,217 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getDashboardData } from '../../services/dashboardService';
-import type { DashboardData } from '../../types/dashboard.types';
+import { getDashboardSummary } from '../../services/dashboardService';
+import type { BackendDashboardMe } from '../../types/dashboard.types';
+import { DashboardModuleNav } from './DashboardModuleNav';
 import '../../styles/dashboards.css';
 
-function DashboardPage() {
-  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat('es-PE').format(value);
+}
+
+function translateAlertTitle(title: string): string {
+  const normalized = title.toLowerCase();
+
+  if (normalized.includes('pending')) return 'Trámites pendientes';
+  if (normalized.includes('review')) return 'Revisión pendiente';
+
+  return title;
+}
+
+function translateAlertDescription(description: string): string {
+  return description
+    .replace('procedure(s)', 'trámite(s)')
+    .replace('procedures', 'trámites')
+    .replace('unresolved', 'sin resolver');
+}
+
+export default function DashboardPage() {
+  const [data, setData] = useState<BackendDashboardMe | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    getDashboardData().then(setDashboard);
+    let mounted = true;
+
+    async function loadDashboard() {
+      try {
+        setLoading(true);
+        setErrorMessage('');
+
+        const response = await getDashboardSummary();
+
+        if (mounted) {
+          setData(response);
+        }
+      } catch (error) {
+        console.error('Error al cargar el dashboard:', error);
+
+        if (mounted) {
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : 'No se pudo cargar la información del dashboard.'
+          );
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadDashboard();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  if (!dashboard) {
-    return (
-      <main className="dashboard-loading">
-        Cargando dashboard institucional...
-      </main>
-    );
-  }
+  const metrics = useMemo(() => {
+    if (!data) return [];
+
+    return [
+      {
+        label: 'Proyectos activos',
+        value: data.activeProjects,
+        detail: `Total registrados: ${formatNumber(data.totalProjects)}`,
+        tone: 'primary',
+      },
+      {
+        label: 'Trámites pendientes',
+        value: data.pendingProcedures,
+        detail: `En revisión: ${formatNumber(data.proceduresUnderReview)}`,
+        tone: data.pendingProcedures > 0 ? 'danger' : 'primary',
+      },
+      {
+        label: 'Grupos activos',
+        value: data.totalActiveGroups,
+        detail: `Total de grupos: ${formatNumber(data.totalGroups)}`,
+        tone: 'primary',
+      },
+      {
+        label: 'Usuarios activos',
+        value: data.totalActiveUsers,
+        detail: `Total usuarios: ${formatNumber(data.totalUsers)}`,
+        tone: 'primary',
+      },
+    ];
+  }, [data]);
 
   return (
-    <div className="dashboard-shell">
-      <aside className="dashboard-sidebar">
-        <div className="dashboard-sidebar-header">
-          <h2>Decanatura</h2>
-          <p>Gestión Estratégica</p>
-        </div>
+    <div className="dash-layout">
+      <DashboardModuleNav />
 
-        <nav className="dashboard-sidebar-nav">
-          <Link to="/dashboards" className="dashboard-nav-active">
-            <span>▦</span>
-            Inicio
-          </Link>
-
-          <Link to="/dashboards/tramites">
-            <span>▤</span>
-            Trámites
-          </Link>
-
-          <Link to="/dashboards/analisis">
-            <span>▥</span>
-            Análisis de Datos
-          </Link>
-
-          <Link to="/dashboards/investigadores">
-            <span>◎</span>
-            Investigadores
-          </Link>
-
-          <Link to="/dashboards/publicaciones">
-            <span>▣</span>
-            Publicaciones
-          </Link>
-
-          <Link to="/dashboards/financiamiento">
-            <span>◉</span>
-            Financiamiento
-          </Link>
-
-          <Link to="/dashboards/ranking">
-            <span>★</span>
-            Ranking
-          </Link>
-
-          <Link to="/dashboards/reportes">
-            <span>▧</span>
-            Reportes
-          </Link>
-        </nav>
-
-        <div className="dashboard-sidebar-footer">
-          <button type="button">＋ Nuevo Informe</button>
-
+      <main className="dash-main">
+        <header className="dash-header">
           <div>
-            <Link to="/">
-              <span>?</span>
-              Ayuda
-            </Link>
-
-            <Link to="/">
-              <span>↪</span>
-              Cerrar Sesión
-            </Link>
+            <p className="dash-eyebrow">Panel institucional</p>
+            <h1>Dashboard de investigación FIIS</h1>
+            <p>
+              Resumen operativo conectado al backend del Sistema de Gestión de Investigación.
+            </p>
           </div>
-        </div>
-      </aside>
 
-      <main className="dashboard-main">
-        <header className="dashboard-topbar">
-          <strong>Portal de Investigación Institucional</strong>
-
-          <nav>
-            <Link to="/dashboards" className="topbar-active">
-              Dashboard
+          <div className="dash-header-actions">
+            <Link to="/dashboard" className="dash-secondary-button">
+              Volver al panel general
             </Link>
-            <Link to="/dashboards">Facultades</Link>
-            <Link to="/dashboards/investigadores">Investigadores</Link>
-            <Link to="/dashboards">Proyectos</Link>
-            <Link to="/dashboards/tramites">Trámites</Link>
-          </nav>
-
-          <div className="dashboard-topbar-actions">
-            <button type="button" aria-label="Notificaciones">
-              ♧
-            </button>
-
-            <button type="button" aria-label="Configuración">
-              ⚙
-            </button>
-
-            <div className="dashboard-avatar">FIIS</div>
+            <Link to="/dashboards/tramites" className="dash-primary-button">
+              Ver trámites
+            </Link>
           </div>
         </header>
 
-        <section className="dashboard-content">
-          <div className="dashboard-page-header">
-            <div>
-              <h1>Dashboard Institucional de Investigación - FIIS</h1>
-              <p>Vista ejecutiva para la toma de decisiones estratégicas.</p>
-            </div>
+        {loading && (
+          <section className="dash-state-card">
+            <div className="dash-spinner" />
+            <p>Cargando información institucional...</p>
+          </section>
+        )}
 
-            <div className="dashboard-header-actions">
-              <button type="button" className="dashboard-period-button">
-                <span>▣</span>
-                {dashboard.period}
-                <span>⌄</span>
-              </button>
+        {!loading && errorMessage && (
+          <section className="dash-state-card dash-state-error">
+            <strong>No se pudo cargar el dashboard</strong>
+            <p>{errorMessage}</p>
+          </section>
+        )}
 
-              <button type="button" className="dashboard-primary-button">
-                ⌁ Crear Convocatoria
-              </button>
-            </div>
-          </div>
+        {!loading && data && (
+          <>
+            <section className="dash-metric-grid">
+              {metrics.map((metric) => (
+                <article
+                  key={metric.label}
+                  className={`dash-card dash-metric-card dash-tone-${metric.tone}`}
+                >
+                  <span className="dash-card-label">{metric.label}</span>
+                  <strong>{formatNumber(metric.value)}</strong>
+                  <p>{metric.detail}</p>
+                </article>
+              ))}
+            </section>
 
-          <section className="dashboard-metrics-grid">
-            {dashboard.metrics.map((metric) => (
-              <article
-                key={metric.id}
-                className={`dashboard-metric-card metric-${metric.tone}`}
-              >
-                <div className="metric-card-top">
-                  <div className="metric-card-icon">{metric.icon}</div>
-
-                  {metric.detail && (
-                    <span className="metric-card-detail">{metric.detail}</span>
-                  )}
+            <section className="dash-content-grid">
+              <article className="dash-card">
+                <div className="dash-card-header">
+                  <div>
+                    <span className="dash-card-label">Estado de trámites</span>
+                    <h2>Flujo actual</h2>
+                  </div>
                 </div>
 
-                <div>
-                  <p>{metric.title}</p>
-                  <strong>{metric.value}</strong>
+                <div className="dash-process-list">
+                  <div>
+                    <span>Pendientes</span>
+                    <strong>{formatNumber(data.pendingProcedures)}</strong>
+                  </div>
+                  <div>
+                    <span>En revisión</span>
+                    <strong>{formatNumber(data.proceduresUnderReview)}</strong>
+                  </div>
+                  <div>
+                    <span>Aprobados</span>
+                    <strong>{formatNumber(data.approvedProcedures)}</strong>
+                  </div>
+                  <div>
+                    <span>Rechazados</span>
+                    <strong>{formatNumber(data.rejectedProcedures)}</strong>
+                  </div>
+                  <div>
+                    <span>Resoluciones emitidas</span>
+                    <strong>{formatNumber(data.issuedResolutions)}</strong>
+                  </div>
                 </div>
               </article>
-            ))}
-          </section>
 
-          <section className="dashboard-main-grid">
-            <section className="dashboard-panel projects-panel">
-              <div className="dashboard-panel-header">
-                <h2>Estado de Proyectos por Grupo de Investigación</h2>
-                <button type="button" aria-label="Más opciones">
-                  ⋮
-                </button>
-              </div>
+              <article className="dash-card">
+                <div className="dash-card-header">
+                  <div>
+                    <span className="dash-card-label">Alertas</span>
+                    <h2>Atención requerida</h2>
+                  </div>
+                </div>
 
-              <div className="research-group-list">
-                {dashboard.groups.map((group) => (
-                  <article key={group.id} className="research-group-card">
-                    <div className="research-group-header">
-                      <div>
-                        <strong>{group.name}</strong>
-                        <p>{group.description}</p>
+                {data.alerts.length > 0 ? (
+                  <div className="dash-alert-list">
+                    {data.alerts.map((alert, index) => (
+                      <div key={`${alert.type}-${index}`} className="dash-alert-item">
+                        <span>{alert.type}</span>
+                        <strong>{translateAlertTitle(alert.title)}</strong>
+                        <p>{translateAlertDescription(alert.description)}</p>
                       </div>
-
-                      <span>{group.totalProjects} Proyectos</span>
-                    </div>
-
-                    <div className="research-progress-bar">
-                      <span
-                        className="progress-postulated"
-                        style={{ width: `${group.postulated}%` }}
-                      />
-                      <span
-                        className="progress-approved"
-                        style={{ width: `${group.approved}%` }}
-                      />
-                      <span
-                        className="progress-execution"
-                        style={{ width: `${group.execution}%` }}
-                      />
-                      <span
-                        className="progress-observed"
-                        style={{ width: `${group.observed}%` }}
-                      />
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              <div className="research-legend">
-                <span>
-                  <b className="legend-postulated" />
-                  Postulado
-                </span>
-                <span>
-                  <b className="legend-approved" />
-                  Aprobado
-                </span>
-                <span>
-                  <b className="legend-execution" />
-                  Ejecución
-                </span>
-                <span>
-                  <b className="legend-observed" />
-                  Observado
-                </span>
-              </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="dash-empty">
+                    No hay alertas pendientes registradas por el backend.
+                  </div>
+                )}
+              </article>
             </section>
-
-            <section className="dashboard-panel approval-panel">
-              <div className="dashboard-panel-header">
-                <h2>Flujo de Aprobación Global - 2026</h2>
-              </div>
-
-              <div className="approval-flow-list">
-                {dashboard.approvalSteps.map((step, index) => (
-                  <article
-                    key={step.id}
-                    className={`approval-flow-step approval-${step.tone}`}
-                  >
-                    <div className="approval-flow-box">
-                      <span>{step.value}</span>
-
-                      <div>
-                        <strong>{step.title}</strong>
-                        <p>{step.description}</p>
-                      </div>
-
-                      <b>
-                        {step.tone === 'warning'
-                          ? '!'
-                          : step.tone === 'success'
-                            ? '✓'
-                            : '›'}
-                      </b>
-                    </div>
-
-                    {index < dashboard.approvalSteps.length - 1 && (
-                      <div className="approval-flow-arrow">⌄</div>
-                    )}
-                  </article>
-                ))}
-              </div>
-            </section>
-          </section>
-
-          <section className="dashboard-panel pending-panel">
-            <div className="pending-panel-header">
-              <h2>Trámites Pendientes de Resolución</h2>
-
-              <div>
-                <span>Filtrar por:</span>
-                <button type="button">
-                  Más recientes
-                  <span>⌄</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="pending-table-wrapper">
-              <table className="pending-table">
-                <thead>
-                  <tr>
-                    <th>Código</th>
-                    <th>Proyecto</th>
-                    <th>Solicitante</th>
-                    <th>Revisión previa</th>
-                    <th>Acción</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {dashboard.pendingProcedures.map((procedure) => (
-                    <tr key={procedure.id}>
-                      <td>
-                        <strong>{procedure.code}</strong>
-                        {procedure.priority === 'alta' && (
-                          <span className="priority-dot" />
-                        )}
-                      </td>
-
-                      <td>
-                        <strong>{procedure.title}</strong>
-                        <p>{procedure.category}</p>
-                      </td>
-
-                      <td>
-                        <div className="applicant-cell">
-                          <span />
-                          {procedure.applicant}
-                        </div>
-                      </td>
-
-                      <td>
-                        <span className="approved-badge">
-                          ✓ Director aprobado
-                        </span>
-                      </td>
-
-                      <td>
-                        <button type="button" className="rd-button">
-                          Emitir RD
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <Link to="/dashboards/tramites" className="view-all-link">
-              Ver todos los trámites pendientes
-            </Link>
-          </section>
-        </section>
-
-        <footer className="dashboard-footer">
-          <span>
-            © 2024 Oficina de Excelencia Académica e Investigación.
-          </span>
-
-          <div>
-            <Link to="/">Privacidad</Link>
-            <Link to="/">Términos de Uso</Link>
-            <Link to="/">Contacto</Link>
-          </div>
-        </footer>
+          </>
+        )}
       </main>
     </div>
   );
 }
-
-export default DashboardPage;
