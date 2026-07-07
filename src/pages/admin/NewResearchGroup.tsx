@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, X } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
 import { researchService } from '../../services/researchService';
 
 export const NewResearchGroup: React.FC = () => {
@@ -123,23 +124,22 @@ export const NewResearchGroup: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-            <button 
+            <Button 
               type="button"
+              variant="secondary"
+              icon={<X size={18} />}
               onClick={() => navigate('/groups')}
-              className="sgi-btn"
-              style={{ backgroundColor: 'transparent', color: 'var(--on-surface-variant)', border: '1px solid var(--outline)' }}
             >
               Cancelar
-            </button>
-            <button 
+            </Button>
+            <Button 
               type="submit" 
+              variant="primary"
+              icon={<Save size={18} />}
               disabled={loading}
-              className="sgi-btn sgi-btn-primary"
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: loading ? 0.7 : 1 }}
             >
-              <Save size={20} />
               {loading ? 'Guardando...' : 'Guardar Grupo'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

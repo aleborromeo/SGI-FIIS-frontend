@@ -34,10 +34,8 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children
           </div>
         </div>
         {/* Contenido Principal */}
-        <main className="sgi-main-content">
-          <div className="sgi-content-card animate-fade-in">
-            {children || <Outlet />}
-          </div>
+        <main className="sgi-main-content animate-fade-in">
+          {children || <Outlet />}
         </main>
 
         <footer className="sgi-dashboard-footer">

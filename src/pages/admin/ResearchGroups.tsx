@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, Shield } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
 import { researchService, type ResearchGroup } from '../../services/researchService';
 import { Spinner } from '../../components/common/Spinner';
 
@@ -45,14 +46,13 @@ export const ResearchGroups: React.FC = () => {
             Administra los grupos de investigación de la facultad.
           </p>
         </div>
-        <button 
+        <Button 
+          variant="primary"
           onClick={() => navigate('/groups/new')}
-          className="sgi-btn sgi-btn-primary" 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          icon={<Plus size={18} />}
         >
-          <Plus size={20} />
-          <span>Nuevo Grupo</span>
-        </button>
+          Nuevo Grupo
+        </Button>
       </div>
 
       {error && (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, BookOpen, CheckCircle, XCircle } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
 import { researchService, type ResearchLine } from '../../services/researchService';
 import { Spinner } from '../../components/common/Spinner';
 
@@ -54,14 +55,13 @@ export const ResearchLines: React.FC = () => {
             Administra las líneas de investigación disponibles en la facultad.
           </p>
         </div>
-        <button 
+        <Button 
+          variant="primary"
           onClick={() => navigate('/lines/new')}
-          className="sgi-btn sgi-btn-primary" 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          icon={<Plus size={18} />}
         >
-          <Plus size={20} />
-          <span>Nueva Línea</span>
-        </button>
+          Nueva Línea
+        </Button>
       </div>
 
       {error && (
@@ -125,26 +125,17 @@ export const ResearchLines: React.FC = () => {
               </div>
 
               <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--outline-variant)' }}>
-                <button 
+                <Button 
                   onClick={() => handleToggleStatus(line.id, line.active)}
-                  className="sgi-btn"
-                  style={{ 
-                    width: '100%', 
-                    backgroundColor: 'transparent',
-                    border: `1px solid ${line.active ? 'var(--error)' : 'var(--primary)'}`,
-                    color: line.active ? 'var(--error)' : 'var(--primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
+                  variant={line.active ? "danger" : "primary"}
+                  style={{ width: '100%' }}
                 >
                   {line.active ? (
-                    <><XCircle size={18} /> Desactivar</>
+                    <><XCircle size={18} style={{ marginRight: '8px' }} /> Desactivar</>
                   ) : (
-                    <><CheckCircle size={18} /> Activar</>
+                    <><CheckCircle size={18} style={{ marginRight: '8px' }} /> Activar</>
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           ))
