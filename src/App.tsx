@@ -9,15 +9,6 @@ import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
 
-import DashboardPage from './pages/dashboards/DashboardPage.tsx';
-import PendingProceduresPage from './pages/dashboards/PendingProceduresPage.tsx';
-import AnalyticsDashboardPage from './pages/dashboards/AnalyticsDashboardPage.tsx';
-import ReportsDashboardPage from './pages/dashboards/ReportsDashboardPage.tsx';
-import PublicationsDashboardPage from './pages/dashboards/PublicationsDashboardPage.tsx';
-import FinancingDashboardPage from './pages/dashboards/FinancingDashboardPage.tsx';
-import RankingDashboardPage from './pages/dashboards/RankingDashboardPage.tsx';
-import ResearchersDashboardPage from './pages/dashboards/ResearchersDashboardPage.tsx';
-
 // Views from feature/postulaciones
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
 import { ProjectMonitoring } from './pages/projects/ProjectMonitoring.tsx';
@@ -86,72 +77,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* Módulo Panel Isomorfo y Dashboards */}
-          <Route
-            path="/dashboards"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/tramites"
-            element={
-              <ProtectedRoute>
-                <PendingProceduresPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/analisis"
-            element={
-              <ProtectedRoute>
-                <AnalyticsDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/reportes"
-            element={
-              <ProtectedRoute>
-                <ReportsDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/publicaciones"
-            element={
-              <ProtectedRoute>
-                <PublicationsDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/financiamiento"
-            element={
-              <ProtectedRoute>
-                <FinancingDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/ranking"
-            element={
-              <ProtectedRoute>
-                <RankingDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/investigadores"
-            element={
-              <ProtectedRoute>
-                <ResearchersDashboardPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* Compatibilidad con rutas antiguas del módulo dashboards */}
+          <Route path="/dashboards" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboards/*" element={<Navigate to="/dashboard" replace />} />
 
           {/* Vistas específicas de postulaciones y seguimiento */}
           <Route
