@@ -125,6 +125,16 @@ export const ResearchGroups: React.FC = () => {
                   </span>
                 </div>
               </div>
+
+              <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--outline-variant)' }}>
+                <Button 
+                  onClick={() => navigate(`/groups/${group.id}`)}
+                  variant="secondary"
+                  style={{ width: '100%' }}
+                >
+                  Administrar Grupo
+                </Button>
+              </div>
             </div>
           ))
         )}

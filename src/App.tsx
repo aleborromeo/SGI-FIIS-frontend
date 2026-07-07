@@ -25,6 +25,7 @@ import { ResearchLines } from './pages/admin/ResearchLines.tsx';
 import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
 import { ResearchGroups } from './pages/admin/ResearchGroups.tsx';
 import { NewResearchGroup } from './pages/admin/NewResearchGroup.tsx';
+import { ResearchGroupDetail } from './pages/admin/ResearchGroupDetail.tsx';
 
 // Componente para proteger las rutas privadas del sistema
 interface ProtectedRouteProps {
@@ -122,6 +123,7 @@ function App() {
             <Route path="/lines/new" element={<NewResearchLine />} />
             <Route path="/groups" element={<ResearchGroups />} />
             <Route path="/groups/new" element={<NewResearchGroup />} />
+            <Route path="/groups/:id" element={<ResearchGroupDetail />} />
             
             {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
