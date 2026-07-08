@@ -20,6 +20,11 @@ import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
 import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
 
+// Views del módulo Bandeja Lógica de Trámites y Subsanaciones
+import { TramitesInbox } from './pages/tramites/TramitesInbox.tsx';
+import { TramiteDetail } from './pages/tramites/TramiteDetail.tsx';
+import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
+
 // Componente para proteger las rutas privadas del sistema
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -91,6 +96,11 @@ function App() {
           <Route path="/evaluations/my-evaluations" element={<ProtectedRoute><DashboardContainer><MyEvaluations /></DashboardContainer></ProtectedRoute>} />
           <Route path="/observations/panel" element={<ProtectedRoute><DashboardContainer><ObservationsPanel /></DashboardContainer></ProtectedRoute>} />
           <Route path="/progressreports/review" element={<ProtectedRoute><DashboardContainer><ReviewProgressReports /></DashboardContainer></ProtectedRoute>} />
+
+          {/* Bandeja Lógica de Trámites y Subsanaciones */}
+          <Route path="/tramites" element={<ProtectedRoute><DashboardContainer><TramitesInbox /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/tramites/:id" element={<ProtectedRoute><DashboardContainer><TramiteDetail /></DashboardContainer></ProtectedRoute>} />
+          <Route path="/observations/subsanacion" element={<ProtectedRoute><DashboardContainer><SubsanacionPanel /></DashboardContainer></ProtectedRoute>} />
 
           {/* Redirección por defecto para cualquier ruta inválida */}
           <Route path="*" element={<Navigate to="/" replace />} />

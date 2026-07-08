@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, FileText, BarChart2, History, Settings, LogOut, Users, BookOpen, GraduationCap, ClipboardCheck, AlertCircle, FileSearch, X } from 'lucide-react';
+import { LayoutDashboard, FileText, BarChart2, History, Settings, LogOut, Users, BookOpen, GraduationCap, ClipboardCheck, AlertCircle, FileSearch, Inbox, X } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
@@ -15,6 +15,7 @@ const navGroups = [
     title: 'Gestión Académica',
     items: [
       { id: 'proposals', label: 'Proyectos y Tesis', icon: <FileText size={20} />, path: '/projects' },
+      { id: 'tramites', label: 'Trámites', icon: <Inbox size={20} />, path: '/tramites' },
       { id: 'traceability', label: 'Trazabilidad', icon: <History size={20} />, path: '/thesis/plan/1' },
       { id: 'observations', label: 'Mis Observaciones', icon: <AlertCircle size={20} />, path: '/observations/panel' },
     ]
