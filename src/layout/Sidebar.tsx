@@ -1,38 +1,78 @@
 import React from 'react';
-import { LayoutDashboard, FileText, BarChart2, History, Settings, LogOut, Users, BookOpen, GraduationCap, ClipboardCheck, AlertCircle, FileSearch, X } from 'lucide-react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  FileText,
+  BarChart2,
+  History,
+  Settings,
+  LogOut,
+  GraduationCap,
+  ClipboardCheck,
+  AlertCircle,
+  FileSearch,
+  X,
+} from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const navGroups = [
   {
     title: 'Principal',
     items: [
-      { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/' },
-      { id: 'metrics', label: 'Métricas y Reportes', icon: <BarChart2 size={20} />, path: '/metrics' },
-    ]
+      {
+        id: 'dashboard',
+        label: 'Dashboard',
+        icon: <LayoutDashboard size={20} />,
+        path: '/dashboard',
+      },
+      {
+        id: 'metrics',
+        label: 'Métricas y Reportes',
+        icon: <BarChart2 size={20} />,
+        path: '/metrics',
+      },
+    ],
   },
   {
     title: 'Gestión Académica',
     items: [
-      { id: 'proposals', label: 'Proyectos y Tesis', icon: <FileText size={20} />, path: '/projects' },
-      { id: 'traceability', label: 'Trazabilidad', icon: <History size={20} />, path: '/thesis/plan/1' },
-      { id: 'observations', label: 'Mis Observaciones', icon: <AlertCircle size={20} />, path: '/observations/panel' },
-    ]
+      {
+        id: 'proposals',
+        label: 'Proyectos y Tesis',
+        icon: <FileText size={20} />,
+        path: '/projects',
+      },
+      {
+        id: 'traceability',
+        label: 'Trazabilidad',
+        icon: <History size={20} />,
+        path: '/thesis/plan/1',
+      },
+      {
+        id: 'observations',
+        label: 'Mis Observaciones',
+        icon: <AlertCircle size={20} />,
+        path: '/observations/panel',
+      },
+    ],
   },
   {
     title: 'Evaluación y Revisión',
     items: [
-      { id: 'evaluations', label: 'Mis Evaluaciones', icon: <ClipboardCheck size={20} />, path: '/evaluations/my-evaluations' },
-      { id: 'progress', label: 'Revisión Informes', icon: <FileSearch size={20} />, path: '/progressreports/review' },
-    ]
+      {
+        id: 'evaluations',
+        label: 'Mis Evaluaciones',
+        icon: <ClipboardCheck size={20} />,
+        path: '/evaluations/my-evaluations',
+      },
+      {
+        id: 'progress',
+        label: 'Revisión Informes',
+        icon: <FileSearch size={20} />,
+        path: '/progressreports/review',
+      },
+    ],
   },
-  {
-    title: 'Administración',
-    items: [
-      { id: 'users', label: 'Directorio', icon: <Users size={20} />, path: '/users' },
-      { id: 'lines', label: 'Líneas Inv.', icon: <BookOpen size={20} />, path: '/lines' },
-    ]
-  }
 ];
 
 interface SidebarProps {
@@ -47,160 +87,340 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   const getRoleLabel = (role: string | null): string => {
     switch (role) {
-      case 'ADMIN': return 'Administrador';
-      case 'ESTUDIANTE': return 'Estudiante / Tesista';
-      case 'DOCENTE_INVESTIGADOR': return 'Docente Investigador';
-      case 'COORDINADOR_GRUPO': return 'Coordinador de Grupo';
-      case 'DIRECTOR_INVESTIGACION': return 'Director de Investigación';
-      case 'DECANO': return 'Decano';
-      case 'EVALUADOR': return 'Evaluador';
-      default: return 'Usuario';
+      case 'ADMIN':
+        return 'Administrador';
+      case 'ESTUDIANTE':
+        return 'Estudiante / Tesista';
+      case 'DOCENTE_INVESTIGADOR':
+        return 'Docente Investigador';
+      case 'COORDINADOR_GRUPO':
+        return 'Coordinador de Grupo';
+      case 'DIRECTOR_INVESTIGACION':
+        return 'Director de Investigación';
+      case 'DECANO':
+        return 'Decano';
+      case 'EVALUADOR':
+        return 'Evaluador';
+      default:
+        return 'Usuario';
     }
+  };
+
+  const getUserInitials = (): string => {
+    if (!user) return 'US';
+
+    const firstName = user.firstNames?.charAt(0) ?? '';
+    const lastName = user.lastNames?.charAt(0) ?? '';
+
+    const initials = `${firstName}${lastName}`.trim();
+
+    return initials || 'US';
+  };
+
+  const getUserDisplayName = (): string => {
+    if (!user) return 'Cargando...';
+
+    if (user.firstNames) {
+      return `${user.firstNames} ${user.lastNames ?? ''}`.trim();
+    }
+
+    return user.email || 'Usuario';
+  };
+
+  const isItemActive = (itemId: string, path: string): boolean => {
+    if (itemId === 'proposals') {
+      return location.pathname === '/projects' || location.pathname.startsWith('/projects/');
+    }
+
+    if (itemId === 'traceability') {
+      return location.pathname.startsWith('/thesis/plan');
+    }
+
+    return location.pathname === path;
   };
 
   return (
     <>
-      {/* Overlay para móviles */}
       {isOpen && (
-        <div 
-          className="sidebar-overlay" 
+        <div
+          className="sidebar-overlay"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
-      <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
-        {/* Logo Area */}
-        <div style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative' }}>
-          {/* Botón Cerrar (Solo en Móvil) */}
-          <button 
-            className="sidebar-close-btn" 
+      <aside className={`sidebar-container ${isOpen ? 'open' : ''}`}>
+        <div
+          style={{
+            padding: '28px 22px 20px',
+            borderBottom: '1px solid var(--outline-variant)',
+            position: 'relative',
+          }}
+        >
+          <button
+            className="sidebar-close-btn"
             onClick={onClose}
             aria-label="Cerrar menú"
           >
             <X size={24} />
           </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ 
-            width: '48px', 
-            height: '48px', 
-            borderRadius: '12px', 
-            background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
-            color: 'white', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0, 32, 69, 0.15)'
-          }}>
-            <GraduationCap size={28} strokeWidth={2.5} />
-          </div>
-          <div>
-            <h1 className="text-title-lg" style={{ color: 'var(--on-surface)', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.03em' }}>
-              Investigación
-            </h1>
-            <span className="text-caption" style={{ color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              FIIS - UNAS
-            </span>
-          </div>
-        </div>
-        
-        {/* Decorative Separator */}
-        <div style={{ 
-          height: '1px', 
-          width: '100%', 
-          background: 'linear-gradient(90deg, var(--outline-variant) 0%, transparent 100%)', 
-          opacity: 0.6 
-        }}></div>
-      </div>
 
-      {/* Main Navigation */}
-      <nav style={{ flex: 1, padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto' }}>
-        {navGroups.map((group, index) => (
-          <div key={index}>
-            <h3 className="text-caption" style={{ paddingLeft: '16px', marginBottom: '8px', color: 'var(--on-surface-variant)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {group.title}
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {group.items.map((item) => {
-                const isActive = location.pathname === item.path || (location.pathname.startsWith('/projects') && item.id === 'proposals');
-                return (
-                  <Link 
-                    key={item.id} 
-                    to={item.path}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px 16px',
-                      borderRadius: 'var(--radius-md)',
-                      color: isActive ? 'var(--primary)' : 'var(--on-surface-variant)',
-                      backgroundColor: isActive ? 'var(--primary-fixed)' : 'transparent',
-                      textDecoration: 'none',
-                      fontWeight: isActive ? 600 : 500,
-                      transition: 'all 0.2s ease-in-out'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor = 'var(--surface-container-low)';
-                        e.currentTarget.style.color = 'var(--on-surface)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.color = 'var(--on-surface-variant)';
-                      }
-                    }}
-                  >
-                    {item.icon}
-                    <span className="text-body-md">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </nav>
-
-      {/* Footer Navigation */}
-      <div style={{ borderTop: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface-container-low)' }}>
-        <div style={{ padding: '16px' }}>
-          {/* User Profile Mini */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', marginBottom: '16px', backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-              {user ? `${user.firstNames?.charAt(0) || ''}${user.lastNames?.charAt(0) || ''}` : 'US'}
-            </div>
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div className="text-label-md" style={{ color: 'var(--on-surface)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', fontWeight: 700 }}>
-                {user ? (user.firstNames ? `${user.firstNames} ${user.lastNames}` : (user.email || 'Usuario')) : 'Cargando...'}
-              </div>
-              <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>{getRoleLabel(currentRole)}</div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <button style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', color: 'var(--on-surface-variant)', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 'var(--radius-md)', transition: 'background 0.2s', width: '100%' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-container-highest)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-              <Settings size={20} />
-              <span className="text-body-md" style={{ fontWeight: 500 }}>Configuración</span>
-            </button>
-            <button 
-              onClick={handleLogout}
-              style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', color: 'var(--error)', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 'var(--radius-md)', transition: 'background 0.2s', width: '100%' }} 
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fee2e2'} 
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          <Link
+            to="/"
+            onClick={onClose}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '14px',
+              color: 'inherit',
+              textDecoration: 'none',
+            }}
+          >
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, var(--primary) 0%, #063b75 100%)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 10px 24px rgba(0, 32, 69, 0.18)',
+                flexShrink: 0,
+              }}
             >
-              <LogOut size={20} />
-              <span className="text-body-md" style={{ fontWeight: 500 }}>Cerrar Sesión</span>
-            </button>
-          </div>
+              <GraduationCap size={28} strokeWidth={2.5} />
+            </div>
+
+            <div style={{ minWidth: 0 }}>
+              <h1
+                className="text-title-lg"
+                style={{
+                  color: 'var(--on-surface)',
+                  fontWeight: 800,
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.03em',
+                  margin: 0,
+                }}
+              >
+                Investigación
+              </h1>
+
+              <span
+                className="text-caption"
+                style={{
+                  color: 'var(--primary)',
+                  fontWeight: 700,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                FIIS - UNAS
+              </span>
+            </div>
+          </Link>
         </div>
-      </div>
-      </div>
+
+        <nav
+          style={{
+            flex: 1,
+            padding: '22px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+            overflowY: 'auto',
+          }}
+        >
+          {navGroups.map((group) => (
+            <div key={group.title}>
+              <h3
+                className="text-caption"
+                style={{
+                  paddingLeft: '14px',
+                  marginBottom: '8px',
+                  color: 'var(--on-surface-variant)',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                }}
+              >
+                {group.title}
+              </h3>
+
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                }}
+              >
+                {group.items.map((item) => {
+                  const isActive = isItemActive(item.id, item.path);
+
+                  return (
+                    <Link
+                      key={item.id}
+                      to={item.path}
+                      onClick={onClose}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 14px',
+                        borderRadius: '12px',
+                        color: isActive ? 'var(--primary)' : 'var(--on-surface-variant)',
+                        backgroundColor: isActive ? 'var(--primary-fixed)' : 'transparent',
+                        textDecoration: 'none',
+                        fontWeight: isActive ? 700 : 500,
+                        transition: 'all 0.18s ease-in-out',
+                      }}
+                      onMouseEnter={(event) => {
+                        if (!isActive) {
+                          event.currentTarget.style.backgroundColor = 'var(--surface-container-low)';
+                          event.currentTarget.style.color = 'var(--on-surface)';
+                        }
+                      }}
+                      onMouseLeave={(event) => {
+                        if (!isActive) {
+                          event.currentTarget.style.backgroundColor = 'transparent';
+                          event.currentTarget.style.color = 'var(--on-surface-variant)';
+                        }
+                      }}
+                    >
+                      {item.icon}
+                      <span className="text-body-md">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        <div
+          style={{
+            borderTop: '1px solid var(--outline-variant)',
+            backgroundColor: 'var(--surface-container-low)',
+            padding: '16px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '10px',
+              marginBottom: '14px',
+              backgroundColor: 'var(--surface-container-lowest)',
+              border: '1px solid var(--outline-variant)',
+              borderRadius: '14px',
+            }}
+          >
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--primary)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                flexShrink: 0,
+              }}
+            >
+              {getUserInitials()}
+            </div>
+
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div
+                className="text-label-md"
+                style={{
+                  color: 'var(--on-surface)',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                  fontWeight: 800,
+                }}
+              >
+                {getUserDisplayName()}
+              </div>
+
+              <div
+                className="text-caption"
+                style={{ color: 'var(--on-surface-variant)' }}
+              >
+                {getRoleLabel(currentRole)}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 14px',
+              color: 'var(--on-surface-variant)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderRadius: '12px',
+              width: '100%',
+              marginBottom: '4px',
+              textAlign: 'left',
+            }}
+            onMouseEnter={(event) => {
+              event.currentTarget.style.backgroundColor = 'var(--surface-container-highest)';
+            }}
+            onMouseLeave={(event) => {
+              event.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            <Settings size={20} />
+            <span className="text-body-md" style={{ fontWeight: 500 }}>
+              Configuración
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 14px',
+              color: 'var(--error)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderRadius: '12px',
+              width: '100%',
+              textAlign: 'left',
+            }}
+            onMouseEnter={(event) => {
+              event.currentTarget.style.backgroundColor = '#fee2e2';
+            }}
+            onMouseLeave={(event) => {
+              event.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            <LogOut size={20} />
+            <span className="text-body-md" style={{ fontWeight: 600 }}>
+              Cerrar sesión
+            </span>
+          </button>
+        </div>
+      </aside>
     </>
   );
 };
