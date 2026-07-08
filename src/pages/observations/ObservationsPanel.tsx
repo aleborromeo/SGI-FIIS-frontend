@@ -1,3 +1,8 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { AlertCircle, CheckCircle, FileUp, MessageSquare } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { observationService, type Observation } from '../../services/observationService';
+import { useToast } from '../../context/ToastContext';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
@@ -77,6 +82,7 @@ export const ObservationsPanel: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
 
   const pendingObservations = useMemo(() => {
     return observations.filter((observation) => !isResolved(observation.status));
@@ -115,6 +121,14 @@ export const ObservationsPanel: React.FC = () => {
 
   async function handleRemedySubmit() {
     if (!justification.trim()) {
+      toast.warning('Debe ingresar una justification.');
+      return;
+    }
+    
+    // For now we apply the same remedy to all pending observations in this procedure
+    const pendingObs = observations.filter(o => o.status !== 'SUBSANADO');
+    if (pendingObs.length === 0) {
+      toast.info('No hay observaciones pendientes por subsanar.');
       alert('Debe ingresar una justificación o respuesta.');
       return;
     }
@@ -125,6 +139,24 @@ export const ObservationsPanel: React.FC = () => {
     }
 
     try {
+      for (const obs of pendingObs) {
+        const userStr = localStorage.getItem('sgi_user');
+        const user = userStr ? JSON.parse(userStr) : { id: 1 };
+        await observationService.addRemedy(obs.id, {
+          applicantId: user.id,
+          description: justification
+        });
+      }
+      toast.success('Subsanación registrada correctamente. El estado de la propuesta ha sido actualizado.');
+      setJustification('');
+      // Reload observations
+      const updated = await observationService.getByProcedureId(procedureId);
+      setObservations(Array.isArray(updated) ? updated : []);
+    } catch (err) {
+      console.error('Error al subsanar', err);
+      toast.error('Error al registrar la subsanación.');
+    } finally {
+      setSubmitting(false);
       setSubmitting(true);
 
       for (const observation of pendingObservations) {

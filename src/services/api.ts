@@ -93,6 +93,19 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');
       let errorMessage = `Error del servidor (${response.status})`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+        
+        // Si hay detalles de validación (ej. MethodArgumentNotValidException), agregarlos
+        if (errorData.details && typeof errorData.details === 'object') {
+          const detailMessages = Object.values(errorData.details).join(', ');
+          if (detailMessages) {
+            errorMessage = `${errorMessage}: ${detailMessages}`;
+          }
+        }
+      } catch (e) {
+        // No es JSON, intentar leer texto plano
 
       if (errorText) {
         try {
@@ -106,6 +119,25 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
       throw new Error(errorMessage);
     }
 
+    // Verificar si hay contenido basado en headers y status
+    const contentLength = response.headers.get('Content-Length');
+    if (response.status === 204 || contentLength === '0') {
+      return {} as T;
+    }
+
+    // Leer la respuesta como texto primero para manejar cuerpos vacíos de forma segura
+    const textData = await response.text();
+    if (!textData) {
+      return {} as T;
+    }
+
+    try {
+      return JSON.parse(textData) as T;
+    } catch (e) {
+      console.warn('Response is not valid JSON:', textData);
+      return {} as T;
+    }
+  } catch (error: any) {
     if (response.status === 204) {
       return {} as T;
     }

@@ -11,6 +11,18 @@ import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Textarea } from '../../components/ui/Textarea';
+import { TableContainer, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../../components/ui/Table';
+import { Save, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { evaluacionService } from '../../services/evaluacionService';
+import { useToast } from '../../context/ToastContext';
+
+const criteriaList = [
+  { id: 'c1', name: 'Planteamiento del Problema', weight: 20 },
+  { id: 'c2', name: 'Marco Teórico y Antecedentes', weight: 20 },
+  { id: 'c3', name: 'Metodología Propuesta', weight: 30 },
+  { id: 'c4', name: 'Cronograma y Presupuesto', weight: 15 },
+  { id: 'c5', name: 'Formato y Redacción', weight: 15 },
 import {
   TableContainer,
   TableHead,
@@ -65,6 +77,17 @@ export const EvaluationForm: React.FC = () => {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [observations, setObservations] = useState<Record<string, string>>({});
   const [generalComments, setGeneralComments] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const toast = useToast();
+
+  const calculateTotal = () => {
+    let total = 0;
+    criteriaList.forEach(c => {
+      const score = scores[c.id] || 0;
+      total += (score * c.weight) / 100;
+    });
+    return total.toFixed(2);
+  };
   const [message, setMessage] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -77,6 +100,24 @@ export const EvaluationForm: React.FC = () => {
     return Number(total.toFixed(2));
   }, [scores]);
 
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const userStr = localStorage.getItem('sgi_user');
+      const user = userStr ? JSON.parse(userStr) : { id: 1 };
+      await evaluacionService.submitResult(evaluacionId, {
+        idEvaluador: user.id,
+        resultado: Number(calculateTotal()) >= 13 ? 'APROBADO' : 'RECHAZADO',
+        puntaje: Math.round(Number(calculateTotal())),
+        observaciones: generalComments
+      });
+      toast.success('Evaluación enviada con éxito');
+      navigate('/evaluations/my-evaluations');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al enviar evaluación');
+    } finally {
+      setSubmitting(false);
   const completedCriteria = useMemo(() => {
     return criteriaList.filter((criterion) => scores[criterion.id] !== undefined).length;
   }, [scores]);

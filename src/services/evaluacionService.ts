@@ -1,9 +1,10 @@
 import { fetchApi } from './api';
 
 export interface EvaluacionResultRequest {
-  scores: Record<string, number>;
-  comments: string;
-  verdict: string;
+  idEvaluador: number;
+  resultado: string; // "APROBADO", "OBSERVADO", "RECHAZADO"
+  puntaje: number;
+  observaciones: string;
 }
 
 export interface EvaluationItem {
@@ -50,6 +51,19 @@ export interface EvaluationItem {
 }
 
 export const evaluacionService = {
+  assignReviewer: async (idProyecto: number | null, idPlanTesis: number | null, idEvaluador: number): Promise<void> => {
+    return fetchApi('/evaluaciones/asignar', {
+      method: 'POST',
+      body: JSON.stringify({ idProyecto, idPlanTesis, idEvaluador }),
+    });
+  },
+
+  assignReviewers: async (projectId: number, reviewerIds: number[]): Promise<void> => {
+    await Promise.all(reviewerIds.map(id => evaluacionService.assignReviewer(projectId, null, id)));
+  },
+
+  submitResult: async (evaluacionId: string | number, payload: EvaluacionResultRequest): Promise<void> => {
+    return fetchApi(`/evaluaciones/${evaluacionId}/resultado`, {
   assignReviewers: async (
     projectId: string | number,
     reviewerIds: number[]

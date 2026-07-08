@@ -21,6 +21,7 @@ import { Timeline, TimelineItem } from '../../components/ui/Timeline';
 
 import { thesisService } from '../../services/thesisService';
 import type { ThesisPlan } from '../../services/thesisService';
+import { useToast } from '../../context/ToastContext';
 
 function getStatusLabel(status?: string): string {
   if (!status) return 'Sin estado';
@@ -98,6 +99,7 @@ export const ThesisTraceability: React.FC = () => {
 
   const [plan, setPlan] = useState<ThesisPlan | null>(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
@@ -172,6 +174,21 @@ export const ThesisTraceability: React.FC = () => {
     };
   }, [id]);
 
+  const handleApprove = () => {
+    if (id) {
+      thesisService.approveDirector(id)
+        .then(() => toast.success('Aprobado con éxito'))
+        .catch(() => toast.error('Error al aprobar'));
+    }
+  };
+
+  const handleObserve = () => {
+    if (id) {
+      thesisService.observeDirector(id, 'Observación general')
+        .then(() => toast.success('Observado con éxito'))
+        .catch(() => toast.error('Error al observar'));
+    }
+  };
   function handleObserve() {
     if (!plan) return;
 
