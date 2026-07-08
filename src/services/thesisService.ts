@@ -19,14 +19,14 @@ export const thesisService = {
   getPlanById: (id: string) => fetchApi<ThesisPlan>(`/thesis/plans/${id}`),
   getPlansByStudent: (id: string) => fetchApi<ThesisPlan[]>(`/thesis/plans/student/${id}`),
   getPlansByGroup: (id: string) => fetchApi<ThesisPlan[]>(`/thesis/plans/group/${id}`),
-  getPendingPlans: () => fetchApi<ThesisPlan[]>('/thesis/plans/pending'),
+  getPendingPlans: (revisor: string) => fetchApi<ThesisPlan[]>(`/thesis/plans/pending?revisor=${revisor}`),
   
   // Plan Approvals
   approveCoordinator: (id: string) => fetchApi(`/thesis/plans/${id}/coordinator/approve`, { method: 'PATCH' }),
-  observeCoordinator: (id: string, notes: string) => fetchApi(`/thesis/plans/${id}/coordinator/observe`, { method: 'PATCH', body: JSON.stringify({ notes }) }),
-  rejectCoordinator: (id: string, reason: string) => fetchApi(`/thesis/plans/${id}/coordinator/reject`, { method: 'PATCH', body: JSON.stringify({ reason }) }),
+  observeCoordinator: (id: string, notes: string) => fetchApi(`/thesis/plans/${id}/coordinator/observe`, { method: 'PATCH', body: JSON.stringify({ observacion: notes }) }),
+  rejectCoordinator: (id: string, reason: string) => fetchApi(`/thesis/plans/${id}/coordinator/reject?motivo=${encodeURIComponent(reason)}`, { method: 'PATCH' }),
   approveDirector: (id: string) => fetchApi(`/thesis/plans/${id}/director/approve`, { method: 'PATCH' }),
-  observeDirector: (id: string, notes: string) => fetchApi(`/thesis/plans/${id}/director/observe`, { method: 'PATCH', body: JSON.stringify({ notes }) }),
+  observeDirector: (id: string, notes: string) => fetchApi(`/thesis/plans/${id}/director/observe`, { method: 'PATCH', body: JSON.stringify({ observacion: notes }) }),
   rectifyPlan: (id: string, changes: any) => fetchApi(`/thesis/plans/${id}/rectify`, { method: 'PATCH', body: JSON.stringify(changes) }),
   issueDeanResolution: (id: string, data: any) => fetchApi(`/thesis/plans/${id}/dean/resolution`, { method: 'POST', body: JSON.stringify(data) }),
 
@@ -35,5 +35,5 @@ export const thesisService = {
   getReportById: (id: string) => fetchApi<ThesisReport>(`/thesis/reports/${id}`),
   getReportByPlanId: (planId: string) => fetchApi<ThesisReport>(`/thesis/reports/plan/${planId}`),
   approveReport: (id: string) => fetchApi(`/thesis/reports/${id}/approve`, { method: 'PATCH' }),
-  observeReport: (id: string, notes: string) => fetchApi(`/thesis/reports/${id}/observe`, { method: 'PATCH', body: JSON.stringify({ notes }) }),
+  observeReport: (id: string, notes: string) => fetchApi(`/thesis/reports/${id}/observe?observacion=${encodeURIComponent(notes)}`, { method: 'PATCH' }),
 };
