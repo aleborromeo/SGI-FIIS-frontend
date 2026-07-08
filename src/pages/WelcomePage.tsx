@@ -234,9 +234,6 @@ export const WelcomePage: React.FC = () => {
           <button onClick={() => navigate('/login')} className="btn-nav btn-outline-light-navbar">
             Iniciar sesión
           </button>
-          <button onClick={() => navigate('/register')} className="btn-nav btn-primary-light-navbar">
-            Registrarse
-          </button>
         </div>
       </header>
 
@@ -292,12 +289,6 @@ export const WelcomePage: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h3a3 3 0 013 3v1" />
                 </svg>
                 <span>Iniciar sesión</span>
-              </button>
-              <button onClick={() => navigate('/register')} className="btn-hero btn-hero-secondary-outline">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span>Crear cuenta</span>
               </button>
             </div>
 
@@ -596,40 +587,104 @@ export const WelcomePage: React.FC = () => {
             <div className="footer-column">
               <h4>Facultad</h4>
               <ul>
-                <li><a href="#decanato">Decanato FIIS</a></li>
-                <li><a href="#departamento">Departamento Académico</a></li>
-                <li><a href="#tramites">Trámites Académicos</a></li>
-                <li><a href="#investigacion">Investigación FIIS</a></li>
+                <li>
+                  <a href="https://www.sistemasunas.edu.pe/nuestra-facultad/decanatura" target="_blank" rel="noopener noreferrer">
+                    Decanato FIIS
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.sistemasunas.edu.pe/departamentos-academicos" target="_blank" rel="noopener noreferrer">
+                    Departamentos Académicos
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.sistemasunas.edu.pe/comisiones/comision-grados-y-titulos" target="_blank" rel="noopener noreferrer">
+                    Comisión de Grados y Títulos
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.sistemasunas.edu.pe/unidad-de-investigacion" target="_blank" rel="noopener noreferrer">
+                    Unidad de Investigación FIIS
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div className="footer-column">
               <h4>Universidad</h4>
               <ul>
-                <li><a href="#unas">UNAS Principal</a></li>
-                <li><a href="#vicerrectorado">Vicerrectorado de Investigación</a></li>
-                <li><a href="#biblioteca">Biblioteca Central</a></li>
-                <li><a href="#repositorio">Repositorio Institucional</a></li>
+                <li>
+                  <a href="https://www.unas.edu.pe" target="_blank" rel="noopener noreferrer">
+                    Portal Principal UNAS
+                  </a>
+                </li>
+                <li>
+                  <a href="https://investigacion.unas.edu.pe" target="_blank" rel="noopener noreferrer">
+                    Vicerrectorado de Investigación
+                  </a>
+                </li>
+                <li>
+                  <a href="https://biblioteca.unas.edu.pe" target="_blank" rel="noopener noreferrer">
+                    Biblioteca Central
+                  </a>
+                </li>
+                <li>
+                  <a href="https://repositorio.unas.edu.pe" target="_blank" rel="noopener noreferrer">
+                    Repositorio Institucional
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div className="footer-column">
               <h4>Contacto</h4>
               <ul>
-                <li><a href="#soporte">Soporte Técnico</a></li>
-                <li><a href="#partes">Mesa de Partes Virtual</a></li>
-                <li><a href="#ubicacion">Ubicación y Oficinas</a></li>
-                <li><a href="#directorio">Directorio Telefónico</a></li>
+                <li>
+                  <a href="https://www.sistemasunas.edu.pe/contact" target="_blank" rel="noopener noreferrer">
+                    Soporte Técnico
+                  </a>
+                </li>
+                <li>
+                  <a href="https://mesadepartes.unas.edu.pe" target="_blank" rel="noopener noreferrer">
+                    Mesa de Partes Virtual UNAS
+                  </a>
+                </li>
+                <li>
+                  <a href="https://maps.google.com/?q=Universidad+Nacional+Agraria+de+la+Selva" target="_blank" rel="noopener noreferrer">
+                    Ubicación
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.unas.edu.pe" target="_blank" rel="noopener noreferrer">
+                    Directorio Telefónico
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div className="footer-column">
               <h4>Legales</h4>
               <ul>
-                <li><a href="#manual">Manual de Usuario</a></li>
-                <li><a href="#privacidad">Política de Privacidad</a></li>
-                <li><a href="#terminos">Términos de Uso</a></li>
-                <li><a href="#reglamento">Reglamento de Investigación</a></li>
+                <li>
+                  <a href="#" onClick={(e) => e.preventDefault()}>
+                    Manual de Usuario
+                  </a>
+                </li>
+                <li>
+                  <a href="#" onClick={(e) => e.preventDefault()}>
+                    Política de Privacidad
+                  </a>
+                </li>
+                <li>
+                  <a href="#" onClick={(e) => e.preventDefault()}>
+                    Términos de Uso
+                  </a>
+                </li>
+                <li>
+                  <a href="https://investigacion.unas.edu.pe/documentos-normativos" target="_blank" rel="noopener noreferrer">
+                    Reglamento de Investigación
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

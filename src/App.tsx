@@ -4,7 +4,6 @@ import { AuthProvider, AuthContext } from './context/AuthContext.tsx';
 
 import { WelcomePage } from './pages/WelcomePage.tsx';
 import { LoginPage } from './pages/auth/LoginPage.tsx';
-import { RegisterPage } from './pages/auth/RegisterPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
@@ -73,7 +72,6 @@ function App() {
           {/* Rutas públicas */}
           <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
 
           {/* Dashboard general según rol */}
           <Route

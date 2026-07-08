@@ -96,12 +96,12 @@
 }
 
 .login-logo-img {
-  width: 72px;
-  height: auto;
-  margin-bottom: 0.5rem;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 0.8rem;
   display: block;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
 }
 
 .login-logo-title {
@@ -440,4 +440,67 @@
   .auth-header-group {
     margin-bottom: 1.5rem;
   }
+}
+
+/* Estilos adicionales para botón de salida, captcha y alerta mockup */
+
+.login-card-container {
+  position: relative;
+}
+
+.login-back-btn {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.login-back-btn:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  transform: translateX(-2px);
+}
+
+.captcha-display-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.captcha-canvas-container-static {
+  width: 100%;
+  padding-left: 2.6rem;
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1.5px solid #94a3b8;
+  border-radius: 8px;
+  height: 44px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.captcha-canvas {
+  height: 100%;
+  width: 100%;
+  display: block;
+}
+
+.captcha-error-text-simple {
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
