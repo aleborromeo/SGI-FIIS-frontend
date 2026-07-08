@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   CheckCircle,
@@ -12,25 +12,8 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Textarea } from '../../components/ui/Textarea';
 import { TableContainer, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../../components/ui/Table';
-import { Save, CheckCircle, ArrowLeft } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { evaluacionService } from '../../services/evaluacionService';
 import { useToast } from '../../context/ToastContext';
-
-const criteriaList = [
-  { id: 'c1', name: 'Planteamiento del Problema', weight: 20 },
-  { id: 'c2', name: 'Marco Teórico y Antecedentes', weight: 20 },
-  { id: 'c3', name: 'Metodología Propuesta', weight: 30 },
-  { id: 'c4', name: 'Cronograma y Presupuesto', weight: 15 },
-  { id: 'c5', name: 'Formato y Redacción', weight: 15 },
-import {
-  TableContainer,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableHeader,
-  TableCell,
-} from '../../components/ui/Table';
 import { Alert } from '../../components/ui/Alert';
 
 interface EvaluationCriterion {
@@ -70,6 +53,7 @@ function getVerdictVariant(verdict: string): 'success' | 'warning' | 'error' {
 }
 
 export const EvaluationForm: React.FC = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const evaluacionId = queryParams.get('evaluationId') || queryParams.get('evaluacionId') || '1';
@@ -99,25 +83,6 @@ export const EvaluationForm: React.FC = () => {
 
     return Number(total.toFixed(2));
   }, [scores]);
-
-  const handleSubmit = async () => {
-    setSubmitting(true);
-    try {
-      const userStr = localStorage.getItem('sgi_user');
-      const user = userStr ? JSON.parse(userStr) : { id: 1 };
-      await evaluacionService.submitResult(evaluacionId, {
-        idEvaluador: user.id,
-        resultado: Number(calculateTotal()) >= 13 ? 'APROBADO' : 'RECHAZADO',
-        puntaje: Math.round(Number(calculateTotal())),
-        observaciones: generalComments
-      });
-      toast.success('Evaluación enviada con éxito');
-      navigate('/evaluations/my-evaluations');
-    } catch (err) {
-      console.error(err);
-      toast.error('Error al enviar evaluación');
-    } finally {
-      setSubmitting(false);
   const completedCriteria = useMemo(() => {
     return criteriaList.filter((criterion) => scores[criterion.id] !== undefined).length;
   }, [scores]);
@@ -165,12 +130,26 @@ export const EvaluationForm: React.FC = () => {
     setErrorMsg('');
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!validateForm()) return;
-
-    setMessage(
-      `Dictamen preparado correctamente: ${getVerdictLabel(verdict)} con puntaje ${totalScore}/20. La emisión real al backend queda pendiente.`
-    );
+    setSubmitting(true);
+    try {
+      const userStr = localStorage.getItem('sgi_user');
+      const user = userStr ? JSON.parse(userStr) : { id: 1 };
+      await evaluacionService.submitResult(evaluacionId, {
+        idEvaluador: user.id,
+        resultado: Number(totalScore) >= 13 ? 'APROBADO' : 'RECHAZADO',
+        puntaje: Math.round(Number(totalScore)),
+        observaciones: generalComments
+      });
+      toast.success('Evaluación enviada con éxito');
+      navigate('/evaluations/my-evaluations');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al enviar evaluación');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (

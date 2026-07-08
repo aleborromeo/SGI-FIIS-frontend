@@ -1,8 +1,3 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { AlertCircle, CheckCircle, FileUp, MessageSquare } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
-import { observationService, type Observation } from '../../services/observationService';
-import { useToast } from '../../context/ToastContext';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
@@ -13,6 +8,7 @@ import {
   RefreshCcw,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
 
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -121,23 +117,17 @@ export const ObservationsPanel: React.FC = () => {
 
   async function handleRemedySubmit() {
     if (!justification.trim()) {
-      toast.warning('Debe ingresar una justification.');
+      toast.warning('Debe ingresar una justificación.');
       return;
     }
     
-    // For now we apply the same remedy to all pending observations in this procedure
-    const pendingObs = observations.filter(o => o.status !== 'SUBSANADO');
+    const pendingObs = observations.filter(o => !isResolved(o.status));
     if (pendingObs.length === 0) {
       toast.info('No hay observaciones pendientes por subsanar.');
-      alert('Debe ingresar una justificación o respuesta.');
       return;
     }
 
-    if (pendingObservations.length === 0) {
-      alert('No hay observaciones pendientes por subsanar.');
-      return;
-    }
-
+    setSubmitting(true);
     try {
       for (const obs of pendingObs) {
         const userStr = localStorage.getItem('sgi_user');
@@ -149,32 +139,13 @@ export const ObservationsPanel: React.FC = () => {
       }
       toast.success('Subsanación registrada correctamente. El estado de la propuesta ha sido actualizado.');
       setJustification('');
-      // Reload observations
-      const updated = await observationService.getByProcedureId(procedureId);
-      setObservations(Array.isArray(updated) ? updated : []);
-    } catch (err) {
-      console.error('Error al subsanar', err);
-      toast.error('Error al registrar la subsanación.');
-    } finally {
-      setSubmitting(false);
-      setSubmitting(true);
-
-      for (const observation of pendingObservations) {
-        await observationService.addRemedy(observation.id, justification);
-      }
-
-      alert('Subsanación registrada correctamente.');
-
-      setJustification('');
-
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-
       await loadObservations();
     } catch (err) {
-      console.error('Error al registrar subsanación:', err);
-      alert('No se pudo registrar la subsanación.');
+      console.error('Error al subsanar', err);
+      toast.error('Error al registrar la subsanación.');
     } finally {
       setSubmitting(false);
     }

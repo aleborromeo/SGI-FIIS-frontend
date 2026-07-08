@@ -23,11 +23,6 @@ export const observationService = {
   },
 
   addRemedy: async (observationId: string | number, payload: RemedyRequest): Promise<void> => {
-    return fetchApi(`/observations/${observationId}/remedy`, {
-  addRemedy: async (
-    observationId: string | number,
-    remedyContent: string
-  ): Promise<void> => {
     return fetchApi<void>(`/api/observations/${observationId}/remedy`, {
       method: 'POST',
       body: JSON.stringify(payload),

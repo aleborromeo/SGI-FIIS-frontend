@@ -12,6 +12,16 @@ vi.mock('../../services/observationService', () => ({
   }
 }));
 
+// Mock useToast
+vi.mock('../../context/ToastContext', () => ({
+  useToast: () => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn()
+  })
+}));
+
 describe('ObservationsPanel', () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -24,9 +34,9 @@ describe('ObservationsPanel', () => {
         <ObservationsPanel />
       </MemoryRouter>
     );
-    expect(screen.getByText('Observaciones del Jurado')).toBeDefined();
+    expect(screen.getByText('Detalle de observaciones')).toBeDefined();
     await waitFor(() => {
-      expect(screen.getByText('TODO CONFORME')).toBeDefined(); // If no pending observations
+      expect(screen.getByText('No hay observaciones registradas para este expediente.')).toBeDefined();
     });
   });
 
@@ -44,9 +54,9 @@ describe('ObservationsPanel', () => {
     // Check if the mock observations are rendered
     await waitFor(() => {
       expect(screen.getByText('Marco Teórico')).toBeDefined();
-      expect(screen.getByText('Falta citar autores más recientes (2020+).')).toBeDefined();
-      expect(screen.getByText('Metodología')).toBeDefined();
     });
+    expect(screen.getByText('Falta citar autores más recientes (2020+).')).toBeDefined();
+    expect(screen.getByText('Metodología')).toBeDefined();
   });
 
   it('renders the remedy submission form', async () => {
@@ -58,11 +68,11 @@ describe('ObservationsPanel', () => {
     );
     
     await waitFor(() => {
-      expect(screen.getByText('Documento Corregido (PDF)')).toBeDefined();
+      expect(screen.getByText('Documento corregido')).toBeDefined();
     });
-    expect(screen.getByText('Justificación o Respuesta')).toBeDefined();
+    expect(screen.getByText('Justificación o respuesta')).toBeDefined();
     
-    const submitButton = screen.getByRole('button', { name: /Registrar Subsanación/i });
+    const submitButton = screen.getByRole('button', { name: /Registrar subsanación/i });
     expect(submitButton).toBeDefined();
   });
 });

@@ -45,9 +45,6 @@ export interface CreateProjectPayload {
 
 export const projectService = {
   getAll: () => fetchApi<Project[]>('/projects'),
-  getById: (id: string) => fetchApi<Project>(`/projects/${id}`),
-  create: (data: CreateProjectPayload) => 
-
   getById: (id: string | number) =>
     fetchApi<Project>(`/projects/${id}`),
 

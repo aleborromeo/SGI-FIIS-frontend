@@ -128,11 +128,7 @@ export const ProjectMonitoring: React.FC = () => {
   useEffect(() => {
     let mounted = true;
 
-  const handleUpdateStatus = () => {
-    if (id) {
-      projectService.updateStatus(id, 'En Revisión')
-        .then(() => toast.success('Estado actualizado'))
-        .catch(() => toast.error('Error al actualizar'));
+
     async function loadProject() {
       if (!id) return;
 
@@ -173,25 +169,13 @@ export const ProjectMonitoring: React.FC = () => {
     if (!id) return;
 
     try {
-      // Create a report object. Usually you'd upload the file to FileController first and get an ID.
-      // Assuming thesisService.createReport accepts a basic payload for now.
-      await thesisService.createReport({
-        id: `REP-${Math.floor(Math.random()*1000)}`,
-        status: 'ENVIADO'
-        // Ideally we'd send the file path or ID here
-      });
-      toast.success('Informe trimestral subido exitosamente.');
-      // Refresh logic would go here
-    } catch (err) {
-      console.error(err);
-      toast.error('Error al subir informe.');
       setUpdatingStatus(true);
       const updatedProject = await projectService.updateStatus(id, 'IN_PROGRESS');
       setProject(updatedProject);
-      alert('Estado actualizado correctamente.');
+      toast.success('Estado actualizado correctamente.');
     } catch (err) {
       console.error('Error al actualizar estado:', err);
-      alert('No se pudo actualizar el estado del proyecto.');
+      toast.error('No se pudo actualizar el estado del proyecto.');
     } finally {
       setUpdatingStatus(false);
     }

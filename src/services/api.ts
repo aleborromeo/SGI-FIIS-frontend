@@ -106,6 +106,7 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
         }
       } catch (e) {
         // No es JSON, intentar leer texto plano
+      }
 
       if (errorText) {
         try {
@@ -137,18 +138,7 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
       console.warn('Response is not valid JSON:', textData);
       return {} as T;
     }
-  } catch (error: any) {
-    if (response.status === 204) {
-      return {} as T;
-    }
 
-    const text = await response.text();
-
-    if (!text) {
-      return {} as T;
-    }
-
-    return JSON.parse(text) as T;
   } catch (error) {
     console.error('API request error:', error);
     throw error;

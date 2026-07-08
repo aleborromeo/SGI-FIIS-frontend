@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for components/ui/Input.tsx</title>
+    <title>Code coverage report for services/authService.ts</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../../prettify.css" />
-    <link rel="stylesheet" href="../../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../../sort-arrow-sprite.png);
+            background-image: url(../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">components/ui</a> Input.tsx</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">services</a> authService.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">14.28% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/4</span>
+                <span class='fraction'>1/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">14.28% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/4</span>
+                <span class='fraction'>1/7</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -91,71 +91,62 @@
 <a name='L26'></a><a href='#L26'>26</a>
 <a name='L27'></a><a href='#L27'>27</a>
 <a name='L28'></a><a href='#L28'>28</a>
-<a name='L29'></a><a href='#L29'>29</a>
-<a name='L30'></a><a href='#L30'>30</a>
-<a name='L31'></a><a href='#L31'>31</a>
-<a name='L32'></a><a href='#L32'>32</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L29'></a><a href='#L29'>29</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from 'react';
-import './ui.css';
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { api } from './api';
+import type { LoginResponse, UserProfile } from '../types/auth';
 &nbsp;
-interface InputProps extends React.InputHTMLAttributes&lt;HTMLInputElement&gt; {
-  label?: string;
-  error?: string;
-  helpText?: string;
-}
+export const authService = {
+  async <span class="fstat-no" title="function not covered" >login(e</span>mail: string, password: string): Promise&lt;LoginResponse&gt; {
+<span class="cstat-no" title="statement not covered" >    return api.post&lt;LoginResponse&gt;('/auth/login', { email, password });</span>
+  },
 &nbsp;
-export const Input = React.<span class="fstat-no" title="function not covered" >forwardRef&lt;HTMLInputElement, InputProps&gt;(</span>
-  ({ label, error, helpText, className = <span class="branch-0 cbranch-no" title="branch not covered" >'', i</span>d, ...props }, ref) =&gt; {
-    const inputId = <span class="cstat-no" title="statement not covered" >id || Math.random().toString(36).substring(7);</span>
-<span class="cstat-no" title="statement not covered" >    return (</span>
-      &lt;div className="input-group"&gt;
-        {label &amp;&amp; &lt;label htmlFor={inputId} className="label"&gt;{label}&lt;/label&gt;}
-        &lt;input
-          ref={ref}
-          id={inputId}
-          className={`input ${error ? 'input-error' : ''} ${className}`}
-          {...props}
-        /&gt;
-        {(error || helpText) &amp;&amp; (
-          &lt;span className={`help-text ${error ? 'error' : ''}`}&gt;
-            {error || helpText}
-          &lt;/span&gt;
-        )}
-      &lt;/div&gt;
-    );
+  async <span class="fstat-no" title="function not covered" >getProfile(): Promise&lt;UserProfile&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    return api.get&lt;UserProfile&gt;('/auth/profile');</span>
+  },
+&nbsp;
+  async <span class="fstat-no" title="function not covered" >getDashboardData&lt;T&gt;(): Promise&lt;T&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    return api.get&lt;T&gt;('/dashboard/me');</span>
+  },
+&nbsp;
+  async <span class="fstat-no" title="function not covered" >register(d</span>ata: any): Promise&lt;{ message: string }&gt; {
+<span class="cstat-no" title="statement not covered" >    return api.post&lt;{ message: string }&gt;('/auth/register', data);</span>
+  },
+&nbsp;
+  async <span class="fstat-no" title="function not covered" >verifyRegistration(e</span>mail: string, code: string): Promise&lt;LoginResponse&gt; {
+<span class="cstat-no" title="statement not covered" >    return api.post&lt;LoginResponse&gt;('/auth/verify-registration', { email, code });</span>
+  },
+&nbsp;
+  async <span class="fstat-no" title="function not covered" >resendCode(e</span>mail: string): Promise&lt;{ message: string }&gt; {
+<span class="cstat-no" title="statement not covered" >    return api.post&lt;{ message: string }&gt;('/auth/resend-code', { email });</span>
   }
-);
-Input.displayName = 'Input';
+};
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -163,16 +154,16 @@ Input.displayName = 'Input';
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-02T14:21:39.443Z
+                at 2026-07-08T14:03:19.870Z
             </div>
-        <script src="../../prettify.js"></script>
+        <script src="../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../../sorter.js"></script>
-        <script src="../../block-navigation.js"></script>
+        <script src="../sorter.js"></script>
+        <script src="../block-navigation.js"></script>
     </body>
 </html>
     

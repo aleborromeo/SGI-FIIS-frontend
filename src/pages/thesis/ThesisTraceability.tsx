@@ -174,21 +174,7 @@ export const ThesisTraceability: React.FC = () => {
     };
   }, [id]);
 
-  const handleApprove = () => {
-    if (id) {
-      thesisService.approveDirector(id)
-        .then(() => toast.success('Aprobado con éxito'))
-        .catch(() => toast.error('Error al aprobar'));
-    }
-  };
 
-  const handleObserve = () => {
-    if (id) {
-      thesisService.observeDirector(id, 'Observación general')
-        .then(() => toast.success('Observado con éxito'))
-        .catch(() => toast.error('Error al observar'));
-    }
-  };
   function handleObserve() {
     if (!plan) return;
 
