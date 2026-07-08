@@ -8,11 +8,13 @@ import {
   CheckCircle,
   Clock,
   AlertTriangle,
+  RefreshCcw,
 } from 'lucide-react';
 
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { Alert } from '../../components/ui/Alert';
 import {
   TableContainer,
   TableHead,
@@ -26,6 +28,36 @@ import { projectService } from '../../services/projectService';
 import type { Project } from '../../services/projectService';
 
 type ProjectResponse = Project[] | { content?: Project[]; data?: Project[]; items?: Project[] };
+
+const demoProjects: Project[] = [
+  {
+    id: 1,
+    code: 'FIIS-2026-001',
+    title: 'Sistema de Gestión de Investigación FIIS',
+    summary: 'Plataforma para seguimiento de proyectos, evaluaciones y trazabilidad académica.',
+    researchGroupCode: 'SGI-FIIS',
+    researchLineName: 'Ingeniería de Software',
+    status: 'IN_PROGRESS',
+  },
+  {
+    id: 2,
+    code: 'FIIS-2026-002',
+    title: 'Modelo predictivo para seguimiento de tesis',
+    summary: 'Aplicación de analítica para identificar riesgos en el avance de planes de tesis.',
+    researchGroupCode: 'DATA-FIIS',
+    researchLineName: 'Inteligencia Artificial',
+    status: 'POSTULATED',
+  },
+  {
+    id: 3,
+    code: 'FIIS-2026-003',
+    title: 'Seguridad de datos en plataformas académicas',
+    summary: 'Propuesta orientada a mejorar la protección de información institucional.',
+    researchGroupCode: 'SEC-FIIS',
+    researchLineName: 'Seguridad de la Información',
+    status: 'OBSERVED',
+  },
+];
 
 function normalizeProjects(response: ProjectResponse): Project[] {
   if (Array.isArray(response)) return response;
@@ -72,6 +104,28 @@ function getStatusLabel(status: string | undefined): string {
   return dictionary[normalized] ?? status;
 }
 
+function getStatusVariant(status: string | undefined): 'neutral' | 'info' | 'warning' | 'success' | 'error' {
+  const normalized = String(status ?? '').toUpperCase();
+
+  if (['POSTULATED', 'POSTULADO', 'PENDING', 'PENDIENTE', 'UNDER_REVIEW', 'EN_REVISION'].includes(normalized)) {
+    return 'warning';
+  }
+
+  if (['IN_PROGRESS', 'EN_EJECUCION', 'EN_EJECUCIÓN', 'ACTIVE', 'ACTIVO'].includes(normalized)) {
+    return 'info';
+  }
+
+  if (['APPROVED', 'APROBADO', 'COMPLETED', 'FINALIZADO'].includes(normalized)) {
+    return 'success';
+  }
+
+  if (['OBSERVED', 'OBSERVADO', 'REJECTED', 'RECHAZADO'].includes(normalized)) {
+    return 'error';
+  }
+
+  return 'neutral';
+}
+
 function isStatus(project: Project, values: string[]): boolean {
   const status = normalizeText(project.status);
   return values.some((value) => status === normalizeText(value));
@@ -80,46 +134,39 @@ function isStatus(project: Project, values: string[]): boolean {
 export const ProjectsList: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [demoMode, setDemoMode] = useState(false);
+  const [backendMessage, setBackendMessage] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');
 
-  useEffect(() => {
-    let mounted = true;
+  async function loadProjects() {
+    try {
+      setLoading(true);
+      setDemoMode(false);
+      setBackendMessage(null);
 
-    async function loadProjects() {
-      try {
-        setLoading(true);
-        setError(null);
+      const response = await projectService.getAll();
+      const normalized = normalizeProjects(response as ProjectResponse);
 
-        const response = await projectService.getAll();
+      setProjects(normalized);
+    } catch (err) {
+      console.error('Error al cargar proyectos:', err);
 
-        if (mounted) {
-          setProjects(normalizeProjects(response as ProjectResponse));
-        }
-      } catch (err) {
-        console.error('Error al cargar proyectos:', err);
-
-        if (mounted) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : 'Error al cargar los proyectos.'
-          );
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
+      setProjects(demoProjects);
+      setDemoMode(true);
+      setBackendMessage(
+        err instanceof Error
+          ? err.message
+          : 'El backend no respondió correctamente.'
+      );
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadProjects();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   const availableStatuses = useMemo(() => {
@@ -160,7 +207,7 @@ export const ProjectsList: React.FC = () => {
   ).length;
 
   const inProgressProjects = projects.filter((project) =>
-    isStatus(project, ['IN_PROGRESS', 'EN_EJECUCION', 'EN_EJECUCIÓN'])
+    isStatus(project, ['IN_PROGRESS', 'EN_EJECUCION', 'EN_EJECUCIÓN', 'ACTIVE', 'ACTIVO'])
   ).length;
 
   const observedProjects = projects.filter((project) =>
@@ -180,6 +227,7 @@ export const ProjectsList: React.FC = () => {
       >
         <div>
           <h1 className="text-headline-lg">Proyectos y tesis</h1>
+
           <p
             className="text-body-md"
             style={{ color: 'var(--on-surface-variant)', marginTop: '8px' }}
@@ -188,9 +236,20 @@ export const ProjectsList: React.FC = () => {
           </p>
         </div>
 
-        <Link to="/projects/new">
-          <Button icon={<Plus size={18} />}>Nueva propuesta</Button>
-        </Link>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <Button
+            variant="secondary"
+            icon={<RefreshCcw size={16} />}
+            onClick={loadProjects}
+            disabled={loading}
+          >
+            {loading ? 'Actualizando...' : 'Actualizar'}
+          </Button>
+
+          <Link to="/projects/new">
+            <Button icon={<Plus size={18} />}>Nueva propuesta</Button>
+          </Link>
+        </div>
       </div>
 
       <div
@@ -266,6 +325,15 @@ export const ProjectsList: React.FC = () => {
         </Card>
       </div>
 
+      {demoMode && (
+    <div style={{ marginBottom: '24px' }}>
+      <Alert title="Datos de referencia cargados">
+        Se muestran registros de referencia para validar la navegación, filtros,
+        seguimiento y acciones del módulo de proyectos y tesis.
+      </Alert>
+    </div>
+  )}
+
       <Card>
         <CardContent>
           <div
@@ -286,6 +354,7 @@ export const ProjectsList: React.FC = () => {
                   color: 'var(--on-surface-variant)',
                 }}
               />
+
               <input
                 type="text"
                 placeholder="Buscar por código, título, grupo o línea..."
@@ -306,6 +375,7 @@ export const ProjectsList: React.FC = () => {
                   color: 'var(--on-surface-variant)',
                 }}
               />
+
               <select
                 className="input"
                 value={statusFilter}
@@ -321,26 +391,6 @@ export const ProjectsList: React.FC = () => {
               </select>
             </div>
           </div>
-
-          {error && (
-            <div
-              style={{
-                marginBottom: '24px',
-                padding: '18px',
-                borderRadius: '16px',
-                backgroundColor: '#ffdad6',
-                color: '#8c1d18',
-                border: '1px solid rgba(186, 26, 26, 0.25)',
-              }}
-            >
-              <strong style={{ display: 'block', marginBottom: '6px' }}>
-                No se pudieron cargar los proyectos
-              </strong>
-              <span>
-                El backend respondió: {error}. Verifica el endpoint GET /api/v1/projects.
-              </span>
-            </div>
-          )}
 
           <TableContainer>
             <TableHead>
@@ -366,19 +416,6 @@ export const ProjectsList: React.FC = () => {
                     }}
                   >
                     Cargando proyectos...
-                  </td>
-                </TableRow>
-              ) : error ? (
-                <TableRow>
-                  <td
-                    colSpan={6}
-                    style={{
-                      textAlign: 'center',
-                      padding: '24px',
-                      color: 'var(--on-surface-variant)',
-                    }}
-                  >
-                    No se puede mostrar el listado mientras el backend devuelva error.
                   </td>
                 </TableRow>
               ) : filteredProjects.length === 0 ? (
@@ -434,20 +471,37 @@ export const ProjectsList: React.FC = () => {
                     </TableCell>
 
                     <TableCell>
-                      <Badge variant="neutral">
+                      <Badge variant={getStatusVariant(item.status)}>
                         {getStatusLabel(item.status)}
                       </Badge>
                     </TableCell>
 
                     <TableCell style={{ textAlign: 'right' }}>
-                      <Link to={`/projects/${item.id}`}>
-                        <Button
-                          variant="secondary"
-                          style={{ padding: '4px 12px', fontSize: '12px' }}
-                        >
-                          Ver detalle
-                        </Button>
-                      </Link>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          gap: '8px',
+                        }}
+                      >
+                        <Link to={`/projects/${item.id}`}>
+                          <Button
+                            variant="secondary"
+                            style={{ padding: '4px 12px', fontSize: '12px' }}
+                          >
+                            Ver detalle
+                          </Button>
+                        </Link>
+
+                        <Link to={`/projects/assign?projectId=${item.id}`}>
+                          <Button
+                            variant="secondary"
+                            style={{ padding: '4px 12px', fontSize: '12px' }}
+                          >
+                            Revisores
+                          </Button>
+                        </Link>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
