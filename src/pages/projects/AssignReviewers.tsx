@@ -1,19 +1,18 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft,
-  CheckCircle,
+  AlertCircle,
   Search,
   Trash2,
   UserPlus,
   Users,
+  ArrowLeft,
+  CheckCircle,
 } from 'lucide-react';
 
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Search, UserPlus, Users, ArrowLeft, Trash2 } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { userService, type User } from '../../services/userService';
 import { evaluacionService } from '../../services/evaluacionService';
 import { useToast } from '../../context/ToastContext';
@@ -118,7 +117,7 @@ export const AssignReviewers: React.FC = () => {
     setMessage(null);
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (assignedReviewers.length === 0) {
       toast.warning('Debe asignar al menos un jurado.');
       return;
@@ -133,22 +132,9 @@ export const AssignReviewers: React.FC = () => {
       console.error(err);
       toast.error('Error al asignar jurados');
     }
-  };
-
-  const filteredReviewers = availableReviewers.filter(u => 
-    `${u.firstNames} ${u.lastNames}`.toLowerCase().includes(search.toLowerCase()) ||
-    u.institutionalEmail.toLowerCase().includes(search.toLowerCase())
-  );
-      setErrorMsg('Debe asignar al menos un jurado o revisor.');
-      setMessage(null);
-      return;
-    }
-
-    setErrorMsg('');
-    setMessage(
-      `Asignación preparada para el proyecto ${projectId}. Se seleccionaron ${assignedReviewers.length} revisor(es). La integración real con backend queda pendiente.`
-    );
   }
+
+
 
   return (
     <div
@@ -255,22 +241,10 @@ export const AssignReviewers: React.FC = () => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {loading ? (
-                  <p>Cargando docentes...</p>
-                ) : filteredReviewers.map((rev) => (
-                  <div key={rev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)' }}>
-                    <div>
-                      <h3 className="text-title-md" style={{ fontWeight: 600 }}>{rev.firstNames} {rev.lastNames}</h3>
-                      <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>{rev.institutionalEmail}</div>
-                    </div>
-                    <Button 
-                      variant="secondary" 
-                      icon={<UserPlus size={16} />} 
-                      style={{ padding: '6px 12px' }}
-                      onClick={() => handleAssign(rev)}
-                      disabled={assignedReviewers.some(r => r.id === rev.id)}
-                    >
-                      Asignar
-                    </Button>
+                  <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--on-surface-variant)' }}>
+                    Cargando docentes...
+                  </div>
+                ) : (
               <div
                 style={{
                   display: 'flex',
@@ -357,6 +331,8 @@ export const AssignReviewers: React.FC = () => {
                   })
                 )}
               </div>
+            )}
+            </div>
             </CardContent>
           </Card>
         </div>
@@ -393,13 +369,6 @@ export const AssignReviewers: React.FC = () => {
                   No hay jurados asignados aún.
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                  {assignedReviewers.map(rev => (
-                    <div key={rev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-sm)' }}>
-                       <span style={{ fontSize: '14px', fontWeight: 500 }}>{rev.firstNames} {rev.lastNames}</span>
-                       <button onClick={() => handleRemove(rev.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)' }}>
-                         <Trash2 size={16} />
-                       </button>
                 <div
                   style={{
                     display: 'flex',
