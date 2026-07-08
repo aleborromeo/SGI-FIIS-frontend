@@ -20,7 +20,12 @@ export const ProjectsList: React.FC = () => {
         setLoading(false);
       })
       .catch((err: any) => {
-        setError(err.message || 'Error al cargar los proyectos');
+        const errorMsg = err.message || '';
+        if (errorMsg.includes('Error interno del servidor') || errorMsg.includes('500') || errorMsg.includes('NullPointer')) {
+          setError('No fue posible cargar las propuestas. Inténtelo nuevamente.');
+        } else {
+          setError(errorMsg || 'Ocurrió un problema al obtener la información.');
+        }
         setLoading(false);
       });
   }, []);

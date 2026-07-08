@@ -9,6 +9,7 @@ import { Link, useParams } from 'react-router-dom';
 import { projectService } from '../../services/projectService';
 import { thesisService } from '../../services/thesisService';
 import type { Project } from '../../services/projectService';
+import { useToast } from '../../context/ToastContext';
 
 export const ProjectMonitoring: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +17,7 @@ export const ProjectMonitoring: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
 
   useEffect(() => {
     if (id) {
@@ -35,8 +37,8 @@ export const ProjectMonitoring: React.FC = () => {
   const handleUpdateStatus = () => {
     if (id) {
       projectService.updateStatus(id, 'En Revisión')
-        .then(() => alert('Estado actualizado'))
-        .catch(() => alert('Error al actualizar'));
+        .then(() => toast.success('Estado actualizado'))
+        .catch(() => toast.error('Error al actualizar'));
     }
   };
 
@@ -53,11 +55,11 @@ export const ProjectMonitoring: React.FC = () => {
         status: 'ENVIADO'
         // Ideally we'd send the file path or ID here
       });
-      alert('Informe trimestral subido exitosamente.');
+      toast.success('Informe trimestral subido exitosamente.');
       // Refresh logic would go here
     } catch (err) {
       console.error(err);
-      alert('Error al subir informe.');
+      toast.error('Error al subir informe.');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {

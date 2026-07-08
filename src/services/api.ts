@@ -66,12 +66,24 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
       throw new Error(errorMessage);
     }
 
-    // Si no hay contenido (por ejemplo 204 No Content), retornar vacío
-    if (response.status === 204) {
+    // Verificar si hay contenido basado en headers y status
+    const contentLength = response.headers.get('Content-Length');
+    if (response.status === 204 || contentLength === '0') {
       return {} as T;
     }
 
-    return await response.json() as T;
+    // Leer la respuesta como texto primero para manejar cuerpos vacíos de forma segura
+    const textData = await response.text();
+    if (!textData) {
+      return {} as T;
+    }
+
+    try {
+      return JSON.parse(textData) as T;
+    } catch (e) {
+      console.warn('Response is not valid JSON:', textData);
+      return {} as T;
+    }
   } catch (error: any) {
     console.error('API request error:', error);
     throw error;

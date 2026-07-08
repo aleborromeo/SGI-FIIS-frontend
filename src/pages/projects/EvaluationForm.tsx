@@ -7,6 +7,7 @@ import { TableContainer, TableHead, TableBody, TableRow, TableHeader, TableCell 
 import { Save, CheckCircle, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { evaluacionService } from '../../services/evaluacionService';
+import { useToast } from '../../context/ToastContext';
 
 const criteriaList = [
   { id: 'c1', name: 'Planteamiento del Problema', weight: 20 },
@@ -26,6 +27,7 @@ export const EvaluationForm: React.FC = () => {
   const [obs, setObs] = useState<Record<string, string>>({});
   const [generalComments, setGeneralComments] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const toast = useToast();
 
   const calculateTotal = () => {
     let total = 0;
@@ -44,16 +46,19 @@ export const EvaluationForm: React.FC = () => {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
+      const userStr = localStorage.getItem('sgi_user');
+      const user = userStr ? JSON.parse(userStr) : { id: 1 };
       await evaluacionService.submitResult(evaluacionId, {
-        scores,
-        comments: generalComments,
-        verdict: Number(calculateTotal()) >= 13 ? 'APROBADO' : 'DESAPROBADO'
+        idEvaluador: user.id,
+        resultado: Number(calculateTotal()) >= 13 ? 'APROBADO' : 'RECHAZADO',
+        puntaje: Math.round(Number(calculateTotal())),
+        observaciones: generalComments
       });
-      alert('Evaluación enviada con éxito');
+      toast.success('Evaluación enviada con éxito');
       navigate('/evaluations/my-evaluations');
     } catch (err) {
       console.error(err);
-      alert('Error al enviar evaluación');
+      toast.error('Error al enviar evaluación');
     } finally {
       setSubmitting(false);
     }

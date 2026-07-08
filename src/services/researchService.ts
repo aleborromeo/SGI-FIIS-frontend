@@ -2,17 +2,14 @@ import { api } from './api';
 
 export interface ResearchLine {
   id: number;
-  code: string;
-  name: string;
-  description: string;
+  lineName: string;
   active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ResearchLineRequest {
-  code: string;
-  name: string;
-  description: string;
-  active: boolean;
+  lineName: string;
 }
 
 export interface ResearchGroup {
@@ -43,6 +40,22 @@ export const researchService = {
 
   changeLineStatus: async (id: number, active: boolean): Promise<ResearchLine> => {
     return api.patch<ResearchLine>(`/research-lines/${id}/status`, { active });
+  },
+
+  getLineById: async (id: number): Promise<ResearchLine> => {
+    return api.get<ResearchLine>(`/research-lines/${id}`);
+  },
+
+  getGroupsByLine: async (id: number): Promise<ResearchGroup[]> => {
+    return api.get<ResearchGroup[]>(`/research-lines/${id}/groups`);
+  },
+
+  assignGroupToLine: async (lineId: number, groupId: number): Promise<void> => {
+    return api.post<void>(`/research-lines/${lineId}/groups/${groupId}`, {});
+  },
+
+  removeGroupFromLine: async (lineId: number, groupId: number): Promise<void> => {
+    return api.delete<void>(`/research-lines/${lineId}/groups/${groupId}`);
   },
 
   // --- Grupos de Investigación ---

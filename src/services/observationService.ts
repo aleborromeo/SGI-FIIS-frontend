@@ -11,15 +11,21 @@ export interface Observation {
   remediedAt?: string;
 }
 
+export interface RemedyRequest {
+  applicantId: number;
+  description: string;
+  attachedDocumentId?: number;
+}
+
 export const observationService = {
   getByProcedureId: async (procedureId: string): Promise<Observation[]> => {
     return fetchApi<Observation[]>(`/observations/procedure/${procedureId}`);
   },
 
-  addRemedy: async (observationId: string | number, remedyContent: string): Promise<void> => {
+  addRemedy: async (observationId: string | number, payload: RemedyRequest): Promise<void> => {
     return fetchApi(`/observations/${observationId}/remedy`, {
       method: 'POST',
-      body: JSON.stringify({ content: remedyContent }),
+      body: JSON.stringify(payload),
     });
   }
 };

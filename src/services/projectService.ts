@@ -9,10 +9,22 @@ export interface Project {
   // ... other fields matching backend
 }
 
+export interface CreateProjectPayload {
+  title: string;
+  summary: string;
+  generalObjective: string;
+  researchLineId: number;
+  budget: number;
+  startDate: string;
+  endDate: string;
+  executionPlace: string;
+  researchGroupId: number;
+}
+
 export const projectService = {
   getAll: () => fetchApi<Project[]>('/projects'),
   getById: (id: string) => fetchApi<Project>(`/projects/${id}`),
-  create: (data: Partial<Project>) => 
+  create: (data: CreateProjectPayload) => 
     fetchApi<Project>('/projects', {
       method: 'POST',
       body: JSON.stringify(data),

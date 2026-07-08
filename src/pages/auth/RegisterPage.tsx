@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
+import { useToast } from '../../context/ToastContext';
 import './RegisterPage.css';
 import frontisBg from '../../assets/images/frontis_fiis.png';
 import universityIcon from '../../assets/images/icons8-universidad-50 (1).png';
@@ -9,6 +10,7 @@ import universityIcon from '../../assets/images/icons8-universidad-50 (1).png';
 export const RegisterPage: React.FC = () => {
   const { completeRegistration } = useContext(AuthContext);
   const navigate = useNavigate();
+  const toast = useToast();
 
   // Paso actual: 1 para el formulario de registro, 2 para la verificación del código
   const [step, setStep] = useState<1 | 2>(1);
@@ -420,7 +422,7 @@ export const RegisterPage: React.FC = () => {
                     required
                   />
                   <label htmlFor="acceptTerms" className="terms-label">
-                    Acepto los <a href="#" onClick={(e) => { e.preventDefault(); alert('Términos y condiciones del SGI-FIIS.'); }}>términos y condiciones</a>
+                    Acepto los <a href="#" onClick={(e) => { e.preventDefault(); toast.info('Términos y condiciones del SGI-FIIS.'); }}>términos y condiciones</a>
                   </label>
                 </div>
 

@@ -46,13 +46,15 @@ export const ResearchGroups: React.FC = () => {
             Administra los grupos de investigación de la facultad.
           </p>
         </div>
-        <Button 
-          variant="primary"
-          onClick={() => navigate('/groups/new')}
-          icon={<Plus size={18} />}
-        >
-          Nuevo Grupo
-        </Button>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <Button 
+            variant="primary"
+            onClick={() => navigate('/groups/new')}
+            icon={<Plus size={18} />}
+          >
+            Nuevo Grupo
+          </Button>
+        </div>
       </div>
 
       {error && (

@@ -10,10 +10,7 @@ export const NewResearchLine: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    code: '',
-    name: '',
-    description: '',
-    active: true
+    lineName: ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -70,54 +67,16 @@ export const NewResearchLine: React.FC = () => {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
-            <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Código</label>
-            <input 
-              type="text" 
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              required
-              placeholder="Ej: LI-01"
-              style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)', fontSize: '16px' }} 
-            />
-          </div>
-
-          <div>
             <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Nombre de la Línea</label>
             <input 
               type="text" 
-              name="name"
-              value={formData.name}
+              name="lineName"
+              value={formData.lineName}
               onChange={handleChange}
               required
               placeholder="Ej: Inteligencia Artificial"
               style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)', fontSize: '16px' }} 
             />
-          </div>
-
-          <div>
-            <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Descripción</label>
-            <textarea 
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-              rows={4}
-              placeholder="Descripción detallada..."
-              style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)', fontSize: '16px', resize: 'vertical' }} 
-            />
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <input 
-              type="checkbox" 
-              name="active"
-              id="active"
-              checked={formData.active}
-              onChange={handleChange}
-              style={{ width: '18px', height: '18px' }}
-            />
-            <label htmlFor="active" className="text-label-md" style={{ fontWeight: 600 }}>Línea Activa</label>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>

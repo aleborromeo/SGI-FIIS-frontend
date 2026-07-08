@@ -8,6 +8,7 @@ import { FileText, Download, Bell, HelpCircle, ArrowLeft, Send } from 'lucide-re
 import { Link, useParams } from 'react-router-dom';
 import { thesisService } from '../../services/thesisService';
 import type { ThesisPlan } from '../../services/thesisService';
+import { useToast } from '../../context/ToastContext';
 
 const steps = [
   { id: '1', label: 'Estudiante', status: 'listo' as StepStatus, sublabel: 'Listo' },
@@ -20,6 +21,7 @@ export const ThesisTraceability: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [plan, setPlan] = useState<ThesisPlan | null>(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   useEffect(() => {
     if (id) {
@@ -33,16 +35,16 @@ export const ThesisTraceability: React.FC = () => {
   const handleApprove = () => {
     if (id) {
       thesisService.approveDirector(id)
-        .then(() => alert('Aprobado con éxito'))
-        .catch(() => alert('Error al aprobar'));
+        .then(() => toast.success('Aprobado con éxito'))
+        .catch(() => toast.error('Error al aprobar'));
     }
   };
 
   const handleObserve = () => {
     if (id) {
       thesisService.observeDirector(id, 'Observación general')
-        .then(() => alert('Observado con éxito'))
-        .catch(() => alert('Error al observar'));
+        .then(() => toast.success('Observado con éxito'))
+        .catch(() => toast.error('Error al observar'));
     }
   };
 

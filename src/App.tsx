@@ -1,6 +1,8 @@
 import { useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext.tsx';
+import { ToastProvider } from './context/ToastContext.tsx';
+import { ConfirmProvider } from './context/ConfirmContext.tsx';
 import { WelcomePage } from './pages/WelcomePage.tsx';
 import { LoginPage } from './pages/auth/LoginPage.tsx';
 import { RegisterPage } from './pages/auth/RegisterPage.tsx';
@@ -23,6 +25,7 @@ import { ReviewProgressReports } from './pages/progressreports/ReviewProgressRep
 // Admin Views
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
 import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
+import { ResearchLineDetail } from './pages/admin/ResearchLineDetail.tsx';
 import { ResearchGroups } from './pages/admin/ResearchGroups.tsx';
 import { NewResearchGroup } from './pages/admin/NewResearchGroup.tsx';
 import { ResearchGroupDetail } from './pages/admin/ResearchGroupDetail.tsx';
@@ -90,9 +93,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+    <ToastProvider>
+      <ConfirmProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
           {/* Ruta raíz (Página de Bienvenida) */}
           <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
 
@@ -121,6 +126,7 @@ function App() {
             {/* Vistas de Administración */}
             <Route path="/lines" element={<ResearchLines />} />
             <Route path="/lines/new" element={<NewResearchLine />} />
+            <Route path="/lines/:id" element={<ResearchLineDetail />} />
             <Route path="/groups" element={<ResearchGroups />} />
             <Route path="/groups/new" element={<NewResearchGroup />} />
             <Route path="/groups/:id" element={<ResearchGroupDetail />} />
@@ -131,9 +137,11 @@ function App() {
 
           {/* Redirección por defecto para cualquier ruta inválida */}
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </ConfirmProvider>
+    </ToastProvider>
   );
 }
 

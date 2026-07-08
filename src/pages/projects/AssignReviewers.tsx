@@ -6,6 +6,7 @@ import { Search, UserPlus, Users, ArrowLeft, Trash2 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { userService, type User } from '../../services/userService';
 import { evaluacionService } from '../../services/evaluacionService';
+import { useToast } from '../../context/ToastContext';
 
 export const AssignReviewers: React.FC = () => {
   const location = useLocation();
@@ -18,6 +19,7 @@ export const AssignReviewers: React.FC = () => {
   const [assignedReviewers, setAssignedReviewers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const toast = useToast();
 
   useEffect(() => {
     userService.getAll()
@@ -41,24 +43,24 @@ export const AssignReviewers: React.FC = () => {
 
   const handleConfirm = async () => {
     if (assignedReviewers.length === 0) {
-      alert('Debe asignar al menos un jurado.');
+      toast.warning('Debe asignar al menos un jurado.');
       return;
     }
     
     try {
       const reviewerIds = assignedReviewers.map(r => r.id);
-      await evaluacionService.assignReviewers(projectId, reviewerIds);
-      alert('Jurados asignados exitosamente');
+      await evaluacionService.assignReviewers(Number(projectId), reviewerIds);
+      toast.success('Jurados asignados exitosamente');
       navigate(`/projects/${projectId}`);
     } catch (err) {
       console.error(err);
-      alert('Error al asignar jurados');
+      toast.error('Error al asignar jurados');
     }
   };
 
   const filteredReviewers = availableReviewers.filter(u => 
-    `${u.firstName} ${u.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase())
+    `${u.firstNames} ${u.lastNames}`.toLowerCase().includes(search.toLowerCase()) ||
+    u.institutionalEmail.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -99,8 +101,8 @@ export const AssignReviewers: React.FC = () => {
                 ) : filteredReviewers.map((rev) => (
                   <div key={rev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)' }}>
                     <div>
-                      <h3 className="text-title-md" style={{ fontWeight: 600 }}>{rev.firstName} {rev.lastName}</h3>
-                      <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>{rev.email}</div>
+                      <h3 className="text-title-md" style={{ fontWeight: 600 }}>{rev.firstNames} {rev.lastNames}</h3>
+                      <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>{rev.institutionalEmail}</div>
                     </div>
                     <Button 
                       variant="secondary" 
@@ -135,7 +137,7 @@ export const AssignReviewers: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
                   {assignedReviewers.map(rev => (
                     <div key={rev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-sm)' }}>
-                       <span style={{ fontSize: '14px', fontWeight: 500 }}>{rev.firstName} {rev.lastName}</span>
+                       <span style={{ fontSize: '14px', fontWeight: 500 }}>{rev.firstNames} {rev.lastNames}</span>
                        <button onClick={() => handleRemove(rev.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)' }}>
                          <Trash2 size={16} />
                        </button>

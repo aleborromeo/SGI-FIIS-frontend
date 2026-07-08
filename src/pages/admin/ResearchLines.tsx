@@ -4,12 +4,14 @@ import { Plus, BookOpen, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { researchService, type ResearchLine } from '../../services/researchService';
 import { Spinner } from '../../components/common/Spinner';
+import { useToast } from '../../context/ToastContext';
 
 export const ResearchLines: React.FC = () => {
   const navigate = useNavigate();
   const [lines, setLines] = useState<ResearchLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   const fetchLines = async () => {
     try {
@@ -31,8 +33,9 @@ export const ResearchLines: React.FC = () => {
     try {
       await researchService.changeLineStatus(id, !currentStatus);
       fetchLines(); // Reload
+      toast.success(currentStatus ? 'Línea desactivada con éxito' : 'Línea activada con éxito');
     } catch (err: any) {
-      alert(`Error al cambiar estado: ${err.message}`);
+      toast.error(`Error al cambiar estado: ${err.message}`);
     }
   };
 
@@ -113,28 +116,29 @@ export const ResearchLines: React.FC = () => {
               </div>
               
               <div>
-                <div className="text-label-sm" style={{ color: 'var(--primary)', fontWeight: 700, marginBottom: '4px' }}>
-                  {line.code}
-                </div>
                 <h3 className="text-title-md" style={{ color: 'var(--on-surface)', fontWeight: 700, marginBottom: '8px' }}>
-                  {line.name}
+                  {line.lineName}
                 </h3>
-                <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                  {line.description}
-                </p>
               </div>
 
-              <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--outline-variant)' }}>
+              <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--outline-variant)', display: 'flex', gap: '8px' }}>
                 <Button 
                   onClick={() => handleToggleStatus(line.id, line.active)}
                   variant={line.active ? "danger" : "primary"}
-                  style={{ width: '100%' }}
+                  style={{ flex: 1 }}
                 >
                   {line.active ? (
                     <><XCircle size={18} style={{ marginRight: '8px' }} /> Desactivar</>
                   ) : (
                     <><CheckCircle size={18} style={{ marginRight: '8px' }} /> Activar</>
                   )}
+                </Button>
+                <Button 
+                  variant="secondary"
+                  onClick={() => navigate(`/lines/${line.id}`)}
+                  style={{ flex: 1 }}
+                >
+                  Ver Detalles
                 </Button>
               </div>
             </div>
