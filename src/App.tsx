@@ -10,7 +10,6 @@ import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
 import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
 
-// Views from feature/postulaciones
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
 import { ProjectMonitoring } from './pages/projects/ProjectMonitoring.tsx';
 import { ProjectAudit } from './pages/projects/ProjectAudit.tsx';
@@ -51,7 +50,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -62,12 +61,16 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Rutas públicas */}
+          {/* Inicio público */}
           <Route path="/" element={<WelcomePage />} />
+          <Route path="/inicio" element={<WelcomePage />} />
+          <Route path="/home" element={<WelcomePage />} />
+
+          {/* Autenticación */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Dashboard general según rol */}
+          {/* Dashboard general */}
           <Route
             path="/dashboard"
             element={
@@ -91,22 +94,11 @@ function App() {
             }
           />
 
-          {/* Compatibilidad con rutas antiguas del módulo dashboards */}
+          {/* Compatibilidad con rutas antiguas */}
           <Route path="/dashboards" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboards/*" element={<Navigate to="/dashboard" replace />} />
 
-          {/* Vistas específicas de postulaciones y seguimiento */}
-          <Route
-            path="/thesis/plan/:id"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <ThesisTraceability />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-
+          {/* Proyectos y tesis */}
           <Route
             path="/projects"
             element={
@@ -152,17 +144,6 @@ function App() {
           />
 
           <Route
-            path="/projects/:id"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <ProjectMonitoring />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
             path="/projects/audit"
             element={
               <ProtectedRoute>
@@ -173,6 +154,30 @@ function App() {
             }
           />
 
+          <Route
+            path="/projects/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardContainer>
+                  <ProjectMonitoring />
+                </DashboardContainer>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Tesis */}
+          <Route
+            path="/thesis/plan/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardContainer>
+                  <ThesisTraceability />
+                </DashboardContainer>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Evaluaciones y observaciones */}
           <Route
             path="/evaluations/my-evaluations"
             element={
@@ -206,6 +211,7 @@ function App() {
             }
           />
 
+          {/* Cualquier ruta inválida vuelve al inicio público */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

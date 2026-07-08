@@ -1,25 +1,50 @@
 import { fetchApi } from './api';
 
+export interface ProjectMember {
+  id?: number;
+  userId: number;
+  role: string;
+}
+
 export interface Project {
-  id: string;
-  title: string;
-  type: string;
-  line: string;
-  status: string;
-  // ... other fields matching backend
+  id: number | string;
+  code?: string;
+  title?: string;
+  summary?: string;
+  generalObjective?: string;
+  researchLineId?: number;
+  researchLineName?: string;
+  budget?: number;
+  startDate?: string;
+  endDate?: string;
+  executionPlace?: string;
+  responsibleId?: number;
+  researchGroupId?: number;
+  researchGroupCode?: string;
+  callId?: number;
+  documentId?: number;
+  status?: string;
+  members?: ProjectMember[];
+
+  // Compatibilidad temporal con pantallas antiguas
+  line?: string;
+  type?: string;
 }
 
 export const projectService = {
   getAll: () => fetchApi<Project[]>('/projects'),
-  getById: (id: string) => fetchApi<Project>(`/projects/${id}`),
-  create: (data: Partial<Project>) => 
+
+  getById: (id: string | number) =>
+    fetchApi<Project>(`/projects/${id}`),
+
+  create: (data: Partial<Project>) =>
     fetchApi<Project>('/projects', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
-  updateStatus: (id: string, status: string) => 
-    fetchApi<Project>(`/projects/${id}/status`, {
+
+  updateStatus: (id: string | number, status: string) =>
+    fetchApi<Project>(`/projects/${id}/status?status=${encodeURIComponent(status)}`, {
       method: 'PATCH',
-      body: JSON.stringify({ status }),
     }),
 };
