@@ -1,233 +1,754 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Activity,
+  ArrowLeft,
+  BarChart3,
+  Bell,
+  CheckCircle,
+  ClipboardList,
+  Clock,
+  Download,
+  FileText,
+  FolderOpen,
+  Plus,
+  Printer,
+  Search,
+  ShieldCheck,
+  UploadCloud,
+  UserCheck,
+  Users,
+} from 'lucide-react';
+
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Search, Bell, Folder, FileText, Printer, Plus, ShieldCheck, ClipboardList, Users, Activity, BarChart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader } from '../../components/ui/Card';
+import { Alert } from '../../components/ui/Alert';
+
+interface AuditEvent {
+  id: string;
+  date: string;
+  time: string;
+  user: string;
+  role: string;
+  action: string;
+  detail: string;
+  status: 'success' | 'warning' | 'info';
+}
+
+interface DocumentItem {
+  id: string;
+  name: string;
+  type: string;
+  owner: string;
+  date: string;
+  status: 'VIGENTE' | 'OBSERVADO' | 'HISTÓRICO';
+}
+
+interface Participant {
+  id: string;
+  name: string;
+  role: string;
+  email: string;
+}
+
+const auditEvents: AuditEvent[] = [
+  {
+    id: '1',
+    date: '2026-07-01',
+    time: '08:30',
+    user: 'Admin Sistema',
+    role: 'Administrador',
+    action: 'Registro del expediente',
+    detail: 'Se creó el expediente digital del proyecto para iniciar el flujo académico.',
+    status: 'success',
+  },
+  {
+    id: '2',
+    date: '2026-07-02',
+    time: '10:15',
+    user: 'Jorge Castro',
+    role: 'Evaluador',
+    action: 'Asignación de revisores',
+    detail: 'Se asignaron jurados para revisión técnica y académica del documento.',
+    status: 'info',
+  },
+  {
+    id: '3',
+    date: '2026-07-03',
+    time: '16:40',
+    user: 'María Rojas',
+    role: 'Docente investigador',
+    action: 'Observación registrada',
+    detail: 'Se solicitaron ajustes en metodología, cronograma y objetivos específicos.',
+    status: 'warning',
+  },
+  {
+    id: '4',
+    date: '2026-07-04',
+    time: '11:20',
+    user: 'Carlos Mendoza',
+    role: 'Coordinador',
+    action: 'Subsanación recibida',
+    detail: 'El equipo responsable registró una nueva versión del documento corregido.',
+    status: 'success',
+  },
+];
+
+const documents: DocumentItem[] = [
+  {
+    id: 'DOC-001',
+    name: 'Plan de investigación',
+    type: 'PDF',
+    owner: 'Equipo responsable',
+    date: '2026-07-01',
+    status: 'VIGENTE',
+  },
+  {
+    id: 'DOC-002',
+    name: 'Cronograma de actividades',
+    type: 'XLSX',
+    owner: 'Coordinador de grupo',
+    date: '2026-07-02',
+    status: 'VIGENTE',
+  },
+  {
+    id: 'DOC-003',
+    name: 'Informe de observaciones',
+    type: 'PDF',
+    owner: 'Jurado evaluador',
+    date: '2026-07-03',
+    status: 'OBSERVADO',
+  },
+  {
+    id: 'DOC-004',
+    name: 'Versión anterior del plan',
+    type: 'PDF',
+    owner: 'Sistema',
+    date: '2026-06-28',
+    status: 'HISTÓRICO',
+  },
+];
+
+const participants: Participant[] = [
+  {
+    id: '1',
+    name: 'Admin Sistema',
+    role: 'Administrador',
+    email: 'admin@unas.edu.pe',
+  },
+  {
+    id: '2',
+    name: 'Jorge Castro',
+    role: 'Evaluador',
+    email: 'jorge.castro@unas.edu.pe',
+  },
+  {
+    id: '3',
+    name: 'María Rojas',
+    role: 'Docente investigador',
+    email: 'maria.rojas@unas.edu.pe',
+  },
+];
+
+function formatDate(value: string): string {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('es-PE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
+}
+
+function getDocumentVariant(status: DocumentItem['status']): 'success' | 'warning' | 'neutral' {
+  if (status === 'VIGENTE') return 'success';
+  if (status === 'OBSERVADO') return 'warning';
+  return 'neutral';
+}
+
+function getAuditVariant(status: AuditEvent['status']): 'success' | 'warning' | 'info' {
+  return status;
+}
 
 export const ProjectAudit: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [message, setMessage] = useState<string | null>(null);
+
+  const filteredEvents = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+
+    if (!search) return auditEvents;
+
+    return auditEvents.filter((event) => {
+      return (
+        event.user.toLowerCase().includes(search) ||
+        event.role.toLowerCase().includes(search) ||
+        event.action.toLowerCase().includes(search) ||
+        event.detail.toLowerCase().includes(search) ||
+        event.date.toLowerCase().includes(search)
+      );
+    });
+  }, [searchTerm]);
+
+  const filteredDocuments = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+
+    if (!search) return documents;
+
+    return documents.filter((document) => {
+      return (
+        document.name.toLowerCase().includes(search) ||
+        document.owner.toLowerCase().includes(search) ||
+        document.status.toLowerCase().includes(search) ||
+        document.type.toLowerCase().includes(search)
+      );
+    });
+  }, [searchTerm]);
+
+  function handlePrint() {
+    window.print();
+  }
+
+  function handleUpload() {
+    setMessage(
+      'Anexo preparado en la vista. La carga real de archivos queda pendiente de integración con backend.'
+    );
+  }
+
+  function handleDownloadLog() {
+    setMessage(
+      'Log de auditoría preparado en la vista. La descarga real queda pendiente de integración con backend.'
+    );
+  }
+
   return (
     <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
-      {/* Top Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--outline-variant)', paddingBottom: '16px', marginBottom: '32px' }}>
-        <div style={{ position: 'relative', width: '300px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '10px', color: 'var(--on-surface-variant)' }} />
-          <input 
-            type="text" 
-            placeholder="Buscar acciones, usuarios o fechas..." 
-            style={{ width: '100%', padding: '8px 12px 8px 36px', borderRadius: 'var(--radius-full)', border: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface-container-low)', fontFamily: 'inherit' }}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderBottom: '1px solid var(--outline-variant)',
+          paddingBottom: '16px',
+          marginBottom: '28px',
+          gap: '24px',
+        }}
+      >
+        <div style={{ position: 'relative', width: '360px' }}>
+          <Search
+            size={18}
+            style={{
+              position: 'absolute',
+              left: '12px',
+              top: '10px',
+              color: 'var(--on-surface-variant)',
+            }}
+          />
+
+          <input
+            type="text"
+            placeholder="Buscar acciones, usuarios, documentos o fechas..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            className="input"
+            style={{ paddingLeft: '36px' }}
           />
         </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Bell size={20} color="var(--on-surface-variant)" />
         </div>
       </div>
 
-      {/* Title */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <Link
+        to="/projects"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          color: 'var(--on-surface-variant)',
+          textDecoration: 'none',
+          marginBottom: '24px',
+        }}
+      >
+        <ArrowLeft size={16} />
+        Volver a proyectos
+      </Link>
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: '24px',
+          marginBottom: '28px',
+        }}
+      >
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <Link to="/projects" style={{ textDecoration: 'none', color: 'var(--primary)', fontWeight: 600, fontSize: '14px' }}>← Volver al Listado</Link>
-            <span style={{ color: 'var(--on-surface-variant)' }}>|</span>
-            <span className="text-label-md" style={{ color: 'var(--on-surface-variant)' }}>PROPUESTAS</span>
-            <span style={{ color: 'var(--on-surface-variant)' }}>›</span>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '12px',
+            }}
+          >
             <Badge variant="info">#EXP-2026-442</Badge>
+            <Badge variant="success">Expediente activo</Badge>
           </div>
-          <h1 className="text-headline-lg" style={{ color: 'var(--on-surface)', marginBottom: '8px' }}>Expediente Digital Único y Auditoría de Trámite</h1>
-          <div className="text-body-md" style={{ color: 'var(--on-surface-variant)' }}>
-            Gabinete de Innovación de Software y Tecnologías Emergentes (GINSOFT)
-          </div>
+
+          <h1
+            className="text-headline-lg"
+            style={{
+              color: 'var(--on-surface)',
+              marginBottom: '8px',
+            }}
+          >
+            Expediente digital único y auditoría de trámite
+          </h1>
+
+          <p
+            className="text-body-md"
+            style={{
+              color: 'var(--on-surface-variant)',
+              maxWidth: '820px',
+            }}
+          >
+            Seguimiento documental, participantes, movimientos y evidencias del
+            trámite académico asociado al proyecto de investigación.
+          </p>
         </div>
+
         <div style={{ display: 'flex', gap: '12px' }}>
-          <Button variant="secondary" icon={<Printer size={18} />}>Imprimir Log</Button>
-          <Button variant="primary" icon={<Plus size={18} />}>Subir Anexo</Button>
+          <Button
+            variant="secondary"
+            icon={<Printer size={18} />}
+            onClick={handlePrint}
+          >
+            Imprimir
+          </Button>
+
+          <Button
+            variant="primary"
+            icon={<Plus size={18} />}
+            onClick={handleUpload}
+          >
+            Subir anexo
+          </Button>
         </div>
       </div>
 
-      {/* Project Sub-navigation Tabs */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', borderBottom: '1px solid var(--outline-variant)', paddingBottom: '16px', overflowX: 'auto' }}>
-        <Link to="/projects/audit" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'var(--surface-container-high)', color: 'var(--on-surface)', borderRadius: 'var(--radius-full)', textDecoration: 'none', fontWeight: 600 }}>
-          <Folder size={18} /> Expediente
+      {message && (
+        <div style={{ marginBottom: '24px' }}>
+          <Alert title="Acción registrada en la vista">{message}</Alert>
+        </div>
+      )}
+
+      <div
+        style={{
+          display: 'flex',
+          gap: '12px',
+          marginBottom: '28px',
+          borderBottom: '1px solid var(--outline-variant)',
+          paddingBottom: '16px',
+          overflowX: 'auto',
+        }}
+      >
+        <Link
+          to="/projects/audit"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            backgroundColor: 'var(--surface-container-high)',
+            color: 'var(--on-surface)',
+            borderRadius: 'var(--radius-full)',
+            textDecoration: 'none',
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <FolderOpen size={18} />
+          Expediente
         </Link>
-        <Link to="/projects/monitoring" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', color: 'var(--on-surface-variant)', borderRadius: 'var(--radius-full)', textDecoration: 'none', fontWeight: 500, transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-container)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-          <BarChart size={18} /> Seguimiento Trimestral
+
+        <Link
+          to="/projects/1"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            color: 'var(--on-surface-variant)',
+            borderRadius: 'var(--radius-full)',
+            textDecoration: 'none',
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <BarChart3 size={18} />
+          Seguimiento
         </Link>
-        <Link to="/thesis/traceability" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', color: 'var(--on-surface-variant)', borderRadius: 'var(--radius-full)', textDecoration: 'none', fontWeight: 500, transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-container)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-          <Activity size={18} /> Trazabilidad
+
+        <Link
+          to="/thesis/plan/1"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            color: 'var(--on-surface-variant)',
+            borderRadius: 'var(--radius-full)',
+            textDecoration: 'none',
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <Activity size={18} />
+          Trazabilidad
         </Link>
-        <Link to="/projects/assign" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', color: 'var(--on-surface-variant)', borderRadius: 'var(--radius-full)', textDecoration: 'none', fontWeight: 500, transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-container)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-          <Users size={18} /> Asignar Jurados
-        </Link>
-        <Link to="/projects/evaluate" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', color: 'var(--on-surface-variant)', borderRadius: 'var(--radius-full)', textDecoration: 'none', fontWeight: 500, transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-container)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-          <ClipboardList size={18} /> Evaluar (Rúbrica)
+
+        <Link
+          to="/projects/assign?projectId=1"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            color: 'var(--on-surface-variant)',
+            borderRadius: 'var(--radius-full)',
+            textDecoration: 'none',
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <Users size={18} />
+          Revisores
         </Link>
       </div>
 
-      {/* Main Two Columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
-        
-        {/* Left Column - Document Repository */}
-        <div style={{ backgroundColor: 'white', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '24px', borderBottom: '1px solid var(--outline-variant)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 className="text-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Folder size={20} /> Repositorio de Documentos</h3>
-            <Badge style={{ backgroundColor: '#dbeafe', color: '#1e40af' }}>VERSIÓN FINAL 1.0</Badge>
-          </div>
-          
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--outline-variant)' }}>
-                <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--on-surface-variant)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>Documento</th>
-                <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--on-surface-variant)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>Subido Por</th>
-                <th style={{ padding: '16px 24px', textAlign: 'left', color: 'var(--on-surface-variant)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>Fecha y Hora</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ borderBottom: '1px solid var(--surface-container-high)' }}>
-                <td style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                    <FileText size={24} color="#dc2626" />
-                    <div>
-                      <div style={{ fontWeight: 600, marginBottom: '4px' }}>Proyecto_Inicial_Firmado.pdf</div>
-                      <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>ID: 442-PRO-01</div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          gap: '16px',
+          marginBottom: '28px',
+        }}
+      >
+        <Card>
+          <CardContent>
+            <ShieldCheck size={24} color="var(--primary)" />
+            <strong style={{ display: 'block', fontSize: '26px', marginTop: '10px' }}>
+              {auditEvents.length}
+            </strong>
+            <span style={{ color: 'var(--on-surface-variant)' }}>
+              Movimientos
+            </span>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <FileText size={24} color="var(--primary)" />
+            <strong style={{ display: 'block', fontSize: '26px', marginTop: '10px' }}>
+              {documents.length}
+            </strong>
+            <span style={{ color: 'var(--on-surface-variant)' }}>
+              Documentos
+            </span>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <UserCheck size={24} color="var(--primary)" />
+            <strong style={{ display: 'block', fontSize: '26px', marginTop: '10px' }}>
+              {participants.length}
+            </strong>
+            <span style={{ color: 'var(--on-surface-variant)' }}>
+              Participantes
+            </span>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <CheckCircle size={24} color="#15803d" />
+            <strong style={{ display: 'block', fontSize: '26px', marginTop: '10px' }}>
+              Vigente
+            </strong>
+            <span style={{ color: 'var(--on-surface-variant)' }}>
+              Estado documental
+            </span>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1.3fr 0.9fr',
+          gap: '28px',
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          <Card>
+            <CardHeader>
+              <h2
+                className="text-title-lg"
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <ClipboardList size={20} />
+                Documentos del expediente
+              </h2>
+            </CardHeader>
+
+            <CardContent>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {filteredDocuments.length === 0 ? (
+                  <p style={{ color: 'var(--on-surface-variant)' }}>
+                    No se encontraron documentos con el criterio ingresado.
+                  </p>
+                ) : (
+                  filteredDocuments.map((document) => (
+                    <div
+                      key={document.id}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '16px',
+                        padding: '16px',
+                        border: '1px solid var(--outline-variant)',
+                        borderRadius: 'var(--radius-md)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                        <div
+                          style={{
+                            width: '44px',
+                            height: '44px',
+                            borderRadius: '12px',
+                            backgroundColor: 'var(--surface-container-high)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <FileText size={22} color="var(--primary)" />
+                        </div>
+
+                        <div>
+                          <strong style={{ display: 'block' }}>{document.name}</strong>
+                          <span
+                            className="text-caption"
+                            style={{ color: 'var(--on-surface-variant)' }}
+                          >
+                            {document.id} · {document.type} · {document.owner} ·{' '}
+                            {formatDate(document.date)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Badge variant={getDocumentVariant(document.status)}>
+                          {document.status}
+                        </Badge>
+
+                        <Button
+                          variant="secondary"
+                          style={{ padding: '6px 10px' }}
+                          icon={<Download size={16} />}
+                          onClick={handleDownloadLog}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td style={{ padding: '24px', color: 'var(--on-surface-variant)', fontSize: '14px' }}>Investigador</td>
-                <td style={{ padding: '24px', color: 'var(--on-surface-variant)', fontSize: '14px' }}>08/06/2026<br/>10:25</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--surface-container-high)' }}>
-                <td style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                    <FileText size={24} color="#dc2626" />
-                    <div>
-                      <div style={{ fontWeight: 600, marginBottom: '4px' }}>Resolución_Decanatura_RD045.pdf</div>
-                      <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>ID: 442-RES-45</div>
-                    </div>
-                  </div>
-                </td>
-                <td style={{ padding: '24px', color: 'var(--on-surface-variant)', fontSize: '14px' }}>Decano</td>
-                <td style={{ padding: '24px', color: 'var(--on-surface-variant)', fontSize: '14px' }}>20/06/2026<br/>09:35</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--surface-container-high)' }}>
-                <td style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                    <FileText size={24} color="#2563eb" />
-                    <div>
-                      <div style={{ fontWeight: 600, marginBottom: '4px' }}>Evidencia_Avance_Q1.docx</div>
-                      <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>ID: 442-EVI-Q1</div>
-                    </div>
-                  </div>
-                </td>
-                <td style={{ padding: '24px', color: 'var(--on-surface-variant)', fontSize: '14px' }}>Docente</td>
-                <td style={{ padding: '24px', color: 'var(--on-surface-variant)', fontSize: '14px' }}>15/07/2026<br/>14:20</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--surface-container-high)' }}>
-                <td style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                    <FileText size={24} color="#dc2626" />
-                    <div>
-                      <div style={{ fontWeight: 600, marginBottom: '4px' }}>Anexo_Presupuestario_Final.pdf</div>
-                      <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>ID: 442-ANX-09</div>
-                    </div>
-                  </div>
-                </td>
-                <td style={{ padding: '24px', color: 'var(--on-surface-variant)', fontSize: '14px' }}>Coordinador</td>
-                <td style={{ padding: '24px', color: 'var(--on-surface-variant)', fontSize: '14px' }}>22/07/2026<br/>11:15</td>
-              </tr>
-            </tbody>
-          </table>
-          <div style={{ padding: '24px', marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface-container-lowest)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <ShieldCheck size={24} color="#16a34a" />
-              <div>
-                <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--on-surface)' }}>Integridad de documentos verificada</div>
-                <div style={{ fontSize: '12px', color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  mediante Blockchain <span style={{ border: '1px solid var(--outline-variant)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>SHA-256 Verified</span>
-                </div>
+                  ))
+                )}
               </div>
-            </div>
-            <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>Mostrando 4 de 4 documentos firmados digitalmente.</div>
-          </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <h2
+                className="text-title-lg"
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Users size={20} />
+                Participantes del trámite
+              </h2>
+            </CardHeader>
+
+            <CardContent>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {participants.map((participant) => (
+                  <div
+                    key={participant.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '14px 16px',
+                      border: '1px solid var(--outline-variant)',
+                      borderRadius: 'var(--radius-md)',
+                    }}
+                  >
+                    <div>
+                      <strong style={{ display: 'block' }}>{participant.name}</strong>
+                      <span
+                        className="text-caption"
+                        style={{ color: 'var(--on-surface-variant)' }}
+                      >
+                        {participant.email}
+                      </span>
+                    </div>
+
+                    <Badge variant="info">{participant.role}</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Right Column - Dark Audit Timeline */}
-        <div style={{ backgroundColor: '#111827', color: '#e5e7eb', padding: '24px', borderLeft: '1px solid var(--outline-variant)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h3 className="text-title-lg" style={{ color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>Auditoría</h3>
-            <div style={{ display: 'flex', gap: '4px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ef4444' }} />
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4b5563' }} />
-            </div>
-          </div>
-          
-          <div style={{ fontFamily: 'monospace', fontSize: '10px', color: '#6b7280', letterSpacing: '0.05em', marginBottom: '32px', borderBottom: '1px solid #374151', paddingBottom: '12px' }}>
-            READ_ONLY_SESSION // V_STAMP: 442-AUTH
-          </div>
+        <Card style={{ overflow: 'hidden' }}>
+          <CardHeader
+            style={{
+              backgroundColor: '#111827',
+              color: 'white',
+            }}
+          >
+            <h2
+              className="text-title-lg"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <ShieldCheck size={20} />
+              Auditoría
+            </h2>
+          </CardHeader>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', position: 'relative' }}>
-            {/* Timeline Vertical Line */}
-            <div style={{ position: 'absolute', left: '7px', top: '24px', bottom: '0', width: '2px', backgroundColor: '#374151', zIndex: 0 }} />
-            
-            {/* Event 1 */}
-            <div style={{ position: 'relative', zIndex: 1, paddingLeft: '32px' }}>
-              <div style={{ position: 'absolute', left: '0', top: '4px', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#3b82f6', border: '4px solid #111827' }} />
-              <div className="text-caption" style={{ color: '#9ca3af', marginBottom: '8px', fontFamily: 'monospace' }}>[20/06/2026 09:30]</div>
-              <div style={{ backgroundColor: '#1f2937', padding: '16px', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontWeight: 600, color: 'white', marginBottom: '12px', fontSize: '14px', letterSpacing: '0.05em' }}>EMISIÓN DE RESOLUCIÓN</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px', color: '#9ca3af', fontFamily: 'monospace' }}>
-                  <span>Usuario:</span> <span style={{ textAlign: 'right', color: '#e5e7eb' }}>Decano</span>
-                  <span>Estado:</span> <span style={{ textAlign: 'right', color: '#10b981', fontWeight: 700 }}>APROBADO</span>
-                  <span>TX_ID:</span> <span style={{ textAlign: 'right', color: '#e5e7eb' }}>0x8a92...f33b</span>
-                </div>
-              </div>
+          <CardContent
+            style={{
+              backgroundColor: '#111827',
+              color: '#e5e7eb',
+              paddingTop: '24px',
+              minHeight: '100%',
+            }}
+          >
+            <div style={{ display: 'grid', gap: '18px' }}>
+              {filteredEvents.length === 0 ? (
+                <p style={{ color: '#9ca3af' }}>
+                  No se encontraron movimientos con el criterio ingresado.
+                </p>
+              ) : (
+                filteredEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '28px 1fr',
+                      gap: '12px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '999px',
+                        marginTop: '4px',
+                        backgroundColor:
+                          event.status === 'success'
+                            ? '#22c55e'
+                            : event.status === 'warning'
+                              ? '#f59e0b'
+                              : '#60a5fa',
+                      }}
+                    />
+
+                    <div
+                      style={{
+                        paddingBottom: '18px',
+                        borderBottom: '1px solid rgba(255,255,255,0.12)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: '12px',
+                          marginBottom: '6px',
+                        }}
+                      >
+                        <strong style={{ color: 'white' }}>{event.action}</strong>
+
+                        <Badge variant={getAuditVariant(event.status)}>
+                          {event.role}
+                        </Badge>
+                      </div>
+
+                      <p
+                        style={{
+                          color: '#cbd5e1',
+                          lineHeight: 1.5,
+                          marginBottom: '8px',
+                        }}
+                      >
+                        {event.detail}
+                      </p>
+
+                      <div
+                        className="text-caption"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          color: '#9ca3af',
+                        }}
+                      >
+                        <Clock size={14} />
+                        {formatDate(event.date)} · {event.time} · {event.user}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
-            {/* Event 2 */}
-            <div style={{ position: 'relative', zIndex: 1, paddingLeft: '32px' }}>
-              <div style={{ position: 'absolute', left: '0', top: '4px', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#4b5563', border: '4px solid #111827' }} />
-              <div className="text-caption" style={{ color: '#9ca3af', marginBottom: '8px', fontFamily: 'monospace' }}>[12/06/2026 11:10]</div>
-              <div style={{ backgroundColor: '#1f2937', padding: '16px', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontWeight: 600, color: 'white', marginBottom: '12px', fontSize: '14px', letterSpacing: '0.05em' }}>APROBACIÓN DERIVACIÓN</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px', color: '#9ca3af', fontFamily: 'monospace' }}>
-                  <span>Usuario:</span> <span style={{ textAlign: 'right', color: '#e5e7eb' }}>Director Inv.</span>
-                  <span>IP:</span> <span style={{ textAlign: 'right', color: '#e5e7eb' }}>192.168.1.104</span>
-                </div>
-              </div>
-            </div>
+            <div
+              style={{
+                marginTop: '24px',
+                display: 'flex',
+                gap: '12px',
+              }}
+            >
+              <Button
+                variant="secondary"
+                icon={<Download size={16} />}
+                onClick={handleDownloadLog}
+              >
+                Descargar log
+              </Button>
 
-            {/* Event 3 */}
-            <div style={{ position: 'relative', zIndex: 1, paddingLeft: '32px' }}>
-              <div style={{ position: 'absolute', left: '0', top: '4px', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#4b5563', border: '4px solid #111827' }} />
-              <div className="text-caption" style={{ color: '#9ca3af', marginBottom: '8px', fontFamily: 'monospace' }}>[09/06/2026 15:40]</div>
-              <div style={{ backgroundColor: '#1f2937', padding: '16px', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontWeight: 600, color: 'white', marginBottom: '12px', fontSize: '14px', letterSpacing: '0.05em' }}>REVISIÓN CONFORME</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px', color: '#9ca3af', fontFamily: 'monospace' }}>
-                  <span>Usuario:</span> <span style={{ textAlign: 'right', color: '#e5e7eb' }}>Coord. GINSOFT</span>
-                  <span>Acción:</span> <span style={{ textAlign: 'right', color: '#e5e7eb' }}>CHECKLIST_OK</span>
-                </div>
-              </div>
+              <Button
+                variant="secondary"
+                icon={<UploadCloud size={16} />}
+                onClick={handleUpload}
+              >
+                Adjuntar evidencia
+              </Button>
             </div>
-
-            {/* Event 4 */}
-            <div style={{ position: 'relative', zIndex: 1, paddingLeft: '32px' }}>
-              <div style={{ position: 'absolute', left: '0', top: '4px', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#4b5563', border: '4px solid #111827' }} />
-              <div className="text-caption" style={{ color: '#9ca3af', marginBottom: '8px', fontFamily: 'monospace' }}>[08/06/2026 10:25]</div>
-              <div style={{ backgroundColor: '#1f2937', padding: '16px', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontWeight: 600, color: 'white', marginBottom: '12px', fontSize: '14px', letterSpacing: '0.05em' }}>REGISTRO INICIAL</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px', color: '#9ca3af', fontFamily: 'monospace' }}>
-                  <span>Usuario:</span> <span style={{ textAlign: 'right', color: '#e5e7eb' }}>Docente Inv.</span>
-                  <span>Ref:</span> <span style={{ textAlign: 'right', color: '#e5e7eb' }}>INIT_UPLOAD</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div style={{ marginTop: '40px', paddingTop: '24px', borderTop: '1px solid #374151', display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontSize: '10px', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
-            IMMUTABLE SYSTEM ACTIVE
-          </div>
-        </div>
-
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 };
+
+export default ProjectAudit;

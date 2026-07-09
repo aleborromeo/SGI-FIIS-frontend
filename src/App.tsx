@@ -1,6 +1,10 @@
 import { useContext, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext.tsx';
+import { ToastProvider } from './context/ToastContext.tsx';
+import { ConfirmProvider } from './context/ConfirmContext.tsx';
+import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
+import { ThesisPlansList } from './pages/thesis/ThesisPlansList.tsx';
 
 import { WelcomePage } from './pages/WelcomePage.tsx';
 import { LoginPage } from './pages/auth/LoginPage.tsx';
@@ -9,18 +13,9 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage.tsx';
 import { SobreSgiPage } from './pages/SobreSgiPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
+import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
 
-import DashboardPage from './pages/dashboards/DashboardPage.tsx';
-import PendingProceduresPage from './pages/dashboards/PendingProceduresPage.tsx';
-import AnalyticsDashboardPage from './pages/dashboards/AnalyticsDashboardPage.tsx';
-import ReportsDashboardPage from './pages/dashboards/ReportsDashboardPage.tsx';
-import PublicationsDashboardPage from './pages/dashboards/PublicationsDashboardPage.tsx';
-import FinancingDashboardPage from './pages/dashboards/FinancingDashboardPage.tsx';
-import RankingDashboardPage from './pages/dashboards/RankingDashboardPage.tsx';
-import ResearchersDashboardPage from './pages/dashboards/ResearchersDashboardPage.tsx';
-
-// Views from feature/postulaciones
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
 import { ProjectMonitoring } from './pages/projects/ProjectMonitoring.tsx';
 import { ProjectAudit } from './pages/projects/ProjectAudit.tsx';
@@ -32,9 +27,45 @@ import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
 import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
 
+// Admin Views
+import { ResearchLines } from './pages/admin/ResearchLines.tsx';
+import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
+import { ResearchLineDetail } from './pages/admin/ResearchLineDetail.tsx';
+import { ResearchGroups } from './pages/admin/ResearchGroups.tsx';
+import { NewResearchGroup } from './pages/admin/NewResearchGroup.tsx';
+import { ResearchGroupDetail } from './pages/admin/ResearchGroupDetail.tsx';
+
+// Componente para proteger las rutas privadas del sistema
 interface ProtectedRouteProps {
   children: ReactNode;
 }
+
+const PublicRoute = ({ children }: ProtectedRouteProps) => {
+  const { isAuthenticated, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100vh',
+        gap: '1rem',
+        backgroundColor: '#f8f9fa'
+      }}>
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, loading, user } = useContext(AuthContext);
@@ -61,7 +92,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (user?.mustChangePassword && window.location.pathname !== '/change-password') {
@@ -73,207 +104,62 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Rutas públicas */}
-          <Route path="/" element={<WelcomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/sobre-sgi" element={<SobreSgiPage />} />
-          <Route
-            path="/change-password"
-            element={
-              <ProtectedRoute>
-                <ChangePasswordPage />
-              </ProtectedRoute>
-            }
-          />
+    <ToastProvider>
+      <ConfirmProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Rutas públicas */}
+              <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
+              <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+              <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+              <Route path="/sobre-sgi" element={<SobreSgiPage />} />
+              <Route
+                path="/change-password"
+                element={
+                  <ProtectedRoute>
+                    <ChangePasswordPage />
+                  </ProtectedRoute>
+                }
+              />
 
-          {/* Dashboard general según rol */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <RoleDashboards />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
+              {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
+              <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
+                <Route path="/dashboard" element={<RoleDashboards />} />
+                
+                {/* Vistas específicas de postulaciones y seguimiento */}
+                <Route path="/thesis/plans" element={<ThesisPlansList />} />
+                <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
+                <Route path="/projects" element={<ProjectsList />} />
+                <Route path="/projects/new" element={<NewProposal />} />
+                <Route path="/projects/assign" element={<AssignReviewers />} />
+                <Route path="/projects/evaluate" element={<EvaluationForm />} />
+                <Route path="/projects/:id" element={<ProjectMonitoring />} />
+                <Route path="/projects/audit" element={<ProjectAudit />} />
+                <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
+                <Route path="/observations/panel" element={<ObservationsPanel />} />
+                <Route path="/progressreports/review" element={<ReviewProgressReports />} />
+                
+                {/* Vistas de Administración */}
+                <Route path="/admin/activate" element={<ActivateUsers />} />
+                <Route path="/lines" element={<ResearchLines />} />
+                <Route path="/lines/new" element={<NewResearchLine />} />
+                <Route path="/lines/:id" element={<ResearchLineDetail />} />
+                <Route path="/groups" element={<ResearchGroups />} />
+                <Route path="/groups/new" element={<NewResearchGroup />} />
+                <Route path="/groups/:id" element={<ResearchGroupDetail />} />
+                
+                {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Route>
 
-          {/* Módulo Panel Isomorfo y Dashboards */}
-          <Route
-            path="/dashboards"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/tramites"
-            element={
-              <ProtectedRoute>
-                <PendingProceduresPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/analisis"
-            element={
-              <ProtectedRoute>
-                <AnalyticsDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/reportes"
-            element={
-              <ProtectedRoute>
-                <ReportsDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/publicaciones"
-            element={
-              <ProtectedRoute>
-                <PublicationsDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/financiamiento"
-            element={
-              <ProtectedRoute>
-                <FinancingDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/ranking"
-            element={
-              <ProtectedRoute>
-                <RankingDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboards/investigadores"
-            element={
-              <ProtectedRoute>
-                <ResearchersDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Vistas específicas de postulaciones y seguimiento */}
-          <Route
-            path="/thesis/plan/:id"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <ThesisTraceability />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/projects"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <ProjectsList />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/projects/new"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <NewProposal />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/projects/assign"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <AssignReviewers />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/projects/evaluate"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <EvaluationForm />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/projects/:id"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <ProjectMonitoring />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/projects/audit"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <ProjectAudit />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/evaluations/my-evaluations"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <MyEvaluations />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/observations/panel"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <ObservationsPanel />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/progressreports/review"
-            element={
-              <ProtectedRoute>
-                <DashboardContainer>
-                  <ReviewProgressReports />
-                </DashboardContainer>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+              {/* Redirección por defecto para cualquier ruta inválida */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </ConfirmProvider>
+    </ToastProvider>
   );
 }
 

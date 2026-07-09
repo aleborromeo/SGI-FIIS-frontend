@@ -2,11 +2,12 @@ import { fetchApi } from './api';
 
 export interface User {
   id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  roles: string[];
-  department?: string;
+  dni: string;
+  firstNames: string;
+  lastNames: string;
+  institutionalEmail: string;
+  roleCode: string;
+  roleDescription: string;
 }
 
 export const userService = {
