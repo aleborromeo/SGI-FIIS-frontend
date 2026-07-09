@@ -20,17 +20,24 @@ export interface LoginResponse {
 export interface UserProfile {
   id: number;
   dni: string;
-  nombres: string;
-  apellidos: string;
-  correoInstitucional: string;
-  telefono: string;
-  esActivo: boolean;
+  nombres?: string;
+  apellidos?: string;
+  correoInstitucional?: string;
+  telefono?: string;
+  esActivo?: boolean;
   mustChangePassword: boolean;
-  rolPrincipal: {
+  rolPrincipal?: {
     idRol: number;
     codigoRol: string;
     descripcion: string;
   };
+  firstNames?: string;
+  lastNames?: string;
+  institutionalEmail?: string;
+  phone?: string;
+  active?: boolean;
+  roleCode?: string;
+  roleDescription?: string;
 }
 
 export interface AlertItem {
@@ -84,6 +91,9 @@ export interface DashboardCoordinatorResponse {
 }
 
 export interface DashboardTeacherResponse {
+  groupId?: number;
+  groupName?: string;
+  groupCode?: string;
   projectsAsLead: number;
   projectsAsMember: number;
   pendingProcedures: number;
@@ -127,6 +137,9 @@ export interface DashboardDeanResponse {
 }
 
 export interface DashboardEvaluatorResponse {
+  groupId?: number;
+  groupName?: string;
+  groupCode?: string;
   assignedEvaluations: number;
   pendingEvaluations: number;
   completedEvaluations: number;

@@ -6,13 +6,16 @@ import { ConfirmProvider } from './context/ConfirmContext.tsx';
 
 import { WelcomePage } from './pages/WelcomePage.tsx';
 import { LoginPage } from './pages/auth/LoginPage.tsx';
-import { RegisterPage } from './pages/auth/RegisterPage.tsx';
+import { ChangePasswordPage } from './pages/auth/ChangePasswordPage.tsx';
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage.tsx';
+import { SobreSgiPage } from './pages/SobreSgiPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
-import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
+import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
+import { ThesisPlansList } from './pages/thesis/ThesisPlansList.tsx';
 import { ProjectMonitoring } from './pages/projects/ProjectMonitoring.tsx';
 import { ProjectAudit } from './pages/projects/ProjectAudit.tsx';
 import { ProjectsList } from './pages/projects/ProjectsList.tsx';
@@ -29,6 +32,7 @@ import { TramiteDetail } from './pages/tramites/TramiteDetail.tsx';
 import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
 
 // Admin Views
+import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
 import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
 import { ResearchLineDetail } from './pages/admin/ResearchLineDetail.tsx';
@@ -69,7 +73,7 @@ const PublicRoute = ({ children }: ProtectedRouteProps) => {
 
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, loading } = useContext(AuthContext);
+  const { isAuthenticated, loading, user } = useContext(AuthContext);
 
   if (loading) {
     return (
@@ -96,6 +100,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/" replace />;
   }
 
+  if (user?.mustChangePassword && window.location.pathname !== '/change-password') {
+    return <Navigate to="/change-password" replace />;
+  }
+
   return <>{children}</>;
 };
 
@@ -106,50 +114,58 @@ function App() {
         <AuthProvider>
           <BrowserRouter>
             <Routes>
-          {/* Ruta raíz (Página de Bienvenida) */}
-          <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
+              {/* Rutas públicas */}
+              <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
+              <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+              <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+              <Route path="/sobre-sgi" element={<SobreSgiPage />} />
+              <Route
+                path="/change-password"
+                element={
+                  <ProtectedRoute>
+                    <ChangePasswordPage />
+                  </ProtectedRoute>
+                }
+              />
 
-          {/* Ruta de Login (Pública) */}
-          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+              {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
+              <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
+                <Route path="/dashboard" element={<RoleDashboards />} />
+                <Route path="/metrics" element={<MetricsReportsPage />} />
 
-          {/* Ruta de Registro (Pública) */}
-          <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+                {/* Vistas específicas de postulaciones y seguimiento */}
+                <Route path="/thesis/plans" element={<ThesisPlansList />} />
+                <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
+                <Route path="/projects" element={<ProjectsList />} />
+                <Route path="/projects/new" element={<NewProposal />} />
+                <Route path="/projects/assign" element={<AssignReviewers />} />
+                <Route path="/projects/evaluate" element={<EvaluationForm />} />
+                <Route path="/projects/:id" element={<ProjectMonitoring />} />
+                <Route path="/projects/audit" element={<ProjectAudit />} />
+                <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
+                <Route path="/observations/panel" element={<ObservationsPanel />} />
+                <Route path="/progressreports/review" element={<ReviewProgressReports />} />
 
-          {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
-          <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
-            <Route path="/dashboard" element={<RoleDashboards />} />
-            
-            {/* Vistas específicas de postulaciones y seguimiento */}
-            <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
-            <Route path="/projects" element={<ProjectsList />} />
-            <Route path="/projects/new" element={<NewProposal />} />
-            <Route path="/projects/assign" element={<AssignReviewers />} />
-            <Route path="/projects/evaluate" element={<EvaluationForm />} />
-            <Route path="/projects/:id" element={<ProjectMonitoring />} />
-            <Route path="/projects/audit" element={<ProjectAudit />} />
-            <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
-            <Route path="/observations/panel" element={<ObservationsPanel />} />
-            <Route path="/progressreports/review" element={<ReviewProgressReports />} />
+                {/* Bandeja Lógica de Trámites y Subsanaciones */}
+                <Route path="/tramites" element={<TramitesInbox />} />
+                <Route path="/tramites/:id" element={<TramiteDetail />} />
+                <Route path="/observations/subsanacion" element={<SubsanacionPanel />} />
 
-            {/* Bandeja Lógica de Trámites y Subsanaciones */}
-            <Route path="/tramites" element={<TramitesInbox />} />
-            <Route path="/tramites/:id" element={<TramiteDetail />} />
-            <Route path="/observations/subsanacion" element={<SubsanacionPanel />} />
+                {/* Vistas de Administración */}
+                <Route path="/admin/activate" element={<ActivateUsers />} />
+                <Route path="/lines" element={<ResearchLines />} />
+                <Route path="/lines/new" element={<NewResearchLine />} />
+                <Route path="/lines/:id" element={<ResearchLineDetail />} />
+                <Route path="/groups" element={<ResearchGroups />} />
+                <Route path="/groups/new" element={<NewResearchGroup />} />
+                <Route path="/groups/:id" element={<ResearchGroupDetail />} />
+                
+                {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Route>
 
-            {/* Vistas de Administración */}
-            <Route path="/lines" element={<ResearchLines />} />
-            <Route path="/lines/new" element={<NewResearchLine />} />
-            <Route path="/lines/:id" element={<ResearchLineDetail />} />
-            <Route path="/groups" element={<ResearchGroups />} />
-            <Route path="/groups/new" element={<NewResearchGroup />} />
-            <Route path="/groups/:id" element={<ResearchGroupDetail />} />
-            
-            {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Route>
-
-          {/* Redirección por defecto para cualquier ruta inválida */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+              {/* Redirección por defecto para cualquier ruta inválida */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>

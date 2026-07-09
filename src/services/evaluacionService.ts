@@ -32,6 +32,7 @@ export interface EvaluationItem {
   dateAssigned?: string;
   fechaAsignacion?: string;
   assignedAt?: string;
+  assignDate?: string;
 
   deadline?: string;
   fechaLimite?: string;
@@ -57,11 +58,6 @@ export const evaluacionService = {
       body: JSON.stringify({ idProyecto, idPlanTesis, idEvaluador }),
     });
   },
-
-  assignReviewers: async (projectId: number, reviewerIds: number[]): Promise<void> => {
-    await Promise.all(reviewerIds.map(id => evaluacionService.assignReviewer(projectId, null, id)));
-  },
-
 
   assignReviewers: async (
     projectId: string | number,
