@@ -9,8 +9,8 @@ import { LoginPage } from './pages/auth/LoginPage.tsx';
 import { RegisterPage } from './pages/auth/RegisterPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
-import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
+import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
 import { ProjectMonitoring } from './pages/projects/ProjectMonitoring.tsx';
@@ -113,6 +113,7 @@ function App() {
           {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
           <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
             <Route path="/dashboard" element={<RoleDashboards />} />
+            <Route path="/metrics" element={<MetricsReportsPage />} />
             
             {/* Vistas específicas de postulaciones y seguimiento */}
             <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />

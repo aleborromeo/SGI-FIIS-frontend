@@ -135,7 +135,8 @@ export const ProjectsList: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [demoMode, setDemoMode] = useState(false);
-  const [backendMessage, setBackendMessage] = useState<string | null>(null);
+  const [, setBackendMessage] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');

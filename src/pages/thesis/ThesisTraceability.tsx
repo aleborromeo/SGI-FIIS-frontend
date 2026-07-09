@@ -21,7 +21,6 @@ import { Timeline, TimelineItem } from '../../components/ui/Timeline';
 
 import { thesisService } from '../../services/thesisService';
 import type { ThesisPlan } from '../../services/thesisService';
-import { useToast } from '../../context/ToastContext';
 
 function getStatusLabel(status?: string): string {
   if (!status) return 'Sin estado';
@@ -99,7 +98,6 @@ export const ThesisTraceability: React.FC = () => {
 
   const [plan, setPlan] = useState<ThesisPlan | null>(null);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 

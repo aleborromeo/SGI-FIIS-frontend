@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  AlertCircle,
   Search,
   Trash2,
   UserPlus,
@@ -13,7 +12,6 @@ import {
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { userService, type User } from '../../services/userService';
 import { evaluacionService } from '../../services/evaluacionService';
 import { useToast } from '../../context/ToastContext';
 import { Badge } from '../../components/ui/Badge';
@@ -69,6 +67,8 @@ function getFullName(reviewer: Reviewer): string {
 
 export const AssignReviewers: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const loading = false;
   const queryParams = new URLSearchParams(location.search);
 
   const projectId = queryParams.get('projectId') || '1';

@@ -61,17 +61,8 @@ export const EvaluationForm: React.FC = () => {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [observations, setObservations] = useState<Record<string, string>>({});
   const [generalComments, setGeneralComments] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [, setSubmitting] = useState(false);
   const toast = useToast();
-
-  const calculateTotal = () => {
-    let total = 0;
-    criteriaList.forEach(c => {
-      const score = scores[c.id] || 0;
-      total += (score * c.weight) / 100;
-    });
-    return total.toFixed(2);
-  };
   const [message, setMessage] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 

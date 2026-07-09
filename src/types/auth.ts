@@ -84,6 +84,9 @@ export interface DashboardCoordinatorResponse {
 }
 
 export interface DashboardTeacherResponse {
+  groupId?: number;
+  groupName?: string;
+  groupCode?: string;
   projectsAsLead: number;
   projectsAsMember: number;
   pendingProcedures: number;
@@ -127,6 +130,9 @@ export interface DashboardDeanResponse {
 }
 
 export interface DashboardEvaluatorResponse {
+  groupId?: number;
+  groupName?: string;
+  groupCode?: string;
   assignedEvaluations: number;
   pendingEvaluations: number;
   completedEvaluations: number;
