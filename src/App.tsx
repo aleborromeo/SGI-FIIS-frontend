@@ -3,8 +3,6 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
 import { ConfirmProvider } from './context/ConfirmContext.tsx';
-import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
-import { ThesisPlansList } from './pages/thesis/ThesisPlansList.tsx';
 
 import { WelcomePage } from './pages/WelcomePage.tsx';
 import { LoginPage } from './pages/auth/LoginPage.tsx';
