@@ -96,12 +96,12 @@
 }
 
 .login-logo-img {
-  width: 72px;
-  height: auto;
-  margin-bottom: 0.5rem;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 0.8rem;
   display: block;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
 }
 
 .login-logo-title {
@@ -440,4 +440,196 @@
   .auth-header-group {
     margin-bottom: 1.5rem;
   }
+}
+
+/* Estilos adicionales para botón de salida, captcha y alerta mockup */
+
+.login-card-container {
+  position: relative;
+}
+
+.login-back-btn {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.login-back-btn:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  transform: translateX(-2px);
+}
+
+.captcha-display-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.captcha-canvas-container-static {
+  width: 100%;
+  padding-left: 2.6rem;
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1.5px solid #94a3b8;
+  border-radius: 8px;
+  height: 44px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.captcha-canvas {
+  height: 100%;
+  width: 100%;
+  display: block;
+}
+
+.captcha-error-text-simple {
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Modal de Restablecer Contraseña */
+.forgot-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 1rem;
+}
+
+.forgot-modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.forgot-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8fafc;
+}
+
+.forgot-modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a365d;
+}
+
+.forgot-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.75rem;
+  color: #64748b;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.forgot-modal-close:hover {
+  color: #0f172a;
+}
+
+.forgot-modal-body {
+  padding: 1.5rem;
+  font-size: 0.95rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.forgot-modal-body p {
+  margin: 0 0 1.25rem 0;
+}
+
+.forgot-modal-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: #f8fafc;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+}
+
+.forgot-step {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.step-num {
+  background: #1a365d;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.step-text {
+  font-size: 0.88rem;
+}
+
+.forgot-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  background-color: #f8fafc;
+}
+
+.forgot-modal-btn {
+  background: #1a365d;
+  color: #ffffff;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.forgot-modal-btn:hover {
+  background-color: #1e3a8a;
 }

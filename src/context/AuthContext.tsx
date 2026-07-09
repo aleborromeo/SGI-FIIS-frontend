@@ -47,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           firstNames: profile.firstNames || profile.nombres || '',
           lastNames: profile.lastNames || profile.apellidos || '',
           roleCode: role,
+          mustChangePassword: profile.mustChangePassword,
         };
 
         setUser(userData);
@@ -81,6 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         firstNames: response.firstNames,
         lastNames: response.lastNames,
         roleCode: response.roleCode,
+        mustChangePassword: response.mustChangePassword,
       };
       
       // Guardar información del usuario
@@ -108,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       firstNames: response.firstNames,
       lastNames: response.lastNames,
       roleCode: response.roleCode,
+      mustChangePassword: response.mustChangePassword,
     };
     localStorage.setItem('sgi_user', JSON.stringify(userData));
     setUser(userData);

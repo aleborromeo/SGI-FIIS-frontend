@@ -24,5 +24,13 @@ export const authService = {
 
   async resendCode(email: string): Promise<{ message: string }> {
     return api.post<{ message: string }>('/auth/resend-code', { email });
+  },
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    return api.post<{ message: string }>('/auth/forgot-password', { email });
+  },
+
+  async resetPassword(data: any): Promise<{ message: string }> {
+    return api.post<{ message: string }>('/auth/reset-password', data);
   }
 };
