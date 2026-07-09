@@ -1407,3 +1407,410 @@ html {
     grid-template-columns: 1fr;
   }
 }
+
+/* Sección Sobre SGI (Estilo Captura Blanca FIIS) */
+.welcome-about-fiis-section {
+  background-color: #ffffff;
+  padding: 5rem 3rem 3rem 3rem;
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+.about-fiis-container {
+  display: flex;
+  gap: 2.5rem;
+  max-width: 1200px;
+  width: 100%;
+}
+
+/* Sidebar lateral izquierdo */
+.about-fiis-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid #e2e8f0;
+  padding-right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.about-fiis-sidebar .sidebar-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.about-fiis-sidebar .sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.about-fiis-sidebar .sidebar-link {
+  display: block;
+  color: #475569;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.about-fiis-sidebar .sidebar-link:hover {
+  background-color: #f1f5f9;
+  color: #084298;
+}
+
+.about-fiis-sidebar .sidebar-link.active {
+  background-color: #eff6ff;
+  color: #084298;
+  border-left: 3px solid #084298;
+  border-radius: 0 6px 6px 0;
+  padding-left: 0.5625rem;
+}
+
+.about-fiis-sidebar .sidebar-link-text {
+  display: block;
+  color: #64748b; /* Gris apagado para simular texto no clicable */
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: default;
+}
+
+/* Contenido Principal Derecho */
+.about-fiis-main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.about-fiis-breadcrumbs {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-bottom: -0.5rem;
+}
+
+.about-fiis-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Grid de detalles + imagen */
+.about-fiis-details-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Tabla de información */
+.about-fiis-info-table {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #e2e8f0;
+}
+
+.info-table-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.info-label {
+  font-weight: 700;
+  color: #475569;
+}
+
+.info-value {
+  color: #1e293b;
+}
+
+.info-link {
+  color: #084298;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.info-link:hover {
+  text-decoration: underline;
+}
+
+.info-link-disabled {
+  color: #94a3b8;
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
+/* Contenedor de la imagen */
+.about-fiis-image-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.about-fiis-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.about-fiis-img-caption {
+  background-color: #084298;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.65rem;
+  letter-spacing: 0.3px;
+}
+
+/* Grid de columnas inferiores (Módulos y Actores) */
+.about-fiis-columns-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  margin-top: 1rem;
+}
+
+.about-fiis-column .column-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin: 0 0 0.75rem 0;
+}
+
+.about-fiis-column .column-intro {
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+}
+
+.about-fiis-column .column-list,
+.about-fiis-column .column-list-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  font-size: 0.9rem;
+  color: #334155;
+  line-height: 1.4;
+}
+
+/* Viñetas en azul */
+.about-fiis-column .column-list li {
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+.about-fiis-column .column-list li::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #084298;
+  font-weight: 800;
+}
+
+.about-fiis-column .column-list-bullets li {
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+.about-fiis-column .column-list-bullets li::before {
+  content: '*';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  color: #084298;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+/* Responsividad */
+@media (max-width: 968px) {
+  .welcome-about-fiis-section {
+    padding: 5rem 1.5rem 2rem 1.5rem;
+  }
+  .about-fiis-container {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .about-fiis-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+    padding-right: 0;
+    padding-bottom: 1rem;
+  }
+  .about-fiis-sidebar .sidebar-menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .about-fiis-sidebar .sidebar-link.active {
+    border-left: none;
+    border-bottom: 3px solid #084298;
+    border-radius: 6px;
+    padding-left: 0.75rem;
+  }
+  .about-fiis-details-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .about-fiis-columns-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Estilos para el contenido de las pestañas en Sobre SGI */
+.about-tab-description {
+  font-size: 0.95rem;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0 0 1.5rem 0;
+  max-width: 800px;
+}
+
+.about-tabs-grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.about-info-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.about-info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
+}
+
+.about-card-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.about-card-badge {
+  background-color: #eff6ff;
+  color: #1e40af;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.about-card-badge.group-badge {
+  background-color: #f0fdf4;
+  color: #166534;
+}
+
+.about-card-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.about-card-divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 0.25rem 0;
+}
+
+.about-card-bases {
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.about-card-subareas,
+.about-card-meta-row {
+  font-size: 0.85rem;
+  color: #334155;
+  margin-top: auto;
+}
+
+.about-subareas-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.4rem;
+}
+
+.about-subareas-list li {
+  position: relative;
+  padding-left: 1rem;
+  color: #475569;
+}
+
+.about-subareas-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #084298;
+  font-weight: bold;
+}
+
+.meta-value {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.meta-value.count-value {
+  color: #166534;
+  background-color: #f0fdf4;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* Responsividad para la grilla de pestañas */
+@media (max-width: 768px) {
+  .about-tabs-grid-container {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+
