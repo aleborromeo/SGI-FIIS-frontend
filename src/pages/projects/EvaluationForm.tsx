@@ -144,14 +144,7 @@ export const EvaluationForm: React.FC = () => {
   }
 
   return (
-    <div
-      style={{
-        paddingTop: '32px',
-        paddingBottom: '64px',
-        maxWidth: '1080px',
-        margin: '0 auto',
-      }}
-    >
+    <div className="animate-fade-in" style={{ padding: '24px' }}>
       <Link
         to="/evaluations/my-evaluations"
         style={{

@@ -117,7 +117,7 @@ export const ResearchLineDetail: React.FC = () => {
   }
 
   return (
-    <div className="animate-fade-in" style={{ padding: '24px', width: '95%', margin: '0 auto' }}>
+    <div className="animate-fade-in" style={{ padding: '24px' }}>
       <button 
         type="button"
         onClick={() => navigate('/lines')}

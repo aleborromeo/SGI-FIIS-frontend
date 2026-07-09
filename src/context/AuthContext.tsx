@@ -39,14 +39,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         // Validar token y traer perfil actual del backend
         const profile = await authService.getProfile();
-        const role = profile.rolPrincipal.codigoRol;
+        const role = profile.roleCode || profile.rolPrincipal?.codigoRol || '';
         
         const userData = {
           id: profile.id,
-          email: profile.correoInstitucional,
-          firstNames: profile.nombres,
-          lastNames: profile.apellidos,
+          email: profile.institutionalEmail || profile.correoInstitucional || '',
+          firstNames: profile.firstNames || profile.nombres || '',
+          lastNames: profile.lastNames || profile.apellidos || '',
           roleCode: role,
+          mustChangePassword: profile.mustChangePassword,
         };
 
         setUser(userData);
@@ -81,6 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         firstNames: response.firstNames,
         lastNames: response.lastNames,
         roleCode: response.roleCode,
+        mustChangePassword: response.mustChangePassword,
       };
       
       // Guardar información del usuario
@@ -108,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       firstNames: response.firstNames,
       lastNames: response.lastNames,
       roleCode: response.roleCode,
+      mustChangePassword: response.mustChangePassword,
     };
     localStorage.setItem('sgi_user', JSON.stringify(userData));
     setUser(userData);

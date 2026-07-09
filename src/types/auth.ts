@@ -20,17 +20,24 @@ export interface LoginResponse {
 export interface UserProfile {
   id: number;
   dni: string;
-  nombres: string;
-  apellidos: string;
-  correoInstitucional: string;
-  telefono: string;
-  esActivo: boolean;
+  nombres?: string;
+  apellidos?: string;
+  correoInstitucional?: string;
+  telefono?: string;
+  esActivo?: boolean;
   mustChangePassword: boolean;
-  rolPrincipal: {
+  rolPrincipal?: {
     idRol: number;
     codigoRol: string;
     descripcion: string;
   };
+  firstNames?: string;
+  lastNames?: string;
+  institutionalEmail?: string;
+  phone?: string;
+  active?: boolean;
+  roleCode?: string;
+  roleDescription?: string;
 }
 
 export interface AlertItem {

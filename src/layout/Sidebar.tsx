@@ -41,15 +41,17 @@ const navGroups = [
     items: [
       {
         id: 'proposals',
-        label: 'Proyectos y Tesis',
+        label: 'Proyectos de Investigación',
         icon: <FileText size={20} />,
         path: '/projects',
+        roles: ['DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'EVALUADOR'],
       },
       {
-        id: 'traceability',
-        label: 'Trazabilidad',
-        icon: <History size={20} />,
-        path: '/thesis/plan/1',
+        id: 'thesis-plans',
+        label: 'Planes de Tesis',
+        icon: <GraduationCap size={20} />,
+        path: '/thesis/plans',
+        roles: ['ESTUDIANTE', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO'],
       },
       {
         id: 'observations',
@@ -78,6 +80,7 @@ const navGroups = [
   },
   {
     title: 'Administración',
+    roles: ['ADMIN'], // Only for admin
     items: [
       {
         id: 'groups',
@@ -93,6 +96,12 @@ const navGroups = [
       },
     ],
   },
+      { id: 'activate', label: 'Activar Usuarios', icon: <Users size={20} />, path: '/admin/activate' },
+      { id: 'users', label: 'Directorio', icon: <Users size={20} />, path: '/users' },
+      { id: 'groups', label: 'Grupos Inv.', icon: <Users size={20} />, path: '/groups' },
+      { id: 'lines', label: 'Líneas Inv.', icon: <BookOpen size={20} />, path: '/lines' },
+    ]
+  }
 ];
 
 interface SidebarProps {
@@ -163,6 +172,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
   const confirmLogout = () => {
     logout();
     navigate('/');
+  const isItemActive = (itemId: string, path: string): boolean => {
+    if (itemId === 'proposals') {
+      return location.pathname === '/projects' || location.pathname.startsWith('/projects/');
+    }
+
+    if (itemId === 'thesis-plans') {
+      return location.pathname === '/thesis/plans' || location.pathname.startsWith('/thesis/plan/');
+    }
+
+    return location.pathname === path;
   };
 
   return (
@@ -218,7 +237,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
             overflow: 'visible',
           }}
         >
-          {navGroups.map((group) => (
+          {navGroups
+            .filter((group) => {
+              if (group.roles && currentRole) {
+                return group.roles.includes(currentRole);
+              }
+              return true;
+            })
+            .map((group) => (
             <div key={group.title}>
               <h3 className="sidebar-group-title">
                 {group.title}
@@ -227,8 +253,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               <div className="sidebar-group-items">
                 {group.items.map((item) => {
                   const isActive = isItemActive(item.id, item.path);
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                }}
+              >
+                {group.items
+                  .filter((item) => {
+                    if (item.roles && currentRole) {
+                      return item.roles.includes(currentRole);
+                    }
+                    return true;
+                  })
+                  .map((item) => {
+                    const isActive = isItemActive(item.id, item.path);
 
-                  return (
+                    return (
                     <Link
                       key={item.id}
                       to={item.path}

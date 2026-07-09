@@ -119,3 +119,13 @@ body {
 .fade-in {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Blur Layout when Confirm Modal is open */
+body.confirm-modal-open .sgi-dashboard-layout,
+body.confirm-modal-open .login-container,
+body.confirm-modal-open .register-container,
+body.confirm-modal-open .welcome-page-container {
+  filter: blur(8px) grayscale(15%);
+  pointer-events: none;
+  transition: filter 0.25s ease-out;
+}

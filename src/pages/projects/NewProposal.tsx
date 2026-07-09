@@ -17,6 +17,7 @@ import { Alert } from '../../components/ui/Alert';
 import { projectService } from '../../services/projectService';
 import { researchService } from '../../services/researchService';
 import type { ResearchLine, ResearchGroup } from '../../services/researchService';
+import { thesisService } from '../../services/thesisService';
 
 export const NewProposal: React.FC = () => {
   const navigate = useNavigate();
@@ -91,25 +92,28 @@ export const NewProposal: React.FC = () => {
       setErrorMsg('El resumen debe tener al menos 10 caracteres.');
       return false;
     }
-    if (formData.generalObjective.trim().length < 10) {
-      setErrorMsg('El objetivo general debe tener al menos 10 caracteres.');
-      return false;
-    }
-    if (!formData.startDate || !formData.endDate) {
-      setErrorMsg('Registre la fecha de inicio y la fecha de finalización.');
-      return false;
-    }
-    if (new Date(formData.endDate) < new Date(formData.startDate)) {
-      setErrorMsg('La fecha de finalización no puede ser anterior a la fecha de inicio.');
-      return false;
-    }
-    if (!formData.budget || isNaN(Number(formData.budget))) {
-      setErrorMsg('El presupuesto debe ser un número válido.');
-      return false;
-    }
-    if (!formData.executionPlace.trim()) {
-      setErrorMsg('Ingrese el lugar de ejecución.');
-      return false;
+
+    if (formData.type === 'proyecto') {
+      if (formData.generalObjective.trim().length < 10) {
+        setErrorMsg('El objetivo general debe tener al menos 10 caracteres.');
+        return false;
+      }
+      if (!formData.startDate || !formData.endDate) {
+        setErrorMsg('Registre la fecha de inicio y la fecha de finalización.');
+        return false;
+      }
+      if (new Date(formData.endDate) < new Date(formData.startDate)) {
+        setErrorMsg('La fecha de finalización no puede ser anterior a la fecha de inicio.');
+        return false;
+      }
+      if (!formData.budget || isNaN(Number(formData.budget))) {
+        setErrorMsg('El presupuesto debe ser un número válido.');
+        return false;
+      }
+      if (!formData.executionPlace.trim()) {
+        setErrorMsg('Ingrese el lugar de ejecución.');
+        return false;
+      }
     }
     return true;
   }
@@ -117,7 +121,7 @@ export const NewProposal: React.FC = () => {
   const handleSubmit = async () => {
     if (!validateForm()) return;
     setLoading(true);
-
+ 
     try {
       if (formData.type === 'proyecto') {
         await projectService.create({
@@ -133,7 +137,14 @@ export const NewProposal: React.FC = () => {
         });
         navigate('/projects');
       } else {
-        setErrorMsg('El plan de tesis aún no está disponible.');
+        await thesisService.createPlan({
+          tituloTesis: formData.title,
+          resumen: formData.abstract || 'Sin resumen',
+          idLinea: Number(formData.researchLineId),
+          idGrupo: Number(formData.researchGroupId),
+          idDocumentoActual: undefined // Optional/mocked for now
+        });
+        navigate('/thesis/plans');
       }
     } catch (error: any) {
       console.error('Error creating proposal', error);
@@ -147,16 +158,8 @@ export const NewProposal: React.FC = () => {
       setLoading(false);
     }
   };
-
   return (
-    <div
-      style={{
-        paddingTop: '32px',
-        paddingBottom: '64px',
-        maxWidth: '980px',
-        margin: '0 auto',
-      }}
-    >
+    <div className="animate-fade-in" style={{ padding: '24px' }}>
       <div
         style={{
           display: 'flex',

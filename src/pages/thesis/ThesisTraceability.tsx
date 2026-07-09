@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -21,6 +21,8 @@ import { Timeline, TimelineItem } from '../../components/ui/Timeline';
 
 import { thesisService } from '../../services/thesisService';
 import type { ThesisPlan } from '../../services/thesisService';
+import { useToast } from '../../context/ToastContext';
+import { AuthContext } from '../../context/AuthContext';
 
 function getStatusLabel(status?: string): string {
   if (!status) return 'Sin estado';
@@ -95,6 +97,7 @@ function updatePlanStatus(plan: ThesisPlan, status: string): ThesisPlan {
 
 export const ThesisTraceability: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { currentRole } = useContext(AuthContext);
 
   const [plan, setPlan] = useState<ThesisPlan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -172,41 +175,98 @@ export const ThesisTraceability: React.FC = () => {
     };
   }, [id]);
 
+  async function handleObserve() {
+    if (!plan || !id) return;
+    const notes = window.prompt("Ingrese las observaciones académicas o motivos de observación:");
+    if (notes === null) return;
+    if (!notes.trim()) {
+      toast.showError("Debe ingresar las observaciones a registrar.");
+      return;
+    }
 
-  function handleObserve() {
-    if (!plan) return;
-
-    setPlan(updatePlanStatus(plan, 'OBSERVED'));
-    setActionMessage(
-      'Vista actualizada: el plan quedó marcado como observado. La integración real con backend queda pendiente.'
-    );
+    try {
+      setLoading(true);
+      if (currentRole === 'COORDINADOR_GRUPO') {
+        await thesisService.observeCoordinator(id, notes);
+      } else if (currentRole === 'DIRECTOR_INVESTIGACION') {
+        await thesisService.observeDirector(id, notes);
+      } else {
+        toast.showError("Tu rol actual no permite realizar observaciones.");
+        return;
+      }
+      toast.showSuccess("Observación registrada con éxito.");
+      window.location.reload();
+    } catch (err: any) {
+      toast.showError(err.message || "Error al registrar la observación.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleApprove() {
-    if (!plan) return;
+  async function handleApprove() {
+    if (!plan || !id) return;
+    if (!window.confirm("¿Está seguro de que desea aprobar este plan de tesis?")) return;
 
-    setPlan(updatePlanStatus(plan, 'APPROVED'));
-    setActionMessage(
-      'Vista actualizada: el plan quedó marcado como aprobado. La integración real con backend queda pendiente.'
-    );
+    try {
+      setLoading(true);
+      if (currentRole === 'COORDINADOR_GRUPO') {
+        await thesisService.approveCoordinator(id);
+      } else if (currentRole === 'DIRECTOR_INVESTIGACION') {
+        await thesisService.approveDirector(id);
+      } else if (currentRole === 'DECANO') {
+        const resolutionNum = window.prompt("Ingrese el número de la Resolución Decanal para emisión final:");
+        if (resolutionNum === null) return;
+        if (!resolutionNum.trim()) {
+          toast.showError("Debe ingresar un número de resolución válido.");
+          return;
+        }
+        await thesisService.issueDeanResolution(id, {
+          numeroResolucion: resolutionNum,
+          fechaEmision: new Date().toISOString().split('T')[0],
+          asunto: `Aprobación y emisión de resolución de plan de tesis ID: ${id}`,
+          idDocumentoAdjunto: null
+        });
+      } else {
+        toast.showError("Tu rol actual no permite aprobar planes de tesis.");
+        return;
+      }
+      toast.showSuccess("Plan de tesis aprobado correctamente.");
+      window.location.reload();
+    } catch (err: any) {
+      toast.showError(err.message || "Error al aprobar el plan de tesis.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleReturnForCorrection() {
-    if (!plan) return;
+  async function handleReturnForCorrection() {
+    if (!plan || !id) return;
+    const comment = window.prompt("Describa las subsanaciones realizadas en el plan de tesis:");
+    if (comment === null) return;
+    if (!comment.trim()) {
+      toast.showError("Debe describir las correcciones para poder subsanar.");
+      return;
+    }
 
-    setPlan(updatePlanStatus(plan, 'OBSERVED'));
-    setActionMessage(
-      'Vista actualizada: el plan quedó marcado para subsanación. La integración real con backend queda pendiente.'
-    );
+    try {
+      setLoading(true);
+      await thesisService.rectifyPlan(id, {
+        resumenSubsanado: plan.resumen,
+        comentarioSubsanacion: comment,
+        idDocumentoActual: plan.idDocumentoActual
+      });
+      toast.showSuccess("Subsanación enviada exitosamente.");
+      window.location.reload();
+    } catch (err: any) {
+      toast.showError(err.message || "Error al enviar subsanación.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleResendToDirector() {
-    if (!plan) return;
-
-    setPlan(updatePlanStatus(plan, 'UNDER_REVIEW'));
-    setActionMessage(
-      'Vista actualizada: el plan quedó marcado como reenviado a dirección. La integración real con backend queda pendiente.'
-    );
+  async function handleResendToDirector() {
+    // Reenviar a dirección (comportamiento de revisión / subsanación por estudiante)
+    await handleReturnForCorrection();
   }
 
   if (loading) {
@@ -256,6 +316,17 @@ export const ThesisTraceability: React.FC = () => {
   const group = readValue(plan, ['researchGroupCode', 'groupCode', 'grupo'], 'No registrado');
   const researchLine = readValue(plan, ['researchLineName', 'lineaInvestigacion', 'line'], 'No registrada');
   const advisor = readValue(plan, ['advisorName', 'asesor', 'advisor'], 'No registrado');
+
+  const revisor = plan.revisorActual || '';
+
+  const showReviewActions = 
+    (currentRole === 'COORDINADOR_GRUPO' && revisor === 'COORDINADOR_GRUPO') ||
+    (currentRole === 'DIRECTOR_INVESTIGACION' && revisor === 'DIRECTOR_INVESTIGACION') ||
+    (currentRole === 'DECANO' && revisor === 'DECANO');
+
+  const showStudentActions = 
+    currentRole === 'ESTUDIANTE' && revisor === 'ESTUDIANTE' &&
+    ['OBSERVED', 'OBSERVADO'].includes(String(plan.status || plan.estadoPlan).toUpperCase());
 
   return (
     <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
@@ -353,29 +424,31 @@ export const ThesisTraceability: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ textAlign: 'right' }}>
-          <div
-            className="text-caption"
-            style={{
-              color: 'var(--on-surface-variant)',
-              marginBottom: '8px',
-              textTransform: 'uppercase',
-              fontWeight: 700,
-            }}
-          >
-            Acciones rápidas
-          </div>
+        {showReviewActions && (
+          <div style={{ textAlign: 'right' }}>
+            <div
+              className="text-caption"
+              style={{
+                color: 'var(--on-surface-variant)',
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                fontWeight: 700,
+              }}
+            >
+              Acciones rápidas de revisión
+            </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <Button variant="secondary" onClick={handleObserve}>
-              Observar
-            </Button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Button variant="secondary" onClick={handleObserve}>
+                Observar
+              </Button>
 
-            <Button variant="primary" onClick={handleApprove}>
-              Aprobar
-            </Button>
+              <Button variant="primary" onClick={handleApprove}>
+                {currentRole === 'DECANO' ? 'Emitir Resolución' : 'Aprobar'}
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <Card style={{ marginBottom: '32px' }}>
@@ -652,34 +725,27 @@ export const ThesisTraceability: React.FC = () => {
         </Card>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '16px',
-          marginTop: '32px',
-          paddingTop: '32px',
-          borderTop: '1px solid var(--outline-variant)',
-        }}
-      >
-        <Button
-          variant="danger"
-          icon={<RotateCcw size={18} />}
-          style={{ width: '300px' }}
-          onClick={handleReturnForCorrection}
+      {showStudentActions && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '16px',
+            marginTop: '32px',
+            paddingTop: '32px',
+            borderTop: '1px solid var(--outline-variant)',
+          }}
         >
-          Devolver para subsanación
-        </Button>
-
-        <Button
-          variant="primary"
-          icon={<Send size={18} />}
-          style={{ width: '300px' }}
-          onClick={handleResendToDirector}
-        >
-          Reenviar a dirección
-        </Button>
-      </div>
+          <Button
+            variant="primary"
+            icon={<Send size={18} />}
+            style={{ width: '300px' }}
+            onClick={handleReturnForCorrection}
+          >
+            Registrar Subsanación
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
