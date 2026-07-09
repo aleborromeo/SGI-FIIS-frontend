@@ -13,6 +13,7 @@ import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
 
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
+import { ThesisPlansList } from './pages/thesis/ThesisPlansList.tsx';
 import { ProjectMonitoring } from './pages/projects/ProjectMonitoring.tsx';
 import { ProjectAudit } from './pages/projects/ProjectAudit.tsx';
 import { ProjectsList } from './pages/projects/ProjectsList.tsx';
@@ -24,6 +25,7 @@ import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
 
 // Admin Views
+import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
 import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
 import { ResearchLineDetail } from './pages/admin/ResearchLineDetail.tsx';
@@ -115,6 +117,7 @@ function App() {
             <Route path="/dashboard" element={<RoleDashboards />} />
             
             {/* Vistas específicas de postulaciones y seguimiento */}
+            <Route path="/thesis/plans" element={<ThesisPlansList />} />
             <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
             <Route path="/projects" element={<ProjectsList />} />
             <Route path="/projects/new" element={<NewProposal />} />
@@ -127,6 +130,7 @@ function App() {
             <Route path="/progressreports/review" element={<ReviewProgressReports />} />
             
             {/* Vistas de Administración */}
+            <Route path="/admin/activate" element={<ActivateUsers />} />
             <Route path="/lines" element={<ResearchLines />} />
             <Route path="/lines/new" element={<NewResearchLine />} />
             <Route path="/lines/:id" element={<ResearchLineDetail />} />
