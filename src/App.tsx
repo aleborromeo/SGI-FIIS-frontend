@@ -11,8 +11,8 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage.tsx';
 import { SobreSgiPage } from './pages/SobreSgiPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
-import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
+import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
 import { ThesisPlansList } from './pages/thesis/ThesisPlansList.tsx';
@@ -109,6 +109,46 @@ function App() {
         <AuthProvider>
           <BrowserRouter>
             <Routes>
+          {/* Ruta raíz (Página de Bienvenida) */}
+          <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
+
+          {/* Ruta de Login (Pública) */}
+          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+
+          {/* Ruta de Registro (Pública) */}
+          <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+
+          {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
+          <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
+            <Route path="/dashboard" element={<RoleDashboards />} />
+            <Route path="/metrics" element={<MetricsReportsPage />} />
+            
+            {/* Vistas específicas de postulaciones y seguimiento */}
+            <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
+            <Route path="/projects" element={<ProjectsList />} />
+            <Route path="/projects/new" element={<NewProposal />} />
+            <Route path="/projects/assign" element={<AssignReviewers />} />
+            <Route path="/projects/evaluate" element={<EvaluationForm />} />
+            <Route path="/projects/:id" element={<ProjectMonitoring />} />
+            <Route path="/projects/audit" element={<ProjectAudit />} />
+            <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
+            <Route path="/observations/panel" element={<ObservationsPanel />} />
+            <Route path="/progressreports/review" element={<ReviewProgressReports />} />
+            
+            {/* Vistas de Administración */}
+            <Route path="/lines" element={<ResearchLines />} />
+            <Route path="/lines/new" element={<NewResearchLine />} />
+            <Route path="/lines/:id" element={<ResearchLineDetail />} />
+            <Route path="/groups" element={<ResearchGroups />} />
+            <Route path="/groups/new" element={<NewResearchGroup />} />
+            <Route path="/groups/:id" element={<ResearchGroupDetail />} />
+            
+            {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Route>
+
+          {/* Redirección por defecto para cualquier ruta inválida */}
+          <Route path="*" element={<Navigate to="/" replace />} />
               {/* Rutas públicas */}
               <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
               <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
