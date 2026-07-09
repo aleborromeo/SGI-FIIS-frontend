@@ -9,7 +9,6 @@ import { LoginPage } from './pages/auth/LoginPage.tsx';
 import { RegisterPage } from './pages/auth/RegisterPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
-import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
 
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
@@ -22,6 +21,11 @@ import { EvaluationForm } from './pages/projects/EvaluationForm.tsx';
 import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
 import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
+
+// Nuevos módulos (Fase 1)
+import { DocumentsPage } from './pages/documents/DocumentsPage.tsx';
+import { ResolutionsPage } from './pages/resolutions/ResolutionsPage.tsx';
+import { ProgressReportsPage } from './pages/progressreports/ProgressReportsPage.tsx';
 
 // Admin Views
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
@@ -125,6 +129,11 @@ function App() {
             <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
             <Route path="/observations/panel" element={<ObservationsPanel />} />
             <Route path="/progressreports/review" element={<ReviewProgressReports />} />
+            
+            {/* Gestión Documental y Resoluciones */}
+            <Route path="/documents" element={<DocumentsPage />} />
+            <Route path="/resolutions" element={<ResolutionsPage />} />
+            <Route path="/reports" element={<ProgressReportsPage />} />
             
             {/* Vistas de Administración */}
             <Route path="/lines" element={<ResearchLines />} />

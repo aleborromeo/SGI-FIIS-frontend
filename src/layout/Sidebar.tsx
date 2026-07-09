@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, FileText, BarChart2, History, Settings, LogOut, Users, GraduationCap, ClipboardCheck, AlertCircle, FileSearch, X, BookOpen } from 'lucide-react';
+import { LayoutDashboard, FileText, BarChart2, History, Settings, LogOut, Users, GraduationCap, ClipboardCheck, AlertCircle, FileSearch, X, BookOpen, Files, ScrollText, PieChart } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 
 import { AuthContext } from '../context/AuthContext';
@@ -58,6 +58,14 @@ const navGroups = [
       { id: 'users', label: 'Directorio', icon: <Users size={20} />, path: '/users' },
       { id: 'groups', label: 'Grupos Inv.', icon: <Users size={20} />, path: '/groups' },
       { id: 'lines', label: 'Líneas Inv.', icon: <BookOpen size={20} />, path: '/lines' },
+    ]
+  },
+  {
+    title: 'Gestión Documental y Resoluciones',
+    items: [
+      { id: 'documents', label: 'Documentos', icon: <Files size={20} />, path: '/documents' },
+      { id: 'resolutions', label: 'Resoluciones', icon: <ScrollText size={20} />, path: '/resolutions' },
+      { id: 'reports', label: 'Reportes', icon: <PieChart size={20} />, path: '/reports' },
     ]
   }
 ];

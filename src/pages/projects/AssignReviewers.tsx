@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  AlertCircle,
   Search,
   Trash2,
   UserPlus,
@@ -13,7 +12,6 @@ import {
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { userService, type User } from '../../services/userService';
 import { evaluacionService } from '../../services/evaluacionService';
 import { useToast } from '../../context/ToastContext';
 import { Badge } from '../../components/ui/Badge';
@@ -72,6 +70,7 @@ export const AssignReviewers: React.FC = () => {
   const queryParams = new URLSearchParams(location.search);
 
   const projectId = queryParams.get('projectId') || '1';
+  const navigate = useNavigate();
 
   const [availableReviewers] = useState<Reviewer[]>(initialReviewers);
   const [assignedReviewers, setAssignedReviewers] = useState<Reviewer[]>([]);
@@ -79,6 +78,7 @@ export const AssignReviewers: React.FC = () => {
   const toast = useToast();
   const [message, setMessage] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [loading] = useState(false);
 
   const filteredReviewers = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();

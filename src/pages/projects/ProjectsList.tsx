@@ -135,7 +135,6 @@ export const ProjectsList: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [demoMode, setDemoMode] = useState(false);
-  const [backendMessage, setBackendMessage] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');
@@ -144,7 +143,6 @@ export const ProjectsList: React.FC = () => {
     try {
       setLoading(true);
       setDemoMode(false);
-      setBackendMessage(null);
 
       const response = await projectService.getAll();
       const normalized = normalizeProjects(response as ProjectResponse);
@@ -155,7 +153,7 @@ export const ProjectsList: React.FC = () => {
 
       setProjects(demoProjects);
       setDemoMode(true);
-      setBackendMessage(
+      console.error(
         err instanceof Error
           ? err.message
           : 'El backend no respondió correctamente.'
@@ -174,9 +172,9 @@ export const ProjectsList: React.FC = () => {
       .catch((err: any) => {
         const errorMsg = err.message || '';
         if (errorMsg.includes('Error interno del servidor') || errorMsg.includes('500') || errorMsg.includes('NullPointer')) {
-          setError('No fue posible cargar las propuestas. Inténtelo nuevamente.');
+          console.error('No fue posible cargar las propuestas. Inténtelo nuevamente.');
         } else {
-          setError(errorMsg || 'Ocurrió un problema al obtener la información.');
+          console.error(errorMsg || 'Ocurrió un problema al obtener la información.');
         }
         setLoading(false);
       });

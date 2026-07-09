@@ -49,8 +49,8 @@ describe('MyEvaluations', () => {
 
   it('renders the mock evaluation data in the table', async () => {
     vi.mocked(evaluacionService.getByEvaluator).mockResolvedValue([
-      { id: 1, tipo: 'Proyecto', title: 'Impacto de la IA en la cadena de suministro', assignDate: '2023-10-01', deadline: '2023-10-15', status: 'PENDIENTE' },
-      { id: 2, tipo: 'Tesis', title: 'Optimización de procesos industriales con IoT', assignDate: '2023-10-02', deadline: '2023-10-16', status: 'COMPLETADO' }
+      { id: 1, tipo: 'Proyecto', title: 'Impacto de la IA en la cadena de suministro', assignedAt: '2023-10-01', deadline: '2023-10-15', status: 'PENDIENTE' },
+      { id: 2, tipo: 'Tesis', title: 'Optimización de procesos industriales con IoT', assignedAt: '2023-10-02', deadline: '2023-10-16', status: 'COMPLETADO' }
     ]);
     
     render(
@@ -69,7 +69,7 @@ describe('MyEvaluations', () => {
 
   it('renders the action buttons', async () => {
     vi.mocked(evaluacionService.getByEvaluator).mockResolvedValue([
-      { id: 1, tipo: 'Proyecto', title: 'Impacto de la IA en la cadena de suministro', assignDate: '2023-10-01', deadline: '2023-10-15', status: 'PENDIENTE' }
+      { id: 1, tipo: 'Proyecto', title: 'Impacto de la IA en la cadena de suministro', assignedAt: '2023-10-01', deadline: '2023-10-15', status: 'PENDIENTE' }
     ]);
     
     render(

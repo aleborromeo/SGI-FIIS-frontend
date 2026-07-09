@@ -62,20 +62,6 @@ export const evaluacionService = {
     await Promise.all(reviewerIds.map(id => evaluacionService.assignReviewer(projectId, null, id)));
   },
 
-
-  assignReviewers: async (
-    projectId: string | number,
-    reviewerIds: number[]
-  ): Promise<void> => {
-    return fetchApi<void>('/evaluaciones/asignar', {
-      method: 'POST',
-      body: JSON.stringify({
-        projectId,
-        reviewerIds,
-      }),
-    });
-  },
-
   submitResult: async (
     evaluacionId: string | number,
     payload: EvaluacionResultRequest
