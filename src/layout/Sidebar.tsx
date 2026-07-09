@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   LayoutDashboard,
   FileText,
@@ -11,8 +11,12 @@ import {
   FileSearch,
   X,
   BookOpen,
+  Settings,
+  LogOut,
 } from 'lucide-react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+
+import { AuthContext } from '../context/AuthContext';
 
 const navGroups = [
   {
@@ -98,6 +102,10 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, currentRole, logout } = React.useContext(AuthContext);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
 
   const isItemActive = (itemId: string, path: string): boolean => {
     if (itemId === 'proposals') {
@@ -111,6 +119,52 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     return location.pathname === path;
   };
 
+  const getRoleLabel = (role: string | null): string => {
+    switch (role) {
+      case 'ADMIN':
+        return 'Administrador';
+      case 'ESTUDIANTE':
+        return 'Estudiante / Tesista';
+      case 'DOCENTE_INVESTIGADOR':
+        return 'Docente Investigador';
+      case 'COORDINADOR_GRUPO':
+        return 'Coordinador de Grupo';
+      case 'DIRECTOR_INVESTIGACION':
+        return 'Director de Investigación';
+      case 'DECANO':
+        return 'Decano';
+      case 'EVALUADOR':
+        return 'Evaluador';
+      default:
+        return 'Usuario';
+    }
+  };
+
+  const getUserInitials = (): string => {
+    if (!user) return 'US';
+
+    const firstName = user.firstNames?.charAt(0) ?? '';
+    const lastName = user.lastNames?.charAt(0) ?? '';
+    const initials = `${firstName}${lastName}`.trim();
+
+    return initials || 'US';
+  };
+
+  const getUserDisplayName = (): string => {
+    if (!user) return 'Cargando...';
+
+    if (user.firstNames) {
+      return `${user.firstNames} ${user.lastNames ?? ''}`.trim();
+    }
+
+    return user.email || 'Usuario';
+  };
+
+  const confirmLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
     <>
       {isOpen && (
@@ -121,7 +175,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         />
       )}
 
-      <aside className={`sidebar-container ${isOpen ? 'open' : ''}`}>
+      <aside
+        className={`sidebar-container ${isOpen ? 'open' : ''}`}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          minHeight: '100vh',
+          overflow: 'hidden',
+        }}
+      >
         <div className="sidebar-brand-header">
           <button
             className="sidebar-close-btn"
@@ -148,7 +211,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
           </div>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav
+          className="sidebar-nav"
+          style={{
+            flex: 1,
+            overflow: 'visible',
+          }}
+        >
           {navGroups.map((group) => (
             <div key={group.title}>
               <h3 className="sidebar-group-title">
@@ -175,7 +244,95 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
             </div>
           ))}
         </nav>
+
+        <div className="sidebar-user-footer">
+          {settingsMessage && (
+            <div className="sidebar-settings-message">
+              {settingsMessage}
+            </div>
+          )}
+
+          <div className="sidebar-user-card">
+            <div className="sidebar-user-avatar">
+              {getUserInitials()}
+            </div>
+
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-name">
+                {getUserDisplayName()}
+              </div>
+              <div className="sidebar-user-role">
+                {getRoleLabel(currentRole)}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="sidebar-action-button"
+            onClick={() => {
+              setSettingsMessage('Configuración general pendiente de integración.');
+              setTimeout(() => setSettingsMessage(null), 3000);
+            }}
+          >
+            <Settings size={19} />
+            <span>Configuración</span>
+          </button>
+
+          <button
+            type="button"
+            className="sidebar-action-button danger"
+            onClick={() => setShowLogoutConfirm(true)}
+          >
+            <LogOut size={19} />
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
       </aside>
+
+      {showLogoutConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="sgi-logout-overlay"
+          onClick={() => setShowLogoutConfirm(false)}
+        >
+          <div
+            className="sgi-logout-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="sgi-logout-icon">
+              <LogOut size={26} />
+            </div>
+
+            <h2 className="sgi-logout-title">
+              ¿Cerrar sesión?
+            </h2>
+
+            <p className="sgi-logout-text">
+              ¿Estás seguro de que deseas cerrar tu sesión actual?
+            </p>
+
+            <div className="sgi-logout-actions">
+              <button
+                type="button"
+                className="sgi-modal-cancel"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                className="sgi-modal-confirm"
+                onClick={confirmLogout}
+              >
+                Sí, cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
