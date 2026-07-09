@@ -145,8 +145,12 @@ export const LoginPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await login(email, password);
-      navigate('/dashboard');
+      const response = await login(email, password);
+      if (response && response.mustChangePassword) {
+        navigate('/change-password');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       console.error(err);
       // Si hay error en las credenciales, regeneramos el captcha por seguridad
@@ -308,9 +312,14 @@ export const LoginPage: React.FC = () => {
                 <input type="checkbox" className="remember-me-checkbox" />
                 <span>Recordarme</span>
               </label>
-              <a href="#" onClick={(e) => e.preventDefault()} className="forgot-password-link">
+              <button 
+                type="button" 
+                onClick={() => navigate('/forgot-password')} 
+                className="forgot-password-link"
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
+              >
                 ¿Olvidaste tu contraseña?
-              </a>
+              </button>
             </div>
 
             {/* Botón Ingresar */}

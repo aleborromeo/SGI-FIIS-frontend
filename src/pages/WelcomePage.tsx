@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { api } from '../services/api';
 import './WelcomePage.css';
@@ -26,8 +26,53 @@ import congresosBg from '../assets/images/congresos.png';
 export const WelcomePage: React.FC = () => {
   const { isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeIndex, setActiveIndex] = useState(3);
+  const [activeLink, setActiveLink] = useState<'inicio' | 'convocatorias'>('inicio');
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleNavClick = (link: 'inicio' | 'convocatorias', targetId?: string) => {
+    setActiveLink(link);
+    if (targetId) {
+      scrollToSection(targetId);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    if (location.state && (location.state as any).scrollTo === 'noticias') {
+      setActiveLink('convocatorias');
+      setTimeout(() => {
+        scrollToSection('noticias');
+      }, 100);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const noticiasEl = document.getElementById('noticias');
+      if (noticiasEl) {
+        const rect = noticiasEl.getBoundingClientRect();
+        if (rect.top <= window.innerHeight * 0.4 && rect.bottom >= window.innerHeight * 0.1) {
+          setActiveLink('convocatorias');
+        } else {
+          setActiveLink('inicio');
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const slides = [
     {
@@ -221,12 +266,30 @@ export const WelcomePage: React.FC = () => {
             <span className="welcome-brand-subtitle">Sistema de Gestión de Investigación</span>
           </div>
         </div>
-        
+
         {/* Enlaces de Navegación del Mockup */}
         <nav className="welcome-nav-links">
-          <a href="#" onClick={(e) => e.preventDefault()} className="nav-link active">Inicio</a>
-          <a href="#" onClick={(e) => e.preventDefault()} className="nav-link">Sobre el sistema</a>
-          <a href="#" onClick={(e) => e.preventDefault()} className="nav-link">Convocatorias</a>
+          <a
+            href="#"
+            onClick={(e) => { e.preventDefault(); handleNavClick('inicio'); }}
+            className={`nav-link ${activeLink === 'inicio' ? 'active' : ''}`}
+          >
+            Inicio
+          </a>
+          <a
+            href="#"
+            onClick={(e) => { e.preventDefault(); handleNavClick('convocatorias', 'noticias'); }}
+            className={`nav-link ${activeLink === 'convocatorias' ? 'active' : ''}`}
+          >
+            Convocatorias
+          </a>
+          <a
+            href="#"
+            onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi'); }}
+            className="nav-link"
+          >
+            Sobre SGI
+          </a>
           <a href="#" onClick={(e) => e.preventDefault()} className="nav-link">Contacto</a>
         </nav>
 
@@ -238,10 +301,10 @@ export const WelcomePage: React.FC = () => {
       </header>
 
       {/* Sección Hero con Imagen Degradada y Fondos Cambiantes */}
-      <main 
-        className="welcome-hero-section" 
-        style={{ 
-          background: slides[currentSlideIndex].bgColor, 
+      <main
+        className="welcome-hero-section"
+        style={{
+          background: slides[currentSlideIndex].bgColor,
           transition: 'background 1.2s ease-in-out',
           '--desktop-gradient': slides[currentSlideIndex].desktopGradient,
           '--mobile-gradient': slides[currentSlideIndex].mobileGradient
@@ -250,10 +313,10 @@ export const WelcomePage: React.FC = () => {
         {/* Contenedor de Imagen de Fondo Full Screen */}
         <div className="welcome-hero-bg-container">
           {slides.map((slide, idx) => (
-            <img 
+            <img
               key={idx}
-              src={slide.image} 
-              alt="SGI - UNAS" 
+              src={slide.image}
+              alt="SGI - UNAS"
               className="welcome-hero-bg-image"
               style={{
                 position: 'absolute',
@@ -282,7 +345,7 @@ export const WelcomePage: React.FC = () => {
             <p className="welcome-hero-desc">
               {slides[currentSlideIndex].description}
             </p>
-            
+
             <div className="welcome-hero-actions">
               <button onClick={() => navigate('/login')} className="btn-hero btn-hero-primary-blue">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -361,10 +424,8 @@ export const WelcomePage: React.FC = () => {
         </div>
       </main>
 
-
-
       {/* Sección de Líneas de Investigación */}
-      <section className="welcome-lines-section">
+      <section id="lineas" className="welcome-lines-section">
         <div className="lines-header-container">
           <span className="lines-category-label">INVESTIGACIÓN CIENTÍFICA</span>
           <h3 className="lines-main-title">Explora nuestras líneas de investigación</h3>
@@ -372,7 +433,7 @@ export const WelcomePage: React.FC = () => {
             Conoce los campos científicos en los que desarrollamos proyectos de alto impacto y excelencia
           </p>
         </div>
-        
+
         <div className="lines-grid">
           {researchLines.map((line) => (
             <div key={line.title} className={`line-card theme-${line.theme}`}>
@@ -394,7 +455,7 @@ export const WelcomePage: React.FC = () => {
       </section>
 
       {/* Sección de Grupos de Investigación */}
-      <section className="welcome-groups-section">
+      <section id="grupos" className="welcome-groups-section">
         <div className="lines-header-container">
           <span className="lines-category-label">AGRUPACIONES CIENTÍFICAS</span>
           <h3 className="lines-main-title">Grupos de Investigación</h3>
@@ -402,7 +463,7 @@ export const WelcomePage: React.FC = () => {
             Conoce las agrupaciones científicas que impulsan la innovación y desarrollo en la FIIS
           </p>
         </div>
-        
+
         <div className="groups-carousel-wrapper">
           {/* Contenedor del Carrusel 3D */}
           <div className="groups-carousel-container" ref={carouselRef}>
@@ -410,20 +471,20 @@ export const WelcomePage: React.FC = () => {
               {groups.map((group, index) => {
                 let diff = index - activeIndex;
                 const total = groups.length;
-                
+
                 // Wrap around for circular loop
                 if (diff > total / 2) diff -= total;
                 if (diff < -total / 2) diff += total;
-                
+
                 const absDiff = Math.abs(diff);
                 const isActive = absDiff === 0;
-                
+
                 // Calculate 3D transforms
                 const translateX = diff * 150;
                 const scale = isActive ? 1.15 : 1 - absDiff * 0.12;
                 const zIndex = 10 - absDiff;
                 const opacity = isActive ? 1 : Math.max(0.35, 0.85 - absDiff * 0.20);
-                
+
                 return (
                   <div
                     key={group.codigo}
@@ -436,7 +497,7 @@ export const WelcomePage: React.FC = () => {
                       cursor: 'pointer',
                     }}
                   >
-                  <div className="group-card-badge">{group.codigo}</div>
+                    <div className="group-card-badge">{group.codigo}</div>
                     <div className="group-card-name">{group.nombre}</div>
                     <StarRating value={group.investigaciones} max={maxInvestigaciones} isActive={isActive} />
                   </div>
@@ -448,8 +509,8 @@ export const WelcomePage: React.FC = () => {
 
         {/* Controles de navegación debajo de la tarjeta */}
         <div className="carousel-controls-bottom">
-          <button 
-            className="carousel-control-btn-bottom" 
+          <button
+            className="carousel-control-btn-bottom"
             onClick={() => setActiveIndex((prev) => (prev - 1 + groups.length) % groups.length)}
             title="Anterior"
           >
@@ -457,9 +518,9 @@ export const WelcomePage: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          
-          <button 
-            className="carousel-control-btn-bottom" 
+
+          <button
+            className="carousel-control-btn-bottom"
             onClick={() => setActiveIndex((prev) => (prev + 1) % groups.length)}
             title="Siguiente"
           >
@@ -471,8 +532,8 @@ export const WelcomePage: React.FC = () => {
 
         {/* Botón para ver todos */}
         <div className="groups-action-container">
-          <button 
-            onClick={() => navigate('/login')} 
+          <button
+            onClick={() => navigate('/login')}
             className="btn-all-groups"
           >
             <span>Ver todos los grupos de investigación</span>
@@ -486,7 +547,7 @@ export const WelcomePage: React.FC = () => {
 
 
       {/* Sección de Noticias */}
-      <section className="welcome-news-section">
+      <section id="noticias" className="welcome-news-section">
         <div className="lines-header-container">
           <span className="lines-category-label">NOTICIAS Y EVENTOS</span>
           <h3 className="lines-main-title">Novedades de Investigación</h3>
@@ -496,9 +557,9 @@ export const WelcomePage: React.FC = () => {
         </div>
 
         <div className="news-grid">
-          <div 
+          <div
             className="news-card"
-            style={{ 
+            style={{
               backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.25) 0%, rgba(15, 23, 42, 0.88) 100%), url(${convocatoriasBg})`
             }}
           >
@@ -518,9 +579,9 @@ export const WelcomePage: React.FC = () => {
             </div>
           </div>
 
-          <div 
+          <div
             className="news-card"
-            style={{ 
+            style={{
               backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.25) 0%, rgba(15, 23, 42, 0.88) 100%), url(${reconocimientoBg})`
             }}
           >
@@ -540,9 +601,9 @@ export const WelcomePage: React.FC = () => {
             </div>
           </div>
 
-          <div 
+          <div
             className="news-card"
-            style={{ 
+            style={{
               backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.25) 0%, rgba(15, 23, 42, 0.88) 100%), url(${congresosBg})`
             }}
           >
@@ -565,12 +626,12 @@ export const WelcomePage: React.FC = () => {
       </section>
 
       {/* Footer Premium BCP Style */}
-      <footer className="welcome-footer-premium">
+      <footer id="contacto" className="welcome-footer-premium">
         {/* Botón para subir (tipo chevron en el medio de la línea ploma) */}
         <div className="footer-scroll-top-container">
           <div className="footer-scroll-top-line" />
-          <button 
-            className="footer-scroll-top-btn" 
+          <button
+            className="footer-scroll-top-btn"
             onClick={() => {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
@@ -663,7 +724,7 @@ export const WelcomePage: React.FC = () => {
             </div>
 
             <div className="footer-column">
-              <h4>Legales</h4>
+              <h4>Normativas</h4>
               <ul>
                 <li>
                   <a href="#" onClick={(e) => e.preventDefault()}>
@@ -699,30 +760,30 @@ export const WelcomePage: React.FC = () => {
                   <rect x="0" y="0" width="25" height="25" fill="#1a365d" />
                   <rect x="5" y="5" width="15" height="15" fill="#ffffff" />
                   <rect x="8" y="8" width="9" height="9" fill="#1a365d" />
-                  
+
                   <rect x="75" y="0" width="25" height="25" fill="#1a365d" />
                   <rect x="80" y="5" width="15" height="15" fill="#ffffff" />
                   <rect x="83" y="8" width="9" height="9" fill="#1a365d" />
-                  
+
                   <rect x="0" y="75" width="25" height="25" fill="#1a365d" />
                   <rect x="5" y="80" width="15" height="15" fill="#ffffff" />
                   <rect x="8" y="83" width="9" height="9" fill="#1a365d" />
-                  
+
                   <rect x="35" y="10" width="5" height="15" fill="#1a365d" />
                   <rect x="45" y="5" width="10" height="5" fill="#1a365d" />
                   <rect x="60" y="15" width="5" height="20" fill="#1a365d" />
                   <rect x="10" y="35" width="15" height="5" fill="#1a365d" />
                   <rect x="5" y="45" width="5" height="15" fill="#1a365d" />
                   <rect x="20" y="55" width="10" height="5" fill="#1a365d" />
-                  
+
                   <rect x="75" y="35" width="10" height="10" fill="#1a365d" />
                   <rect x="90" y="45" width="5" height="15" fill="#1a365d" />
                   <rect x="80" y="65" width="15" height="5" fill="#1a365d" />
-                  
+
                   <rect x="35" y="75" width="5" height="15" fill="#1a365d" />
                   <rect x="45" y="85" width="15" height="5" fill="#1a365d" />
                   <rect x="65" y="75" width="5" height="10" fill="#1a365d" />
-                  
+
                   <rect x="35" y="35" width="30" height="30" rx="4" fill="#ffffff" stroke="#1a365d" strokeWidth="2" />
                 </svg>
                 <img src={yapeLogo} alt="Yape Logo" className="yape-center-logo" />
