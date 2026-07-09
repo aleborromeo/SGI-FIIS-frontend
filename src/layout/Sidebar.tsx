@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, FileText, BarChart2, History, Settings, LogOut, Users, GraduationCap, ClipboardCheck, AlertCircle, FileSearch, X, BookOpen } from 'lucide-react';
+import { LayoutDashboard, FileText, BarChart2, History, Settings, LogOut, Users, GraduationCap, ClipboardCheck, AlertCircle, FileSearch, X, BookOpen, Megaphone } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 
 import { AuthContext } from '../context/AuthContext';
@@ -34,6 +34,13 @@ const navGroups = [
         label: 'Mis Observaciones',
         icon: <AlertCircle size={20} />,
         path: '/observations/panel',
+      },
+      {
+        id: 'convocatorias',
+        label: 'Convocatorias',
+        icon: <Megaphone size={20} />,
+        path: '/convocatorias',
+        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
       },
     ],
   },

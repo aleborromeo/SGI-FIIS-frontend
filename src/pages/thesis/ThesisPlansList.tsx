@@ -187,8 +187,8 @@ export const ThesisPlansList: React.FC = () => {
             Actualizar
           </Button>
 
-          {currentRole === 'ESTUDIANTE' && plans.length === 0 && (
-            <Link to="/projects/new">
+          {currentRole === 'ESTUDIANTE' && (
+            <Link to="/thesis/new">
               <Button icon={<Plus size={18} />}>Nuevo Plan de Tesis</Button>
             </Link>
           )}

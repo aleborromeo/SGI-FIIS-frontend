@@ -16,6 +16,7 @@ import { Spinner } from './components/common/Spinner.tsx';
 
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
 import { ThesisPlansList } from './pages/thesis/ThesisPlansList.tsx';
+import { NewThesisPlan } from './pages/thesis/NewThesisPlan.tsx';
 import { ProjectMonitoring } from './pages/projects/ProjectMonitoring.tsx';
 import { ProjectAudit } from './pages/projects/ProjectAudit.tsx';
 import { ProjectsList } from './pages/projects/ProjectsList.tsx';
@@ -25,6 +26,8 @@ import { EvaluationForm } from './pages/projects/EvaluationForm.tsx';
 import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
 import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
+import { ConvocatoriasList } from './pages/convocatorias/ConvocatoriasList.tsx';
+import { NewConvocatoria } from './pages/convocatorias/NewConvocatoria.tsx';
 
 // Admin Views
 import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
@@ -130,7 +133,11 @@ function App() {
                 {/* Vistas específicas de postulaciones y seguimiento */}
                 <Route path="/thesis/plans" element={<ThesisPlansList />} />
                 <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
+                <Route path="/thesis/new" element={<NewThesisPlan />} />
                 <Route path="/projects" element={<ProjectsList />} />
+                {/* Convocatorias */}
+                <Route path="/convocatorias" element={<ConvocatoriasList />} />
+                <Route path="/convocatorias/new" element={<NewConvocatoria />} />
                 <Route path="/projects/new" element={<NewProposal />} />
                 <Route path="/projects/assign" element={<AssignReviewers />} />
                 <Route path="/projects/evaluate" element={<EvaluationForm />} />

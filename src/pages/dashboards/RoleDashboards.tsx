@@ -26,6 +26,7 @@ import {
 import { AuthContext } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
 import { Spinner } from '../../components/common/Spinner';
+import { callService, type CallResponse } from '../../services/callService';
 import './RoleDashboards.css';
 
 import type {
@@ -74,6 +75,7 @@ interface DashboardLayoutProps {
   leftContent: ReactNode;
   alertsTitle: string;
   alerts?: AlertItem[];
+  extraContent?: ReactNode;
 }
 
 interface QuickAction {
@@ -424,6 +426,7 @@ function DashboardLayout({
   leftContent,
   alertsTitle,
   alerts,
+  extraContent,
 }: DashboardLayoutProps) {
   return (
     <div className={`dashboard-view ${viewClassName}`}>
@@ -450,6 +453,8 @@ function DashboardLayout({
         </div>
       </div>
 
+      {extraContent}
+
       <QuickActionsSection />
     </div>
   );
@@ -458,6 +463,7 @@ function DashboardLayout({
 export const RoleDashboards = () => {
   const { currentRole } = useContext(AuthContext);
   const [data, setData] = useState<DashboardResponse | null>(null);
+  const [vigentCalls, setVigentCalls] = useState<CallResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -473,6 +479,13 @@ export const RoleDashboards = () => {
 
         if (mounted) {
           setData(response);
+        }
+
+        if (currentRole === 'DOCENTE_INVESTIGADOR') {
+          const calls = await callService.getVigent();
+          if (mounted) {
+            setVigentCalls(calls || []);
+          }
         }
       } catch (err) {
         console.error('Error fetching dashboard:', err);
@@ -682,6 +695,100 @@ export const RoleDashboards = () => {
       teacherData.projectsAsMember,
     ]);
 
+    const convocatoriasWidget = (
+      <div style={{ marginTop: '32px' }} className="convocatorias-vigentes-section">
+        <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+          <Megaphone size={22} style={{ color: 'var(--primary)' }} />
+          Convocatorias Vigentes
+        </h3>
+        {vigentCalls.length === 0 ? (
+          <div style={{
+            padding: '32px',
+            textAlign: 'center',
+            background: 'var(--surface-container-low)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px dashed var(--outline-variant)',
+            color: 'var(--on-surface-variant)'
+          }}>
+            <Calendar size={36} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
+            <p className="text-body-md" style={{ fontWeight: 500 }}>Actualmente no existen convocatorias abiertas para registrar proyectos de investigación.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+            {vigentCalls.map(call => (
+              <div key={call.id} className="convocatoria-card" style={{
+                background: 'var(--surface-container-lowest)',
+                border: '1px solid var(--outline-variant)',
+                borderRadius: 'var(--radius-md)',
+                padding: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                boxShadow: 'var(--shadow-sm)'
+              }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary)', letterSpacing: '0.05em' }}>
+                      CÓDIGO: CONV-{call.id}
+                    </span>
+                    <span style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      color: 'var(--on-success-container)',
+                      background: 'var(--success-container)',
+                      padding: '2px 8px',
+                      borderRadius: 'var(--radius-full)'
+                    }}>
+                      {call.status}
+                    </span>
+                  </div>
+                  <h4 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--on-surface)', marginBottom: '8px' }}>
+                    {call.title}
+                  </h4>
+                  <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {call.description}
+                  </p>
+                </div>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--outline-variant)', paddingTop: '12px', marginBottom: '16px' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)' }}>
+                      <span>Inicio: </span>
+                      <strong style={{ color: 'var(--on-surface)' }}>{call.startDate}</strong>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)' }}>
+                      <span>Cierre: </span>
+                      <strong style={{ color: 'var(--on-surface)' }}>{call.endDate}</strong>
+                    </div>
+                  </div>
+                  <Link to={`/projects/new?callId=${call.id}`} style={{ textDecoration: 'none' }}>
+                    <button className="btn-postular" style={{
+                      width: '100%',
+                      padding: '10px',
+                      background: 'var(--primary)',
+                      color: 'var(--on-primary)',
+                      border: 'none',
+                      borderRadius: 'var(--radius-sm)',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      transition: 'background 0.2s'
+                    }}>
+                      <FileText size={16} />
+                      Postular Proyecto
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+
     return (
       <DashboardLayout
         viewClassName="teacher-view"
@@ -750,6 +857,7 @@ export const RoleDashboards = () => {
         }
         alertsTitle="Alertas de proyectos"
         alerts={teacherData.alerts}
+        extraContent={convocatoriasWidget}
       />
     );
   }
