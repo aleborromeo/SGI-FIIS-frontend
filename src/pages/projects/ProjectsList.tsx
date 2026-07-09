@@ -134,8 +134,7 @@ function isStatus(project: Project, values: string[]): boolean {
 export const ProjectsList: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [demoMode, setDemoMode] = useState(false);
-  const [backendMessage, setBackendMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');
@@ -143,43 +142,26 @@ export const ProjectsList: React.FC = () => {
   async function loadProjects() {
     try {
       setLoading(true);
-      setDemoMode(false);
-      setBackendMessage(null);
+      setError(null);
 
       const response = await projectService.getAll();
       const normalized = normalizeProjects(response as ProjectResponse);
 
       setProjects(normalized);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error al cargar proyectos:', err);
-
-      setProjects(demoProjects);
-      setDemoMode(true);
-      setBackendMessage(
-        err instanceof Error
-          ? err.message
-          : 'El backend no respondió correctamente.'
-      );
+      const errorMsg = err.message || '';
+      if (errorMsg.includes('Error interno del servidor') || errorMsg.includes('500') || errorMsg.includes('NullPointer')) {
+        setError('No fue posible cargar las propuestas. Inténtelo nuevamente.');
+      } else {
+        setError(errorMsg || 'Ocurrió un problema al obtener la información.');
+      }
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    projectService.getAll()
-      .then((data: any) => {
-        setProjects(data);
-        setLoading(false);
-      })
-      .catch((err: any) => {
-        const errorMsg = err.message || '';
-        if (errorMsg.includes('Error interno del servidor') || errorMsg.includes('500') || errorMsg.includes('NullPointer')) {
-          setError('No fue posible cargar las propuestas. Inténtelo nuevamente.');
-        } else {
-          setError(errorMsg || 'Ocurrió un problema al obtener la información.');
-        }
-        setLoading(false);
-      });
     loadProjects();
   }, []);
 
@@ -227,9 +209,8 @@ export const ProjectsList: React.FC = () => {
   const observedProjects = projects.filter((project) =>
     isStatus(project, ['OBSERVED', 'OBSERVADO', 'REJECTED', 'RECHAZADO'])
   ).length;
-
   return (
-    <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
+    <div className="animate-fade-in" style={{ padding: '24px' }}>
       <div
         style={{
           display: 'flex',
@@ -339,14 +320,7 @@ export const ProjectsList: React.FC = () => {
         </Card>
       </div>
 
-      {demoMode && (
-    <div style={{ marginBottom: '24px' }}>
-      <Alert title="Datos de referencia cargados">
-        Se muestran registros de referencia para validar la navegación, filtros,
-        seguimiento y acciones del módulo de proyectos y tesis.
-      </Alert>
-    </div>
-  )}
+
 
       <Card>
         <CardContent>
@@ -419,7 +393,20 @@ export const ProjectsList: React.FC = () => {
             </TableHead>
 
             <TableBody>
-              {loading ? (
+              {error ? (
+                <TableRow>
+                  <td
+                    colSpan={6}
+                    style={{
+                      textAlign: 'center',
+                      padding: '24px',
+                      color: 'var(--error)',
+                    }}
+                  >
+                    {error}
+                  </td>
+                </TableRow>
+              ) : loading ? (
                 <TableRow>
                   <td
                     colSpan={6}
@@ -463,7 +450,7 @@ export const ProjectsList: React.FC = () => {
                             marginTop: '4px',
                             color: 'var(--on-surface-variant)',
                             fontSize: '12px',
-                            maxWidth: '420px',
+                            maxWidth: '600px',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',

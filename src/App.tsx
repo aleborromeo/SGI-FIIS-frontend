@@ -3,8 +3,6 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
 import { ConfirmProvider } from './context/ConfirmContext.tsx';
-import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
-import { ThesisPlansList } from './pages/thesis/ThesisPlansList.tsx';
 
 import { WelcomePage } from './pages/WelcomePage.tsx';
 import { LoginPage } from './pages/auth/LoginPage.tsx';
@@ -17,6 +15,7 @@ import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
 
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
+import { ThesisPlansList } from './pages/thesis/ThesisPlansList.tsx';
 import { ProjectMonitoring } from './pages/projects/ProjectMonitoring.tsx';
 import { ProjectAudit } from './pages/projects/ProjectAudit.tsx';
 import { ProjectsList } from './pages/projects/ProjectsList.tsx';
@@ -28,6 +27,7 @@ import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
 
 // Admin Views
+import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
 import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
 import { ResearchLineDetail } from './pages/admin/ResearchLineDetail.tsx';

@@ -39,13 +39,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         // Validar token y traer perfil actual del backend
         const profile = await authService.getProfile();
-        const role = profile.roleCode || profile.rolPrincipal?.codigoRol;
+        const role = profile.roleCode || profile.rolPrincipal?.codigoRol || '';
         
         const userData = {
           id: profile.id,
-          email: profile.institutionalEmail || profile.correoInstitucional,
-          firstNames: profile.firstNames || profile.nombres,
-          lastNames: profile.lastNames || profile.apellidos,
+          email: profile.institutionalEmail || profile.correoInstitucional || '',
+          firstNames: profile.firstNames || profile.nombres || '',
+          lastNames: profile.lastNames || profile.apellidos || '',
           roleCode: role,
           mustChangePassword: profile.mustChangePassword,
         };

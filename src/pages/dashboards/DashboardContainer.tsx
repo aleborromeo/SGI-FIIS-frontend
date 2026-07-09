@@ -34,7 +34,7 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children
           </div>
         </div>
         {/* Contenido Principal */}
-        <main className="sgi-main-content animate-fade-in">
+        <main className="sgi-main-content animate-fade-in" style={{ maxWidth: '95%' }}>
           {children || <Outlet />}
         </main>
 
