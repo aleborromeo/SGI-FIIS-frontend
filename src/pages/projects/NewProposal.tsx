@@ -72,7 +72,7 @@ export const NewProposal: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const [prereqValid, setPrereqValid] = useState(true);
-  const [prereqDetails, setPrereqDetails] = useState({ hasActiveGroup: true, hasVigentCalls: true, isDocente: true });
+  const [prereqDetails, setPrereqDetails] = useState({ hasActiveGroup: true, hasVigentCalls: true, docente: true });
   const [loadingPrereq, setLoadingPrereq] = useState(true);
 
   // Load all catalogs + detect user's group
@@ -214,7 +214,7 @@ export const NewProposal: React.FC = () => {
             </p>
 
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '20px', marginBottom: '24px', listStyleType: 'disc' }}>
-              {!prereqDetails.isDocente && (
+              {!prereqDetails.docente && (
                 <li style={{ color: 'var(--error)' }}>
                   Solo los <strong>Docentes Investigadores</strong> pueden registrar proyectos de investigación en esta plataforma.
                 </li>

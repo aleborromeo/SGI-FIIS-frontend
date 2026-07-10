@@ -49,14 +49,6 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children
             <p>© 2026 Sistema de Gestión de Investigación FIIS - Universidad Nacional Agraria de la Selva</p>
           </footer>
         </div>
-        {/* Contenido Principal */}
-        <main className="sgi-main-content animate-fade-in" style={{ maxWidth: '95%' }}>
-          {children || <Outlet />}
-        </main>
-
-        <footer className="sgi-dashboard-footer">
-          <p>© 2026 Sistema de Gestión de Investigación FIIS - Universidad Nacional Agraria de la Selva</p>
-        </footer>
       </div>
     </div>
   );

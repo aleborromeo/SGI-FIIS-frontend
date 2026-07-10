@@ -32,7 +32,7 @@ export const callService = {
   getVigent: (): Promise<CallResponse[]> =>
     api.get<CallResponse[]>('/calls/vigent'),
 
-  checkPrerequisitos: (): Promise<{ hasActiveGroup: boolean; hasVigentCalls: boolean; isDocente: boolean; valid: boolean }> =>
+  checkPrerequisitos: (): Promise<{ hasActiveGroup: boolean; hasVigentCalls: boolean; docente: boolean; valid: boolean }> =>
     api.get('/calls/prerequisitos'),
 
   create: (data: CreateCallPayload): Promise<CallResponse> =>
