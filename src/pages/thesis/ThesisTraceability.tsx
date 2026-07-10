@@ -101,7 +101,6 @@ export const ThesisTraceability: React.FC = () => {
 
   const [plan, setPlan] = useState<ThesisPlan | null>(null);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 

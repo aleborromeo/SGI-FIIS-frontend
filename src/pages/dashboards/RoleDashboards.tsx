@@ -6,7 +6,6 @@ import {
   BookOpen,
   Building,
   Building2,
-  Calendar,
   CheckCircle,
   ClipboardList,
   FileText,
@@ -547,7 +546,10 @@ export const RoleDashboards = () => {
     );
   }
 
-  function renderAdmin(adminData: DashboardAdminResponse) {
+    function renderAdmin(adminData: DashboardAdminResponse) {
+    const activeProcedures = Number(adminData.pendingProcedures ?? 0)
+      + Number(adminData.proceduresUnderReview ?? 0);
+
     const proceduresTotal = getTotal([
       adminData.proceduresUnderReview,
       adminData.approvedProcedures,
@@ -558,14 +560,14 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="admin-view"
-        title="Consola de administración general"
-        subtitle="Supervisión institucional global de usuarios, grupos, proyectos y trámites."
+        title="Dashboard general del administrador"
+        subtitle="Indicadores institucionales macro de usuarios, grupos, proyectos y trámites del sistema."
         metrics={[
           {
             icon: Users,
             value: adminData.totalUsers,
             label: 'Usuarios registrados',
-            sublabel: `${formatNumber(adminData.totalActiveUsers)} activos en el sistema`,
+            sublabel: `${formatNumber(adminData.totalActiveUsers)} usuarios activos`,
             tone: 'blue',
           },
           {
@@ -578,50 +580,66 @@ export const RoleDashboards = () => {
           {
             icon: FileText,
             value: adminData.totalProjects,
-            label: 'Proyectos registrados',
-            sublabel: `${formatNumber(adminData.activeProjects)} en ejecución activa`,
+            label: 'Proyectos institucionales',
+            sublabel: `${formatNumber(adminData.activeProjects)} proyectos activos`,
             tone: 'purple',
           },
           {
-            icon: Scale,
-            value: adminData.issuedResolutions,
-            label: 'Resoluciones emitidas',
-            sublabel: 'Historial de actos administrativos',
+            icon: RefreshCw,
+            value: activeProcedures,
+            label: 'Trámites activos',
+            sublabel: 'Pendientes o en revisión dentro del sistema',
             tone: 'orange',
           },
         ]}
-        leftTitle="Resumen de trámites del sistema"
+        leftTitle="Indicadores institucionales de trámites"
         leftContent={
-          <ProgressBars
-            items={[
-              {
-                label: 'Trámites en revisión',
-                value: adminData.proceduresUnderReview,
-                total: proceduresTotal,
-                tone: 'blue',
-              },
-              {
-                label: 'Trámites aprobados',
-                value: adminData.approvedProcedures,
-                total: proceduresTotal,
-                tone: 'green',
-              },
-              {
-                label: 'Trámites pendientes o críticos',
-                value: adminData.pendingProcedures,
-                total: proceduresTotal,
-                tone: 'orange',
-              },
-              {
-                label: 'Trámites rechazados',
-                value: adminData.rejectedProcedures,
-                total: proceduresTotal,
-                tone: 'gray',
-              },
-            ]}
-          />
+          <>
+            <div className="affiliation-card" style={{ marginBottom: '20px' }}>
+              <div className="affiliation-header">
+                <span className="affiliation-icon">
+                  <Scale size={24} />
+                </span>
+                <div>
+                  <h4>Vista macro institucional</h4>
+                  <p>
+                    Información consolidada para administración general del sistema.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <ProgressBars
+              items={[
+                {
+                  label: 'Trámites en revisión',
+                  value: adminData.proceduresUnderReview,
+                  total: proceduresTotal,
+                  tone: 'blue',
+                },
+                {
+                  label: 'Trámites aprobados',
+                  value: adminData.approvedProcedures,
+                  total: proceduresTotal,
+                  tone: 'green',
+                },
+                {
+                  label: 'Trámites pendientes',
+                  value: adminData.pendingProcedures,
+                  total: proceduresTotal,
+                  tone: 'orange',
+                },
+                {
+                  label: 'Trámites rechazados',
+                  value: adminData.rejectedProcedures,
+                  total: proceduresTotal,
+                  tone: 'gray',
+                },
+              ]}
+            />
+          </>
         }
-        alertsTitle="Alertas del sistema"
+        alertsTitle="Alertas institucionales"
         alerts={adminData.alerts}
       />
     );
@@ -689,10 +707,15 @@ export const RoleDashboards = () => {
     );
   }
 
-  function renderTeacher(teacherData: DashboardTeacherResponse) {
+      function renderTeacher(teacherData: DashboardTeacherResponse) {
+    const myProjectsTotal = Number(teacherData.projectsAsLead ?? 0)
+      + Number(teacherData.projectsAsMember ?? 0);
+
     const projectsTotal = getTotal([
-      teacherData.projectsAsLead,
-      teacherData.projectsAsMember,
+      teacherData.submittedProjects,
+      teacherData.approvedProjects,
+      teacherData.projectsInExecution,
+      teacherData.completedProjects,
     ]);
 
     const convocatoriasWidget = (
@@ -792,77 +815,107 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="teacher-view"
-        title="Portal del docente investigador"
-        subtitle="Gestión de proyectos, informes de avance y resoluciones vinculadas."
+        title="Dashboard del docente investigador"
+        subtitle={
+          <>
+            Resumen personalizado de proyectos, documentos, trámites e informes.
+            {' '}
+            Grupo:{' '}
+            <strong>
+              {teacherData.groupCode || 'N/A'} - {teacherData.groupName || 'Grupo pendiente de asignación'}
+            </strong>
+          </>
+        }
         metrics={[
           {
             icon: Microscope,
-            value: teacherData.projectsAsLead,
-            label: 'Proyectos como responsable',
-            sublabel: 'Liderando equipo de investigación',
+            value: myProjectsTotal,
+            label: 'Mis proyectos registrados',
+            sublabel: `${formatNumber(teacherData.projectsAsLead)} como responsable y ${formatNumber(teacherData.projectsAsMember)} como integrante`,
             tone: 'blue',
           },
           {
-            icon: Users,
-            value: teacherData.projectsAsMember,
-            label: 'Proyectos como integrante',
-            sublabel: 'Miembro de equipo científico',
+            icon: FolderOpen,
+            value: teacherData.uploadedDocuments,
+            label: 'Mis documentos',
+            sublabel: 'Documentos cargados por el docente investigador',
             tone: 'purple',
+          },
+          {
+            icon: RefreshCw,
+            value: teacherData.pendingProcedures,
+            label: 'Mis trámites en curso',
+            sublabel: 'Trámites pendientes de atención o revisión',
+            tone: 'orange',
           },
           {
             icon: BarChart2,
             value: teacherData.pendingProgressReports,
-            label: 'Informes de avance pendientes',
-            sublabel: 'Requisito para seguimiento académico',
-            tone: 'orange',
-          },
-          {
-            icon: Scale,
-            value: teacherData.receivedResolutions,
-            label: 'Resoluciones recibidas',
-            sublabel: 'Documentos oficiales vinculados',
+            label: 'Mis informes presentados',
+            sublabel: 'Informes de avance registrados o pendientes de seguimiento',
             tone: 'green',
           },
         ]}
-        leftTitle="Tus proyectos por estado"
+        leftTitle="Grupo de investigación y mis proyectos"
         leftContent={
-          <ProgressBars
-            items={[
-              {
-                label: 'Proyectos postulados',
-                value: teacherData.submittedProjects,
-                total: projectsTotal,
-                tone: 'blue',
-              },
-              {
-                label: 'Proyectos aprobados',
-                value: teacherData.approvedProjects,
-                total: projectsTotal,
-                tone: 'green',
-              },
-              {
-                label: 'En ejecución activa',
-                value: teacherData.projectsInExecution,
-                total: projectsTotal,
-                tone: 'purple',
-              },
-              {
-                label: 'Finalizados',
-                value: teacherData.completedProjects,
-                total: projectsTotal,
-                tone: 'gray',
-              },
-            ]}
-          />
+          <>
+            <div className="affiliation-card" style={{ marginBottom: '20px' }}>
+              <div className="affiliation-header">
+                <span className="affiliation-icon">
+                  <Building size={24} />
+                </span>
+                <div>
+                  <h4>{teacherData.groupName || 'Grupo pendiente de asignación'}</h4>
+                  <p>
+                    Código del grupo:{' '}
+                    <strong>{teacherData.groupCode || 'N/A'}</strong>
+                  </p>
+                </div>
+              </div>
+              <p className="affiliation-body">
+                Esta vista muestra únicamente la información vinculada al docente
+                autenticado y a su grupo de investigación.
+              </p>
+            </div>
+
+            <ProgressBars
+              items={[
+                {
+                  label: 'Proyectos postulados',
+                  value: teacherData.submittedProjects,
+                  total: projectsTotal,
+                  tone: 'blue',
+                },
+                {
+                  label: 'Proyectos aprobados',
+                  value: teacherData.approvedProjects,
+                  total: projectsTotal,
+                  tone: 'green',
+                },
+                {
+                  label: 'Proyectos en ejecución',
+                  value: teacherData.projectsInExecution,
+                  total: projectsTotal,
+                  tone: 'purple',
+                },
+                {
+                  label: 'Proyectos finalizados',
+                  value: teacherData.completedProjects,
+                  total: projectsTotal,
+                  tone: 'gray',
+                },
+              ]}
+            />
+          </>
         }
-        alertsTitle="Alertas de proyectos"
+        alertsTitle="Mis alertas"
         alerts={teacherData.alerts}
         extraContent={convocatoriasWidget}
       />
     );
   }
 
-  function renderCoordinator(coordData: DashboardCoordinatorResponse) {
+    function renderCoordinator(coordData: DashboardCoordinatorResponse) {
     const proceduresTotal = getTotal([
       coordData.submittedProcedures,
       coordData.proceduresUnderReview,
@@ -873,80 +926,139 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="coordinator-view"
-        title="Consola del coordinador de grupo"
+        title="Dashboard del coordinador de grupo"
         subtitle={
           <>
-            Grupo: <strong>{coordData.groupName}</strong> ({coordData.groupCode})
+            Información restringida al grupo <strong>{coordData.groupName}</strong> ({coordData.groupCode}).
           </>
         }
         metrics={[
           {
             icon: Users,
             value: coordData.totalMembers,
-            label: 'Investigadores del grupo',
+            label: 'Miembros de mi grupo',
             sublabel: `${formatNumber(coordData.activeMembers)} miembros activos`,
             tone: 'blue',
           },
           {
             icon: FileText,
             value: coordData.totalGroupProjects,
-            label: 'Proyectos del grupo',
-            sublabel: `${formatNumber(coordData.activeGroupProjects)} proyectos en ejecución`,
+            label: 'Proyectos de mi grupo',
+            sublabel: `${formatNumber(coordData.activeGroupProjects)} proyectos activos`,
             tone: 'purple',
           },
           {
             icon: RefreshCw,
             value: coordData.pendingGroupProcedures,
-            label: 'Trámites pendientes de revisión',
-            sublabel: 'Requiere aprobación u observación',
+            label: 'Trámites de mi grupo',
+            sublabel: 'Pendientes de revisión del coordinador',
             tone: 'orange',
           },
           {
             icon: BookOpen,
-            value: coordData.groupThesisPlans,
-            label: 'Planes de tesis adscritos',
-            sublabel: `${formatNumber(coordData.groupProgressReports)} informes de avance`,
+            value: coordData.groupProgressReports,
+            label: 'Informes de mi grupo',
+            sublabel: `${formatNumber(coordData.groupThesisPlans)} planes de tesis asociados`,
             tone: 'green',
           },
         ]}
         leftTitle="Control de trámites del grupo"
         leftContent={
-          <ProgressBars
-            items={[
-              {
-                label: 'Trámites presentados',
-                value: coordData.submittedProcedures,
-                total: proceduresTotal,
-                tone: 'blue',
-              },
-              {
-                label: 'En revisión de coordinación',
-                value: coordData.proceduresUnderReview,
-                total: proceduresTotal,
-                tone: 'purple',
-              },
-              {
-                label: 'Trámites aprobados',
-                value: coordData.approvedProcedures,
-                total: proceduresTotal,
-                tone: 'green',
-              },
-              {
-                label: 'Trámites observados',
-                value: coordData.observedProcedures,
-                total: proceduresTotal,
-                tone: 'orange',
-              },
-            ]}
-          />
+          <>
+                    leftContent={
+          <>
+            <div className="affiliation-card" style={{ marginBottom: '20px' }}>
+              <div className="affiliation-header">
+                <span className="affiliation-icon">
+                  <Building size={24} />
+                </span>
+                <div>
+                  <h4>{coordData.groupName || 'Grupo no identificado'}</h4>
+                  <p>
+                    Código del grupo:{' '}
+                    <strong>{coordData.groupCode || 'N/A'}</strong>
+                  </p>
+                </div>
+              </div>
+              <p className="affiliation-body">
+                El coordinador visualiza solo miembros, proyectos, trámites e
+                informes correspondientes a su propio grupo de investigación.
+              </p>
+            </div>
+
+            <ProgressBars
+              items={[
+                {
+                  label: 'Trámites presentados',
+                  value: coordData.submittedProcedures,
+                  total: proceduresTotal,
+                  tone: 'blue',
+                },
+                {
+                  label: 'Trámites en revisión',
+                  value: coordData.proceduresUnderReview,
+                  total: proceduresTotal,
+                  tone: 'purple',
+                },
+                {
+                  label: 'Trámites aprobados',
+                  value: coordData.approvedProcedures,
+                  total: proceduresTotal,
+                  tone: 'green',
+                },
+                {
+                  label: 'Trámites observados',
+                  value: coordData.observedProcedures,
+                  total: proceduresTotal,
+                  tone: 'orange',
+                },
+              ]}
+            />
+          </>
         }
-        alertsTitle="Alertas del grupo de investigación"
+
+            <ProgressBars
+              items={[
+                {
+                  label: 'Trámites presentados',
+                  value: coordData.submittedProcedures,
+                  total: proceduresTotal,
+                  tone: 'blue',
+                },
+                {
+                  label: 'Trámites en revisión',
+                  value: coordData.proceduresUnderReview,
+                  total: proceduresTotal,
+                  tone: 'purple',
+                },
+                {
+                  label: 'Trámites aprobados',
+                  value: coordData.approvedProcedures,
+                  total: proceduresTotal,
+                  tone: 'green',
+                },
+                {
+                  label: 'Trámites observados',
+                  value: coordData.observedProcedures,
+                  total: proceduresTotal,
+                  tone: 'orange',
+                },
+              ]}
+            />
+          </>
+        }
+        alertsTitle="Alertas de mi grupo"
         alerts={coordData.alerts}
       />
     );
   }
 
-  function renderDirector(directorData: DashboardDirectorResponse) {
+    function renderDirector(directorData: DashboardDirectorResponse) {
+    const activeProcedures = Number(directorData.pendingReviewProcedures ?? 0)
+      + Number(directorData.proceduresWithCoordinator ?? 0)
+      + Number(directorData.proceduresWithDirector ?? 0)
+      + Number(directorData.proceduresWithDean ?? 0);
+
     const proceduresTotal = getTotal([
       directorData.proceduresWithCoordinator,
       directorData.proceduresWithDirector,
@@ -957,70 +1069,86 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="director-view"
-        title="Dirección de investigación de la facultad"
-        subtitle="Supervisión de convocatorias, proyectos y control del flujo institucional."
+        title="Dashboard institucional del director de investigación"
+        subtitle="Consolidado institucional de proyectos, grupos de investigación, trámites activos y convocatorias."
         metrics={[
           {
             icon: Building2,
             value: directorData.totalProjects,
-            label: 'Proyectos totales FIIS',
+            label: 'Proyectos de investigación',
             sublabel: `${formatNumber(directorData.activeProjects)} proyectos activos`,
             tone: 'blue',
           },
           {
-            icon: RefreshCw,
-            value: directorData.pendingReviewProcedures,
-            label: 'Trámites pendientes en dirección',
-            sublabel: 'Derivados para revisión jerárquica',
-            tone: 'purple',
+            icon: Users,
+            value: 'Global',
+            label: 'Grupos de investigación',
+            sublabel: 'Información consolidada por grupos institucionales',
+            tone: 'green',
           },
           {
-            icon: Calendar,
-            value: directorData.reportsNearingDeadline,
-            label: 'Informes cerca del vencimiento',
-            sublabel: 'Alertas de seguimiento académico',
+            icon: RefreshCw,
+            value: activeProcedures,
+            label: 'Trámites activos',
+            sublabel: `${formatNumber(directorData.pendingReviewProcedures)} pendientes de revisión`,
             tone: 'orange',
           },
           {
             icon: Megaphone,
             value: directorData.openCallsForApplication,
-            label: 'Convocatorias de investigación',
-            sublabel: `${formatNumber(directorData.issuedResolutions)} resoluciones emitidas`,
-            tone: 'green',
+            label: 'Convocatorias',
+            sublabel: 'Convocatorias vigentes para investigación',
+            tone: 'purple',
           },
         ]}
-        leftTitle="Distribución del flujo de trámites"
+        leftTitle="Distribución institucional de trámites"
         leftContent={
-          <ProgressBars
-            items={[
-              {
-                label: 'Trámites en coordinación',
-                value: directorData.proceduresWithCoordinator,
-                total: proceduresTotal,
-                tone: 'blue',
-              },
-              {
-                label: 'Trámites en dirección',
-                value: directorData.proceduresWithDirector,
-                total: proceduresTotal,
-                tone: 'purple',
-              },
-              {
-                label: 'Trámites en decanato',
-                value: directorData.proceduresWithDean,
-                total: proceduresTotal,
-                tone: 'orange',
-              },
-              {
-                label: 'Trámites concluidos',
-                value: directorData.completedProcedures,
-                total: proceduresTotal,
-                tone: 'green',
-              },
-            ]}
-          />
+          <>
+            <div className="affiliation-card" style={{ marginBottom: '20px' }}>
+              <div className="affiliation-header">
+                <span className="affiliation-icon">
+                  <Building2 size={24} />
+                </span>
+                <div>
+                  <h4>Vista institucional consolidada</h4>
+                  <p>
+                    El director visualiza información global para supervisión académica e institucional.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <ProgressBars
+              items={[
+                {
+                  label: 'Trámites en coordinación',
+                  value: directorData.proceduresWithCoordinator,
+                  total: proceduresTotal,
+                  tone: 'blue',
+                },
+                {
+                  label: 'Trámites en dirección',
+                  value: directorData.proceduresWithDirector,
+                  total: proceduresTotal,
+                  tone: 'purple',
+                },
+                {
+                  label: 'Trámites en decanato',
+                  value: directorData.proceduresWithDean,
+                  total: proceduresTotal,
+                  tone: 'orange',
+                },
+                {
+                  label: 'Trámites concluidos',
+                  value: directorData.completedProcedures,
+                  total: proceduresTotal,
+                  tone: 'green',
+                },
+              ]}
+            />
+          </>
         }
-        alertsTitle="Notificaciones de dirección"
+        alertsTitle="Notificaciones institucionales"
         alerts={directorData.alerts}
       />
     );
@@ -1099,7 +1227,7 @@ export const RoleDashboards = () => {
     );
   }
 
-  function renderEvaluator(evalData: DashboardEvaluatorResponse) {
+      function renderEvaluator(evalData: DashboardEvaluatorResponse) {
     const evaluationsTotal = getTotal([
       evalData.approvedEvaluations,
       evalData.rejectedEvaluations,
@@ -1109,64 +1237,94 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="evaluator-view"
-        title="Portal del evaluador científico"
-        subtitle="Revisión de proyectos de investigación y evaluación de planes de tesis."
+        title="Dashboard del evaluador"
+        subtitle={
+          <>
+            Panel enfocado en proyectos y evaluaciones asignadas.
+            {' '}
+            Grupo:{' '}
+            <strong>
+              {evalData.groupCode || 'N/A'} - {evalData.groupName || 'Grupo pendiente de asignación'}
+            </strong>
+          </>
+        }
         metrics={[
-          {
-            icon: ClipboardList,
-            value: evalData.assignedEvaluations,
-            label: 'Evaluaciones asignadas',
-            sublabel: `${formatNumber(evalData.pendingEvaluations)} evaluaciones pendientes`,
-            tone: 'blue',
-          },
-          {
-            icon: CheckCircle,
-            value: evalData.completedEvaluations,
-            label: 'Evaluaciones completadas',
-            sublabel: 'Historial de puntajes y dictámenes',
-            tone: 'green',
-          },
           {
             icon: Microscope,
             value: evalData.assignedProjects,
             label: 'Proyectos asignados',
-            sublabel: `${formatNumber(evalData.assignedThesisPlans)} planes de tesis en cola`,
-            tone: 'purple',
+            sublabel: `${formatNumber(evalData.assignedThesisPlans)} planes de tesis asignados`,
+            tone: 'blue',
+          },
+          {
+            icon: ClipboardList,
+            value: evalData.pendingEvaluations,
+            label: 'Evaluaciones pendientes',
+            sublabel: 'Evaluaciones asignadas por atender',
+            tone: 'orange',
+          },
+          {
+            icon: CheckCircle,
+            value: evalData.completedEvaluations,
+            label: 'Evaluaciones realizadas',
+            sublabel: 'Resultados registrados por el evaluador',
+            tone: 'green',
           },
           {
             icon: AlertTriangle,
             value: evalData.evaluationsWithObservations,
-            label: 'Con observaciones',
-            sublabel: 'Retornados a los postulantes',
-            tone: 'orange',
+            label: 'Observaciones emitidas',
+            sublabel: 'Evaluaciones devueltas con observaciones',
+            tone: 'purple',
           },
         ]}
-        leftTitle="Resultados de evaluaciones"
+        leftTitle="Grupo de investigación y mis evaluaciones"
         leftContent={
-          <ProgressBars
-            items={[
-              {
-                label: 'Evaluaciones aprobadas',
-                value: evalData.approvedEvaluations,
-                total: evaluationsTotal,
-                tone: 'green',
-              },
-              {
-                label: 'Evaluaciones rechazadas',
-                value: evalData.rejectedEvaluations,
-                total: evaluationsTotal,
-                tone: 'orange',
-              },
-              {
-                label: 'Evaluaciones pendientes',
-                value: evalData.pendingEvaluations,
-                total: evaluationsTotal,
-                tone: 'blue',
-              },
-            ]}
-          />
+          <>
+            <div className="affiliation-card" style={{ marginBottom: '20px' }}>
+              <div className="affiliation-header">
+                <span className="affiliation-icon">
+                  <Building size={24} />
+                </span>
+                <div>
+                  <h4>{evalData.groupName || 'Grupo pendiente de asignación'}</h4>
+                  <p>
+                    Código del grupo:{' '}
+                    <strong>{evalData.groupCode || 'N/A'}</strong>
+                  </p>
+                </div>
+              </div>
+              <p className="affiliation-body">
+                Esta vista muestra únicamente proyectos y evaluaciones asignadas
+                al evaluador autenticado.
+              </p>
+            </div>
+
+            <ProgressBars
+              items={[
+                {
+                  label: 'Evaluaciones aprobadas',
+                  value: evalData.approvedEvaluations,
+                  total: evaluationsTotal,
+                  tone: 'green',
+                },
+                {
+                  label: 'Evaluaciones rechazadas',
+                  value: evalData.rejectedEvaluations,
+                  total: evaluationsTotal,
+                  tone: 'orange',
+                },
+                {
+                  label: 'Evaluaciones pendientes',
+                  value: evalData.pendingEvaluations,
+                  total: evaluationsTotal,
+                  tone: 'blue',
+                },
+              ]}
+            />
+          </>
         }
-        alertsTitle="Tareas de evaluación pendientes"
+        alertsTitle="Mis notificaciones"
         alerts={evalData.alerts}
       />
     );
