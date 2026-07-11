@@ -26,6 +26,11 @@ import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
 import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
 
+// Views del módulo Bandeja Lógica de Trámites y Subsanaciones
+import { TramitesInbox } from './pages/tramites/TramitesInbox.tsx';
+import { TramiteDetail } from './pages/tramites/TramiteDetail.tsx';
+import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
+
 // Admin Views
 import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
@@ -109,46 +114,6 @@ function App() {
         <AuthProvider>
           <BrowserRouter>
             <Routes>
-          {/* Ruta raíz (Página de Bienvenida) */}
-          <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
-
-          {/* Ruta de Login (Pública) */}
-          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-
-          {/* Ruta de Registro (Pública) */}
-          <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-
-          {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
-          <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
-            <Route path="/dashboard" element={<RoleDashboards />} />
-            <Route path="/metrics" element={<MetricsReportsPage />} />
-            
-            {/* Vistas específicas de postulaciones y seguimiento */}
-            <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
-            <Route path="/projects" element={<ProjectsList />} />
-            <Route path="/projects/new" element={<NewProposal />} />
-            <Route path="/projects/assign" element={<AssignReviewers />} />
-            <Route path="/projects/evaluate" element={<EvaluationForm />} />
-            <Route path="/projects/:id" element={<ProjectMonitoring />} />
-            <Route path="/projects/audit" element={<ProjectAudit />} />
-            <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
-            <Route path="/observations/panel" element={<ObservationsPanel />} />
-            <Route path="/progressreports/review" element={<ReviewProgressReports />} />
-            
-            {/* Vistas de Administración */}
-            <Route path="/lines" element={<ResearchLines />} />
-            <Route path="/lines/new" element={<NewResearchLine />} />
-            <Route path="/lines/:id" element={<ResearchLineDetail />} />
-            <Route path="/groups" element={<ResearchGroups />} />
-            <Route path="/groups/new" element={<NewResearchGroup />} />
-            <Route path="/groups/:id" element={<ResearchGroupDetail />} />
-            
-            {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Route>
-
-          {/* Redirección por defecto para cualquier ruta inválida */}
-          <Route path="*" element={<Navigate to="/" replace />} />
               {/* Rutas públicas */}
               <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
               <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
@@ -166,7 +131,8 @@ function App() {
               {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
               <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<RoleDashboards />} />
-                
+                <Route path="/metrics" element={<MetricsReportsPage />} />
+
                 {/* Vistas específicas de postulaciones y seguimiento */}
                 <Route path="/thesis/plans" element={<ThesisPlansList />} />
                 <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
@@ -179,7 +145,12 @@ function App() {
                 <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
                 <Route path="/observations/panel" element={<ObservationsPanel />} />
                 <Route path="/progressreports/review" element={<ReviewProgressReports />} />
-                
+
+                {/* Bandeja Lógica de Trámites y Subsanaciones */}
+                <Route path="/tramites" element={<TramitesInbox />} />
+                <Route path="/tramites/:id" element={<TramiteDetail />} />
+                <Route path="/observations/subsanacion" element={<SubsanacionPanel />} />
+
                 {/* Vistas de Administración */}
                 <Route path="/admin/activate" element={<ActivateUsers />} />
                 <Route path="/lines" element={<ResearchLines />} />

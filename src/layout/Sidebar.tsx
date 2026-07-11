@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   AlertCircle,
   FileSearch,
+  Inbox,
   X,
   BookOpen,
   Settings,
@@ -18,7 +19,21 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 
 import { AuthContext } from '../context/AuthContext';
 
-const navGroups = [
+type NavItem = {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  path: string;
+  roles?: string[];
+};
+
+type NavGroup = {
+  title: string;
+  roles?: string[];
+  items: NavItem[];
+};
+
+const navGroups: NavGroup[] = [
   {
     title: 'Principal',
     items: [
@@ -54,6 +69,18 @@ const navGroups = [
         roles: ['ESTUDIANTE', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO'],
       },
       {
+        id: 'tramites',
+        label: 'Trámites',
+        icon: <Inbox size={20} />,
+        path: '/tramites',
+      },
+      {
+        id: 'traceability',
+        label: 'Trazabilidad',
+        icon: <History size={20} />,
+        path: '/thesis/plan/1',
+      },
+      {
         id: 'observations',
         label: 'Mis Observaciones',
         icon: <AlertCircle size={20} />,
@@ -82,20 +109,6 @@ const navGroups = [
     title: 'Administración',
     roles: ['ADMIN'], // Only for admin
     items: [
-      {
-        id: 'groups',
-        label: 'Grupos Inv.',
-        icon: <Users size={20} />,
-        path: '/groups',
-      },
-      {
-        id: 'lines',
-        label: 'Líneas Inv.',
-        icon: <BookOpen size={20} />,
-        path: '/lines',
-      },
-    ],
-  },
       { id: 'activate', label: 'Activar Usuarios', icon: <Users size={20} />, path: '/admin/activate' },
       { id: 'users', label: 'Directorio', icon: <Users size={20} />, path: '/users' },
       { id: 'groups', label: 'Grupos Inv.', icon: <Users size={20} />, path: '/groups' },
@@ -115,18 +128,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
   const { user, currentRole, logout } = React.useContext(AuthContext);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
-
-  const isItemActive = (itemId: string, path: string): boolean => {
-    if (itemId === 'proposals') {
-      return location.pathname === '/projects' || location.pathname.startsWith('/projects/');
-    }
-
-    if (itemId === 'traceability') {
-      return location.pathname.startsWith('/thesis/plan');
-    }
-
-    return location.pathname === path;
-  };
 
   const getRoleLabel = (role: string | null): string => {
     switch (role) {
@@ -172,6 +173,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
   const confirmLogout = () => {
     logout();
     navigate('/');
+  };
+
   const isItemActive = (itemId: string, path: string): boolean => {
     if (itemId === 'proposals') {
       return location.pathname === '/projects' || location.pathname.startsWith('/projects/');
@@ -179,6 +182,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
     if (itemId === 'thesis-plans') {
       return location.pathname === '/thesis/plans' || location.pathname.startsWith('/thesis/plan/');
+    }
+
+    if (itemId === 'traceability') {
+      return location.pathname.startsWith('/thesis/plan');
     }
 
     return location.pathname === path;
@@ -250,9 +257,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 {group.title}
               </h3>
 
-              <div className="sidebar-group-items">
-                {group.items.map((item) => {
-                  const isActive = isItemActive(item.id, item.path);
               <div
                 style={{
                   display: 'flex',
