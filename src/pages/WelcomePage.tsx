@@ -6,6 +6,7 @@ import './WelcomePage.css';
 import frontisImage from '../assets/images/frontis_fiis.png';
 import universityIcon from '../assets/images/icon-sgi-fiis.png';
 import { Globe, User, ChevronDown } from 'lucide-react';
+import { callService } from '../services/callService';
 
 // Importar imágenes de las Líneas de Investigación
 import computacionImg from '../assets/images/computacion.jpg';
@@ -31,7 +32,18 @@ export const WelcomePage: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(3);
   const [activeLink, setActiveLink] = useState<'inicio' | 'convocatorias'>('inicio');
   const [language, setLanguage] = useState<'es' | 'en'>('es');
+  const [latestCall, setLatestCall] = useState<any>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    callService.getVigent()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setLatestCall(data[0]);
+        }
+      })
+      .catch((err) => console.error('Error fetching vigent calls:', err));
+  }, []);
 
 
   const handleToggleLanguage = () => {
@@ -727,12 +739,22 @@ export const WelcomePage: React.FC = () => {
           >
             <div className="news-card-badge">CONVOCATORIA</div>
             <div className="news-card-content">
-              <h4>Nuevas convocatorias</h4>
-              <p className="news-card-desc">Se abren las postulaciones para el financiamiento de proyectos de investigación científica aplicada y desarrollo tecnológico.</p>
+              <h4>{latestCall ? latestCall.title : (language === 'es' ? 'Nuevas convocatorias' : 'New announcements')}</h4>
+              <p className="news-card-desc">
+                {latestCall 
+                  ? (latestCall.description.length > 120 ? latestCall.description.substring(0, 120) + '...' : latestCall.description)
+                  : (language === 'es' 
+                      ? 'Se abren las postulaciones para el financiamiento de proyectos de investigación científica aplicada y desarrollo tecnológico.'
+                      : 'Applications are now open for the funding of scientific research and technological development projects.')}
+              </p>
               <div className="news-card-bottom-row">
-                <span className="news-card-date">02 de Julio, 2026</span>
+                <span className="news-card-date">
+                  {latestCall 
+                    ? `${language === 'es' ? 'Cierre:' : 'Deadline:'} ${latestCall.endDate}` 
+                    : '02 de Julio, 2026'}
+                </span>
                 <button onClick={() => navigate('/novedades', { state: { scrollToHash: 'novedades-convocatorias' } })} className="news-card-action-btn">
-                  <span>Ver</span>
+                  <span>{language === 'es' ? 'Ver' : 'View'}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>

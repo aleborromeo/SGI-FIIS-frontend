@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './WelcomePage.css';
 import universityIcon from '../assets/images/icon-sgi-fiis.png';
 import { Globe, User, ChevronDown } from 'lucide-react';
+import { callService } from '../services/callService';
 
 // Import news images
 import convocatoriasBg from '../assets/images/convocatorias.png';
@@ -14,6 +15,8 @@ export const NovedadesPage: React.FC = () => {
   const location = useLocation();
   const [language, setLanguage] = useState<'es' | 'en'>('es');
   const [activeSection, setActiveSection] = useState('novedades-convocatorias');
+  const [calls, setCalls] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const handleToggleLanguage = () => {
     setLanguage((prev) => (prev === 'es' ? 'en' : 'es'));
@@ -32,6 +35,23 @@ export const NovedadesPage: React.FC = () => {
     }
     window.scrollTo(0, 0);
   }, [location]);
+
+  // Cargar convocatorias del backend
+  useEffect(() => {
+    setLoading(true);
+    callService.getAll()
+      .then((data) => {
+        // Ordenar: ABIERTA primero, luego id descendente
+        const sorted = [...data].sort((a, b) => {
+          if (a.status === 'ABIERTA' && b.status !== 'ABIERTA') return -1;
+          if (a.status !== 'ABIERTA' && b.status === 'ABIERTA') return 1;
+          return b.id - a.id;
+        });
+        setCalls(sorted);
+      })
+      .catch((err) => console.error('Error al obtener convocatorias:', err))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="welcome-page-container">
@@ -193,43 +213,110 @@ export const NovedadesPage: React.FC = () => {
                 <h2 className="about-fiis-title" style={{ marginBottom: '1.5rem' }}>
                   {language === 'es' ? 'Convocatorias Oficiales' : 'Official Announcements'}
                 </h2>
-                
-                <div className="about-info-card" style={{ padding: '0', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                  <div style={{
-                    height: '240px',
-                    backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.7) 100%), url(${convocatoriasBg})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    padding: '2rem',
-                    display: 'flex',
-                    alignItems: 'flex-end'
-                  }}>
-                    <div className="about-card-badge" style={{ backgroundColor: '#1a365d', color: '#ffffff' }}>CONVOCATORIA</div>
-                  </div>
-                  <div style={{ padding: '2rem' }}>
-                    <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 1rem 0', color: '#0f172a' }}>
-                      {language === 'es' ? 'Nuevas convocatorias para proyectos de investigación 2026' : 'New calls for research projects 2026'}
-                    </h3>
-                    <p style={{ fontSize: '0.98rem', color: '#475569', lineHeight: 1.6, margin: '0 0 1.5rem 0' }}>
-                      {language === 'es'
-                        ? 'Se abren las postulaciones para el financiamiento de proyectos de investigación científica aplicada y desarrollo tecnológico en nuestra facultad. El programa busca impulsar la publicación en revistas científicas indexadas y la transferencia tecnológica en beneficio de la sociedad.'
-                        : 'Applications are now open for the funding of applied scientific research and technological development projects in our faculty. The program aims to promote publication in indexed scientific journals and technological transfer for the benefit of society.'}
-                    </p>
-                    
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', fontSize: '0.88rem', color: '#64748b' }}>
-                      <span><strong>{language === 'es' ? 'Fecha de publicación:' : 'Publishing Date:'}</strong> 02 de Julio, 2026</span>
-                      <span><strong>{language === 'es' ? 'Estado:' : 'Status:'}</strong> <span style={{ color: '#166534', fontWeight: 700 }}>{language === 'es' ? 'Abierta' : 'Open'}</span></span>
-                    </div>
 
-                    <button 
-                      onClick={() => navigate('/login')} 
-                      className="btn-submit-contact"
-                      style={{ marginTop: '1.5rem', width: 'auto', padding: '0.75rem 1.5rem' }}
-                    >
-                      {language === 'es' ? 'Postular e Iniciar Trámite' : 'Apply & Start Process'}
-                    </button>
+                {loading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+                    <div className="loading-spinner" style={{
+                      width: '40px',
+                      height: '40px',
+                      border: '4px solid #f3f3f3',
+                      borderTop: '4px solid #1a365d',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    <style>{`
+                      @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                      }
+                    `}</style>
                   </div>
-                </div>
+                ) : calls.length === 0 ? (
+                  <div className="about-info-card" style={{ padding: '2rem', textAlign: 'center', border: '1px solid #e2e8f0' }}>
+                    <p style={{ color: '#64748b', margin: 0 }}>
+                      {language === 'es' ? 'No hay convocatorias vigentes en este momento.' : 'There are no active announcements at this time.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    {calls.map((call) => {
+                      const isOpen = call.status === 'ABIERTA';
+                      return (
+                        <div key={call.id} className="about-info-card" style={{ padding: '0', overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
+                          <div style={{
+                            height: '240px',
+                            backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.7) 100%), url(${convocatoriasBg})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            padding: '2rem',
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            justifyContent: 'space-between'
+                          }}>
+                            <div className="about-card-badge" style={{ backgroundColor: '#1a365d', color: '#ffffff', margin: 0 }}>CONVOCATORIA</div>
+                            <span style={{ 
+                              color: '#ffffff', 
+                              backgroundColor: 'rgba(15, 23, 42, 0.65)', 
+                              padding: '4px 10px', 
+                              borderRadius: '4px', 
+                              fontSize: '0.75rem', 
+                              fontWeight: 600 
+                            }}>
+                              Código: CONV-{call.id}
+                            </span>
+                          </div>
+                          <div style={{ padding: '2rem' }}>
+                            <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 1rem 0', color: '#0f172a' }}>
+                              {call.title}
+                            </h3>
+                            <p style={{ fontSize: '0.98rem', color: '#475569', lineHeight: 1.6, margin: '0 0 1.5rem 0', whiteSpace: 'pre-line' }}>
+                              {call.description}
+                            </p>
+                            
+                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2rem', fontSize: '0.88rem', color: '#64748b' }}>
+                              <span><strong>{language === 'es' ? 'Vigencia:' : 'Duration:'}</strong> {call.startDate} {language === 'es' ? 'al' : 'to'} {call.endDate}</span>
+                              <span>
+                                <strong>{language === 'es' ? 'Estado:' : 'Status:'}</strong>{' '}
+                                <span style={{ 
+                                  color: isOpen ? '#166534' : '#991b1b', 
+                                  fontWeight: 700,
+                                  backgroundColor: isOpen ? '#dcfce7' : '#fee2e2',
+                                  padding: '4px 10px',
+                                  borderRadius: '6px',
+                                  fontSize: '0.8rem'
+                                }}>
+                                  {language === 'es' 
+                                    ? (isOpen ? 'Abierta' : call.status === 'CERRADA' ? 'Cerrada' : 'Finalizada')
+                                    : (isOpen ? 'Open' : call.status === 'CERRADA' ? 'Closed' : 'Finished')
+                                  }
+                                </span>
+                              </span>
+                            </div>
+
+                            <button 
+                              onClick={() => isOpen && navigate('/login')} 
+                              className="btn-submit-contact"
+                              disabled={!isOpen}
+                              style={{ 
+                                marginTop: '1.5rem', 
+                                width: 'auto', 
+                                padding: '0.75rem 1.5rem',
+                                opacity: isOpen ? 1 : 0.5,
+                                cursor: isOpen ? 'pointer' : 'not-allowed',
+                                background: isOpen ? 'linear-gradient(135deg, #1e3a8a 0%, #1a365d 100%)' : '#cbd5e1'
+                              }}
+                            >
+                              {language === 'es' 
+                                ? (isOpen ? 'Postular e Iniciar Trámite' : 'Postulación Cerrada') 
+                                : (isOpen ? 'Apply & Start Process' : 'Applications Closed')
+                              }
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </section>
             )}
 
