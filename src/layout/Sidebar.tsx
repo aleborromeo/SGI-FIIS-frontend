@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   AlertCircle,
   FileSearch,
+  Inbox,
   X,
   BookOpen,
   Settings,
@@ -19,7 +20,21 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 
 import { AuthContext } from '../context/AuthContext';
 
-const navGroups = [
+type NavItem = {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  path: string;
+  roles?: string[];
+};
+
+type NavGroup = {
+  title: string;
+  roles?: string[];
+  items: NavItem[];
+};
+
+const navGroups: NavGroup[] = [
   {
     title: 'Principal',
     items: [
@@ -53,6 +68,18 @@ const navGroups = [
         icon: <GraduationCap size={20} />,
         path: '/thesis/plans',
         roles: ['ESTUDIANTE', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO'],
+      },
+      {
+        id: 'tramites',
+        label: 'Trámites',
+        icon: <Inbox size={20} />,
+        path: '/tramites',
+      },
+      {
+        id: 'traceability',
+        label: 'Trazabilidad',
+        icon: <History size={20} />,
+        path: '/thesis/plan/1',
       },
       {
         id: 'observations',
@@ -139,6 +166,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
     return location.pathname === path;
   };
+
 
   const getRoleLabel = (role: string | null): string => {
     switch (role) {
@@ -237,6 +265,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                   {group.title}
                 </h3>
 
+<<<<<<< HEAD
                 <div
                   style={{
                     display: 'flex',

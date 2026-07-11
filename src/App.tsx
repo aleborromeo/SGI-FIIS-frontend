@@ -36,6 +36,11 @@ import { TramitesList } from './pages/tramites/TramitesList.tsx';
 import { DecanoReview } from './pages/resolutions/DecanoReview.tsx';
 import { NewResolutionForm } from './pages/resolutions/NewResolutionForm.tsx';
 
+// Views del módulo Bandeja Lógica de Trámites y Subsanaciones
+import { TramitesInbox } from './pages/tramites/TramitesInbox.tsx';
+import { TramiteDetail } from './pages/tramites/TramiteDetail.tsx';
+import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
+
 // Admin Views
 import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
@@ -159,16 +164,19 @@ function App() {
                   <Route path="/convocatorias/activas" element={<ConvocatoriasDashboard />} />
                   <Route path="/convocatorias/new" element={<NewConvocatoria />} />
 
-                  {/* Trámites y Resoluciones Decanato */}
-                  <Route path="/tramites" element={<TramitesList />} />
-                  <Route path="/decano/review" element={<DecanoReview />} />
-                  <Route path="/resolutions/new" element={<NewResolutionForm />} />
-
                   {/* Evaluaciones y observaciones */}
                   <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
                   <Route path="/observations/panel" element={<ObservationsPanel />} />
                   <Route path="/progressreports/review" element={<ReviewProgressReports />} />
-                <Route path="/progressreports/history" element={<ProgressReportHistory />} />
+                  <Route path="/progressreports/history" element={<ProgressReportHistory />} />
+
+                  {/* Trámites y Resoluciones Decanato */}
+                  <Route path="/tramites" element={<TramitesInbox />} />
+                  <Route path="/tramites/:id" element={<TramiteDetail />} />
+                  <Route path="/tramites/legacy" element={<TramitesList />} />
+                  <Route path="/observations/subsanacion" element={<SubsanacionPanel />} />
+                  <Route path="/decano/review" element={<DecanoReview />} />
+                  <Route path="/resolutions/new" element={<NewResolutionForm />} />
 
                   {/* Administración */}
                   <Route path="/admin/activate" element={<ActivateUsers />} />
@@ -179,6 +187,7 @@ function App() {
                   <Route path="/groups/new" element={<NewResearchGroup />} />
                   <Route path="/groups/:id" element={<ResearchGroupDetail />} />
 
+                  {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Route>
 
