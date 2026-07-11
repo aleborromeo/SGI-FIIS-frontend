@@ -73,8 +73,28 @@ export const ForgotPasswordPage: React.FC = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setErrorMsg('La nueva contraseña debe tener al menos 6 caracteres.');
+    if (newPassword.length < 6 || newPassword.length > 12) {
+      setErrorMsg('La contraseña debe tener entre 6 y 12 caracteres.');
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPassword)) {
+      setErrorMsg('La contraseña debe contener al menos una letra mayúscula.');
+      return;
+    }
+
+    if (!/[a-z]/.test(newPassword)) {
+      setErrorMsg('La contraseña debe contener al menos una letra minúscula.');
+      return;
+    }
+
+    if (!/\d/.test(newPassword)) {
+      setErrorMsg('La contraseña debe contener al menos un número.');
+      return;
+    }
+
+    if (!/[^A-Za-z0-9]/.test(newPassword)) {
+      setErrorMsg('La contraseña debe contener al menos un símbolo (ej. !, @, #, $, %, etc.).');
       return;
     }
 
@@ -106,19 +126,19 @@ export const ForgotPasswordPage: React.FC = () => {
 
   return (
     <div className="login-container">
-      <div 
-        className="login-bg-blur" 
+      <div
+        className="login-bg-blur"
         style={{ backgroundImage: `url("${frontisBg}")` }}
       />
       <div className="login-overlay" />
 
       <div className="login-content-wrapper">
         <div className="login-card-container">
-          
+
           {/* Botón Regresar */}
-          <button 
+          <button
             type="button"
-            className="login-back-btn" 
+            className="login-back-btn"
             onClick={() => step === 1 ? navigate('/login') : setStep(1)}
             title="Regresar"
           >
@@ -130,10 +150,10 @@ export const ForgotPasswordPage: React.FC = () => {
           <div className="login-card-header">
             <img src={userSesionIcon} alt="Logo" className="login-logo-img" />
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a365d', marginTop: '0.5rem' }}>
-              Recuperar Contraseña
+              Restablecer contraseña
             </h2>
             <p className="login-logo-subtitle" style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-              {step === 1 
+              {step === 1
                 ? 'Ingrese su correo institucional para recibir un código de verificación de 6 dígitos.'
                 : `Ingrese el código enviado a ${email} y su nueva contraseña.`
               }
@@ -226,7 +246,7 @@ export const ForgotPasswordPage: React.FC = () => {
                     type={showNewPassword ? 'text' : 'password'}
                     id="newPassword"
                     className="form-input-custom"
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder="De 6 a 12 caracteres"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     disabled={isSubmitting}

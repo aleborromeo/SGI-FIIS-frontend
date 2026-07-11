@@ -37,14 +37,14 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
       }}
     >
       <CardContent sx={{ flex: 1, pb: 1 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
-          <Typography variant="caption" fontWeight={700} color="primary" letterSpacing={0.5}>
+        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+          <Typography variant="caption" color="primary" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
             CONV-{convocatoria.id}
           </Typography>
           <Chip label="ABIERTA" color="success" size="small" variant="filled" sx={{ fontWeight: 600, fontSize: '0.7rem' }} />
         </Stack>
 
-        <Typography variant="h6" fontWeight={700} gutterBottom sx={{ lineHeight: 1.3 }}>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, lineHeight: 1.3 }}>
           {convocatoria.title}
         </Typography>
 
@@ -71,7 +71,7 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
             pt: 1.5,
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
             <Calendar size={14} style={{ color: 'var(--text-secondary, #666)' }} />
             <Typography variant="caption" color="text.secondary">
               Inicio: <strong style={{ color: 'var(--on-surface)' }}>{convocatoria.startDate}</strong>

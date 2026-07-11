@@ -15,6 +15,7 @@ import {
   LogOut,
   Megaphone,
   Scale,
+  History,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 
@@ -131,6 +132,7 @@ const navGroups: NavGroup[] = [
     title: 'Administración',
     roles: ['ADMIN'],
     items: [
+      { id: 'create-user', label: 'Agregar Usuarios', icon: <Users size={20} />, path: '/users/create' },
       { id: 'activate', label: 'Activar Usuarios', icon: <Users size={20} />, path: '/admin/activate' },
       { id: 'users', label: 'Directorio', icon: <Users size={20} />, path: '/users' },
       { id: 'groups', label: 'Grupos Inv.', icon: <Users size={20} />, path: '/groups' },
@@ -264,8 +266,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 <h3 className="sidebar-group-title">
                   {group.title}
                 </h3>
-
-<<<<<<< HEAD
                 <div
                   style={{
                     display: 'flex',

@@ -105,7 +105,7 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
   const handleRemove = useCallback(async (userId: number) => {
     const member = members.find((m) => m.userId === userId);
     const name = member ? `${member.userFirstNames} ${member.userLastNames}` : '';
-    const confirmed = await confirm({
+    const confirmed = await confirm.confirmDialog({
       title: 'Eliminar miembro del equipo',
       message: `¿Estás seguro de eliminar a ${name} del equipo de investigación?`,
       confirmText: 'Eliminar',
@@ -132,7 +132,7 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
         <Users size={20} color="var(--primary)" aria-hidden="true" />
-        <Typography variant="h6" fontWeight={700}>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>
           Equipo de Investigación
         </Typography>
       </Box>
@@ -148,7 +148,7 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
                 <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                     <Box>
-                      <Typography variant="body2" fontWeight={600}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
                         {m.userFirstNames} {m.userLastNames}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">

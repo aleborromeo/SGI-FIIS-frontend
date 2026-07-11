@@ -127,12 +127,7 @@ function NewProposalFormInner() {
   });
 
   const watchedGroupId = watch('researchGroupId');
-  const watchedValues = watch([
-    'convocatoriaId', 'researchGroupId', 'researchLineId', 'projectType',
-    'title', 'abstract', 'generalObjective', 'specificObjectives',
-    'methodology', 'expectedResults', 'budget', 'executionPlace',
-    'startDate', 'endDate', 'recibeApoyoFif',
-  ]);
+  const watchedValues = watch();
 
   useEffect(() => {
     if (urlCallId && convocatorias.some((c) => String(c.id) === urlCallId)) {
@@ -262,7 +257,7 @@ function NewProposalFormInner() {
   };
 
   const onSubmitFinal = async (data: ProposalFormData) => {
-    const confirmed = await confirm({
+    const confirmed = await confirm.confirmDialog({
       title: 'Enviar propuesta a Coordinador',
       message: '¿Estás seguro de enviar esta propuesta? El Coordinador de grupo será notificado para su revisión.',
       confirmText: 'Enviar',
@@ -303,10 +298,10 @@ function NewProposalFormInner() {
       <Box sx={{ p: 3, maxWidth: 900, mx: 'auto' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
           <Box>
-            <Typography variant="h4" fontWeight={700} gutterBottom>
+            <Typography variant="h4" sx={{ fontWeight: 700 }} gutterBottom>
               Postular Proyecto de Investigación
             </Typography>
-            <Typography variant="body2" color="text.secondary" maxWidth={560}>
+            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 560 }}>
               Registra la información de tu propuesta de investigación para iniciar el flujo de revisión institucional.
             </Typography>
           </Box>
@@ -337,7 +332,7 @@ function NewProposalFormInner() {
     <Box sx={{ p: { xs: 1.5, sm: 3 }, maxWidth: 960, mx: 'auto' }}>
       <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-start', gap: 2, mb: 3 }}>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700} gutterBottom>
+          <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 700 }} gutterBottom>
             Postular Proyecto de Investigación
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: { xs: '100%', sm: 560 } }}>
@@ -347,7 +342,7 @@ function NewProposalFormInner() {
         <Link to="/projects" style={{ textDecoration: 'none' }} onClick={async (e) => {
           if (isDirty || members.length > 0 || documentId) {
             e.preventDefault();
-            const confirmed = await confirm({
+            const confirmed = await confirm.confirmDialog({
               title: 'Cambios sin guardar',
               message: 'Tienes cambios sin guardar. Si sales ahora, perderás todo el progreso. ¿Estás seguro?',
               confirmText: 'Salir sin guardar',
@@ -362,7 +357,7 @@ function NewProposalFormInner() {
 
       {isMobile ? (
         <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography variant="body2" color="text.secondary" fontWeight={600}>
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
             Paso {activeStep + 1} de {STEPS.length}
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center', mt: 1 }}>
@@ -395,14 +390,14 @@ function NewProposalFormInner() {
         {activeStep === 0 && (
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 3 }}>
             <CardHeader
-              title={<Typography variant="h6" fontWeight={700}>Datos Generales</Typography>}
+              title={<Typography variant="h6" sx={{ fontWeight: 700 }}>Datos Generales</Typography>}
               subheader="Información básica del proyecto de investigación"
               sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}
             />
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ mb: 2 }}>
                 <ConvocatoriaSelect
-                  control={control}
+                  control={control as any}
                   convocatorias={activeConvocatorias}
                   error={errors.convocatoriaId}
                 />
@@ -531,7 +526,7 @@ function NewProposalFormInner() {
         {activeStep === 1 && (
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 3 }}>
             <CardHeader
-              title={<Typography variant="h6" fontWeight={700}>Detalles de Investigación</Typography>}
+              title={<Typography variant="h6" sx={{ fontWeight: 700 }}>Detalles de Investigación</Typography>}
               subheader="Describe el contenido y planificación del proyecto"
               sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}
             />
@@ -713,7 +708,7 @@ function NewProposalFormInner() {
         {activeStep === 2 && (
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 3 }}>
             <CardHeader
-              title={<Typography variant="h6" fontWeight={700}>Equipo de Investigación</Typography>}
+              title={<Typography variant="h6" sx={{ fontWeight: 700 }}>Equipo de Investigación</Typography>}
               subheader="Integrantes del grupo que participarán en el proyecto"
               sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}
             />
@@ -731,7 +726,7 @@ function NewProposalFormInner() {
         {activeStep === 3 && (
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 3 }}>
             <CardHeader
-              title={<Typography variant="h6" fontWeight={700}>Documento Principal</Typography>}
+              title={<Typography variant="h6" sx={{ fontWeight: 700 }}>Documento Principal</Typography>}
               subheader="Adjunta el archivo de tu propuesta. Formatos permitidos: PDF, DOC, DOCX. Máximo 10 MB."
               sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}
             />
@@ -748,54 +743,54 @@ function NewProposalFormInner() {
         {activeStep === 4 && (
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 3 }}>
             <CardHeader
-              title={<Typography variant="h6" fontWeight={700}>Revisión de la Propuesta</Typography>}
+              title={<Typography variant="h6" sx={{ fontWeight: 700 }}>Revisión de la Propuesta</Typography>}
               subheader="Verifica la información antes de enviar al Coordinador de grupo"
               sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}
             />
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                 <FileText size={18} color="var(--primary)" />
-                <Typography variant="subtitle1" fontWeight={700}>Resumen de la Propuesta</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Resumen de la Propuesta</Typography>
               </Box>
 
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Código</Typography>
-                  <Typography variant="body2" fontWeight={600}>Se generará automáticamente (PRJ-YYYY-XXXX)</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>Se generará automáticamente (PRJ-YYYY-XXXX)</Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Estado</Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     <Chip label="Pendiente de Coordinador" size="small" color="warning" sx={{ fontWeight: 600 }} />
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Convocatoria</Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {activeConvocatorias.find((c) => String(c.id) === watchedValues.convocatoriaId)?.title || '—'}
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Grupo de Investigación</Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {groups.find((g) => String(g.id) === watchedValues.researchGroupId)?.groupName || '—'}
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Línea de Investigación</Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {filteredLines.find((l) => String(l.id) === watchedValues.researchLineId)?.lineName || '—'}
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Tipo de Proyecto</Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {PROJECT_TYPES.find((t) => t.value === watchedValues.projectType)?.label || '—'}
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Recibe Apoyo FIF</Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {watchedValues.recibeApoyoFif === 'SI' ? 'Sí' : watchedValues.recibeApoyoFif === 'NO' ? 'No' : '—'}
                   </Typography>
                 </Grid>
@@ -806,7 +801,7 @@ function NewProposalFormInner() {
 
                 <Grid size={{ xs: 12 }}>
                   <Typography variant="caption" color="text.secondary">Título</Typography>
-                  <Typography variant="body2" fontWeight={600}>{watchedValues.title || '—'}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{watchedValues.title || '—'}</Typography>
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                   <Typography variant="caption" color="text.secondary">Resumen Ejecutivo</Typography>
@@ -835,19 +830,19 @@ function NewProposalFormInner() {
 
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Presupuesto</Typography>
-                  <Typography variant="body2" fontWeight={600}>S/ {watchedValues.budget || '0.00'}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>S/ {watchedValues.budget || '0.00'}</Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Lugar de Ejecución</Typography>
-                  <Typography variant="body2" fontWeight={600}>{watchedValues.executionPlace || '—'}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{watchedValues.executionPlace || '—'}</Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Fecha de Inicio</Typography>
-                  <Typography variant="body2" fontWeight={600}>{watchedValues.startDate || '—'}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{watchedValues.startDate || '—'}</Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Fecha de Fin</Typography>
-                  <Typography variant="body2" fontWeight={600}>{watchedValues.endDate || '—'}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{watchedValues.endDate || '—'}</Typography>
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>
@@ -856,13 +851,13 @@ function NewProposalFormInner() {
 
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Equipo de Investigación</Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {members.length > 0 ? `${members.length} miembro(s)` : 'Sin miembros adicionales'}
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Documento Adjunto</Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {documentName || (documentId ? 'Documento cargado' : 'Sin documento')}
                   </Typography>
                 </Grid>

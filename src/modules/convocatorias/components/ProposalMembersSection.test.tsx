@@ -48,8 +48,8 @@ describe('ProposalMembersSection', () => {
 
   it('fetches and displays available members in select', async () => {
     vi.mocked(researchService.getMembers).mockResolvedValue([
-      { userId: 1, userFirstNames: 'Juan', userLastNames: 'Pérez', userEmail: 'juan@test.com', active: true },
-      { userId: 2, userFirstNames: 'María', userLastNames: 'López', userEmail: 'maria@test.com', active: true },
+      { id: 1, userId: 1, userFirstNames: 'Juan', userLastNames: 'Pérez', userEmail: 'juan@test.com', active: true },
+      { id: 2, userId: 2, userFirstNames: 'María', userLastNames: 'López', userEmail: 'maria@test.com', active: true },
     ]);
 
     render(<ProposalMembersSection {...defaultProps} />);
@@ -61,8 +61,8 @@ describe('ProposalMembersSection', () => {
 
   it('filters out inactive members', async () => {
     vi.mocked(researchService.getMembers).mockResolvedValue([
-      { userId: 1, userFirstNames: 'Active', userLastNames: 'User', userEmail: 'active@test.com', active: true },
-      { userId: 2, userFirstNames: 'Inactive', userLastNames: 'User', userEmail: 'inactive@test.com', active: false },
+      { id: 1, userId: 1, userFirstNames: 'Active', userLastNames: 'User', userEmail: 'active@test.com', active: true },
+      { id: 2, userId: 2, userFirstNames: 'Inactive', userLastNames: 'User', userEmail: 'inactive@test.com', active: false },
     ]);
 
     render(<ProposalMembersSection {...defaultProps} />);

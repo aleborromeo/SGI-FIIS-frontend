@@ -75,7 +75,7 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
       headers,
     });
 
-    if (response.status === 401) {
+    if (response.status === 401 && !endpoint.includes('/auth/login')) {
       localStorage.removeItem('sgi_token');
       localStorage.removeItem('sgi_user');
 
