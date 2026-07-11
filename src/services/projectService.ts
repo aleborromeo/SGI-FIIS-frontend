@@ -12,6 +12,10 @@ export interface Project {
   title?: string;
   summary?: string;
   generalObjective?: string;
+  specificObjectives?: string;
+  methodology?: string;
+  expectedResults?: string;
+  projectType?: string;
   researchLineId?: number;
   researchLineName?: string;
   budget?: number;
@@ -26,7 +30,6 @@ export interface Project {
   status?: string;
   members?: ProjectMember[];
 
-  // Compatibilidad temporal con pantallas antiguas
   line?: string;
   type?: string;
 }
@@ -35,20 +38,31 @@ export interface CreateProjectPayload {
   title: string;
   summary: string;
   generalObjective: string;
-  researchLineId: number;
-  budget: number;
-  startDate: string;
-  endDate: string;
-  executionPlace: string;
-  researchGroupId: number;
+  researchLineId?: number;
+  budget?: number;
+  startDate?: string;
+  endDate?: string;
+  executionPlace?: string;
+  researchGroupId?: number;
+  callId?: number;
+  documentId?: number;
+  members?: ProjectMember[];
+  draft?: boolean;
+}
+
+export interface DocumentUploadResponse {
+  id: number;
+  fileName: string;
+  fileUrl: string;
 }
 
 export const projectService = {
   getAll: () => fetchApi<Project[]>('/projects'),
+
   getById: (id: string | number) =>
     fetchApi<Project>(`/projects/${id}`),
 
-  create: (data: Partial<Project>) =>
+  create: (data: CreateProjectPayload) =>
     fetchApi<Project>('/projects', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -58,4 +72,19 @@ export const projectService = {
     fetchApi<Project>(`/projects/${id}/status?status=${encodeURIComponent(status)}`, {
       method: 'PATCH',
     }),
+
+  getMyDrafts: () =>
+    fetchApi<Project[]>('/projects/drafts'),
+
+  deleteDraft: (id: string | number) =>
+    fetchApi<void>(`/projects/${id}`, { method: 'DELETE' }),
+
+  uploadDocument: (file: File): Promise<DocumentUploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return fetchApi<DocumentUploadResponse>('/api/documents/upload', {
+      method: 'POST',
+      body: formData,
+    });
+  },
 };

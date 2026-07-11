@@ -25,6 +25,7 @@ import {
 import { AuthContext } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
 import { Spinner } from '../../components/common/Spinner';
+import { ConvocatoriasDashboard } from '../../modules/convocatorias/pages/ConvocatoriasDashboard';
 import './RoleDashboards.css';
 
 import type {
@@ -73,6 +74,7 @@ interface DashboardLayoutProps {
   leftContent: ReactNode;
   alertsTitle: string;
   alerts?: AlertItem[];
+  extraContent?: ReactNode;
 }
 
 interface QuickAction {
@@ -423,6 +425,7 @@ function DashboardLayout({
   leftContent,
   alertsTitle,
   alerts,
+  extraContent,
 }: DashboardLayoutProps) {
   return (
     <div className={`dashboard-view ${viewClassName}`}>
@@ -448,6 +451,8 @@ function DashboardLayout({
           <AlertsList alerts={alerts} />
         </div>
       </div>
+
+      {extraContent}
 
       <QuickActionsSection />
     </div>
@@ -803,6 +808,7 @@ export const RoleDashboards = () => {
         }
         alertsTitle="Mis alertas"
         alerts={teacherData.alerts}
+        extraContent={<ConvocatoriasDashboard />}
       />
     );
   }
@@ -857,8 +863,6 @@ export const RoleDashboards = () => {
         leftTitle="Control de trámites del grupo"
         leftContent={
           <>
-                    leftContent={
-          <>
             <div className="affiliation-card" style={{ marginBottom: '20px' }}>
               <div className="affiliation-header">
                 <span className="affiliation-icon">
@@ -877,37 +881,6 @@ export const RoleDashboards = () => {
                 informes correspondientes a su propio grupo de investigación.
               </p>
             </div>
-
-            <ProgressBars
-              items={[
-                {
-                  label: 'Trámites presentados',
-                  value: coordData.submittedProcedures,
-                  total: proceduresTotal,
-                  tone: 'blue',
-                },
-                {
-                  label: 'Trámites en revisión',
-                  value: coordData.proceduresUnderReview,
-                  total: proceduresTotal,
-                  tone: 'purple',
-                },
-                {
-                  label: 'Trámites aprobados',
-                  value: coordData.approvedProcedures,
-                  total: proceduresTotal,
-                  tone: 'green',
-                },
-                {
-                  label: 'Trámites observados',
-                  value: coordData.observedProcedures,
-                  total: proceduresTotal,
-                  tone: 'orange',
-                },
-              ]}
-            />
-          </>
-        }
 
             <ProgressBars
               items={[

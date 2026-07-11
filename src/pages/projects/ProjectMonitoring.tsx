@@ -454,11 +454,136 @@ export const ProjectMonitoring: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Alert title="Regla institucional activa">
-            La omisión o retraso de informes de avance puede afectar el seguimiento administrativo
-            del proyecto. Esta sección quedará lista para integrarse con reportes progresivos cuando
-            el endpoint correspondiente esté estable.
-          </Alert>
+          <Card style={{ marginTop: '24px' }}>
+            <CardHeader>
+              <h3 className="text-title-lg">Informes Trimestrales y Final de Ejecución</h3>
+            </CardHeader>
+            <CardContent>
+              <TableContainer>
+                <TableHead>
+                  <TableRow>
+                    <TableHeader>Periodo</TableHeader>
+                    <TableHeader>Fecha Límite</TableHeader>
+                    <TableHeader>Documento Subido</TableHeader>
+                    <TableHeader>Estado</TableHeader>
+                    <TableHeader>Observaciones</TableHeader>
+                    <TableHeader style={{ textAlign: 'right' }}>Acción</TableHeader>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Trimestre 1</TableCell>
+                    <TableCell>30/09/2026</TableCell>
+                    <TableCell><span style={{ color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }}>avance_t1.pdf</span></TableCell>
+                    <TableCell><Badge variant="success">Aprobado</Badge></TableCell>
+                    <TableCell>Conforme</TableCell>
+                    <TableCell style={{ textAlign: 'right' }}><Button variant="secondary">Ver</Button></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Trimestre 2</TableCell>
+                    <TableCell>31/12/2026</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell><Badge variant="warning">Pendiente</Badge></TableCell>
+                    <TableCell style={{ color: 'var(--error)' }}>Faltan firmas del coinvestigador</TableCell>
+                    <TableCell style={{ textAlign: 'right' }}><Button variant="primary">Subir Informe</Button></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Trimestre 3</TableCell>
+                    <TableCell>31/03/2027</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell><Badge variant="neutral">Programado</Badge></TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell style={{ textAlign: 'right' }}><Button variant="secondary" disabled>Ver</Button></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Informe Final</TableCell>
+                    <TableCell>30/06/2027</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell><Badge variant="neutral" style={{ color: '#4527a0', backgroundColor: '#ede7f6' }}>Artículo Requerido</Badge></TableCell>
+                    <TableCell>Debe adjuntar artículo o constancia de envío</TableCell>
+                    <TableCell style={{ textAlign: 'right' }}><Button variant="secondary" disabled>Subir</Button></TableCell>
+                  </TableRow>
+                </TableBody>
+              </TableContainer>
+              <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--warning)' }}></span>
+                <strong>Regla institucional:</strong> La omisión de informes trimestrales suspende el financiamiento FIF de forma automática.
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card style={{ marginTop: '24px' }}>
+            <CardHeader>
+              <h3 className="text-title-lg">Documentos del Expediente y Trazabilidad</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="section-grid-asymmetric" style={{ gap: '24px' }}>
+                
+                {/* Lista de Documentos */}
+                <div>
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Historial Documental</h4>
+                  <TableContainer>
+                    <TableHead>
+                      <TableRow>
+                        <TableHeader>Archivo</TableHeader>
+                        <TableHeader>Subido por</TableHeader>
+                        <TableHeader>Fecha</TableHeader>
+                        <TableHeader style={{ textAlign: 'right' }}>Descarga</TableHeader>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell><strong>Proyecto_inicial.pdf</strong></TableCell>
+                        <TableCell>Investigador</TableCell>
+                        <TableCell>08/06/2026</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}><Button variant="secondary">Descargar</Button></TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell><strong>Resolución_R.D._045.pdf</strong></TableCell>
+                        <TableCell>Decanato</TableCell>
+                        <TableCell>20/06/2026</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}><Button variant="secondary">Descargar</Button></TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell><strong>Informe_T1.pdf</strong></TableCell>
+                        <TableCell>Investigador</TableCell>
+                        <TableCell>30/09/2026</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}><Button variant="secondary">Descargar</Button></TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </TableContainer>
+                </div>
+
+                {/* Trazabilidad lineal */}
+                <div>
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Trazabilidad de Firmas y Cambios</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderLeft: '2px solid var(--outline-variant)', paddingLeft: '16px', marginLeft: '6px' }}>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
+                      <strong style={{ fontSize: '13px' }}>Postulación Enviada</strong>
+                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>08/06/2026 10:25 - Docente Investigador</div>
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
+                      <strong style={{ fontSize: '13px' }}>Aprobado por Coordinador</strong>
+                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>09/06/2026 15:40 - Coordinador de Grupo</div>
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
+                      <strong style={{ fontSize: '13px' }}>Aprobado por Dirección</strong>
+                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>12/06/2026 11:10 - Director de Investigación</div>
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--primary)' }}></span>
+                      <strong style={{ fontSize: '13px' }}>Resolución Emitida</strong>
+                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>20/06/2026 09:30 - Decanato (Firma RD-045)</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>

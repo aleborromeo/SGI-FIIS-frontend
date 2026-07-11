@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   FileText,
   BarChart2,
-  History,
   Users,
   GraduationCap,
   ClipboardCheck,
@@ -14,6 +13,8 @@ import {
   BookOpen,
   Settings,
   LogOut,
+  Megaphone,
+  Scale,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 
@@ -86,6 +87,27 @@ const navGroups: NavGroup[] = [
         icon: <AlertCircle size={20} />,
         path: '/observations/panel',
       },
+      {
+        id: 'tramites',
+        label: 'Mis Trámites',
+        icon: <FileText size={20} />,
+        path: '/tramites',
+        roles: ['DOCENTE_INVESTIGADOR', 'ESTUDIANTE', 'COORDINADOR_GRUPO'],
+      },
+      {
+        id: 'decano-review',
+        label: 'Consola Decanato',
+        icon: <Scale size={20} />,
+        path: '/decano/review',
+        roles: ['DECANO'],
+      },
+      {
+        id: 'convocatorias',
+        label: 'Convocatorias',
+        icon: <Megaphone size={20} />,
+        path: '/convocatorias',
+        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
+      },
     ],
   },
   {
@@ -107,14 +129,14 @@ const navGroups: NavGroup[] = [
   },
   {
     title: 'Administración',
-    roles: ['ADMIN'], // Only for admin
+    roles: ['ADMIN'],
     items: [
       { id: 'activate', label: 'Activar Usuarios', icon: <Users size={20} />, path: '/admin/activate' },
       { id: 'users', label: 'Directorio', icon: <Users size={20} />, path: '/users' },
       { id: 'groups', label: 'Grupos Inv.', icon: <Users size={20} />, path: '/groups' },
       { id: 'lines', label: 'Líneas Inv.', icon: <BookOpen size={20} />, path: '/lines' },
-    ]
-  }
+    ],
+  },
 ];
 
 interface SidebarProps {
@@ -128,6 +150,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
   const { user, currentRole, logout } = React.useContext(AuthContext);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
+
+  const isItemActive = (itemId: string, path: string): boolean => {
+    if (itemId === 'proposals') {
+      return location.pathname === '/projects' || location.pathname.startsWith('/projects/');
+    }
+
+    if (itemId === 'thesis-plans') {
+      return location.pathname === '/thesis/plans' || location.pathname.startsWith('/thesis/plan/');
+    }
+
+    if (itemId === 'traceability') {
+      return location.pathname.startsWith('/thesis/plan');
+    }
+
+    return location.pathname === path;
+  };
+
 
   const getRoleLabel = (role: string | null): string => {
     switch (role) {
@@ -175,22 +214,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     navigate('/');
   };
 
-  const isItemActive = (itemId: string, path: string): boolean => {
-    if (itemId === 'proposals') {
-      return location.pathname === '/projects' || location.pathname.startsWith('/projects/');
-    }
-
-    if (itemId === 'thesis-plans') {
-      return location.pathname === '/thesis/plans' || location.pathname.startsWith('/thesis/plan/');
-    }
-
-    if (itemId === 'traceability') {
-      return location.pathname.startsWith('/thesis/plan');
-    }
-
-    return location.pathname === path;
-  };
-
   return (
     <>
       {isOpen && (
@@ -201,16 +224,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         />
       )}
 
-      <aside
-        className={`sidebar-container ${isOpen ? 'open' : ''}`}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100vh',
-          minHeight: '100vh',
-          overflow: 'hidden',
-        }}
-      >
+      <aside className={`sidebar-container ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-brand-header">
           <button
             className="sidebar-close-btn"
@@ -237,13 +251,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
           </div>
         </div>
 
-        <nav
-          className="sidebar-nav"
-          style={{
-            flex: 1,
-            overflow: 'visible',
-          }}
-        >
+        <nav className="sidebar-nav">
           {navGroups
             .filter((group) => {
               if (group.roles && currentRole) {
@@ -252,43 +260,44 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               return true;
             })
             .map((group) => (
-            <div key={group.title}>
-              <h3 className="sidebar-group-title">
-                {group.title}
-              </h3>
+              <div key={group.title}>
+                <h3 className="sidebar-group-title">
+                  {group.title}
+                </h3>
 
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px',
-                }}
-              >
-                {group.items
-                  .filter((item) => {
-                    if (item.roles && currentRole) {
-                      return item.roles.includes(currentRole);
-                    }
-                    return true;
-                  })
-                  .map((item) => {
-                    const isActive = isItemActive(item.id, item.path);
+<<<<<<< HEAD
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                  }}
+                >
+                  {group.items
+                    .filter((item) => {
+                      if (item.roles && currentRole) {
+                        return item.roles.includes(currentRole);
+                      }
+                      return true;
+                    })
+                    .map((item) => {
+                      const isActive = isItemActive(item.id, item.path);
 
-                    return (
-                    <Link
-                      key={item.id}
-                      to={item.path}
-                      onClick={onClose}
-                      className={`sidebar-link ${isActive ? 'active' : ''}`}
-                    >
-                      {item.icon}
-                      <span className="text-body-md">{item.label}</span>
-                    </Link>
-                  );
-                })}
+                      return (
+                        <Link
+                          key={item.id}
+                          to={item.path}
+                          onClick={onClose}
+                          className={`sidebar-link ${isActive ? 'active' : ''}`}
+                        >
+                          {item.icon}
+                          <span className="text-body-md">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </nav>
 
         <div className="sidebar-user-footer">

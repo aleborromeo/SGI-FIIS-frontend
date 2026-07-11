@@ -51,7 +51,6 @@ function getFullName(reviewer: Reviewer): string {
 export const AssignReviewers: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const loading = false;
   const queryParams = new URLSearchParams(location.search);
   const projectId = queryParams.get('projectId') || '1';
 

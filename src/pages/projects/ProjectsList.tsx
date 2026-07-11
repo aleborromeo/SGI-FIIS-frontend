@@ -136,7 +136,6 @@ export const ProjectsList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [demoMode, setDemoMode] = useState(false);
   const [, setBackendMessage] = useState<string | null>(null);
-  const [, setError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');

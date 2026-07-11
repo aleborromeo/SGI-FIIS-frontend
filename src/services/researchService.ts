@@ -1,26 +1,44 @@
 import { api } from './api';
 
+// ── Tipos – Líneas de Investigación ──────────────────────────────────────────
+
 export interface ResearchLine {
   id: number;
+  lineCode?: string;
   lineName: string;
+  description?: string;
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface ResearchLineRequest {
+  lineCode?: string;
   lineName: string;
+  description?: string;
 }
+
+export interface ResearchLineUpdateRequest {
+  lineCode?: string;
+  lineName: string;
+  description?: string;
+}
+
+// ── Tipos – Grupos de Investigación ──────────────────────────────────────────
 
 export interface ResearchGroup {
   id: number;
   groupCode: string;
   groupName: string;
+  active: boolean;
   currentCoordinatorId?: number;
   coordinatorFirstNames?: string;
   coordinatorLastNames?: string;
-  active: boolean;
-  coordinator?: any; // kept for legacy compatibility if mapped, though backend returns flattened
+  memberCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  /** @deprecated kept for legacy compatibility */
+  coordinator?: unknown;
 }
 
 export interface ResearchGroupRequest {
@@ -28,22 +46,56 @@ export interface ResearchGroupRequest {
   groupName: string;
 }
 
+// ── Tipos – Membresías ────────────────────────────────────────────────────────
+
+/** Roles posibles de un miembro dentro de un grupo */
+export type MemberRole =
+  | 'INVESTIGADOR_PRINCIPAL'
+  | 'COINVESTIGADOR'
+  | 'COLABORADOR'
+  | 'ASESOR'
+  | string;
+
+export interface GroupMember {
+  /** ID de la membresía */
+  id: number;
+  /** ID del usuario */
+  userId: number;
+  userFirstNames: string;
+  userLastNames: string;
+  userEmail: string;
+  /** Rol dentro del grupo */
+  memberRole?: MemberRole;
+  /** Estado de la membresía (true = activa) */
+  active: boolean;
+  /** Fecha de ingreso al grupo */
+  joinedAt?: string;
+}
+
+// ── Servicio ──────────────────────────────────────────────────────────────────
+
 export const researchService = {
-  // --- Líneas de Investigación ---
+  // ── Líneas de Investigación ─────────────────────────────────────────────
+
+  /** Lista todas las líneas; si onlyActive=true filtra solo activas */
   getLines: async (onlyActive: boolean = false): Promise<ResearchLine[]> => {
     return api.get<ResearchLine[]>(`/research-lines?onlyActive=${onlyActive}`);
+  },
+
+  getLineById: async (id: number): Promise<ResearchLine> => {
+    return api.get<ResearchLine>(`/research-lines/${id}`);
   },
 
   createLine: async (data: ResearchLineRequest): Promise<ResearchLine> => {
     return api.post<ResearchLine>('/research-lines', data);
   },
 
-  changeLineStatus: async (id: number, active: boolean): Promise<ResearchLine> => {
-    return api.patch<ResearchLine>(`/research-lines/${id}/status`, { active });
+  updateLine: async (id: number, data: ResearchLineUpdateRequest): Promise<ResearchLine> => {
+    return api.put<ResearchLine>(`/research-lines/${id}`, data);
   },
 
-  getLineById: async (id: number): Promise<ResearchLine> => {
-    return api.get<ResearchLine>(`/research-lines/${id}`);
+  changeLineStatus: async (id: number, active: boolean): Promise<ResearchLine> => {
+    return api.patch<ResearchLine>(`/research-lines/${id}/status`, { active });
   },
 
   getGroupsByLine: async (id: number): Promise<ResearchGroup[]> => {
@@ -58,36 +110,56 @@ export const researchService = {
     return api.delete<void>(`/research-lines/${lineId}/groups/${groupId}`);
   },
 
-  // --- Grupos de Investigación ---
+  // ── Grupos de Investigación ─────────────────────────────────────────────
+
   getGroups: async (): Promise<ResearchGroup[]> => {
     return api.get<ResearchGroup[]>('/research-groups');
-  },
-
-  createGroup: async (data: ResearchGroupRequest): Promise<ResearchGroup> => {
-    return api.post<ResearchGroup>('/research-groups', data);
   },
 
   getGroupById: async (id: number): Promise<ResearchGroup> => {
     return api.get<ResearchGroup>(`/research-groups/${id}`);
   },
 
+  createGroup: async (data: ResearchGroupRequest): Promise<ResearchGroup> => {
+    return api.post<ResearchGroup>('/research-groups', data);
+  },
+
+  deactivateGroup: async (id: number): Promise<ResearchGroup> => {
+    return api.patch<ResearchGroup>(`/research-groups/${id}/status`, { active: false });
+  },
+
   assignCoordinator: async (id: number, userId: number): Promise<ResearchGroup> => {
     return api.patch<ResearchGroup>(`/research-groups/${id}/coordinator`, { userId });
   },
 
-  getMembers: async (id: number): Promise<any[]> => {
-    return api.get<any[]>(`/research-groups/${id}/members`);
+  // ── Membresías ──────────────────────────────────────────────────────────
+
+  /** Lista los miembros de un grupo */
+  getMembers: async (id: number): Promise<GroupMember[]> => {
+    return api.get<GroupMember[]>(`/research-groups/${id}/members`);
   },
 
-  addMember: async (id: number, userId: number): Promise<any> => {
-    return api.post<any>(`/research-groups/${id}/members`, { userId });
+  /** Agrega un miembro al grupo */
+  addMember: async (id: number, userId: number): Promise<GroupMember> => {
+    return api.post<GroupMember>(`/research-groups/${id}/members`, { userId });
   },
 
-  removeMember: async (id: number, userId: number): Promise<any> => {
-    return api.delete<any>(`/research-groups/${id}/members/${userId}`);
+  /** Retira un miembro del grupo (eliminación lógica) */
+  removeMember: async (id: number, userId: number): Promise<GroupMember> => {
+    return api.delete<GroupMember>(`/research-groups/${id}/members/${userId}`);
   },
+
+  /**
+   * Devuelve los usuarios (docentes) que NO tienen membresía activa en ningún grupo,
+   * respetando la regla de negocio uq_membresias_activas.
+   */
+  getAvailableUsers: async (): Promise<{ id: number; firstNames: string; lastNames: string; institutionalEmail: string }[]> => {
+    return api.get(`/research-groups/available-users`);
+  },
+
+  // ── Líneas del Grupo ────────────────────────────────────────────────────
 
   getGroupLines: async (id: number): Promise<ResearchLine[]> => {
     return api.get<ResearchLine[]>(`/research-groups/${id}/lines`);
-  }
+  },
 };

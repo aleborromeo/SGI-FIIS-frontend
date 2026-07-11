@@ -14,6 +14,14 @@ export default defineConfig({
       }
     }
   },
+  optimizeDeps: {
+    include: [
+      '@mui/material',
+      '@emotion/react',
+      '@emotion/styled',
+      '@tanstack/react-query',
+    ],
+  },
   test: {
     environment: 'jsdom',
     globals: true,

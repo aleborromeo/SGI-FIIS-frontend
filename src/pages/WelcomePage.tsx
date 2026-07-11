@@ -250,24 +250,6 @@ export const WelcomePage: React.FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  useEffect(() => {
-    const el = carouselRef.current;
-    if (!el) return;
-
-    const handleWheelRaw = (e: WheelEvent) => {
-      e.preventDefault();
-      if (e.deltaY > 0) {
-        setActiveIndex((prev) => (prev + 1) % groups.length);
-      } else {
-        setActiveIndex((prev) => (prev - 1 + groups.length) % groups.length);
-      }
-    };
-
-    el.addEventListener('wheel', handleWheelRaw, { passive: false });
-    return () => {
-      el.removeEventListener('wheel', handleWheelRaw);
-    };
-  }, [groups.length]);
 
   return (
     <div className="welcome-page-container">

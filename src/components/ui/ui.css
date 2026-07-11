@@ -15,6 +15,7 @@
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 .btn:active:not(:disabled) {
@@ -99,30 +100,11 @@
   letter-spacing: 0.05em;
 }
 
-.badge-success {
-  background-color: #d1fae5;
-  color: #065f46;
-}
-
-.badge-warning {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-.badge-error {
-  background-color: var(--error-container);
-  color: var(--on-error-container);
-}
-
-.badge-info {
-  background-color: var(--primary-fixed);
-  color: var(--on-primary-fixed);
-}
-
-.badge-neutral {
-  background-color: var(--surface-container);
-  color: var(--on-surface-variant);
-}
+.badge-success { background-color: #d1fae5; color: #065f46; }
+.badge-warning { background-color: #fef3c7; color: #92400e; }
+.badge-error { background-color: var(--error-container); color: var(--on-error-container); }
+.badge-info { background-color: var(--primary-fixed); color: var(--on-primary-fixed); }
+.badge-neutral { background-color: var(--surface-container); color: var(--on-surface-variant); }
 
 /* Alerts */
 .alert {
@@ -189,6 +171,7 @@
 .table-container {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--outline-variant);
   border-radius: var(--radius-md);
   background-color: var(--surface-container-lowest);
@@ -208,6 +191,7 @@
   color: var(--on-surface-variant);
   background-color: var(--surface-container-low);
   border-bottom: 1px solid var(--outline-variant);
+  white-space: nowrap;
 }
 
 .table td {
@@ -219,4 +203,74 @@
 
 .table tbody tr:hover {
   background-color: var(--surface);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE TABLE STYLES
+   ════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .table th,
+  .table td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  /* Reduce padding on very small screens */
+  .table th:last-child,
+  .table td:last-child {
+    padding-right: 14px;
+  }
+
+  .table th:first-child,
+  .table td:first-child {
+    padding-left: 14px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE BUTTON GROUPS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .btn-group {
+    width: 100%;
+  }
+
+  .btn-group .btn {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE FORMS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .input,
+  .select,
+  .textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE MODALS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .modal-responsive {
+    width: 95% !important;
+    max-width: 95% !important;
+    margin: 12px;
+    max-height: 90vh;
+    border-radius: 16px;
+  }
 }
