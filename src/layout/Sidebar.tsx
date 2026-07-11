@@ -265,7 +265,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                   {group.title}
                 </h3>
 
-<<<<<<< HEAD
                 <div
                   style={{
                     display: 'flex',
