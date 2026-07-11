@@ -15,6 +15,7 @@ import {
   LogOut,
   Megaphone,
   Scale,
+  History,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 

@@ -43,11 +43,6 @@ import { PROJECT_TYPES, PROPOSAL_FIELD_LABELS } from '../validators/proposal.sch
 import type { ProposalFormData } from '../types/convocatoria.types';
 
 const GINSOFT_CODE = 'GINSOFT';
-const GINSOFT_ALLOWED_LINES = ['computación', 'ingeniería de software'];
-
-function isGinsoftLine(lineName: string): boolean {
-  return GINSOFT_ALLOWED_LINES.some((kw) => lineName.toLowerCase().includes(kw));
-}
 
 function buildSummary(data: ProposalFormData): string {
   const parts: string[] = [];
@@ -168,14 +163,17 @@ function NewProposalFormInner() {
       return;
     }
     const selectedGroup = groups.find((g) => String(g.id) === watchedGroupId);
-    if (selectedGroup?.groupCode === GINSOFT_CODE) {
-      setIsGinsoft(true);
-      const restricted = lines.filter((l) => isGinsoftLine(l.lineName));
-      setFilteredLines(restricted);
-    } else {
-      setIsGinsoft(false);
-      setFilteredLines(lines);
-    }
+    setIsGinsoft(selectedGroup?.groupCode === GINSOFT_CODE);
+
+    let cancelled = false;
+    researchService.getGroupLines(Number(watchedGroupId)).then((groupLines) => {
+      if (!cancelled) {
+        setFilteredLines(groupLines && groupLines.length > 0 ? groupLines : lines);
+      }
+    }).catch(() => {
+      if (!cancelled) setFilteredLines(lines);
+    });
+    return () => { cancelled = true; };
   }, [watchedGroupId, groups, lines]);
 
   useEffect(() => {
@@ -435,8 +433,8 @@ function NewProposalFormInner() {
                     rules={{ required: 'Selecciona una línea de investigación' }}
                     render={({ field, fieldState }) => (
                       <FormControl fullWidth error={!!fieldState.error}>
-                        <InputLabel>{isGinsoft ? 'Línea (restringida GINSOFT) *' : 'Línea de Investigación *'}</InputLabel>
-                        <Select label={isGinsoft ? 'Línea (restringida GINSOFT) *' : 'Línea de Investigación *'} {...field}>
+                        <InputLabel>Línea de Investigación *</InputLabel>
+                        <Select label="Línea de Investigación *" {...field}>
                           <MenuItem value=""><em>Selecciona una línea...</em></MenuItem>
                           {filteredLines.map((l) => (
                             <MenuItem key={l.id} value={String(l.id)}>{l.lineName}</MenuItem>
