@@ -215,7 +215,7 @@ export const ChangePasswordPage: React.FC = () => {
                   type={showNewPassword ? 'text' : 'password'}
                   id="newPassword"
                   className="form-input-custom"
-                  placeholder="De 6 a 12 caracteres (ej: Nilver1234!)"
+                  placeholder="De 6 a 12 caracteres"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   disabled={isSubmitting}
