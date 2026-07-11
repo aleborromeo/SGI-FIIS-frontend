@@ -26,11 +26,15 @@ import { EvaluationForm } from './pages/projects/EvaluationForm.tsx';
 import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
 import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
+import { ProgressReportHistory } from './pages/progressreports/ProgressReportHistory.tsx';
 import { ConvocatoriasList } from './pages/convocatorias/ConvocatoriasList.tsx';
 import { NewConvocatoria } from './pages/convocatorias/NewConvocatoria.tsx';
 
 import { ConvocatoriasDashboard } from './modules/convocatorias/pages/ConvocatoriasDashboard.tsx';
 import { NewProposalForm } from './modules/convocatorias/pages/NewProposalForm.tsx';
+import { TramitesList } from './pages/tramites/TramitesList.tsx';
+import { DecanoReview } from './pages/resolutions/DecanoReview.tsx';
+import { NewResolutionForm } from './pages/resolutions/NewResolutionForm.tsx';
 
 // Admin Views
 import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
@@ -155,10 +159,16 @@ function App() {
                   <Route path="/convocatorias/activas" element={<ConvocatoriasDashboard />} />
                   <Route path="/convocatorias/new" element={<NewConvocatoria />} />
 
+                  {/* Trámites y Resoluciones Decanato */}
+                  <Route path="/tramites" element={<TramitesList />} />
+                  <Route path="/decano/review" element={<DecanoReview />} />
+                  <Route path="/resolutions/new" element={<NewResolutionForm />} />
+
                   {/* Evaluaciones y observaciones */}
                   <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
                   <Route path="/observations/panel" element={<ObservationsPanel />} />
                   <Route path="/progressreports/review" element={<ReviewProgressReports />} />
+                <Route path="/progressreports/history" element={<ProgressReportHistory />} />
 
                   {/* Administración */}
                   <Route path="/admin/activate" element={<ActivateUsers />} />

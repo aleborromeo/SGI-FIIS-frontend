@@ -352,7 +352,7 @@ export const NewProposal: React.FC = () => {
             </CardHeader>
             <CardContent>
               {/* Grupo (first, triggers GINSOFT filter) */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div className="form-row" style={{ gap: '16px', marginBottom: '16px' }}>
                 <Select
                   label="Grupo de Investigación"
                   value={formData.researchGroupId}
@@ -415,7 +415,7 @@ export const NewProposal: React.FC = () => {
                 style={{ marginBottom: '16px' }}
               />
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div className="form-row" style={{ gap: '16px', marginBottom: '16px' }}>
                 <Input
                   label="Lugar de Ejecución"
                   placeholder="Ej. Laboratorio FIIS - Piso 3"
@@ -431,7 +431,7 @@ export const NewProposal: React.FC = () => {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="form-row" style={{ gap: '16px' }}>
                 <Input
                   label="Fecha de Inicio"
                   type="date"

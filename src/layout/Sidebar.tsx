@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   Megaphone,
+  Scale,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 
@@ -58,6 +59,20 @@ const navGroups = [
         label: 'Mis Observaciones',
         icon: <AlertCircle size={20} />,
         path: '/observations/panel',
+      },
+      {
+        id: 'tramites',
+        label: 'Mis Trámites',
+        icon: <FileText size={20} />,
+        path: '/tramites',
+        roles: ['DOCENTE_INVESTIGADOR', 'ESTUDIANTE', 'COORDINADOR_GRUPO'],
+      },
+      {
+        id: 'decano-review',
+        label: 'Consola Decanato',
+        icon: <Scale size={20} />,
+        path: '/decano/review',
+        roles: ['DECANO'],
       },
       {
         id: 'convocatorias',
@@ -181,16 +196,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         />
       )}
 
-      <aside
-        className={`sidebar-container ${isOpen ? 'open' : ''}`}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100vh',
-          minHeight: '100vh',
-          overflow: 'hidden',
-        }}
-      >
+      <aside className={`sidebar-container ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-brand-header">
           <button
             className="sidebar-close-btn"
@@ -217,13 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
           </div>
         </div>
 
-        <nav
-          className="sidebar-nav"
-          style={{
-            flex: 1,
-            overflow: 'visible',
-          }}
-        >
+        <nav className="sidebar-nav">
           {navGroups
             .filter((group) => {
               if (group.roles && currentRole) {

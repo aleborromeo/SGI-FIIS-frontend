@@ -471,7 +471,7 @@ export const ThesisTraceability: React.FC = () => {
         </CardContent>
       </Card>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+      <div className="section-grid" style={{ gap: '32px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           <Card>
             <CardHeader
@@ -739,7 +739,7 @@ export const ThesisTraceability: React.FC = () => {
           <Button
             variant="primary"
             icon={<Send size={18} />}
-            style={{ width: '300px' }}
+            style={{ width: '100%', maxWidth: '300px' }}
             onClick={handleReturnForCorrection}
           >
             Registrar Subsanación

@@ -67,7 +67,7 @@ export const NewResearchGroup: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', gap: '20px' }}>
+          <div className="form-row" style={{ gap: '20px' }}>
             <div style={{ flex: 1 }}>
               <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Código del Grupo</label>
               <input 

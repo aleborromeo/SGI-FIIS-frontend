@@ -178,7 +178,7 @@ export const NewThesisPlan: React.FC = () => {
                 onChange={e => handleChange('resumen', e.target.value)}
                 style={{ marginBottom: '16px' }}
               />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="form-row" style={{ gap: '16px' }}>
                 <Select
                   label="Línea de Investigación"
                   value={formData.idLinea}

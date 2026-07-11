@@ -23,8 +23,13 @@ export interface ProposalFormData {
   title: string;
   abstract: string;
   generalObjective: string;
+  specificObjectives: string;
+  methodology: string;
+  expectedResults: string;
+  projectType: string;
   budget: string;
   startDate: string;
   endDate: string;
   executionPlace: string;
+  recibeApoyoFif: string;
 }

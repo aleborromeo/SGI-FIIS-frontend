@@ -106,14 +106,8 @@ body {
 
 /* Animations */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
@@ -121,11 +115,151 @@ body {
 }
 
 /* Blur Layout when Confirm Modal is open */
-body.confirm-modal-open .sgi-dashboard-layout,
+/* Only blur the main content area, NOT the sidebar */
+body.confirm-modal-open .sgi-dashboard-layout {
+  filter: blur(8px) grayscale(15%);
+  pointer-events: none;
+  transition: filter 0.25s ease-out;
+}
+
 body.confirm-modal-open .login-container,
 body.confirm-modal-open .register-container,
 body.confirm-modal-open .welcome-page-container {
   filter: blur(8px) grayscale(15%);
   pointer-events: none;
   transition: filter 0.25s ease-out;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE UTILITIES
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Responsive form rows - 2 columns that collapse to 1 on mobile */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+/* Responsive page section - 2 columns that collapse */
+.section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.section-grid-asymmetric {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 16px;
+}
+
+.section-grid-side-panel {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 16px;
+}
+
+/* Responsive flex row that wraps */
+.flex-row-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.flex-row-wrap-lg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* Stack on mobile: hide element on small screens */
+.hide-mobile {
+  display: initial;
+}
+
+/* Show only on mobile */
+.show-mobile {
+  display: none;
+}
+
+/* Responsive modal sizing */
+.responsive-modal {
+  width: 100%;
+  max-width: 520px;
+}
+
+/* Responsive side panel */
+.responsive-side-panel {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Responsive breakpoints for utility classes */
+@media (max-width: 1024px) {
+  .form-row,
+  .form-row-3,
+  .section-grid,
+  .section-grid-asymmetric {
+    grid-template-columns: 1fr;
+  }
+
+  .section-grid-side-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .responsive-modal {
+    max-width: 95%;
+    margin: 12px;
+  }
+
+  .responsive-side-panel {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .show-mobile {
+    display: initial;
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+
+  .flex-row-wrap > * {
+    flex: 1 1 100%;
+  }
+}
+
+/* Prevent horizontal overflow globally */
+html {
+  overflow-x: hidden;
+}
+
+/* Ensure all images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure all tables don't overflow their containers */
+table {
+  max-width: 100%;
 }

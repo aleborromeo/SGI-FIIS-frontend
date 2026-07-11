@@ -239,7 +239,7 @@ export const ProjectAudit: React.FC = () => {
           gap: '24px',
         }}
       >
-        <div style={{ position: 'relative', width: '360px' }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: '360px' }}>
           <Search
             size={18}
             style={{

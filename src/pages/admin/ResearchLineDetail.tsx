@@ -197,11 +197,11 @@ export const ResearchLineDetail: React.FC = () => {
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h3 className="text-title-md" style={{ margin: 0 }}>Grupos que desarrollan esta línea</h3>
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                 <select 
                   value={selectedGroup}
                   onChange={(e) => setSelectedGroup(e.target.value)}
-                  style={{ width: '250px', padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)', fontSize: '14px' }}
+                  style={{ flex: '1 1 220px', padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)', fontSize: '14px' }}
                 >
                   <option value="">Seleccione grupo para vincular...</option>
                   {allGroups
