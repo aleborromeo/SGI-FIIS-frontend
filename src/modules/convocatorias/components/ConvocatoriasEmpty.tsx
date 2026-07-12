@@ -15,10 +15,10 @@ export function ConvocatoriasEmpty() {
       }}
     >
       <Calendar size={48} style={{ color: '#bdbdbd', marginBottom: 8 }} />
-      <Typography variant="h6" fontWeight={600} gutterBottom>
+      <Typography variant="h6" sx={{ fontWeight: 600 }} gutterBottom>
         No existen convocatorias activas
       </Typography>
-      <Typography variant="body2" color="text.secondary" maxWidth={360} mx="auto">
+      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 360, mx: 'auto' }}>
         Actualmente no existen convocatorias de investigación abiertas en la FIIS. Intente más tarde.
       </Typography>
     </Box>

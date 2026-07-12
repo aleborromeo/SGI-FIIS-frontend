@@ -8,7 +8,6 @@ html,
 body,
 #root {
   height: 100%;
-  overflow: hidden;
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -602,12 +601,6 @@ body,
    ════════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 1024px) {
-
-  html,
-  body,
-  #root {
-    overflow: auto;
-  }
 
   .sgi-dashboard-wrapper {
     height: auto;

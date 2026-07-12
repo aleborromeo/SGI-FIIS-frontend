@@ -10,6 +10,8 @@ export interface User {
   roleDescription: string;
   status?: string;
   createdAt?: string;
+  active?: boolean;
+  phone?: string;
 }
 
 const REVIEWER_ROLES = ['EVALUADOR', 'DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO'];
@@ -26,7 +28,7 @@ export const userService = {
       (u) => u.active !== false && REVIEWER_ROLES.includes(u.roleCode)
     );
   },
-  
+
   getById: async (id: string | number): Promise<User> => {
     return fetchApi<User>(`/users/${id}`);
   },
@@ -101,6 +103,39 @@ export const userService = {
     return fetchApi<void>(`/users/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ active: false }),
+    });
+  },
+
+  createUser: async (user: {
+    dni: string;
+    firstNames: string;
+    lastNames: string;
+    institutionalEmail?: string;
+    phone?: string;
+    roleCode: string;
+  }): Promise<User & { temporaryPassword?: string }> => {
+    return fetchApi<User & { temporaryPassword?: string }>('/users', {
+      method: 'POST',
+      body: JSON.stringify(user),
+    });
+  },
+
+  updateUser: async (id: number, user: {
+    firstNames: string;
+    lastNames: string;
+    institutionalEmail: string;
+    phone?: string;
+    roleCode: string;
+  }): Promise<User> => {
+    return fetchApi<User>(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(user),
+    });
+  },
+
+  resetPassword: async (id: number): Promise<{ message: string }> => {
+    return fetchApi<{ message: string }>(`/users/${id}/reset-password`, {
+      method: 'PATCH',
     });
   }
 };

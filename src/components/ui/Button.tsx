@@ -4,11 +4,13 @@ import './ui.css';
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger';
   icon?: React.ReactNode;
+  size?: 'sm' | 'md' | 'lg' | string;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className = '', variant = 'primary', icon, children, onClick, ...props }, ref) => {
-    const baseClass = `btn btn-${variant}`;
+  ({ className = '', variant = 'primary', icon, size, children, onClick, ...props }, ref) => {
+    const sizeClass = size ? `btn-${size}` : '';
+    const baseClass = `btn btn-${variant} ${sizeClass}`;
     
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (onClick) {

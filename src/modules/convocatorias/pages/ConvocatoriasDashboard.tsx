@@ -36,8 +36,8 @@ export function ConvocatoriasDashboard() {
   return (
     <Box sx={{ mb: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <Megaphone sx={{ color: 'primary.main' }} />
-        <Typography variant="h5" fontWeight={700}>
+        <Megaphone style={{ color: 'var(--primary)' }} />
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>
           Convocatorias Vigentes
         </Typography>
       </Box>

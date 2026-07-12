@@ -14,6 +14,7 @@ export const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [acceptedPolicies, setAcceptedPolicies] = useState(false);
 
   // Estados para el captcha visual
   const [captchaCode, setCaptchaCode] = useState('');
@@ -30,11 +31,12 @@ export const LoginPage: React.FC = () => {
 
   // Limpiar errores globales al montar y generar captcha
   useEffect(() => {
-    clearError();
+    console.log('AuthContext value in LoginPage:', { login: typeof login, isAuthenticated, error, clearError: typeof clearError });
+    clearError?.();
     generateCaptcha();
   }, []);
 
-  const generateCaptcha = () => {
+  const generateCaptcha = (keepError = false) => {
     const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
     let code = '';
     for (let i = 0; i < 6; i++) {
@@ -42,7 +44,9 @@ export const LoginPage: React.FC = () => {
     }
     setCaptchaCode(code);
     setUserCaptchaInput('');
-    setCaptchaError(false);
+    if (!keepError) {
+      setCaptchaError(false);
+    }
     
     // Pequeño retardo para asegurar que el canvas está en el DOM
     setTimeout(() => {
@@ -130,13 +134,52 @@ export const LoginPage: React.FC = () => {
     if (userCaptchaInput.toUpperCase() !== captchaCode) {
       setCaptchaError(true);
       setValidationError(null); // Ocultar error genérico para mostrar el específico de captcha debajo
-      generateCaptcha();
+      generateCaptcha(true);
+      return false;
+    }
+
+    // Validar políticas y privacidad
+    if (!acceptedPolicies) {
+      setValidationError('Debe aceptar las políticas y privacidad.');
       return false;
     }
 
     setValidationError(null);
     setCaptchaError(false);
     return true;
+  };
+
+  const getFriendlyErrorMessage = (errMsg: string | null) => {
+    if (!errMsg) return null;
+    const lower = errMsg.toLowerCase();
+    
+    // Validar inactivo
+    if (
+      lower.includes('inactive') ||
+      lower.includes('inactivo') ||
+      lower.includes('no activo') ||
+      lower.includes('no está activo') ||
+      lower.includes('desactivado') ||
+      lower.includes('disabled')
+    ) {
+      return 'El usuario no está activo';
+    }
+    
+    // Validar credenciales incorrectas
+    if (
+      lower.includes('credenciales') ||
+      lower.includes('incorrecto') ||
+      lower.includes('incorrecta') ||
+      lower.includes('invalid') ||
+      lower.includes('bad-credentials') ||
+      lower.includes('unauthorized') ||
+      lower.includes('no autorizado') ||
+      lower.includes('contraseña')
+    ) {
+      return 'Usuario o contraseña incorrecto';
+    }
+    
+    return errMsg;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -193,8 +236,16 @@ export const LoginPage: React.FC = () => {
             {/* Mensaje de Error Genérico / Credenciales */}
             {(error || validationError) && (
               <div className="login-error-alert animate-fade-in" role="alert">
-                <span className="alert-icon">⚠️</span>
-                <span className="alert-text">{validationError || error}</span>
+                <div className="error-alert-icon-container">
+                  <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor">
+                    <path d="M12 2L1 21h22L12 2z" />
+                    <path d="M12 15.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zm0-7.5a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0V9a1 1 0 0 1 1-1z" fill="#fbebeb" />
+                  </svg>
+                </div>
+                <div className="error-alert-content">
+                  <div className="error-alert-title">error</div>
+                  <div className="error-alert-message">{getFriendlyErrorMessage(validationError || error)}</div>
+                </div>
               </div>
             )}
 
@@ -216,6 +267,7 @@ export const LoginPage: React.FC = () => {
                   onChange={(e) => {
                     setEmail(e.target.value);
                     if (validationError) setValidationError(null);
+                    clearError?.();
                   }}
                   disabled={isSubmitting}
                 />
@@ -240,6 +292,7 @@ export const LoginPage: React.FC = () => {
                   onChange={(e) => {
                     setPassword(e.target.value);
                     if (validationError) setValidationError(null);
+                    clearError?.();
                   }}
                   disabled={isSubmitting}
                 />
@@ -296,37 +349,50 @@ export const LoginPage: React.FC = () => {
                   onChange={(e) => {
                     setUserCaptchaInput(e.target.value);
                     if (captchaError) setCaptchaError(false);
+                    clearError?.();
                   }}
                   disabled={isSubmitting}
                   autoComplete="off"
                 />
               </div>
               {captchaError && (
-                <p className="captcha-error-text-simple animate-fade-in">Código de Verificación Incorrecto!</p>
+                <p className="captcha-error-text-simple animate-fade-in">Código de verificación incorrecto</p>
               )}
             </div>
 
-            {/* Checkbox y Recordarme */}
+            {/* Checkbox y Aceptar políticas y privacidad */}
             <div className="form-options-row">
-              <label className="remember-me-label">
-                <input type="checkbox" className="remember-me-checkbox" />
-                <span>Recordarme</span>
+              <label className="policies-label">
+                <input 
+                  type="checkbox" 
+                  className="policies-checkbox" 
+                  checked={acceptedPolicies}
+                  onChange={(e) => {
+                    setAcceptedPolicies(e.target.checked);
+                    if (validationError) setValidationError(null);
+                    clearError?.();
+                  }}
+                  disabled={isSubmitting}
+                />
+                <span>Aceptar políticas y privacidad</span>
               </label>
-              <button 
-                type="button" 
-                onClick={() => navigate('/forgot-password')} 
-                className="forgot-password-link"
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
-              >
-                ¿Olvidaste tu contraseña?
-              </button>
+              <div className="forgot-password-container">
+                <button 
+                  type="button" 
+                  onClick={() => navigate('/forgot-password')} 
+                  className="forgot-password-link"
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
             </div>
 
             {/* Botón Ingresar */}
             <button
               type="submit"
               className="login-submit-btn-custom"
-              disabled={isSubmitting || !email || !password || !userCaptchaInput}
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <span className="btn-spinner"></span>

@@ -118,8 +118,8 @@ export function FileUploadSection({ documentId, onChange }: FileUploadSectionPro
           '&:hover': uploading ? {} : { borderColor: 'primary.main' },
         }}
       >
-        <Upload sx={{ fontSize: 36, mx: 'auto', mb: 1.5, color: isDragOver ? 'primary.main' : 'text.disabled' }} />
-        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+        <Upload size={36} style={{ margin: '0 auto 12px', display: 'block', color: isDragOver ? 'var(--primary)' : '#bdbdbd' }} />
+        <Typography variant="subtitle1" sx={{ fontWeight: 600 }} gutterBottom>
           {isDragOver ? 'Suelta el archivo aquí' : 'Arrastra tu archivo o haz clic para seleccionar'}
         </Typography>
         <Typography variant="body2" color="text.secondary">
@@ -155,7 +155,7 @@ export function FileUploadSection({ documentId, onChange }: FileUploadSectionPro
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <FileText size={18} color="var(--primary)" />
             <Box>
-              <Typography variant="body2" fontWeight={600}>{selectedFile.name}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedFile.name}</Typography>
               <Typography variant="caption" color="text.secondary">{formatFileSize(selectedFile.size)}</Typography>
             </Box>
           </Box>
@@ -175,7 +175,7 @@ export function FileUploadSection({ documentId, onChange }: FileUploadSectionPro
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CheckCircle size={18} color="var(--primary)" />
             <Box>
-              <Typography variant="body2" fontWeight={600}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 {uploadedFileName || 'Documento cargado'}
               </Typography>
               <Typography variant="caption" color="text.secondary">Archivo subido correctamente</Typography>

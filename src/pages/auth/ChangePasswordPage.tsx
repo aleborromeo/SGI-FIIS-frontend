@@ -45,13 +45,33 @@ export const ChangePasswordPage: React.FC = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setErrorMsg('La nueva contraseña debe tener al menos 6 caracteres.');
+    if (newPassword.length < 6 || newPassword.length > 12) {
+      setErrorMsg('La contraseña debe tener entre 6 y 12 caracteres.');
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPassword)) {
+      setErrorMsg('La contraseña debe contener al menos una letra mayúscula.');
+      return;
+    }
+
+    if (!/[a-z]/.test(newPassword)) {
+      setErrorMsg('La contraseña debe contener al menos una letra minúscula.');
+      return;
+    }
+
+    if (!/\d/.test(newPassword)) {
+      setErrorMsg('La contraseña debe contener al menos un número.');
+      return;
+    }
+
+    if (!/[^A-Za-z0-9]/.test(newPassword)) {
+      setErrorMsg('La contraseña debe contener al menos un símbolo (ej. !, @, #, $, %, etc.).');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorMsg('La nueva contraseña y la confirmación no coinciden.');
+      setErrorMsg('Las contraseñas no coinciden');
       return;
     }
 
@@ -69,7 +89,7 @@ export const ChangePasswordPage: React.FC = () => {
       });
 
       setSuccessMsg('Contraseña actualizada con éxito. Redirigiendo...');
-      
+
       // Actualizar el estado del usuario localmente para quitar la bandera mustChangePassword
       const storedToken = localStorage.getItem('sgi_token');
       const storedUser = localStorage.getItem('sgi_user');
@@ -77,7 +97,7 @@ export const ChangePasswordPage: React.FC = () => {
         const parsedUser = JSON.parse(storedUser);
         parsedUser.mustChangePassword = false;
         localStorage.setItem('sgi_user', JSON.stringify(parsedUser));
-        
+
         // Actualizar el contexto de autenticación llamando a completeRegistration
         completeRegistration({
           token: storedToken,
@@ -111,8 +131,8 @@ export const ChangePasswordPage: React.FC = () => {
 
   return (
     <div className="login-container">
-      <div 
-        className="login-bg-blur" 
+      <div
+        className="login-bg-blur"
         style={{ backgroundImage: `url("${frontisBg}")` }}
       />
       <div className="login-overlay" />
@@ -146,7 +166,7 @@ export const ChangePasswordPage: React.FC = () => {
 
             {/* Input Contraseña Actual */}
             <div className="form-group">
-              <label htmlFor="currentPassword" className="form-label">Contraseña actual (DNI)</label>
+              <label htmlFor="currentPassword" className="form-label">Contraseña actual</label>
               <div className="input-group-custom">
                 <span className="input-icon-left">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -157,7 +177,7 @@ export const ChangePasswordPage: React.FC = () => {
                   type={showCurrentPassword ? 'text' : 'password'}
                   id="currentPassword"
                   className="form-input-custom"
-                  placeholder="Ingrese su contraseña actual o DNI"
+                  placeholder="Ingrese su contraseña actual"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   disabled={isSubmitting}
@@ -195,7 +215,7 @@ export const ChangePasswordPage: React.FC = () => {
                   type={showNewPassword ? 'text' : 'password'}
                   id="newPassword"
                   className="form-input-custom"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="De 6 a 12 caracteres"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   disabled={isSubmitting}

@@ -98,6 +98,7 @@ function updatePlanStatus(plan: ThesisPlan, status: string): ThesisPlan {
 export const ThesisTraceability: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { currentRole } = useContext(AuthContext);
+  const toast = useToast();
 
   const [plan, setPlan] = useState<ThesisPlan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -180,7 +181,7 @@ export const ThesisTraceability: React.FC = () => {
     const notes = window.prompt("Ingrese las observaciones académicas o motivos de observación:");
     if (notes === null) return;
     if (!notes.trim()) {
-      toast.showError("Debe ingresar las observaciones a registrar.");
+      toast.error("Debe ingresar las observaciones a registrar.");
       return;
     }
 
@@ -191,13 +192,13 @@ export const ThesisTraceability: React.FC = () => {
       } else if (currentRole === 'DIRECTOR_INVESTIGACION') {
         await thesisService.observeDirector(id, notes);
       } else {
-        toast.showError("Tu rol actual no permite realizar observaciones.");
+        toast.error("Tu rol actual no permite realizar observaciones.");
         return;
       }
-      toast.showSuccess("Observación registrada con éxito.");
+      toast.success("Observación registrada con éxito.");
       window.location.reload();
     } catch (err: any) {
-      toast.showError(err.message || "Error al registrar la observación.");
+      toast.error(err.message || "Error al registrar la observación.");
     } finally {
       setLoading(false);
     }
@@ -217,7 +218,7 @@ export const ThesisTraceability: React.FC = () => {
         const resolutionNum = window.prompt("Ingrese el número de la Resolución Decanal para emisión final:");
         if (resolutionNum === null) return;
         if (!resolutionNum.trim()) {
-          toast.showError("Debe ingresar un número de resolución válido.");
+          toast.error("Debe ingresar un número de resolución válido.");
           return;
         }
         await thesisService.issueDeanResolution(id, {
@@ -227,13 +228,13 @@ export const ThesisTraceability: React.FC = () => {
           idDocumentoAdjunto: null
         });
       } else {
-        toast.showError("Tu rol actual no permite aprobar planes de tesis.");
+        toast.error("Tu rol actual no permite aprobar planes de tesis.");
         return;
       }
-      toast.showSuccess("Plan de tesis aprobado correctamente.");
+      toast.success("Plan de tesis aprobado correctamente.");
       window.location.reload();
     } catch (err: any) {
-      toast.showError(err.message || "Error al aprobar el plan de tesis.");
+      toast.error(err.message || "Error al aprobar el plan de tesis.");
     } finally {
       setLoading(false);
     }
@@ -244,7 +245,7 @@ export const ThesisTraceability: React.FC = () => {
     const comment = window.prompt("Describa las subsanaciones realizadas en el plan de tesis:");
     if (comment === null) return;
     if (!comment.trim()) {
-      toast.showError("Debe describir las correcciones para poder subsanar.");
+      toast.error("Debe describir las correcciones para poder subsanar.");
       return;
     }
 
@@ -255,10 +256,10 @@ export const ThesisTraceability: React.FC = () => {
         comentarioSubsanacion: comment,
         idDocumentoActual: plan.idDocumentoActual
       });
-      toast.showSuccess("Subsanación enviada exitosamente.");
+      toast.success("Subsanación enviada exitosamente.");
       window.location.reload();
     } catch (err: any) {
-      toast.showError(err.message || "Error al enviar subsanación.");
+      toast.error(err.message || "Error al enviar subsanación.");
     } finally {
       setLoading(false);
     }

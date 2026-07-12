@@ -99,6 +99,8 @@ export interface EvaluationItem {
 
   score?: number;
   puntaje?: number;
+  tipo?: string;
+  assignDate?: string;
 }
 
 // ── Servicio ──────────────────────────────────────────────────────────────────

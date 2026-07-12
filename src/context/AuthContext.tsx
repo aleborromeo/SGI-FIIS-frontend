@@ -70,7 +70,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<LoginResponse> => {
     setError(null);
-    setLoading(true);
     try {
       const response = await authService.login(email, password);
       
@@ -98,8 +97,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const msg = err.message || 'Error al iniciar sesión';
       setError(msg);
       throw new Error(msg);
-    } finally {
-      setLoading(false);
     }
   };
 
