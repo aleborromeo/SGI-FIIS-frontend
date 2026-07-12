@@ -79,7 +79,7 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
       localStorage.removeItem('sgi_token');
       localStorage.removeItem('sgi_user');
 
-      if (!window.location.pathname.includes('/login')) {
+      if (token && !window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }
 
