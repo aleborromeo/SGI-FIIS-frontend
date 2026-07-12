@@ -19,7 +19,9 @@ vi.mock('../../../context/ToastContext', () => ({
 }));
 
 vi.mock('../../../context/ConfirmContext', () => ({
-  useConfirm: () => vi.fn().mockResolvedValue(true),
+  useConfirm: () => ({
+    confirmDialog: vi.fn().mockResolvedValue(true),
+  }),
 }));
 
 describe('ProposalMembersSection', () => {
