@@ -1635,23 +1635,22 @@ html {
   justify-content: center;
 
   width: auto;
-  min-width: 220px;
-  min-height: 42px;
+  min-height: auto;
   flex: 0 0 auto;
   flex-shrink: 0;
   box-sizing: border-box;
 
-  padding: 0.55rem 1.5rem;
+  padding: 0.55rem 1.4rem;
 
   background-color: #ffffff;
-  color: #334155 !important;
+  color: #1a365d !important;
 
-  border: 1.5px solid #334155;
-  border-radius: 999px;
+  border: 1.5px solid #1a365d;
+  border-radius: 9999px;
 
   font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.92rem;
+  font-weight: 700;
   line-height: 1;
 
   text-decoration: none !important;
@@ -1663,9 +1662,10 @@ html {
 }
 
 .welcome-navbar .btn-submit-research:hover {
-  background-color: #f1f5f9;
+  background-color: #eff6ff;
   border-color: #1a365d;
   color: #1a365d !important;
+  transform: translateY(-1px);
 }
 
 /* Contenido Principal Derecho */
