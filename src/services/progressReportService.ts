@@ -88,22 +88,14 @@ export const progressReportService = {
    * - DIRECTOR_INVESTIGACION → todos los proyectos activos
    */
   getProjectsByRole: async (): Promise<ProjectSummary[]> => {
-    return api.get<ProjectSummary[]>('/informes-avance/proyectos');
+    return api.get<ProjectSummary[]>('/api/progress-reports');
   },
 
-  /**
-   * Obtiene el historial cronológico de informes de avance de un proyecto.
-   * Ordenados de más antiguo a más reciente.
-   */
   getByProject: async (projectId: number): Promise<ProgressReport[]> => {
-    return api.get<ProgressReport[]>(`/informes-avance/proyecto/${projectId}`);
+    return api.get<ProgressReport[]>(`/api/progress-reports/project/${projectId}`);
   },
 
-  /**
-   * Obtiene el detalle completo de un informe de avance:
-   * actividades, evidencias, archivos, comentarios, historial de cambios.
-   */
   getDetail: async (reportId: number): Promise<ProgressReportDetail> => {
-    return api.get<ProgressReportDetail>(`/informes-avance/${reportId}`);
+    return api.get<ProgressReportDetail>(`/api/progress-reports/${reportId}`);
   },
 };

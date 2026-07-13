@@ -216,9 +216,10 @@ export const ProjectsList: React.FC = () => {
       <div
         style={{
           display: 'flex',
+          flexWrap: 'wrap',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          gap: '24px',
+          gap: '16px',
           marginBottom: '28px',
         }}
       >
@@ -252,7 +253,7 @@ export const ProjectsList: React.FC = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '16px',
           marginBottom: '24px',
         }}
@@ -329,7 +330,7 @@ export const ProjectsList: React.FC = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'minmax(0, 1fr) 240px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
               gap: '16px',
               marginBottom: '24px',
             }}

@@ -15,7 +15,7 @@ import {
   LogOut,
   Megaphone,
   Scale,
-  History,
+  ShieldCheck,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 
@@ -77,12 +77,6 @@ const navGroups: NavGroup[] = [
         path: '/tramites',
       },
       {
-        id: 'traceability',
-        label: 'Trazabilidad',
-        icon: <History size={20} />,
-        path: '/thesis/plan/1',
-      },
-      {
         id: 'observations',
         label: 'Mis Observaciones',
         icon: <AlertCircle size={20} />,
@@ -126,6 +120,13 @@ const navGroups: NavGroup[] = [
         icon: <FileSearch size={20} />,
         path: '/progressreports/review',
       },
+      {
+        id: 'audit',
+        label: 'Trazabilidad',
+        icon: <ShieldCheck size={20} />,
+        path: '/audit',
+        roles: ['ADMIN', 'DIRECTOR_INVESTIGACION'],
+      },
     ],
   },
   {
@@ -133,7 +134,8 @@ const navGroups: NavGroup[] = [
     roles: ['ADMIN'],
     items: [
       { id: 'activate', label: 'Activar Usuarios', icon: <Users size={20} />, path: '/admin/activate' },
-      { id: 'users', label: 'Directorio', icon: <Users size={20} />, path: '/users' },
+      { id: 'users', label: 'Gestionar Usuarios', icon: <Users size={20} />, path: '/users' },
+      { id: 'documents', label: 'Repositorio Docs', icon: <FileText size={20} />, path: '/documents' },
       { id: 'groups', label: 'Grupos Inv.', icon: <Users size={20} />, path: '/groups' },
       { id: 'lines', label: 'Líneas Inv.', icon: <BookOpen size={20} />, path: '/lines' },
     ],

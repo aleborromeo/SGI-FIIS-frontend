@@ -1,6 +1,3 @@
-// Tipos del módulo "Bandeja Lógica de Trámites y Subsanaciones".
-// Los strings de estados/tipos son el vocabulario exacto del backend (/api/v1/procedures).
-
 export type TipoTramite = 'PROYECTO' | 'PLAN_TESIS' | 'INFORME_AVANCE';
 
 export type EstadoTramite =
@@ -62,4 +59,29 @@ export interface ObservacionTramite {
   rolRevisor: string;
   fechaRegistro: string;
   subsanaciones: SubsanacionTramite[];
+}
+
+export interface ProcedureResponseDto {
+  id: number;
+  code: string;
+  procedureType: TipoTramite;
+  currentStatus: EstadoTramite;
+  applicantId: number;
+  groupId: number | null;
+  currentReviewerRole: string | null;
+  currentObservation: string | null;
+  projectReferenceId: number | null;
+  thesisReferenceId: number | null;
+  reportReferenceId: number | null;
+  sentAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface ProcedureMovementResponseDto {
+  actionUserId: number;
+  action: string;
+  previousStatus: EstadoTramite;
+  newStatus: EstadoTramite;
+  comment: string | null;
+  movementAt: string;
 }

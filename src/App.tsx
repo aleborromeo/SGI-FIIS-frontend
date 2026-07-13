@@ -43,12 +43,17 @@ import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
 
 // Admin Views
 import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
+import { UserManagement } from './pages/admin/UserManagement.tsx';
+import { DocumentRepository } from './pages/admin/DocumentRepository.tsx';
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
 import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
 import { ResearchLineDetail } from './pages/admin/ResearchLineDetail.tsx';
 import { ResearchGroups } from './pages/admin/ResearchGroups.tsx';
 import { NewResearchGroup } from './pages/admin/NewResearchGroup.tsx';
 import { ResearchGroupDetail } from './pages/admin/ResearchGroupDetail.tsx';
+
+// Auditoría
+import { AuditTrail } from './pages/audit/AuditTrail.tsx';
 
 const queryClient = new QueryClient();
 
@@ -180,6 +185,9 @@ function App() {
 
                   {/* Administración */}
                   <Route path="/admin/activate" element={<ActivateUsers />} />
+                  <Route path="/users" element={<UserManagement />} />
+                  <Route path="/documents" element={<DocumentRepository />} />
+                  <Route path="/audit" element={<AuditTrail />} />
                   <Route path="/lines" element={<ResearchLines />} />
                   <Route path="/lines/new" element={<NewResearchLine />} />
                   <Route path="/lines/:id" element={<ResearchLineDetail />} />
