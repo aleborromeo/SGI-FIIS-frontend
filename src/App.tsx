@@ -27,6 +27,10 @@ import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
 import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
 import { ProgressReportHistory } from './pages/progressreports/ProgressReportHistory.tsx';
+import { NewProgressReport } from './pages/progressreports/NewProgressReport.tsx';
+import { AmendProgressReport } from './pages/progressreports/AmendProgressReport.tsx';
+import { NewThesisReport } from './pages/thesis/NewThesisReport.tsx';
+import { DirectorEvaluations } from './pages/evaluations/DirectorEvaluations.tsx';
 import { ConvocatoriasList } from './pages/convocatorias/ConvocatoriasList.tsx';
 import { NewConvocatoria } from './pages/convocatorias/NewConvocatoria.tsx';
 import { EditConvocatoria } from './pages/convocatorias/EditConvocatoria.tsx';
@@ -156,6 +160,7 @@ function App() {
                   <Route path="/thesis/plans" element={<ThesisPlansList />} />
                   <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
                   <Route path="/thesis/new" element={<NewThesisPlan />} />
+                  <Route path="/thesis/report/new/:planId" element={<NewThesisReport />} />
 
                   {/* Proyectos */}
                   <Route path="/projects" element={<ProjectsList />} />
@@ -173,9 +178,12 @@ function App() {
 
                   {/* Evaluaciones y observaciones */}
                   <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
+                  <Route path="/evaluations/director" element={<DirectorEvaluations />} />
                   <Route path="/observations/panel" element={<ObservationsPanel />} />
                   <Route path="/progressreports/review" element={<ReviewProgressReports />} />
                   <Route path="/progressreports/history" element={<ProgressReportHistory />} />
+                  <Route path="/progressreports/new" element={<NewProgressReport />} />
+                  <Route path="/progressreports/amend/:id" element={<AmendProgressReport />} />
 
                   {/* Trámites y Resoluciones Decanato */}
                   <Route path="/tramites" element={<TramitesInbox />} />

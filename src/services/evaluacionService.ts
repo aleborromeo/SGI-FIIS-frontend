@@ -182,4 +182,8 @@ export const evaluacionService = {
   ): Promise<EvaluationItem> => {
     return fetchApi<EvaluationItem>(`/evaluaciones/${evaluacionId}`);
   },
+
+  listAll: async (): Promise<EvaluationItem[]> => {
+    return fetchApi<EvaluationItem[]>('/evaluaciones');
+  },
 };

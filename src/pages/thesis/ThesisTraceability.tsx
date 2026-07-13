@@ -7,9 +7,10 @@ import {
   Download,
   FileText,
   HelpCircle,
-  RotateCcw,
   Send,
   ShieldAlert,
+  Upload,
+  X,
 } from 'lucide-react';
 
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
@@ -23,6 +24,7 @@ import { thesisService } from '../../services/thesisService';
 import type { ThesisPlan } from '../../services/thesisService';
 import { useToast } from '../../context/ToastContext';
 import { AuthContext } from '../../context/AuthContext';
+import { documentService } from '../../services/documentService';
 
 function getStatusLabel(status?: string): string {
   if (!status) return 'Sin estado';
@@ -48,6 +50,19 @@ function getStatusLabel(status?: string): string {
   };
 
   return dictionary[normalized] ?? status;
+}
+
+function formatDate(value?: string): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return new Intl.DateTimeFormat('es-PE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
 }
 
 function getStepStatus(status?: string): StepStatus[] {
@@ -88,21 +103,23 @@ function readValue(plan: ThesisPlan | null, keys: string[], fallback = 'No regis
   return fallback;
 }
 
-function updatePlanStatus(plan: ThesisPlan, status: string): ThesisPlan {
-  return {
-    ...(plan as unknown as Record<string, unknown>),
-    status,
-  } as ThesisPlan;
-}
+
 
 export const ThesisTraceability: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { currentRole } = useContext(AuthContext);
+  const rawToast = useToast();
+  const toast = useMemo(() => ({
+    ...rawToast,
+    showError: rawToast.error,
+    showSuccess: rawToast.success,
+  }), [rawToast]);
 
   const [plan, setPlan] = useState<ThesisPlan | null>(null);
+  const [report, setReport] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [actionMessage] = useState<string | null>(null);
 
   const steps = useMemo(() => {
     const [studentStatus, coordinatorStatus, directorStatus, currentStatus] =
@@ -151,6 +168,15 @@ export const ThesisTraceability: React.FC = () => {
         if (mounted) {
           setPlan(response);
         }
+
+        try {
+          const reports = await thesisService.getReportByPlanId(id);
+          if (mounted && Array.isArray(reports) && reports.length > 0) {
+            setReport(reports[reports.length - 1]);
+          }
+        } catch (err) {
+          // Ignore 404
+        }
       } catch (err) {
         console.error('Error al cargar trazabilidad:', err);
 
@@ -174,6 +200,49 @@ export const ThesisTraceability: React.FC = () => {
       mounted = false;
     };
   }, [id]);
+
+  function getReportBadgeVariant(status: string): 'success' | 'warning' | 'info' | 'neutral' | 'error' {
+    const norm = String(status || '').toUpperCase();
+    if (['APROBADO', 'APPROVED'].includes(norm)) return 'success';
+    if (['OBSERVADO', 'OBSERVED'].includes(norm)) return 'warning';
+    if (['RECHAZADO', 'REJECTED'].includes(norm)) return 'error';
+    if (['EN_REVISION', 'PENDIENTE', 'UNDER_REVIEW'].includes(norm)) return 'info';
+    return 'neutral';
+  }
+
+  async function handleApproveReport() {
+    if (!report) return;
+    try {
+      setLoading(true);
+      await thesisService.approveReport(report.idInformeTesis);
+      toast.showSuccess("Informe de tesis final aprobado exitosamente.");
+      window.location.reload();
+    } catch (err: any) {
+      toast.showError(err.message || "Error al aprobar informe de tesis.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleObserveReport() {
+    if (!report) return;
+    const obs = window.prompt("Ingrese el detalle de la observación para el informe de tesis:");
+    if (obs === null) return;
+    if (!obs.trim()) {
+      toast.showError("Debe ingresar una observación.");
+      return;
+    }
+    try {
+      setLoading(true);
+      await thesisService.observeReport(report.idInformeTesis, obs.trim());
+      toast.showSuccess("Informe de tesis devuelto con observaciones.");
+      window.location.reload();
+    } catch (err: any) {
+      toast.showError(err.message || "Error al observar informe de tesis.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleObserve() {
     if (!plan || !id) return;
@@ -264,10 +333,7 @@ export const ThesisTraceability: React.FC = () => {
     }
   }
 
-  async function handleResendToDirector() {
-    // Reenviar a dirección (comportamiento de revisión / subsanación por estudiante)
-    await handleReturnForCorrection();
-  }
+
 
   if (loading) {
     return (
@@ -473,6 +539,87 @@ export const ThesisTraceability: React.FC = () => {
 
       <div className="section-grid" style={{ gap: '32px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          {/* Tarjeta del Informe de Tesis Final */}
+          {(['APPROVED', 'APROBADO'].includes(String(plan.status || plan.estadoPlan).toUpperCase()) || report) && (
+            <Card style={{ borderTop: '4px solid var(--primary)' }}>
+              <CardHeader>
+                <h3 className="text-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FileText size={20} />
+                  Informe de Tesis Final
+                </h3>
+              </CardHeader>
+              <CardContent>
+                {!report ? (
+                  currentRole === 'ESTUDIANTE' ? (
+                    <div style={{ textAlign: 'center', padding: '16px' }}>
+                      <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', marginBottom: '16px' }}>
+                        Su plan de tesis está aprobado. Ya puede registrar el informe de tesis final.
+                      </p>
+                      <Link to={`/thesis/report/new/${id}`}>
+                        <Button variant="primary" icon={<Upload size={16} />}>
+                          Registrar Informe de Tesis Final
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '14px', color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>
+                      Esperando que el estudiante registre el informe de tesis final.
+                    </div>
+                  )
+                ) : (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '15px' }}>{report.tituloFinal}</div>
+                        <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>
+                          Enviado el {formatDate(report.fechaPresentacion)}
+                        </span>
+                      </div>
+                      <Badge variant={getReportBadgeVariant(report.estadoInforme || 'PENDIENTE')}>
+                        {getStatusLabel(report.estadoInforme || 'PENDIENTE')}
+                      </Badge>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <Button
+                        variant="secondary"
+                        icon={<Download size={16} />}
+                        onClick={() => {
+                          const url = documentService.download(report.idDocumentoTesis);
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        Descargar Tesis
+                      </Button>
+
+                      {report.estadoInforme === 'EN_REVISION' && 
+                       (currentRole === 'COORDINADOR_GRUPO' || currentRole === 'DIRECTOR_INVESTIGACION') && (
+                        <>
+                          <Button
+                            variant="primary"
+                            icon={<CheckCircle size={16} />}
+                            style={{ backgroundColor: '#059669' }}
+                            onClick={handleApproveReport}
+                          >
+                            Aprobar Informe
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            icon={<X size={16} />}
+                            style={{ color: 'var(--error)', borderColor: 'var(--error)' }}
+                            onClick={handleObserveReport}
+                          >
+                            Observar Informe
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader
               style={{

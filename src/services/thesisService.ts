@@ -4,7 +4,9 @@ export interface ThesisPlan {
   id: string;
   title: string;
   status: string;
-  // ...
+  resumen?: string;
+  idDocumentoActual?: number;
+  [key: string]: any;
 }
 
 export interface ThesisReport {

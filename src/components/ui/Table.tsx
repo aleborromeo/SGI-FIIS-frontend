@@ -15,14 +15,14 @@ export const TableBody: React.FC<{ children: React.ReactNode }> = ({ children })
   <tbody>{children}</tbody>
 );
 
-export const TableRow: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <tr className={className}>{children}</tr>
+export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({ children, className = '', ...props }) => (
+  <tr className={className} {...props}>{children}</tr>
 );
 
-export const TableHeader: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({ children, style }) => (
-  <th style={style}>{children}</th>
+export const TableHeader: React.FC<React.ThHTMLAttributes<HTMLTableCellElement>> = ({ children, style, ...props }) => (
+  <th style={style} {...props}>{children}</th>
 );
 
-export const TableCell: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({ children, style }) => (
-  <td style={style}>{children}</td>
+export const TableCell: React.FC<React.TdHTMLAttributes<HTMLTableCellElement>> = ({ children, style, ...props }) => (
+  <td style={style} {...props}>{children}</td>
 );

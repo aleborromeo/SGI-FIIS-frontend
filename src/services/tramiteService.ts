@@ -118,4 +118,12 @@ export const tramiteService = {
     const res = await api.put<ProcedureResponseDto>(`/api/v1/procedures/${id}/resolution`);
     return mapProcedureToTramite(res);
   },
+
+  subsanarObservacion: async (idObservacion: number, descripcion: string, attachedDocumentName: string | null): Promise<void> => {
+    return api.post<void>(`/api/observations/${idObservacion}/remedy`, {
+      applicantId: 1,
+      description: descripcion,
+      attachedDocumentId: attachedDocumentName ? 1 : undefined
+    });
+  },
 };

@@ -22,6 +22,8 @@ export interface ProgressReport {
   financialProgress: number;
   status: ProgressReportStatus;
   observations?: string;
+  attachedDocumentId?: number;
+  period?: string;
 }
 
 export interface ProgressReportDetail extends ProgressReport {
@@ -79,9 +81,70 @@ export interface ProjectSummary {
   status: string;
 }
 
+// ── Mapper Helpers ────────────────────────────────────────────────────────────
+
+function mapResponseToReport(r: any): ProgressReport {
+  return {
+    id: r.id,
+    reportNumber: r.id,
+    projectId: r.projectId,
+    projectTitle: r.projectTitle || `Proyecto #${r.projectId}`,
+    responsibleName: r.responsibleName || 'Docente Investigador',
+    reportDate: r.registrationDate || r.lastUpdatedDate || '',
+    physicalProgress: Number(r.progressPercentage || 0),
+    financialProgress: Number(r.progressPercentage || 0), // Copied from progressPercentage for UI compatibility
+    status: r.reportStatus || 'PENDIENTE',
+    observations: r.achievements ? `Logros: ${r.achievements}. Dificultades: ${r.difficulties}` : undefined,
+    attachedDocumentId: r.attachedDocumentId,
+    period: r.period,
+  };
+}
+
+function mapResponseToDetail(r: any): ProgressReportDetail {
+  const base = mapResponseToReport(r);
+  return {
+    ...base,
+    executedActivities: r.executedActivities || [
+      {
+        id: 1,
+        description: `Avance general de actividades reportadas en periodo ${r.period}`,
+        startDate: r.registrationDate || '',
+        endDate: r.lastUpdatedDate || '',
+        completed: true
+      }
+    ],
+    evidences: r.evidences || [],
+    attachments: r.attachedDocumentId ? [{
+      id: r.attachedDocumentId,
+      fileName: `informe_avance_${r.id}.pdf`,
+      fileType: 'pdf',
+      url: `/api/v1/documents/${r.attachedDocumentId}/download`,
+      uploadedAt: r.registrationDate || ''
+    }] : [],
+    comments: r.observations ? [
+      {
+        id: 1,
+        authorName: 'Sistema de Trazabilidad',
+        authorRole: 'SISTEMA',
+        content: `Últimas observaciones: ${r.observations}`,
+        createdAt: r.lastUpdatedDate || ''
+      }
+    ] : [],
+    changeHistory: r.changeHistory || []
+  };
+}
+
 // ── Servicio ──────────────────────────────────────────────────────────────────
 
 export const progressReportService = {
+  getPendingReports: async (status?: string): Promise<ProgressReport[]> => {
+    const res = await api.get<any>('/api/reports/progress-reports', {
+      params: { status }
+    });
+    const content = res.content || res || [];
+    return content.map(mapResponseToReport);
+  },
+
   /**
    * Obtiene los proyectos disponibles según el rol del usuario autenticado.
    * - DOCENTE_INVESTIGADOR → solo sus proyectos
@@ -92,10 +155,53 @@ export const progressReportService = {
   },
 
   getByProject: async (projectId: number): Promise<ProgressReport[]> => {
-    return api.get<ProgressReport[]>(`/api/progress-reports/project/${projectId}`);
+    const raw = await api.get<any[]>(`/api/progress-reports/project/${projectId}`);
+    return raw.map(mapResponseToReport);
   },
 
   getDetail: async (reportId: number): Promise<ProgressReportDetail> => {
-    return api.get<ProgressReportDetail>(`/api/progress-reports/${reportId}`);
+    const raw = await api.get<any>(`/api/progress-reports/${reportId}`);
+    return mapResponseToDetail(raw);
+  },
+
+  createReport: async (payload: {
+    projectId: number;
+    reportType: 'PARCIAL' | 'FINAL';
+    period: string;
+    progressPercentage: number;
+    achievements: string;
+    difficulties: string;
+    recommendations: string;
+    attachedDocumentId?: number | null;
+  }): Promise<ProgressReport> => {
+    const raw = await api.post<any>('/api/progress-reports', payload);
+    return mapResponseToReport(raw);
+  },
+
+  amendReport: async (reportId: number, payload: {
+    amendmentDocumentId: number;
+  }): Promise<ProgressReport> => {
+    const raw = await api.patch<any>(`/api/progress-reports/${reportId}/amend`, payload);
+    return mapResponseToReport(raw);
+  },
+
+  forwardReport: async (reportId: number): Promise<ProgressReport> => {
+    const raw = await api.patch<any>(`/api/progress-reports/${reportId}/forward`, {});
+    return mapResponseToReport(raw);
+  },
+
+  approveReport: async (reportId: number): Promise<ProgressReport> => {
+    const raw = await api.patch<any>(`/api/progress-reports/${reportId}/approve`, {});
+    return mapResponseToReport(raw);
+  },
+
+  observeReport: async (reportId: number, observation: string): Promise<ProgressReport> => {
+    const raw = await api.patch<any>(`/api/progress-reports/${reportId}/observe`, { observation });
+    return mapResponseToReport(raw);
+  },
+
+  rejectReport: async (reportId: number): Promise<ProgressReport> => {
+    const raw = await api.patch<any>(`/api/progress-reports/${reportId}/reject`, {});
+    return mapResponseToReport(raw);
   },
 };

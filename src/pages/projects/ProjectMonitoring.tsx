@@ -131,7 +131,12 @@ export const ProjectMonitoring: React.FC = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [progressReports, setProgressReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
+  const rawToast = useToast();
+  const toast = useMemo(() => ({
+    ...rawToast,
+    showError: rawToast.error,
+    showSuccess: rawToast.success,
+  }), [rawToast]);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

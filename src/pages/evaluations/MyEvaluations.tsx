@@ -6,7 +6,7 @@
  */
 import React, { useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import {
-  ClipboardCheck, RefreshCcw, Clock, CheckCircle, XCircle,
+  ClipboardCheck, RefreshCcw, Clock, CheckCircle,
   ChevronRight, AlertTriangle, Search, X, Send, Calculator,
   FileText, ChevronLeft,
 } from 'lucide-react';
@@ -406,7 +406,6 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
 
 export const MyEvaluations: React.FC = () => {
   const { user } = useContext(AuthContext);
-  const toast = useToast();
 
   const [items, setItems] = useState<EvaluationItem[]>([]);
   const [loading, setLoading] = useState(true);
