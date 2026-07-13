@@ -118,7 +118,7 @@ function mapResponseToDetail(r: any): ProgressReportDetail {
       id: r.attachedDocumentId,
       fileName: `informe_avance_${r.id}.pdf`,
       fileType: 'pdf',
-      url: `/api/v1/documents/${r.attachedDocumentId}/download`,
+      url: `/api/documents/download/${r.attachedDocumentId}`,
       uploadedAt: r.registrationDate || ''
     }] : [],
     comments: r.observations ? [
