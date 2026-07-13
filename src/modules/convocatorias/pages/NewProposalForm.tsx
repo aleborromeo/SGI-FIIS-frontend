@@ -248,6 +248,7 @@ function NewProposalFormInner() {
         executionPlace: formData.executionPlace || '',
         ...(researchGroupId ? { researchGroupId } : {}),
         callId: formData.convocatoriaId ? Number(formData.convocatoriaId) : undefined,
+        documentId: documentId || undefined,
         members: members.length > 0 ? members.map((m) => ({ userId: m.userId, role: m.role })) : undefined,
         draft: true,
       });
@@ -407,7 +408,7 @@ function NewProposalFormInner() {
               </Box>
 
               <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid item xs={12} sm={6}>
                   <Controller
                     name="researchGroupId"
                     control={control}
@@ -426,7 +427,7 @@ function NewProposalFormInner() {
                     )}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid item xs={12} sm={6}>
                   <Controller
                     name="researchLineId"
                     control={control}
