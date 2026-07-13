@@ -45,7 +45,9 @@ function readValue(item: EvaluationItem, keys: string[], fallback = '—'): stri
   for (const k of keys) {
     const v = r[k];
     if (v !== null && v !== undefined && typeof v !== 'object') {
-      const s = String(v).trim();
+      const s = typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
+        ? String(v).trim()
+        : '';
       if (s) return s;
     }
   }
@@ -179,17 +181,17 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
   ];
 
   return (
-    <div
-      role="button"
-      tabIndex={-1}
+    <button
+      type="button"
       aria-label="Cerrar modal"
-      style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', overflowY: 'auto' }}
+      style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', overflowY: 'auto', border: 'none', cursor: 'default', width: '100vw', height: '100vh', boxSizing: 'border-box' }}
       onClick={onClose}
-      onKeyDown={e => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { onClose(); } }}
+      onKeyDown={e => { if (e.key === 'Escape') { onClose(); } }}
     >
       <div
-        role="presentation"
-        style={{ backgroundColor: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '860px', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', marginTop: '20px', marginBottom: '40px' }}
+        role="dialog"
+        aria-modal="true"
+        style={{ backgroundColor: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '860px', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', marginTop: '20px', marginBottom: '40px', cursor: 'default', textAlign: 'left' }}
         onClick={e => e.stopPropagation()}
         onKeyDown={e => e.stopPropagation()}
       >
@@ -422,7 +424,7 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
           </div>
         )}
       </div>
-    </div>
+    </button>
   );
 };
 
@@ -528,10 +530,20 @@ export const MyEvaluations: React.FC = () => {
                 const isPending = status.toUpperCase() === 'PENDIENTE';
 
                 let daysColor = 'var(--on-surface-variant)';
+                let daysText = '';
                 if (isOverdue) {
                   daysColor = 'var(--error)';
                 } else if (isUrgent) {
                   daysColor = '#92400e';
+                }
+
+                if (daysLeft !== null) {
+                  if (isOverdue) {
+                    daysText = `Vencido hace ${Math.abs(daysLeft)}d`;
+                  } else {
+                    const suffix = daysLeft !== 1 ? 's' : '';
+                    daysText = `${daysLeft}d restante${suffix}`;
+                  }
                 }
 
                 return (
@@ -558,7 +570,7 @@ export const MyEvaluations: React.FC = () => {
                         </div>
                         {daysLeft !== null && (
                           <div style={{ fontSize: '11px', fontWeight: 600, color: daysColor }}>
-                            {isOverdue ? `Vencido hace ${Math.abs(daysLeft)}d` : `${daysLeft}d restante${daysLeft !== 1 ? 's' : ''}`}
+                            {daysText}
                           </div>
                         )}
                       </div>
