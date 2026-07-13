@@ -269,40 +269,51 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '28px' }}>
-              {criteria.map(criterion => (
-                <div
-                  key={criterion.id}
-                  style={{ border: `1px solid ${errors[`score_${criterion.id}`] ? 'var(--error)' : 'var(--outline-variant)'}`, borderRadius: 'var(--radius-lg)', padding: '20px', backgroundColor: 'var(--surface)' }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--on-surface)', marginBottom: '4px' }}>{criterion.name}</div>
-                      {criterion.description && (
-                        <div style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>{criterion.description}</div>
-                      )}
+              {criteria.map(criterion => {
+                const hasError = !!errors[`score_${criterion.id}`];
+                const hasScore = scores[criterion.id] !== undefined;
+                
+                let borderInputColor = 'var(--outline-variant)';
+                if (hasError) {
+                  borderInputColor = 'var(--error)';
+                } else if (hasScore) {
+                  borderInputColor = 'var(--primary)';
+                }
+
+                return (
+                  <div
+                    key={criterion.id}
+                    style={{ border: `1px solid ${hasError ? 'var(--error)' : 'var(--outline-variant)'}`, borderRadius: 'var(--radius-lg)', padding: '20px', backgroundColor: 'var(--surface)' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--on-surface)', marginBottom: '4px' }}>{criterion.name}</div>
+                        {criterion.description && (
+                          <div style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>{criterion.description}</div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>Puntaje (máx. {criterion.maxScore}):</span>
+                        <input
+                          id={`score-criterion-${criterion.id}`}
+                          type="number"
+                          min={0}
+                          max={criterion.maxScore}
+                          value={scores[criterion.id] ?? ''}
+                          onChange={e => {
+                            const v = Number(e.target.value);
+                            setScores(prev => ({ ...prev, [criterion.id]: Math.min(criterion.maxScore, Math.max(0, v)) }));
+                            setErrors(prev => { const next = { ...prev }; delete next[`score_${criterion.id}`]; return next; });
+                          }}
+                          style={{
+                            width: '80px', padding: '8px 10px', textAlign: 'center', fontWeight: 700, fontSize: '16px',
+                            border: `2px solid ${borderInputColor}`,
+                            borderRadius: 'var(--radius-md)', outline: 'none', backgroundColor: 'var(--surface)',
+                            color: 'var(--on-surface)',
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>Puntaje (máx. {criterion.maxScore}):</span>
-                      <input
-                        id={`score-criterion-${criterion.id}`}
-                        type="number"
-                        min={0}
-                        max={criterion.maxScore}
-                        value={scores[criterion.id] ?? ''}
-                        onChange={e => {
-                          const v = Number(e.target.value);
-                          setScores(prev => ({ ...prev, [criterion.id]: Math.min(criterion.maxScore, Math.max(0, v)) }));
-                          setErrors(prev => { const next = { ...prev }; delete next[`score_${criterion.id}`]; return next; });
-                        }}
-                        style={{
-                          width: '80px', padding: '8px 10px', textAlign: 'center', fontWeight: 700, fontSize: '16px',
-                          border: `2px solid ${errors[`score_${criterion.id}`] ? 'var(--error)' : scores[criterion.id] !== undefined ? 'var(--primary)' : 'var(--outline-variant)'}`,
-                          borderRadius: 'var(--radius-md)', outline: 'none', backgroundColor: 'var(--surface)',
-                          color: 'var(--on-surface)',
-                        }}
-                      />
-                    </div>
-                  </div>
                   {errors[`score_${criterion.id}`] && (
                     <p style={{ fontSize: '12px', color: 'var(--error)', marginBottom: '8px' }}>
                       {errors[`score_${criterion.id}`] === 'Requerido' ? 'Este criterio es obligatorio' : `El puntaje debe estar entre 0 y ${criterion.maxScore}`}
@@ -319,7 +330,8 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
                     onBlur={e => (e.target.style.borderColor = 'var(--outline-variant)')}
                   />
                 </div>
-              ))}
+              );
+            })}
             </div>
 
             {/* Observaciones generales */}
