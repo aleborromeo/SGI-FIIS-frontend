@@ -1,14 +1,13 @@
 import { api } from '../../../services/api';
 import type { Convocatoria, EligibilityResponse } from '../types/convocatoria.types';
 
-function normalizeStatus(status?: string): 'ABIERTA' | 'CERRADA' | 'FINALIZADA' | 'BORRADOR' {
+function normalizeStatus(status?: string): 'ABIERTA' | 'CERRADA' | 'FINALIZADA' {
   if (!status) return 'ABIERTA';
   const s = status.toUpperCase();
   if (s === 'OPEN' || s === 'ABIERTA') return 'ABIERTA';
   if (s === 'CLOSED' || s === 'CERRADA') return 'CERRADA';
   if (s === 'FINISHED' || s === 'FINALIZADA') return 'FINALIZADA';
-  if (s === 'DRAFT' || s === 'BORRADOR') return 'BORRADOR';
-  return s as any;
+  return 'ABIERTA';
 }
 
 export function normalizeConvocatoria(data: any): Convocatoria {

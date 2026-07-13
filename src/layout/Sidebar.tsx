@@ -83,13 +83,6 @@ const navGroups: NavGroup[] = [
         path: '/observations/panel',
       },
       {
-        id: 'tramites',
-        label: 'Mis Trámites',
-        icon: <FileText size={20} />,
-        path: '/tramites',
-        roles: ['DOCENTE_INVESTIGADOR', 'ESTUDIANTE', 'COORDINADOR_GRUPO'],
-      },
-      {
         id: 'decano-review',
         label: 'Consola Decanato',
         icon: <Scale size={20} />,
@@ -119,6 +112,13 @@ const navGroups: NavGroup[] = [
         label: 'Revisión Informes',
         icon: <FileSearch size={20} />,
         path: '/progressreports/review',
+      },
+      {
+        id: 'director-evaluations',
+        label: 'Monitoreo Evaluaciones',
+        icon: <ClipboardCheck size={20} />,
+        path: '/evaluations/director',
+        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
       },
       {
         id: 'audit',

@@ -4,7 +4,7 @@ export interface Convocatoria {
   description: string;
   startDate: string;
   endDate: string;
-  status: 'ABIERTA' | 'CERRADA' | 'FINALIZADA' | 'BORRADOR';
+  status: 'ABIERTA' | 'CERRADA' | 'FINALIZADA';
   researchLineIds: number[];
   documentId?: number;
 }
