@@ -29,6 +29,7 @@ import { ReviewProgressReports } from './pages/progressreports/ReviewProgressRep
 import { ProgressReportHistory } from './pages/progressreports/ProgressReportHistory.tsx';
 import { ConvocatoriasList } from './pages/convocatorias/ConvocatoriasList.tsx';
 import { NewConvocatoria } from './pages/convocatorias/NewConvocatoria.tsx';
+import { EditConvocatoria } from './pages/convocatorias/EditConvocatoria.tsx';
 
 import { ConvocatoriasDashboard } from './modules/convocatorias/pages/ConvocatoriasDashboard.tsx';
 import { NewProposalForm } from './modules/convocatorias/pages/NewProposalForm.tsx';
@@ -168,6 +169,7 @@ function App() {
                   <Route path="/convocatorias" element={<ConvocatoriasList />} />
                   <Route path="/convocatorias/activas" element={<ConvocatoriasDashboard />} />
                   <Route path="/convocatorias/new" element={<NewConvocatoria />} />
+                  <Route path="/convocatorias/:id/edit" element={<EditConvocatoria />} />
 
                   {/* Evaluaciones y observaciones */}
                   <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />

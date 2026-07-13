@@ -167,9 +167,24 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
           )}
         </div>
 
-        {/* Acción */}
-        {transition && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        {/* Acciones */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', flexWrap: 'wrap' }}>
+          {call.status === 'ABIERTA' && (
+            <Link to={`/convocatorias/${call.id}/edit`}>
+              <button
+                type="button"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '7px',
+                  padding: '9px 18px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: 700, border: '1px solid var(--outline-variant)',
+                  backgroundColor: 'var(--surface)', color: 'var(--on-surface)', transition: 'all 0.2s',
+                }}
+              >
+                <FileEdit size={14} /> Editar
+              </button>
+            </Link>
+          )}
+          {transition && (
             <button
               id={`btn-transition-call-${call.id}`}
               type="button"
@@ -188,8 +203,8 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
                 : <>{transition.label} <ArrowRight size={14} /></>
               }
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
