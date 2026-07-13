@@ -188,10 +188,9 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
       onClick={onClose}
       onKeyDown={e => { if (e.key === 'Escape') { onClose(); } }}
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        style={{ backgroundColor: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '860px', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', marginTop: '20px', marginBottom: '40px', cursor: 'default', textAlign: 'left' }}
+      <dialog
+        open
+        style={{ backgroundColor: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '860px', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', marginTop: '20px', marginBottom: '40px', cursor: 'default', textAlign: 'left', border: 'none', padding: 0, color: 'inherit' }}
         onClick={e => e.stopPropagation()}
         onKeyDown={e => e.stopPropagation()}
       >
@@ -423,7 +422,7 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
             </div>
           </div>
         )}
-      </div>
+      </dialog>
     </button>
   );
 };

@@ -141,7 +141,7 @@ export const progressReportService = {
     const res = await api.get<any>('/api/reports/progress-reports', {
       params: { status }
     });
-    const content = res.content || res || [];
+    const content = Array.isArray(res.content) ? res.content : Array.isArray(res) ? res : [];
     return content.map(mapResponseToReport);
   },
 
