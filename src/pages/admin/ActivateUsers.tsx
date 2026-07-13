@@ -121,6 +121,89 @@ export const ActivateUsers: React.FC = () => {
     });
   }, [users, activeTab]);
 
+  const renderTableBody = () => {
+    if (loading) {
+      return (
+        <TableRow>
+          <td
+            colSpan={6}
+            style={{
+              textAlign: 'center',
+              padding: '32px',
+              color: 'var(--on-surface-variant)',
+            }}
+          >
+            Cargando usuarios...
+          </td>
+        </TableRow>
+      );
+    }
+
+    if (filteredUsers.length === 0) {
+      return (
+        <TableRow>
+          <td
+            colSpan={6}
+            style={{
+              textAlign: 'center',
+              padding: '48px',
+              color: 'var(--on-surface-variant)',
+            }}
+          >
+            <ShieldCheck size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
+            No hay usuarios en esta categoría.
+          </td>
+        </TableRow>
+      );
+    }
+
+    return filteredUsers.map((user) => (
+      <TableRow key={user.id}>
+        <TableCell style={{ fontWeight: 700 }}>{user.dni}</TableCell>
+        <TableCell>
+          <div style={{ fontWeight: 600 }}>{user.firstNames} {user.lastNames}</div>
+        </TableCell>
+        <TableCell>{user.institutionalEmail}</TableCell>
+        <TableCell>{getRoleBadge(user.roleCode)}</TableCell>
+        <TableCell>
+          {user.createdAt
+            ? new Date(user.createdAt).toLocaleDateString('es-PE', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })
+            : 'Desconocida'}
+        </TableCell>
+        <TableCell style={{ textAlign: 'right' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            {!user.active && (
+              <Button
+                variant="primary"
+                icon={<UserCheck size={16} />}
+                onClick={() => handleActivate(user)}
+                disabled={processingId === user.id}
+                style={{ padding: '6px 12px', fontSize: '13px', backgroundColor: '#15803d', color: '#fff', borderColor: '#15803d' }}
+              >
+                Activar
+              </Button>
+            )}
+            {user.active && (
+              <Button
+                variant="danger"
+                icon={<UserX size={16} />}
+                onClick={() => handleDeactivate(user)}
+                disabled={processingId === user.id}
+                style={{ padding: '6px 12px', fontSize: '13px' }}
+              >
+                Desactivar
+              </Button>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
   return (
     <div className="animate-fade-in" style={{ padding: '24px' }}>
       <div
@@ -276,80 +359,7 @@ export const ActivateUsers: React.FC = () => {
         </TableHead>
 
         <TableBody>
-          {loading ? (
-            <TableRow>
-              <td
-                colSpan={6}
-                style={{
-                  textAlign: 'center',
-                  padding: '32px',
-                  color: 'var(--on-surface-variant)',
-                }}
-              >
-                Cargando usuarios...
-              </td>
-            </TableRow>
-          ) : filteredUsers.length === 0 ? (
-            <TableRow>
-              <td
-                colSpan={6}
-                style={{
-                  textAlign: 'center',
-                  padding: '48px',
-                  color: 'var(--on-surface-variant)',
-                }}
-              >
-                <ShieldCheck size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
-                No hay usuarios en esta categoría.
-              </td>
-            </TableRow>
-          ) : (
-            filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell style={{ fontWeight: 700 }}>{user.dni}</TableCell>
-                <TableCell>
-                  <div style={{ fontWeight: 600 }}>{user.firstNames} {user.lastNames}</div>
-                </TableCell>
-                <TableCell>{user.institutionalEmail}</TableCell>
-                <TableCell>{getRoleBadge(user.roleCode)}</TableCell>
-                <TableCell>
-                  {user.createdAt
-                    ? new Date(user.createdAt).toLocaleDateString('es-PE', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })
-                    : 'Desconocida'}
-                </TableCell>
-                <TableCell style={{ textAlign: 'right' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                    {!user.active && (
-                      <Button
-                        variant="primary"
-                        icon={<UserCheck size={16} />}
-                        onClick={() => handleActivate(user)}
-                        disabled={processingId === user.id}
-                        style={{ padding: '6px 12px', fontSize: '13px', backgroundColor: '#15803d', color: '#fff', borderColor: '#15803d' }}
-                      >
-                        Activar
-                      </Button>
-                    )}
-                    {user.active && (
-                      <Button
-                        variant="danger"
-                        icon={<UserX size={16} />}
-                        onClick={() => handleDeactivate(user)}
-                        disabled={processingId === user.id}
-                        style={{ padding: '6px 12px', fontSize: '13px' }}
-                      >
-                        Desactivar
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
+          {renderTableBody()}
         </TableBody>
       </TableContainer>
     </div>
