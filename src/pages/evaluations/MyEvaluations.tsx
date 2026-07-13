@@ -185,14 +185,12 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
       type="button"
       aria-label="Cerrar modal"
       style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', overflowY: 'auto', border: 'none', cursor: 'default', width: '100vw', height: '100vh', boxSizing: 'border-box' }}
-      onClick={onClose}
+      onClick={e => { if (e.target === e.currentTarget) { onClose(); } }}
       onKeyDown={e => { if (e.key === 'Escape') { onClose(); } }}
     >
       <dialog
         open
         style={{ backgroundColor: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '860px', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', marginTop: '20px', marginBottom: '40px', cursor: 'default', textAlign: 'left', border: 'none', padding: 0, color: 'inherit' }}
-        onClick={e => e.stopPropagation()}
-        onKeyDown={e => e.stopPropagation()}
       >
         {/* Header del panel */}
         <div style={{ padding: '28px 32px', borderBottom: '1px solid var(--outline-variant)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
