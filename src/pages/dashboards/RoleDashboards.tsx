@@ -223,11 +223,18 @@ function getQuickActions(role: string | null): QuickAction[] {
     case 'ESTUDIANTE':
       return [
         {
-          to: '/projects/new',
-          label: 'Nueva propuesta',
-          description: 'Iniciar el registro de una propuesta o trámite académico.',
+          to: '/thesis/plans',
+          label: 'Mis Planes de Tesis',
+          description: 'Ver el estado y trazabilidad de sus propuestas de tesis.',
           icon: GraduationCap,
           tone: 'blue',
+        },
+        {
+          to: '/thesis/new',
+          label: 'Registrar Plan de Tesis',
+          description: 'Iniciar la presentación de un plan de tesis académica.',
+          icon: PenTool,
+          tone: 'green',
         },
         {
           to: '/observations/panel',

@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import React from 'react';
 import { ReviewProgressReports } from './ReviewProgressReports';
-import { AuthContext } from '../../context/AuthContext';
 
 // Mock contexts and services
 vi.mock('../../context/ToastContext', () => ({
@@ -16,8 +15,7 @@ vi.mock('../../context/ToastContext', () => ({
 }));
 
 vi.mock('../../context/AuthContext', () => {
-  const ReactReal = require('react');
-  const AuthContextMock = ReactReal.createContext({
+  const AuthContextMock = React.createContext({
     currentRole: 'COORDINADOR_GRUPO',
     user: { id: 1, role: 'COORDINADOR_GRUPO' },
   });
