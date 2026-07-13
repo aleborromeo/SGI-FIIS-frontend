@@ -91,7 +91,7 @@ describe('ReviewProgressReports', () => {
     const approveButtons = await screen.findAllByRole('button', { name: /Derivar|Aprobar/i });
     const observeButtons = await screen.findAllByRole('button', { name: /Observar/i });
     
-    expect(approveButtons.length).toBe(1);
-    expect(observeButtons.length).toBe(1);
+    expect(approveButtons).toHaveLength(1);
+    expect(observeButtons).toHaveLength(1);
   });
 });
