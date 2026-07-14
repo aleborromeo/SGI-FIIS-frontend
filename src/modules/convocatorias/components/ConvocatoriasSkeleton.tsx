@@ -7,7 +7,7 @@ export function ConvocatoriasSkeleton({ count = 3 }: { count?: number }) {
         <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
             <CardContent>
-              <Stack direction="row" justifyContent="space-between" mb={1.5}>
+              <Stack direction="row" sx={{ justifyContent: 'space-between', mb: 1.5 }}>
                 <Skeleton variant="text" width={80} height={16} />
                 <Skeleton variant="rounded" width={60} height={22} sx={{ borderRadius: 5 }} />
               </Stack>

@@ -84,11 +84,11 @@ describe('NewProposalForm', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(researchService.getGroups).mockResolvedValue([
-      { id: 5, groupName: 'GINSOFT', groupCode: 'GINSOFT' },
+      { id: 5, groupName: 'GINSOFT', groupCode: 'GINSOFT', active: true },
     ]);
     vi.mocked(researchService.getLines).mockResolvedValue([
-      { id: 1, lineName: 'Computación', groupId: 5 },
-      { id: 2, lineName: 'Redes', groupId: 5 },
+      { id: 1, lineName: 'Computación', active: true },
+      { id: 2, lineName: 'Redes', active: true },
     ]);
     vi.mocked(researchService.getGroupLines).mockResolvedValue([
       { id: 1, lineName: 'Computación' },
@@ -175,7 +175,7 @@ describe('NewProposalForm', () => {
 
   it('does not show GINSOFT restriction for non-GINSOFT groups', async () => {
     vi.mocked(researchService.getGroups).mockResolvedValue([
-      { id: 6, groupName: 'Grupo Normal', groupCode: 'GRUPO01' },
+      { id: 6, groupName: 'Grupo Normal', groupCode: 'GRUPO01', active: true },
     ]);
     vi.mocked(researchService.getGroupLines).mockResolvedValue([
       { id: 1, lineName: 'Línea General' },

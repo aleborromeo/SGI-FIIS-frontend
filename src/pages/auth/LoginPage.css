@@ -206,29 +206,40 @@
 /* Opciones extra */
 .form-options-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  margin: 0.15rem 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  margin: 0.3rem 0;
+  width: 100%;
 }
 
-.remember-me-label {
+.forgot-password-container {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.policies-label {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   color: #475569;
   cursor: pointer;
   user-select: none;
   font-weight: 500;
+  font-size: 0.88rem;
 }
 
-.remember-me-checkbox {
-  width: 15px;
-  height: 15px;
+.policies-checkbox {
+  width: 16px;
+  height: 16px;
   border-radius: 4px;
-  border: 1px solid #cbd5e1;
+  border: 1.5px solid #cbd5e1;
   cursor: pointer;
+  accent-color: #1a365d;
 }
+
 
 .forgot-password-link {
   color: #1a365d;
@@ -374,15 +385,47 @@
 
 /* Error alerts */
 .login-error-alert {
-  background: #fef2f2;
-  border: 1px solid #fee2e2;
-  border-radius: 10px;
-  padding: 0.75rem 1rem;
+  background: #fbebeb; /* Fondo rosado claro */
+  border: 1.5px solid #f5c2c2; /* Borde rosado/rojo suave */
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #991b1b;
-  font-size: 0.85rem;
+  gap: 0.8rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.error-alert-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #7d1c1c; /* Color vino/marrón para el triángulo */
+}
+
+.error-alert-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  text-align: left;
+}
+
+.error-alert-title {
+  color: #7d1c1c;
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-transform: lowercase;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.error-alert-message {
+  color: #7d1c1c;
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.3;
 }
 
 .btn-spinner {
@@ -499,9 +542,9 @@
 
 .captcha-error-text-simple {
   color: #dc2626;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
   margin-bottom: 0.25rem;
 }
 

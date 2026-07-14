@@ -1,18 +1,18 @@
 import React from 'react';
 import './ui.css';
 
-export const TableContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="table-container">
+export const TableContainer: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, className = '', ...props }) => (
+  <div className={`table-container ${className}`} {...props}>
     <table className="table">{children}</table>
   </div>
 );
 
-export const TableHead: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <thead>{children}</thead>
+export const TableHead: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({ children, ...props }) => (
+  <thead {...props}>{children}</thead>
 );
 
-export const TableBody: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <tbody>{children}</tbody>
+export const TableBody: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({ children, ...props }) => (
+  <tbody {...props}>{children}</tbody>
 );
 
 export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({ children, className = '', ...props }) => (

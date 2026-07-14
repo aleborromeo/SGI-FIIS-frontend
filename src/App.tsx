@@ -10,6 +10,8 @@ import { LoginPage } from './pages/auth/LoginPage.tsx';
 import { ChangePasswordPage } from './pages/auth/ChangePasswordPage.tsx';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage.tsx';
 import { SobreSgiPage } from './pages/SobreSgiPage.tsx';
+import { ContactoPage } from './pages/ContactoPage.tsx';
+import { NovedadesPage } from './pages/NovedadesPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
@@ -47,6 +49,7 @@ import { TramiteDetail } from './pages/tramites/TramiteDetail.tsx';
 import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
 
 // Admin Views
+import { CreateUser } from './pages/users/CreateUser';
 import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
 import { UserManagement } from './pages/admin/UserManagement.tsx';
 import { DocumentRepository } from './pages/admin/DocumentRepository.tsx';
@@ -142,6 +145,8 @@ function App() {
                 <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
                 <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
                 <Route path="/sobre-sgi" element={<SobreSgiPage />} />
+                <Route path="/contacto" element={<ContactoPage />} />
+                <Route path="/novedades" element={<NovedadesPage />} />
                 <Route
                   path="/change-password"
                   element={
@@ -194,6 +199,7 @@ function App() {
                   <Route path="/resolutions/new" element={<NewResolutionForm />} />
 
                   {/* Administración */}
+                  <Route path="/users/create" element={<CreateUser />} />
                   <Route path="/admin/activate" element={<ActivateUsers />} />
                   <Route path="/users" element={<UserManagement />} />
                   <Route path="/documents" element={<DocumentRepository />} />

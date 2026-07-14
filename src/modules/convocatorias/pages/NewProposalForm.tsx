@@ -400,7 +400,7 @@ function NewProposalFormInner() {
   };
 
   const onSubmitFinal = async (data: ProposalFormData) => {
-    const confirmed = await confirm({
+    const confirmed = await confirm.confirmDialog({
       title: 'Enviar propuesta a Coordinador',
       message: '¿Estás seguro de enviar esta propuesta? El Coordinador de grupo será notificado para su revisión.',
       confirmText: 'Enviar',
@@ -444,7 +444,7 @@ function NewProposalFormInner() {
             <Typography variant="h4" fontWeight={700} gutterBottom>
               {editDraftId ? 'Editar Borrador' : 'Postular Proyecto de Investigación'}
             </Typography>
-            <Typography variant="body2" color="text.secondary" maxWidth={560}>
+            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 560 }}>
               Registra la información de tu propuesta de investigación para iniciar el flujo de revisión institucional.
             </Typography>
           </Box>
@@ -477,7 +477,7 @@ function NewProposalFormInner() {
         <Box sx={{ minWidth: 0 }}>
           <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700} gutterBottom>
             {editDraftId ? 'Editar Borrador' : 'Postular Proyecto de Investigación'}
-          </Typography>
+                    </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: { xs: '100%', sm: 560 } }}>
             {editDraftId
               ? 'Completa los pasos para finalizar y enviar tu propuesta de investigación.'
@@ -487,7 +487,7 @@ function NewProposalFormInner() {
         <Link to="/projects" style={{ textDecoration: 'none' }} onClick={async (e) => {
           if (isDirty || members.length > 0 || documentId) {
             e.preventDefault();
-            const confirmed = await confirm({
+            const confirmed = await confirm.confirmDialog({
               title: 'Cambios sin guardar',
               message: 'Tienes cambios sin guardar. Si sales ahora, perderás todo el progreso. ¿Estás seguro?',
               confirmText: 'Salir sin guardar',
@@ -502,7 +502,7 @@ function NewProposalFormInner() {
 
       {isMobile ? (
         <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography variant="body2" color="text.secondary" fontWeight={600}>
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
             Paso {activeStep + 1} de {STEPS.length}
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center', mt: 1 }}>
@@ -535,14 +535,14 @@ function NewProposalFormInner() {
         {activeStep === 0 && (
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 3 }}>
             <CardHeader
-              title={<Typography variant="h6" fontWeight={700}>Datos Generales</Typography>}
+              title={<Typography variant="h6" sx={{ fontWeight: 700 }}>Datos Generales</Typography>}
               subheader="Información básica del proyecto de investigación"
               sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}
             />
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ mb: 2 }}>
                 <ConvocatoriaSelect
-                  control={control}
+                  control={control as any}
                   convocatorias={activeConvocatorias}
                   error={errors.convocatoriaId}
                 />
@@ -671,7 +671,7 @@ function NewProposalFormInner() {
         {activeStep === 1 && (
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 3 }}>
             <CardHeader
-              title={<Typography variant="h6" fontWeight={700}>Detalles de Investigación</Typography>}
+              title={<Typography variant="h6" sx={{ fontWeight: 700 }}>Detalles de Investigación</Typography>}
               subheader="Describe el contenido y planificación del proyecto"
               sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}
             />
@@ -853,7 +853,7 @@ function NewProposalFormInner() {
         {activeStep === 2 && (
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 3 }}>
             <CardHeader
-              title={<Typography variant="h6" fontWeight={700}>Equipo de Investigación</Typography>}
+              title={<Typography variant="h6" sx={{ fontWeight: 700 }}>Equipo de Investigación</Typography>}
               subheader="Integrantes del grupo que participarán en el proyecto"
               sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}
             />
@@ -871,7 +871,7 @@ function NewProposalFormInner() {
         {activeStep === 3 && (
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 3 }}>
             <CardHeader
-              title={<Typography variant="h6" fontWeight={700}>Documento Principal</Typography>}
+              title={<Typography variant="h6" sx={{ fontWeight: 700 }}>Documento Principal</Typography>}
               subheader="Adjunta el archivo de tu propuesta. Formatos permitidos: PDF, DOC, DOCX. Máximo 10 MB."
               sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}
             />
@@ -886,6 +886,7 @@ function NewProposalFormInner() {
 
         {/* STEP 4: Revisión */}
         {activeStep === 4 && (
+
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 
             {/* Page Header */}
@@ -1101,6 +1102,7 @@ function NewProposalFormInner() {
                     }}
                   >
                     {watchedValues.abstract || <EmptyField />}
+
                   </Typography>
                 </Box>
 
@@ -1131,6 +1133,7 @@ function NewProposalFormInner() {
                 </Grid>
 
                 <Divider sx={{ mb: 3 }} />
+
 
                 {/* Methodology - separate section below */}
                 <Box sx={{ mb: 3 }}>
@@ -1167,6 +1170,7 @@ function NewProposalFormInner() {
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
                     Resultados Esperados
+
                   </Typography>
                   <Typography
                     variant="body2"
@@ -1535,3 +1539,5 @@ function NewProposalFormInner() {
     </Box>
   );
 }
+
+

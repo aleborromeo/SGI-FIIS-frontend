@@ -117,7 +117,7 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
   const handleRemove = useCallback(async (userId: number) => {
     const member = members.find((m) => m.userId === userId);
     const name = member ? `${member.userFirstNames} ${member.userLastNames}` : '';
-    const confirmed = await confirm({
+    const confirmed = await confirm.confirmDialog({
       title: 'Eliminar miembro del equipo',
       message: `¿Estás seguro de eliminar a ${name} del equipo de investigación?`,
       confirmText: 'Eliminar',

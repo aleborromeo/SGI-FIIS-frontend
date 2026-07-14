@@ -99,9 +99,9 @@ export interface EvaluationItem {
 
   score?: number;
   puntaje?: number;
-
   tipo?: string;
   tipoExpediente?: string;
+  assignDate?: string;
   [key: string]: any;
 }
 

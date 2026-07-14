@@ -12,6 +12,8 @@ export interface User {
   active: boolean;
   mustChangePassword?: boolean;
   createdAt?: string;
+  active?: boolean;
+  phone?: string;
   updatedAt?: string;
 }
 
@@ -30,6 +32,7 @@ export interface UpdateUserPayload {
   institutionalEmail?: string;
   phone?: string;
   roleCode?: string;
+  active?: boolean;
 }
 
 const REVIEWER_ROLES = ['EVALUADOR', 'DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO'];
@@ -63,6 +66,40 @@ export const userService = {
 
   toggleStatus: async (id: number, active: boolean): Promise<User> => {
     return api.patch<User>(`/users/${id}/status`, { active });
+  },
+
+  rejectUser: async (id: number): Promise<void> => {
+    return fetchApi<void>(`/users/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ active: false }),
+    });
+  },
+
+  createUser: async (user: {
+    dni: string;
+    firstNames: string;
+    lastNames: string;
+    institutionalEmail?: string;
+    phone?: string;
+    roleCode: string;
+  }): Promise<User & { temporaryPassword?: string }> => {
+    return fetchApi<User & { temporaryPassword?: string }>('/users', {
+      method: 'POST',
+      body: JSON.stringify(user),
+    });
+  },
+
+  updateUser: async (id: number, user: {
+    firstNames: string;
+    lastNames: string;
+    institutionalEmail: string;
+    phone?: string;
+    roleCode: string;
+  }): Promise<User> => {
+    return fetchApi<User>(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(user),
+    });
   },
 
   resetPassword: async (id: number): Promise<{ message: string }> => {

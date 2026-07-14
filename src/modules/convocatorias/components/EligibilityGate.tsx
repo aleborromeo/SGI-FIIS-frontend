@@ -43,8 +43,8 @@ export function EligibilityGate({ children }: EligibilityGateProps) {
           mx: 'auto',
         }}
       >
-        <ShieldAlert sx={{ fontSize: 56, color: 'warning.main', mb: 2 }} />
-        <Typography variant="h5" fontWeight={700} gutterBottom color="warning.dark">
+        <ShieldAlert size={56} style={{ color: '#d97706', marginBottom: '16px' }} />
+        <Typography variant="h5" sx={{ fontWeight: 700, color: 'warning.dark' }} gutterBottom>
           No habilitado para postular
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>

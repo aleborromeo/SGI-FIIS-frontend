@@ -1,16 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './WelcomePage.css';
-import frontisImage from '../assets/images/frontis_fiis.png';
-import universityIcon from '../assets/images/icons8-universidad-50 (1).png';
+import universityIcon from '../assets/images/icon-sgi-fiis.png';
+import { Globe, User, ChevronDown } from 'lucide-react';
 
 export const SobreSgiPage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'general' | 'lines' | 'groups'>('general');
+  const location = useLocation();
+  const [language, setLanguage] = useState<'es' | 'en'>('es');
+  const [activeSection, setActiveSection] = useState('quienes-somos');
 
+  const handleToggleLanguage = () => {
+    setLanguage((prev) => (prev === 'es' ? 'en' : 'es'));
+  };
+
+  const handleScrollToSection = (id: string) => {
+    setActiveSection(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Escuchar navegación externa y cambiar sección
   useEffect(() => {
+    const targetHash = (location.state as any)?.scrollToHash;
+    if (targetHash) {
+      setActiveSection(targetHash);
+    }
     window.scrollTo(0, 0);
-  }, []);
+  }, [location]);
 
   // Datos de Líneas de Investigación
   const researchLinesDetail = [
@@ -105,168 +121,226 @@ export const SobreSgiPage: React.FC = () => {
       <header className="welcome-navbar">
         <div className="welcome-brand">
           <img src={universityIcon} alt="SGI Logo" className="welcome-logo-img-mini" />
-          <div className="welcome-brand-texts">
-            <h1 className="welcome-brand-title">SGI-FIIS</h1>
-            <span className="welcome-brand-subtitle">Sistema de Gestión de Investigación</span>
-          </div>
         </div>
         
         {/* Enlaces de Navegación */}
         <nav className="welcome-nav-links">
-          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="nav-link">Inicio</a>
-          <a 
-            href="#" 
-            onClick={(e) => { 
-              e.preventDefault(); 
-              navigate('/', { state: { scrollTo: 'noticias' } }); 
-            }} 
-            className="nav-link"
-          >
-            Convocatorias
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="nav-link">
+            {language === 'es' ? 'Inicio' : 'Home'}
           </a>
-          <a href="#" onClick={(e) => e.preventDefault()} className="nav-link active">Sobre SGI</a>
-          <a href="#" onClick={(e) => e.preventDefault()} className="nav-link">Contacto</a>
+
+          {/* Dropdown: Novedades */}
+          <div className="nav-dropdown">
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); navigate('/novedades'); }}
+              className="nav-link dropdown-toggle"
+            >
+              <span>{language === 'es' ? 'Novedades' : 'News'}</span>
+              <ChevronDown size={14} className="dropdown-caret" />
+            </a>
+            <div className="dropdown-menu">
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-convocatorias' } }); }}
+                className="dropdown-item"
+              >
+                {language === 'es' ? 'Convocatorias' : 'Announcements'}
+              </a>
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-reconocimientos' } }); }}
+                className="dropdown-item"
+              >
+                {language === 'es' ? 'Reconocimiento' : 'Recognition'}
+              </a>
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-congresos' } }); }}
+                className="dropdown-item"
+              >
+                {language === 'es' ? 'Congresos' : 'Congresses'}
+              </a>
+            </div>
+          </div>
+
+          {/* Dropdown: Sobre nosotros */}
+          <div className="nav-dropdown">
+            <a
+              href="#"
+              onClick={(e) => e.preventDefault()}
+              className="nav-link dropdown-toggle active"
+            >
+              <span>{language === 'es' ? 'Sobre nosotros' : 'About us'}</span>
+              <ChevronDown size={14} className="dropdown-caret" />
+            </a>
+            <div className="dropdown-menu">
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); handleScrollToSection('quienes-somos'); }}
+                className="dropdown-item"
+              >
+                {language === 'es' ? 'Quiénes somos' : 'Who we are'}
+              </a>
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); handleScrollToSection('lineas-investigacion'); }}
+                className="dropdown-item"
+              >
+                {language === 'es' ? 'Líneas de investigación' : 'Research lines'}
+              </a>
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); handleScrollToSection('grupos-investigacion'); }}
+                className="dropdown-item"
+              >
+                {language === 'es' ? 'Grupos' : 'Groups'}
+              </a>
+            </div>
+          </div>
+
+          {/* Dropdown: Contacto */}
+          <div className="nav-dropdown">
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); navigate('/contacto'); }}
+              className="nav-link dropdown-toggle"
+            >
+              <span>{language === 'es' ? 'Contacto' : 'Contact'}</span>
+              <ChevronDown size={14} className="dropdown-caret" />
+            </a>
+            <div className="dropdown-menu">
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); navigate('/contacto', { state: { scrollToHash: 'contacto-form-section' } }); }}
+                className="dropdown-item"
+              >
+                {language === 'es' ? 'Correo' : 'Email'}
+              </a>
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); navigate('/contacto', { state: { scrollToHash: 'whatsapp-contact-section' } }); }}
+                className="dropdown-item"
+              >
+                {language === 'es' ? 'WhatsApp' : 'WhatsApp'}
+              </a>
+            </div>
+          </div>
+
+          {/* Botón: Envía tu investigación */}
+          <a
+            href="#"
+            onClick={(e) => { e.preventDefault(); navigate('/login'); }}
+            className="nav-link btn-submit-research"
+          >
+            {language === 'es' ? 'Envía tu investigación' : 'Submit your research'}
+          </a>
         </nav>
 
         <div className="welcome-navbar-actions">
-          <button onClick={() => navigate('/login')} className="btn-nav btn-outline-light-navbar">
-            Iniciar sesión
+          <button 
+            type="button" 
+            onClick={handleToggleLanguage} 
+            className="btn-nav btn-language-selector"
+            title={language === 'es' ? 'Cambiar idioma' : 'Change language'}
+          >
+            <Globe size={15} />
+            <span>{language === 'es' ? 'Español' : 'English'}</span>
+          </button>
+          
+          <button 
+            type="button" 
+            onClick={() => navigate('/login')} 
+            className="btn-nav btn-login-navbar"
+          >
+            <User size={15} />
+            <span>{language === 'es' ? 'Iniciar sesión' : 'Log In'}</span>
           </button>
         </div>
       </header>
 
-      {/* Sección Sobre SGI (Captura blanca estilo FIIS) */}
+      {/* Sección Sobre nosotros (Estilo Frontiers) */}
       <section className="welcome-about-fiis-section" style={{ marginTop: '70px', minHeight: 'calc(100vh - 120px)' }}>
+        
+        {/* Cabecera Principal */}
+        <div className="about-fiis-header-wrapper">
+          <div className="about-fiis-breadcrumbs">
+            {language === 'es' 
+              ? 'Inicio » Sobre nosotros » Quiénes somos / Líneas / Grupos' 
+              : 'Home » About us » Who we are / Lines / Groups'}
+          </div>
+          <h1 className="about-fiis-main-page-title">
+            {activeSection === 'quienes-somos' && (language === 'es' ? 'Quiénes somos' : 'Who we are')}
+            {activeSection === 'lineas-investigacion' && (language === 'es' ? 'Líneas de Investigación' : 'Research Lines')}
+            {activeSection === 'grupos-investigacion' && (language === 'es' ? 'Grupos de Investigación' : 'Research Groups')}
+          </h1>
+        </div>
+
         <div className="about-fiis-container">
           
-          {/* Columna Izquierda: Menú Lateral (Pestañas Interactivas) */}
-          <aside className="about-fiis-sidebar">
-            <h4 className="sidebar-title">Sobre el SGI</h4>
-            <ul className="sidebar-menu">
-              <li>
-                <a 
-                  href="#" 
-                  onClick={(e) => { e.preventDefault(); setActiveTab('general'); }} 
-                  className={`sidebar-link ${activeTab === 'general' ? 'active' : ''}`}
-                >
-                  Descripción General
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="#" 
-                  onClick={(e) => { e.preventDefault(); setActiveTab('lines'); }} 
-                  className={`sidebar-link ${activeTab === 'lines' ? 'active' : ''}`}
-                >
-                  Líneas de Investigación
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="#" 
-                  onClick={(e) => { e.preventDefault(); setActiveTab('groups'); }} 
-                  className={`sidebar-link ${activeTab === 'groups' ? 'active' : ''}`}
-                >
-                  Grupos de Investigación
-                </a>
-              </li>
-            </ul>
-          </aside>
-
-          {/* Columna Derecha: Contenido Principal */}
+          {/* Columna Izquierda: Contenido Principal Stacked */}
           <div className="about-fiis-main-content">
-            
-            {/* Breadcrumb Dinámico */}
-            <div className="about-fiis-breadcrumbs">
-              Inicio » Sobre SGI » {activeTab === 'general' ? 'Descripción General' : activeTab === 'lines' ? 'Líneas de Investigación' : 'Grupos de Investigación'}
-            </div>
 
-            {/* Renderizado de Pestaña 1: DESCRIPCIÓN GENERAL */}
-            {activeTab === 'general' && (
-              <>
-                <h2 className="about-fiis-title">Sistema de Gestión de Investigación (SGI-FIIS)</h2>
-
-                {/* Fila superior: Tabla de detalles + Imagen */}
-                <div className="about-fiis-details-grid">
-                  
-                  {/* Tabla de detalles */}
-                  <div className="about-fiis-info-table">
-                    <div className="info-table-row">
-                      <span className="info-label">Propósito del SGI:</span>
-                      <span className="info-value">Automatizar, controlar y dar seguimiento a los procesos académicos y administrativos de investigación.</span>
-                    </div>
-                    <div className="info-table-row">
-                      <span className="info-label">Facultad:</span>
-                      <span className="info-value">Facultad de Ingeniería en Informática y Sistemas (FIIS)</span>
-                    </div>
-                    <div className="info-table-row">
-                      <span className="info-label">Institución:</span>
-                      <span className="info-value">Universidad Nacional Agraria de la Selva (UNAS)</span>
-                    </div>
-                    <div className="info-table-row">
-                      <span className="info-label">Reglamento & Normas:</span>
-                      <span className="info-value">
-                        <a href="https://investigacion.unas.edu.pe/documentos-normativos" target="_blank" rel="noopener noreferrer" className="info-link">Descargar Normas</a>
-                      </span>
-                    </div>
-                    <div className="info-table-row">
-                      <span className="info-label">Manual de Usuario:</span>
-                      <span className="info-value">
-                        <a href="#" onClick={(e) => e.preventDefault()} className="info-link-disabled">Próximamente</a>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Imagen del Edificio de la Escuela */}
-                  <div className="about-fiis-image-container">
-                    <img src={frontisImage} alt="Facultad FIIS" className="about-fiis-img" />
-                    <div className="about-fiis-img-caption">
-                      Facultad de Ingeniería en Informática y Sistemas
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Fila inferior: Módulos del SGI */}
-                <div className="about-fiis-columns-grid" style={{ gridTemplateColumns: '1fr' }}>
-                  <div className="about-fiis-column">
-                    <h3 className="column-title">Módulos de Gestión:</h3>
-                    <p className="column-intro">
-                      El SGI-FIIS digitaliza de extremo a extremo las etapas clave del ecosistema de investigación:
+            {/* Sección 1: Quiénes somos */}
+            {activeSection === 'quienes-somos' && (
+              <section id="quienes-somos" className="about-stacked-section">
+                
+                <h3 className="sgi-article-section-title">
+                  {language === 'es' ? 'Donde todo comenzó' : 'Where it all began'}
+                </h3>
+                
+                <article className="sgi-article">
+                  <div className="sgi-article-body">
+                    <p>
+                      {language === 'es' ? (
+                        <>El <strong className="text-highlight">SGI-FIIS</strong> fue creado en 2025 por la <strong className="text-highlight">Facultad de Ingeniería en Informática y Sistemas</strong> (<strong className="text-highlight">FIIS</strong>) de la <strong className="text-highlight">Universidad Nacional Agraria de la Selva</strong> (<strong className="text-highlight">UNAS</strong>), con el propósito de centralizar y optimizar la gestión de la investigación científica en nuestra comunidad académica.</>
+                      ) : (
+                        <>The <strong className="text-highlight">SGI-FIIS</strong> was created in 2025 by the <strong className="text-highlight">Faculty of Computer Science and Systems Engineering</strong> (<strong className="text-highlight">FIIS</strong>) of the <strong className="text-highlight">National Agricultural University of the Jungle</strong> (<strong className="text-highlight">UNAS</strong>), with the purpose of centralizing and optimizing scientific research management in our academic community.</>
+                      )}
                     </p>
-                    <ul className="column-list" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem 2rem' }}>
-                      <li><strong>Proyectos de Investigación:</strong> Presentación y seguimiento de planes de docentes.</li>
-                      <li><strong>Planes de Tesis:</strong> Trámite de investigación formativa para tesistas.</li>
-                      <li><strong>Informes de Avance:</strong> Reportes de progreso periódico y logros de metas.</li>
-                      <li><strong>Resoluciones Decanales:</strong> Emisión de resoluciones aprobatorias oficiales.</li>
-                      <li><strong>Evaluaciones de Jurado:</strong> Calificación y dictamen sobre los trabajos.</li>
-                    </ul>
+
+                    <p>
+                      {language === 'es' ? (
+                        <>La <strong className="text-highlight">FIIS</strong> y la <strong className="text-highlight">UNAS</strong> impulsaron este proyecto con la visión de lograr una gestión transparente, eficiente y trazable, aprovechando el poder de la tecnología para satisfacer verdaderamente las necesidades de los investigadores, docentes y estudiantes de nuestra facultad.</>
+                      ) : (
+                        <>The <strong className="text-highlight">FIIS</strong> and <strong className="text-highlight">UNAS</strong> promoted this project with the vision of achieving transparent, efficient and traceable management, leveraging the power of technology to truly meet the needs of researchers, professors and students of our faculty.</>
+                      )}
+                    </p>
+
+                    <p>
+                      {language === 'es' ? (
+                        <>Inicialmente orientado a la gestión de planes de tesis y proyectos de investigación docente, el <strong className="text-highlight">SGI-FIIS</strong> abarca ahora la administración integral de resoluciones decanales, evaluaciones de jurado, informes de avance y la trazabilidad completa de cada proceso investigativo. Es una de las plataformas de gestión de investigación más completas y especializadas de la universidad.</>
+                      ) : (
+                        <>Initially focused on managing thesis plans and faculty research projects, <strong className="text-highlight">SGI-FIIS</strong> now encompasses the comprehensive management of dean resolutions, jury evaluations, progress reports and the complete traceability of every research process. It is one of the most complete and specialized research management platforms at the university.</>
+                      )}
+                    </p>
                   </div>
-                </div>
-              </>
+                </article>
+              </section>
             )}
 
-            {/* Renderizado de Pestaña 2: LÍNEAS DE INVESTIGACIÓN */}
-            {activeTab === 'lines' && (
-              <>
-                <h2 className="about-fiis-title">Líneas de Investigación de la FIIS</h2>
+            {/* Sección 2: Líneas de Investigación */}
+            {activeSection === 'lineas-investigacion' && (
+              <section id="lineas-investigacion" className="about-stacked-section">
                 <p className="about-tab-description">
-                  La Facultad cuenta con líneas aprobadas que orientan la producción científica de docentes y estudiantes hacia la solución de necesidades tecnológicas.
+                  {language === 'es' 
+                    ? 'La Facultad cuenta con líneas aprobadas que orientan la producción científica de docentes y estudiantes hacia la solución de necesidades tecnológicas.'
+                    : 'The Faculty has approved lines that orient the scientific production of professors and students towards solving technological needs.'}
                 </p>
 
                 <div className="about-tabs-grid-container">
                   {researchLinesDetail.map((line) => (
                     <div key={line.title} className="about-info-card">
                       <div className="about-card-header-row">
-                        <div className="about-card-badge">LÍNEA</div>
+                        <div className="about-card-badge">{language === 'es' ? 'LÍNEA' : 'LINE'}</div>
                         <h4 className="about-card-title">{line.title}</h4>
                       </div>
                       <div className="about-card-divider" />
                       <p className="about-card-bases">
-                        <strong>En qué se basa:</strong> {line.bases}
+                        <strong>{language === 'es' ? 'En qué se basa:' : 'Based on:'}</strong> {line.bases}
                       </p>
                       <div className="about-card-subareas">
-                        <strong>Áreas prioritarias:</strong>
+                        <strong>{language === 'es' ? 'Áreas prioritarias:' : 'Priority areas:'}</strong>
                         <ul className="about-subareas-list">
                           {line.areas.map((area, idx) => (
                             <li key={idx}>{area}</li>
@@ -276,15 +350,16 @@ export const SobreSgiPage: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              </>
+              </section>
             )}
 
-            {/* Renderizado de Pestaña 3: GRUPOS DE INVESTIGACIÓN */}
-            {activeTab === 'groups' && (
-              <>
-                <h2 className="about-fiis-title">Grupos de Investigación Registrados</h2>
+            {/* Sección 3: Grupos de Investigación */}
+            {activeSection === 'grupos-investigacion' && (
+              <section id="grupos-investigacion" className="about-stacked-section" style={{ paddingBottom: '4rem' }}>
                 <p className="about-tab-description">
-                  Las agrupaciones de docentes investigadores, egresados y alumnos que impulsan la generación de conocimiento en informática y sistemas.
+                  {language === 'es' 
+                    ? 'Las agrupaciones de docentes investigadores, egresados y alumnos que impulsan la generación de conocimiento en informática y sistemas.'
+                    : 'Groupings of researcher professors, alumni, and students driving knowledge generation in computing and systems.'}
                 </p>
 
                 <div className="about-tabs-grid-container">
@@ -296,26 +371,76 @@ export const SobreSgiPage: React.FC = () => {
                       </div>
                       <div className="about-card-divider" />
                       <p className="about-card-bases">
-                        <strong>En qué se basa:</strong> {group.bases}
+                        <strong>{language === 'es' ? 'En qué se basa:' : 'Based on:'}</strong> {group.bases}
                       </p>
                       <div className="about-card-meta-row">
                         <div>
-                          <strong>Línea científica asociada:</strong> <span className="meta-value">{group.lineas}</span>
+                          <strong>{language === 'es' ? 'Línea científica asociada:' : 'Associated scientific line:'}</strong> <span className="meta-value">{group.lineas}</span>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-              </>
+              </section>
             )}
 
           </div>
+
+          {/* Columna Derecha: Menú Lateral Sticky (Estilo Frontiers) */}
+          <aside className="about-fiis-sidebar">
+            <h4 className="sidebar-title">{language === 'es' ? 'Quiénes somos' : 'Who we are'}</h4>
+            <ul className="sidebar-menu">
+              <li>
+                <a 
+                  href="#quienes-somos" 
+                  onClick={(e) => { e.preventDefault(); handleScrollToSection('quienes-somos'); }} 
+                  className={`sidebar-link ${activeSection === 'quienes-somos' ? 'active' : ''}`}
+                >
+                  {language === 'es' ? 'Quiénes somos' : 'Who we are'}
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#lineas-investigacion" 
+                  onClick={(e) => { e.preventDefault(); handleScrollToSection('lineas-investigacion'); }} 
+                  className={`sidebar-link ${activeSection === 'lineas-investigacion' ? 'active' : ''}`}
+                >
+                  {language === 'es' ? 'Líneas de investigación' : 'Research lines'}
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#grupos-investigacion" 
+                  onClick={(e) => { e.preventDefault(); handleScrollToSection('grupos-investigacion'); }} 
+                  className={`sidebar-link ${activeSection === 'grupos-investigacion' ? 'active' : ''}`}
+                >
+                  {language === 'es' ? 'Grupos de investigación' : 'Research groups'}
+                </a>
+              </li>
+            </ul>
+          </aside>
 
         </div>
       </section>
 
       {/* Footer Premium BCP Style */}
       <footer className="welcome-footer-premium">
+        {/* Botón para subir (tipo chevron en el medio de la línea ploma) */}
+        <div className="footer-scroll-top-container">
+          <div className="footer-scroll-top-line" />
+          <button
+            className="footer-scroll-top-btn"
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            title={language === 'es' ? 'Volver arriba' : 'Back to top'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
+        </div>
+
         <div className="footer-premium-content">
           <div className="footer-columns-wrapper" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             <div className="footer-column">

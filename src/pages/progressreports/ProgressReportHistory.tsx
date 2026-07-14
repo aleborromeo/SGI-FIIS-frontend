@@ -125,7 +125,8 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
   return (
     <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end', padding: 0 }} onClick={onClose}>
       <div
-        style={{ backgroundColor: 'var(--surface-container-lowest)', width: '100%', maxWidth: '600px', height: '100vh', overflowY: 'auto', boxShadow: '-8px 0 40px rgba(0,0,0,0.2)' }}
+<<<<<<< HEAD
+        style={{ backgroundColor: 'var(--surface-container-lowest)', width: '100%', maxWidth: '600px', height: '100dvh', overflowY: 'auto', boxShadow: '-8px 0 40px rgba(0,0,0,0.2)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
