@@ -43,7 +43,7 @@ describe('ProposalMembersSection', () => {
     vi.mocked(researchService.getMembers).mockResolvedValue([]);
     render(<ProposalMembersSection {...defaultProps} />);
     expect(screen.getByText('Equipo de Investigación')).toBeDefined();
-    expect(screen.getByText(/Agrega los integrantes del grupo/)).toBeDefined();
+    expect(screen.getByText(/Busca y agrega los integrantes del grupo/)).toBeDefined();
   });
 
   it('fetches and displays available members in select', async () => {
