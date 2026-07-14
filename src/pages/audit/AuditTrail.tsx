@@ -151,33 +151,54 @@ export const AuditTrail: React.FC = () => {
         </div>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '12px',
-          marginBottom: '28px',
-          alignItems: 'flex-end',
-        }}
-      >
-        <div style={{ flex: 1, maxWidth: '350px' }}>
-          <Input
-            label="ID del Tramite"
-            placeholder="Ej: 1, 2, 3..."
-            value={procedureId}
-            onChange={(e) => setProcedureId(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          />
-        </div>
-        <Button
-          variant="primary"
-          icon={<Search size={16} />}
-          onClick={handleSearch}
-          disabled={loading}
-        >
-          {loading ? 'Buscando...' : 'Buscar Trazabilidad'}
-        </Button>
-      </div>
+      <Card style={{ marginBottom: '28px', maxWidth: '600px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)' }}>
+        <CardContent style={{ padding: '24px' }}>
+          <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '6px' }}>
+            Buscar Trámite para Auditoría
+          </h3>
+          <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', marginBottom: '18px', lineHeight: '1.4' }}>
+            Ingrese el identificador único del trámite para visualizar su historial completo y línea de tiempo de auditoría.
+          </p>
+          <div
+            className="search-card-input"
+            style={{
+              display: 'flex',
+              gap: '12px',
+              alignItems: 'center',
+            }}
+          >
+            <style>{`
+              .search-card-input .input-group {
+                margin-bottom: 0 !important;
+              }
+            `}</style>
+            <div style={{ flex: 1 }}>
+              <Input
+                placeholder="Ej: 1, 2, 3..."
+                value={procedureId}
+                onChange={(e) => setProcedureId(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              />
+            </div>
+            <Button
+              variant="primary"
+              icon={<Search size={16} />}
+              onClick={handleSearch}
+              disabled={loading}
+              style={{
+                height: '46px',
+                padding: '0 24px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxSizing: 'border-box'
+              }}
+            >
+              {loading ? 'Buscando...' : 'Buscar Trazabilidad'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {error && (
         <div style={{ marginBottom: '24px' }}>

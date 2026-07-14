@@ -1,4 +1,5 @@
 export interface User {
+  id?: number;
   email: string;
   firstNames: string;
   lastNames: string;
@@ -7,6 +8,7 @@ export interface User {
 }
 
 export interface LoginResponse {
+  id?: number;
   token: string;
   type: string;
   email: string;

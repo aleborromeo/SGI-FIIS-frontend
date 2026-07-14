@@ -184,7 +184,7 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
     <button
       type="button"
       aria-label="Cerrar modal"
-      style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', overflowY: 'auto', border: 'none', cursor: 'default', width: '100vw', height: '100vh', boxSizing: 'border-box' }}
+      style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', overflowY: 'auto', border: 'none', cursor: 'default', width: '100%', height: '100%', boxSizing: 'border-box' }}
       onClick={e => { if (e.target === e.currentTarget) { onClose(); } }}
       onKeyDown={e => { if (e.key === 'Escape') { onClose(); } }}
     >

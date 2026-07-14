@@ -138,8 +138,8 @@ function mapResponseToDetail(r: any): ProgressReportDetail {
 
 export const progressReportService = {
   getPendingReports: async (status?: string): Promise<ProgressReport[]> => {
-    const res = await api.get<any>('/api/reports/progress-reports', {
-      params: { status }
+    const res = await api.get<any>('/api/progress-reports', {
+      params: status ? { status } : undefined
     });
     const content = Array.isArray(res.content) ? res.content : Array.isArray(res) ? res : [];
     return content.map(mapResponseToReport);

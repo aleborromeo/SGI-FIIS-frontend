@@ -403,7 +403,7 @@ export const ConvocatoriasList: React.FC = () => {
           )}
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(420px, 100%), 1fr))', gap: '20px' }}>
           {filtered.map(call => (
             <CallCard
               key={call.id}

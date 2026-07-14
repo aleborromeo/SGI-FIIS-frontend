@@ -13,8 +13,9 @@ export interface Document {
 
 export interface DocumentUploadResponse {
   id: number;
-  fileName: string;
-  fileUrl: string;
+  originalName: string;
+  extension: string;
+  sizeBytes?: number;
 }
 
 export const documentService = {

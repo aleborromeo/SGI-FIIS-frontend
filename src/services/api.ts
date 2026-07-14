@@ -24,7 +24,7 @@ function buildUrl(endpoint: string, params?: FetchOptions['params']): string {
       url = `/${url}`;
     }
 
-    if (!url.startsWith('/api/') && !url.startsWith('/evaluaciones')) {
+    if (!url.startsWith('/api/')) {
       url = `${API_PREFIX}${url}`;
     }
 

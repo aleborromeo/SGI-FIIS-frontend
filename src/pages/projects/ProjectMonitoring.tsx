@@ -310,6 +310,7 @@ export const ProjectMonitoring: React.FC = () => {
       <Card style={{ marginBottom: '24px' }}>
         <CardContent>
           <div
+            className="responsive-grid-4"
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
@@ -380,6 +381,7 @@ export const ProjectMonitoring: React.FC = () => {
       </Card>
 
       <div
+        className="responsive-grid-split"
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 360px',
@@ -424,6 +426,7 @@ export const ProjectMonitoring: React.FC = () => {
               </div>
 
               <div
+                className="responsive-grid-5"
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
@@ -654,7 +657,7 @@ export const ProjectMonitoring: React.FC = () => {
                 {/* Trazabilidad lineal */}
                 <div>
                   <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Trazabilidad de Firmas y Cambios</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderLeft: '2px solid var(--outline-variant)', paddingLeft: '16px', marginLeft: '6px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderLeft: '2px solid var(--outline-variant)', paddingLeft: '16px', marginLeft: '6px', overflowX: 'hidden' }}>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
                       <strong style={{ fontSize: '13px' }}>Postulación Enviada</strong>

@@ -24,27 +24,72 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
       elevation={0}
       sx={{
         border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 2,
-        transition: 'box-shadow 0.2s, border-color 0.2s',
+        borderColor: 'rgba(0, 32, 69, 0.08)',
+        borderRadius: '16px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
+        transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s',
         '&:hover': {
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          transform: 'translateY(-6px)',
+          boxShadow: '0 12px 30px rgba(0, 32, 69, 0.12)',
           borderColor: 'primary.main',
         },
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      <CardContent sx={{ flex: 1, pb: 1 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
-          <Typography variant="caption" fontWeight={700} color="primary" letterSpacing={0.5}>
+      {/* Premium accent top bar */}
+      <Box 
+        sx={{ 
+          height: '6px', 
+          background: 'linear-gradient(90deg, #1a365d 0%, #455f88 100%)', 
+          width: '100%' 
+        }} 
+      />
+
+      <CardContent sx={{ flex: 1, pb: 1, pt: 2.5, px: 2.5, display: 'flex', flexDirection: 'column' }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+          <Box 
+            sx={{
+              bgcolor: 'rgba(26, 54, 93, 0.06)',
+              color: '#1a365d',
+              fontWeight: 700,
+              fontSize: '0.75rem',
+              px: 1.5,
+              py: 0.5,
+              borderRadius: '8px',
+              letterSpacing: 0.5,
+            }}
+          >
             CONV-{convocatoria.id}
-          </Typography>
-          <Chip label="ABIERTA" color="success" size="small" variant="filled" sx={{ fontWeight: 600, fontSize: '0.7rem' }} />
+          </Box>
+          <Chip 
+            label="ABIERTA" 
+            size="small" 
+            sx={{ 
+              fontWeight: 700, 
+              fontSize: '0.65rem', 
+              bgcolor: '#e6f4ea', 
+              color: '#137333',
+              border: '1px solid #ceead6',
+              borderRadius: '9999px',
+            }} 
+          />
         </Stack>
 
-        <Typography variant="h6" fontWeight={700} gutterBottom sx={{ lineHeight: 1.3 }}>
+        <Typography 
+          variant="h6" 
+          fontWeight={700} 
+          gutterBottom 
+          sx={{ 
+            lineHeight: 1.3, 
+            color: '#002045',
+            mb: 1.5,
+            fontSize: '1.15rem'
+          }}
+        >
           {convocatoria.title}
         </Typography>
 
@@ -56,7 +101,9 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
             WebkitLineClamp: 3,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            mb: 2,
+            mb: 3,
+            lineHeight: 1.6,
+            flexGrow: 1,
           }}
         >
           {convocatoria.description}
@@ -65,39 +112,77 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'space-between',
-            borderTop: '1px solid',
+            flexDirection: 'column',
+            gap: 1,
+            mt: 'auto',
+            pt: 2,
+            borderTop: '1px dashed',
             borderColor: 'divider',
-            pt: 1.5,
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <Calendar size={14} style={{ color: 'var(--text-secondary, #666)' }} />
-            <Typography variant="caption" color="text.secondary">
-              Inicio: <strong style={{ color: 'var(--on-surface)' }}>{convocatoria.startDate}</strong>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Calendar size={14} style={{ color: '#455f88' }} />
+              <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                Inicio:
+              </Typography>
+            </Stack>
+            <Typography variant="caption" fontWeight={600} color="text.primary">
+              {convocatoria.startDate}
             </Typography>
-          </Stack>
-          <Typography variant="caption" color="text.secondary">
-            Cierre: <strong style={{ color: 'var(--on-surface)' }}>{convocatoria.endDate}</strong>
-          </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Calendar size={14} style={{ color: '#ba1a1a' }} />
+              <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                Cierre:
+              </Typography>
+            </Stack>
+            <Typography variant="caption" fontWeight={600} color="#ba1a1a">
+              {convocatoria.endDate}
+            </Typography>
+          </Box>
         </Box>
       </CardContent>
 
-      <CardActions sx={{ px: 2, pb: 2, pt: 0 }}>
+      <CardActions sx={{ px: 2.5, pb: 2.5, pt: 1 }}>
         {eligible ? (
           <Button
             fullWidth
             variant="contained"
-            startIcon={<ExternalLink size={18} />}
+            startIcon={<ExternalLink size={16} />}
             onClick={() => onPostular(convocatoria)}
-            sx={{ borderRadius: 1.5, textTransform: 'none', fontWeight: 600 }}
+            sx={{ 
+              borderRadius: '10px', 
+              textTransform: 'none', 
+              fontWeight: 600,
+              py: 1,
+              background: 'linear-gradient(135deg, #1a365d 0%, #002045 100%)',
+              boxShadow: '0 4px 12px rgba(26, 54, 93, 0.2)',
+              transition: 'all 0.2s',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #2d4d7c 0%, #1a365d 100%)',
+                boxShadow: '0 6px 16px rgba(26, 54, 93, 0.3)',
+                transform: 'translateY(-1px)',
+              }
+            }}
           >
             Postular Proyecto
           </Button>
         ) : (
           <Tooltip title="No pertenece a un grupo de investigación activo">
             <span style={{ width: '100%' }}>
-              <Button fullWidth variant="outlined" disabled sx={{ borderRadius: 1.5, textTransform: 'none', fontWeight: 600 }}>
+              <Button 
+                fullWidth 
+                variant="outlined" 
+                disabled 
+                sx={{ 
+                  borderRadius: '10px', 
+                  textTransform: 'none', 
+                  fontWeight: 600,
+                  py: 1,
+                }}
+              >
                 Postular Proyecto
               </Button>
             </span>

@@ -11,6 +11,7 @@ export interface Project {
   code?: string;
   title?: string;
   summary?: string;
+  abstract?: string;
   generalObjective?: string;
   specificObjectives?: string;
   methodology?: string;
@@ -27,8 +28,10 @@ export interface Project {
   researchGroupCode?: string;
   callId?: number;
   documentId?: number;
+  documentName?: string;
   status?: string;
   members?: ProjectMember[];
+  recibeApoyoFif?: string;
 
   line?: string;
   type?: string;
@@ -52,8 +55,9 @@ export interface CreateProjectPayload {
 
 export interface DocumentUploadResponse {
   id: number;
-  fileName: string;
-  fileUrl: string;
+  originalName: string;
+  extension: string;
+  sizeBytes?: number;
 }
 
 export const projectService = {
