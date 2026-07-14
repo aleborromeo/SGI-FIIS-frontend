@@ -47,6 +47,12 @@ function getStatusLabel(status?: string): string {
     RECHAZADO: 'Rechazado',
     RECTIFIED: 'Subsanado',
     SUBSANADO: 'Subsanado',
+    POSTULADO: 'Postulado',
+    PENDIENTE_COORDINADOR: 'Pendiente de coordinador',
+    PENDIENTE_DIRECCION: 'Pendiente de dirección',
+    PENDIENTE_DECANATO: 'Pendiente de decanato',
+    APROBADO_CON_RESOLUCION: 'Aprobado con resolución',
+    FINALIZADO: 'Finalizado',
   };
 
   return dictionary[normalized] ?? status;
@@ -123,7 +129,7 @@ export const ThesisTraceability: React.FC = () => {
 
   const steps = useMemo(() => {
     const [studentStatus, coordinatorStatus, directorStatus, currentStatus] =
-      getStepStatus(plan?.status);
+      getStepStatus((plan as any)?.estadoPlan || plan?.status);
 
     return [
       {
@@ -151,7 +157,7 @@ export const ThesisTraceability: React.FC = () => {
         sublabel: 'Resultado',
       },
     ];
-  }, [plan?.status]);
+  }, [plan?.status, (plan as any)?.estadoPlan]);
 
   useEffect(() => {
     let mounted = true;
@@ -347,7 +353,7 @@ export const ThesisTraceability: React.FC = () => {
     return (
       <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
         <Link
-          to="/projects"
+          to={currentRole === 'DECANO' ? '/thesis/plans' : '/projects'}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -358,7 +364,7 @@ export const ThesisTraceability: React.FC = () => {
           }}
         >
           <ArrowLeft size={16} />
-          Volver a proyectos
+          Volver a planes de tesis
         </Link>
 
         <Alert title="No se pudo cargar la trazabilidad">
@@ -376,11 +382,14 @@ export const ThesisTraceability: React.FC = () => {
     );
   }
 
-  const title = readValue(plan, ['title', 'titulo', 'tituloPlan'], 'Plan de tesis sin título');
-  const statusLabel = getStatusLabel(plan.status);
-  const student = readValue(plan, ['studentName', 'estudiante', 'studentFullName'], 'No registrado');
-  const group = readValue(plan, ['researchGroupCode', 'groupCode', 'grupo'], 'No registrado');
-  const researchLine = readValue(plan, ['researchLineName', 'lineaInvestigacion', 'line'], 'No registrada');
+  const title = readValue(plan, ['tituloTesis', 'titulo', 'title'], 'Plan de tesis sin título');
+  const statusLabel = getStatusLabel((plan as any).estadoPlan || plan.status);
+  const studentName = readValue(plan, ['nombreEstudiante', 'studentName', 'estudiante'], '');
+  const studentLast = readValue(plan, ['apellidoEstudiante', 'studentLastName'], '');
+  const student = studentName || studentLast ? `${studentName} ${studentLast}`.trim() : 'No registrado';
+  const group = readValue(plan, ['nombreGrupo', 'groupCode', 'grupo'], 'No registrado');
+  const groupCode = readValue(plan, ['codigoGrupo', 'groupCode'], '');
+  const researchLine = readValue(plan, ['nombreLinea', 'lineaInvestigacion', 'line'], 'No registrada');
   const advisor = readValue(plan, ['advisorName', 'asesor', 'advisor'], 'No registrado');
 
   const revisor = plan.revisorActual || '';
@@ -392,7 +401,7 @@ export const ThesisTraceability: React.FC = () => {
 
   const showStudentActions = 
     currentRole === 'ESTUDIANTE' && revisor === 'ESTUDIANTE' &&
-    ['OBSERVED', 'OBSERVADO'].includes(String(plan.status || plan.estadoPlan).toUpperCase());
+    ['OBSERVED', 'OBSERVADO'].includes(String((plan as any).estadoPlan || plan.status).toUpperCase());
 
   return (
     <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
@@ -423,7 +432,7 @@ export const ThesisTraceability: React.FC = () => {
       </div>
 
       <Link
-        to="/projects"
+        to={currentRole === 'DECANO' ? '/thesis/plans' : '/projects'}
         style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -434,7 +443,7 @@ export const ThesisTraceability: React.FC = () => {
         }}
       >
         <ArrowLeft size={16} />
-        Volver a proyectos
+        Volver a planes de tesis
       </Link>
 
       {actionMessage && (
@@ -456,7 +465,7 @@ export const ThesisTraceability: React.FC = () => {
       >
         <div>
           <Badge variant="info" style={{ marginBottom: '12px' }}>
-            PLAN ID: {plan.id || id}
+            PLAN ID: {plan.idPlanTesis || id}
           </Badge>
 
           <h1
@@ -540,7 +549,7 @@ export const ThesisTraceability: React.FC = () => {
       <div className="section-grid" style={{ gap: '32px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           {/* Tarjeta del Informe de Tesis Final */}
-          {(['APPROVED', 'APROBADO'].includes(String(plan.status || plan.estadoPlan).toUpperCase()) || report) && (
+          {(['APPROVED', 'APROBADO'].includes(String((plan as any).estadoPlan || plan.status).toUpperCase()) || report) && (
             <Card style={{ borderTop: '4px solid var(--primary)' }}>
               <CardHeader>
                 <h3 className="text-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -636,7 +645,13 @@ export const ThesisTraceability: React.FC = () => {
                 Documento actual
               </h3>
 
-              <Button variant="secondary" style={{ padding: '4px 8px', fontSize: '12px' }}>
+              <Button variant="secondary" style={{ padding: '4px 8px', fontSize: '12px' }}
+                onClick={() => {
+                  if (plan.idTramite) {
+                    window.open(`/reports/traceability/${plan.idTramite}`, '_blank');
+                  }
+                }}
+              >
                 Historial
               </Button>
             </CardHeader>
@@ -673,12 +688,21 @@ export const ThesisTraceability: React.FC = () => {
                       className="text-caption"
                       style={{ color: 'var(--on-surface-variant)' }}
                     >
-                      {readValue(plan, ['documentName', 'fileName'], 'Archivo pendiente de integración')}
+                      {readValue(plan, ['nombreDocumento', 'documentName', 'fileName'], 'Archivo pendiente de integración')}
                     </div>
                   </div>
                 </div>
 
-                <Button variant="secondary">
+                <Button 
+                  variant="secondary"
+                  onClick={() => {
+                    if (plan.idDocumentoActual) {
+                      const url = documentService.download(plan.idDocumentoActual);
+                      window.open(url, '_blank');
+                    }
+                  }}
+                  disabled={!plan.idDocumentoActual}
+                >
                   <Download size={16} />
                 </Button>
               </div>

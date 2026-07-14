@@ -173,6 +173,8 @@ export const ThesisPlansList: React.FC = () => {
           >
             {currentRole === 'ESTUDIANTE'
               ? 'Consulta el estado de tu plan de tesis, observaciones registradas y resoluciones emitidas.'
+              : currentRole === 'DECANO'
+              ? 'Planes de tesis pendientes de firma decanal. Solo se muestran los aprobados por Coordinador y Director.'
               : 'Herramienta de revisión académica, validación y control del flujo de aprobación de tesis.'}
           </p>
         </div>
@@ -209,7 +211,9 @@ export const ThesisPlansList: React.FC = () => {
               cursor: 'pointer'
             }}
           >
-            Pendientes de Revisión ({pendingPlans.length})
+            {currentRole === 'DECANO'
+              ? `Pendientes de Firma (${pendingPlans.length})`
+              : `Pendientes de Revisión (${pendingPlans.length})`}
           </button>
           
           {currentRole === 'COORDINADOR_GRUPO' && (
