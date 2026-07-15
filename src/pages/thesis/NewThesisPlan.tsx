@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Save,
   X,
@@ -8,6 +9,9 @@ import {
   User,
   BookOpen,
   Users,
+  Upload,
+  CheckCircle,
+  FileText,
 } from 'lucide-react';
 
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
@@ -19,6 +23,7 @@ import { Alert } from '../../components/ui/Alert';
 
 import { api } from '../../services/api';
 import { researchService } from '../../services/researchService';
+import { documentService } from '../../services/documentService';
 import { AuthContext } from '../../context/AuthContext';
 import type { ResearchLine, ResearchGroup } from '../../services/researchService';
 
@@ -34,11 +39,13 @@ interface CreateThesisPlanPayload {
   resumen: string;
   idLinea: number;
   idGrupo: number;
+  idDocumentoActual: number;
   idAsesor?: number;
 }
 
 export const NewThesisPlan: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('thesis');
   const { currentRole } = React.useContext(AuthContext);
 
   const [formData, setFormData] = useState({
@@ -56,6 +63,10 @@ export const NewThesisPlan: React.FC = () => {
   const [loadingCatalogs, setLoadingCatalogs] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const [idDocumentoActual, setIdDocumentoActual] = useState<number | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -111,19 +122,45 @@ export const NewThesisPlan: React.FC = () => {
 
   function validate(): boolean {
     if (formData.tituloTesis.trim().length < 5) {
-      setErrorMsg('El título debe tener al menos 5 caracteres.'); return false;
+      setErrorMsg(t('thesis:planForm.validation.titleMinLength')); return false;
     }
     if (formData.resumen.trim().length < 10) {
-      setErrorMsg('El resumen debe tener al menos 10 caracteres.'); return false;
+      setErrorMsg(t('thesis:planForm.validation.summaryMinLength')); return false;
     }
     if (!formData.idLinea) {
-      setErrorMsg('Selecciona una línea de investigación.'); return false;
+      setErrorMsg(t('thesis:planForm.validation.lineRequired')); return false;
     }
     if (!formData.idGrupo) {
-      setErrorMsg('Selecciona un grupo de investigación.'); return false;
+      setErrorMsg(t('thesis:planForm.validation.groupRequired')); return false;
+    }
+    if (!idDocumentoActual) {
+      setErrorMsg(t('thesis:planForm.validation.documentRequired')); return false;
     }
     return true;
   }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const extension = file.name.split('.').pop()?.toUpperCase();
+    if (extension !== 'PDF' && extension !== 'DOC' && extension !== 'DOCX') {
+      setErrorMsg(t('thesis:planForm.validation.invalidFormat'));
+      return;
+    }
+
+    try {
+      setUploadingFile(true);
+      setErrorMsg('');
+      const res = await documentService.upload(file);
+      setIdDocumentoActual(res.id);
+      setFileName(file.name);
+    } catch (err: any) {
+      setErrorMsg(err.message || t('thesis:planForm.validation.uploadError'));
+    } finally {
+      setUploadingFile(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!validate()) return;
@@ -134,13 +171,14 @@ export const NewThesisPlan: React.FC = () => {
         resumen: formData.resumen,
         idLinea: Number(formData.idLinea),
         idGrupo: Number(formData.idGrupo),
+        idDocumentoActual: idDocumentoActual!,
       };
       if (formData.idAsesor) payload.idAsesor = Number(formData.idAsesor);
 
       await api.post('/thesis/plans', payload);
       navigate('/thesis/plans');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Error al registrar el plan de tesis.');
+      setErrorMsg(err.message || t('thesis:planForm.errorSave'));
     } finally {
       setLoading(false);
     }
@@ -153,20 +191,20 @@ export const NewThesisPlan: React.FC = () => {
         <div>
           <h1 className="text-headline-lg" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <GraduationCap size={28} style={{ color: 'var(--primary)' }} />
-            Registrar Plan de Tesis
+            {t('thesis:planForm.title')}
           </h1>
           <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginTop: '6px' }}>
-            Completa la información para iniciar el proceso de revisión académica de tu propuesta de tesis.
+            {t('thesis:planForm.subtitle')}
           </p>
         </div>
         <Link to="/thesis/plans">
-          <Button variant="secondary" icon={<X size={16} />}>Cancelar</Button>
+          <Button variant="secondary" icon={<X size={16} />}>{t('thesis:planForm.cancel')}</Button>
         </Link>
       </div>
 
       {errorMsg && (
         <div style={{ marginBottom: '20px' }}>
-          <Alert title="Revisa la información">
+          <Alert title={t('thesis:planForm.reviewInfo')}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <AlertCircle size={16} />
               <span>{errorMsg}</span>
@@ -177,7 +215,7 @@ export const NewThesisPlan: React.FC = () => {
 
       {loadingCatalogs ? (
         <div style={{ textAlign: 'center', padding: '48px', color: 'var(--on-surface-variant)' }}>
-          Cargando formulario...
+          {t('thesis:planForm.loadingForm')}
         </div>
       ) : (
         <>
@@ -186,20 +224,20 @@ export const NewThesisPlan: React.FC = () => {
             <CardHeader>
               <h2 className="text-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <BookOpen size={18} style={{ color: 'var(--primary)' }} />
-                Información de la Tesis
+                {t('thesis:planForm.thesisInfo')}
               </h2>
             </CardHeader>
             <CardContent>
               <Input
-                label="Título de la Tesis"
-                placeholder="Ingresa el título completo de tu propuesta de tesis..."
+                label={t('thesis:planForm.thesisTitle')}
+                placeholder={t('thesis:planForm.thesisTitlePlaceholder')}
                 value={formData.tituloTesis}
                 onChange={e => handleChange('tituloTesis', e.target.value)}
                 style={{ marginBottom: '16px' }}
               />
               <Textarea
-                label="Resumen Académico"
-                placeholder="Describe brevemente el problema de investigación, metodología y contribución esperada..."
+                label={t('thesis:planForm.academicSummary')}
+                placeholder={t('thesis:planForm.academicSummaryPlaceholder')}
                 rows={5}
                 value={formData.resumen}
                 onChange={e => handleChange('resumen', e.target.value)}
@@ -207,23 +245,102 @@ export const NewThesisPlan: React.FC = () => {
               />
               <div className="form-row" style={{ gap: '16px' }}>
                 <Select
-                  label="Línea de Investigación"
+                  label={t('thesis:planForm.researchLine')}
                   value={formData.idLinea}
                   onChange={e => handleChange('idLinea', e.target.value)}
                   options={[
-                    { value: '', label: 'Seleccione una línea...' },
+                    { value: '', label: t('thesis:planForm.selectLine') },
                     ...lines.map(l => ({ value: String(l.id), label: l.lineName })),
                   ]}
                 />
                 <Select
-                  label="Grupo de Investigación"
+                  label={t('thesis:planForm.researchGroup')}
                   value={formData.idGrupo}
                   onChange={e => handleChange('idGrupo', e.target.value)}
                   options={[
-                    { value: '', label: 'Seleccione un grupo...' },
+                    { value: '', label: t('thesis:planForm.selectGroup') },
                     ...groups.map(g => ({ value: String(g.id), label: g.groupName })),
                   ]}
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Documento adjunto (RNF-07: obligatorio) */}
+          <Card style={{ marginBottom: '24px' }}>
+            <CardHeader>
+              <h2 className="text-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FileText size={18} style={{ color: 'var(--primary)' }} />
+                {t('thesis:planForm.documentCard')}
+              </h2>
+              <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)', marginTop: '4px' }}>
+                {t('thesis:planForm.documentSubtitle')}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div style={{
+                border: '1px dashed var(--outline-variant)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '32px 24px',
+                backgroundColor: 'var(--surface-container-low)',
+                textAlign: 'center',
+              }}>
+                <input
+                  type="file"
+                  id="thesis-plan-file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                  disabled={uploadingFile || loading}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: 'var(--radius-full)',
+                    backgroundColor: 'var(--surface-container-high)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--on-surface-variant)',
+                  }}>
+                    <Upload size={22} />
+                  </div>
+                  <label
+                    htmlFor="thesis-plan-file"
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      color: 'var(--primary)',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    {uploadingFile ? t('thesis:planForm.uploadingFile') : t('thesis:planForm.selectFile')}
+                  </label>
+                  <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>
+                    {t('thesis:planForm.allowedFormats')}
+                  </span>
+
+                  {fileName && idDocumentoActual && (
+                    <div style={{
+                      marginTop: '12px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      backgroundColor: 'var(--surface-container-lowest)',
+                      padding: '8px 16px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid #d1fae5',
+                      color: '#065f46',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                    }}>
+                      <CheckCircle size={15} />
+                      <span>{fileName}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -233,24 +350,24 @@ export const NewThesisPlan: React.FC = () => {
             <CardHeader>
               <h2 className="text-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Users size={18} style={{ color: 'var(--primary)' }} />
-                Docente Asesor
+                {t('thesis:planForm.advisorCard')}
               </h2>
               <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)', marginTop: '4px' }}>
-                Opcional — puedes asignar un asesor ahora o posteriormente.
+                {t('thesis:planForm.advisorSubtitle')}
               </p>
             </CardHeader>
             <CardContent>
               {docentes.length === 0 ? (
                 <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)' }}>
-                  No se pudieron cargar los docentes investigadores.
+                  {t('thesis:planForm.noDocentes')}
                 </p>
               ) : (
                 <Select
-                  label="Seleccionar Asesor"
+                  label={t('thesis:planForm.selectAdvisor')}
                   value={formData.idAsesor}
                   onChange={e => handleChange('idAsesor', e.target.value)}
                   options={[
-                    { value: '', label: 'Sin asesor asignado (por ahora)' },
+                    { value: '', label: t('thesis:planForm.noAdvisor') },
                     ...docentes.map(d => ({
                       value: String(d.id),
                       label: `${d.nombres} ${d.apellidos}`,
@@ -271,7 +388,7 @@ export const NewThesisPlan: React.FC = () => {
                 }}>
                   <User size={16} />
                   <span className="text-label-md">
-                    Asesor seleccionado:{' '}
+                    {t('thesis:planForm.selectedAdvisor')}{' '}
                     <strong>
                       {docentes.find(d => String(d.id) === formData.idAsesor)
                         ? `${docentes.find(d => String(d.id) === formData.idAsesor)!.nombres} ${docentes.find(d => String(d.id) === formData.idAsesor)!.apellidos}`
@@ -286,15 +403,15 @@ export const NewThesisPlan: React.FC = () => {
           {/* Footer */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
             <Link to="/thesis/plans">
-              <Button variant="secondary">Cancelar</Button>
+              <Button variant="secondary">{t('thesis:planForm.cancel')}</Button>
             </Link>
             <Button
               variant="primary"
               icon={<Save size={16} />}
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={loading || uploadingFile}
             >
-              {loading ? 'Registrando...' : 'Registrar Plan de Tesis'}
+              {loading ? t('thesis:planForm.submitting') : t('thesis:planForm.submit')}
             </Button>
           </div>
         </>
