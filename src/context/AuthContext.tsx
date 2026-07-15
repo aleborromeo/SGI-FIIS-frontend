@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import { authService } from '../services/authService';
 import type { LoginResponse } from '../types/auth';
+import i18n from '../i18n';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -95,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       return response;
     } catch (err: any) {
-      const msg = err.message || 'Error al iniciar sesión';
+      const msg = err.message || i18n.t('auth:login.error.unknown');
       setError(msg);
       throw new Error(msg);
     }

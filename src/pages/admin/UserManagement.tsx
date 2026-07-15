@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Users,
   UserPlus,
@@ -72,6 +73,7 @@ const EMPTY_FORM: UserFormData = {
 };
 
 export const UserManagement: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +89,12 @@ export const UserManagement: React.FC = () => {
   const toast = useToast();
   const confirm = useConfirm();
 
+  const roleLabelMap = (code: string): string => {
+    const key = `users.roles.${code}`;
+    const translated = t(key);
+    return translated !== key ? translated : code;
+  };
+
   const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
@@ -95,11 +103,11 @@ export const UserManagement: React.FC = () => {
       setUsers(data);
     } catch (err: any) {
       console.error('Error al cargar usuarios:', err);
-      setError('No se pudo cargar la lista de usuarios.');
+      setError(t('users.errorLoad'));
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, t]);
 
   useEffect(() => {
     loadUsers();
@@ -140,16 +148,16 @@ export const UserManagement: React.FC = () => {
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
     if (!formData.dni || formData.dni.length !== 8) {
-      errors.dni = 'El DNI debe tener exactamente 8 caracteres';
+      errors.dni = t('users.validation.dniLength');
     }
     if (!formData.firstNames.trim()) {
-      errors.firstNames = 'Los nombres son obligatorios';
+      errors.firstNames = t('users.validation.namesRequired');
     }
     if (!formData.lastNames.trim()) {
-      errors.lastNames = 'Los apellidos son obligatorios';
+      errors.lastNames = t('users.validation.lastNamesRequired');
     }
     if (!formData.roleCode) {
-      errors.roleCode = 'Seleccione un rol';
+      errors.roleCode = t('users.validation.roleRequired');
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -171,7 +179,7 @@ export const UserManagement: React.FC = () => {
           payload.institutionalEmail = formData.institutionalEmail.trim();
         }
         await userService.update(editingUser.id, payload);
-        toast.success('Usuario actualizado exitosamente');
+        toast.success(t('users.toast.updated'));
       } else {
         const payload: CreateUserPayload = {
           dni: formData.dni.trim(),
@@ -184,12 +192,12 @@ export const UserManagement: React.FC = () => {
           payload.institutionalEmail = formData.institutionalEmail.trim();
         }
         await userService.create(payload);
-        toast.success('Usuario creado exitosamente. Se enviara la contrasena temporal al correo.');
+        toast.success(t('users.toast.created'));
       }
       closeForm();
       loadUsers();
     } catch (err: any) {
-      const msg = err?.message || 'Error al guardar el usuario';
+      const msg = err?.message || t('users.toast.errorSave');
       toast.error(msg);
     } finally {
       setSaving(false);
@@ -198,12 +206,14 @@ export const UserManagement: React.FC = () => {
 
   const handleToggleStatus = async (user: User) => {
     const newActive = !user.active;
-    const action = newActive ? 'activar' : 'desactivar';
+    const userName = `${user.firstNames} ${user.lastNames}`;
 
     const accepted = await confirm.confirmDialog({
-      title: `${newActive ? 'Activar' : 'Desactivar'} Usuario`,
-      message: `¿Desea ${action} a ${user.firstNames} ${user.lastNames}?`,
-      confirmText: newActive ? 'Activar' : 'Desactivar',
+      title: newActive ? t('users.confirm.activateTitle') : t('users.confirm.deactivateTitle'),
+      message: newActive
+        ? t('users.confirm.activateMessage', { name: userName })
+        : t('users.confirm.deactivateMessage', { name: userName }),
+      confirmText: newActive ? t('users.confirm.activateConfirm') : t('users.confirm.deactivateConfirm'),
       danger: !newActive,
     });
 
@@ -212,22 +222,24 @@ export const UserManagement: React.FC = () => {
     try {
       setProcessingId(user.id);
       await userService.toggleStatus(user.id, newActive);
-      toast.success(`Usuario ${newActive ? 'activado' : 'desactivado'} exitosamente`);
+      toast.success(newActive ? t('users.toast.activated') : t('users.toast.deactivated'));
       setUsers((prev) =>
         prev.map((u) => (u.id === user.id ? { ...u, active: newActive } : u))
       );
     } catch (err) {
-      toast.error(`Error al ${action} el usuario`);
+      toast.error(newActive ? t('users.toast.errorActivate') : t('users.toast.errorDeactivate'));
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleResetPassword = async (user: User) => {
+    const userName = `${user.firstNames} ${user.lastNames}`;
+
     const accepted = await confirm.confirmDialog({
-      title: 'Restablecer Contrasena',
-      message: `¿Desea restablecer la contrasena de ${user.firstNames} ${user.lastNames}? Se enviara una contrasena temporal a su correo.`,
-      confirmText: 'Restablecer',
+      title: t('users.confirm.resetPasswordTitle'),
+      message: t('users.confirm.resetPasswordMessage', { name: userName }),
+      confirmText: t('users.confirm.resetPasswordConfirm'),
       danger: false,
     });
 
@@ -236,16 +248,16 @@ export const UserManagement: React.FC = () => {
     try {
       setProcessingId(user.id);
       await userService.resetPassword(user.id);
-      toast.success('Contrasena restablecida. Se envio un correo al usuario.');
+      toast.success(t('users.toast.resetPassword'));
     } catch (err) {
-      toast.error('Error al restablecer la contrasena');
+      toast.error(t('users.toast.errorResetPassword'));
     } finally {
       setProcessingId(null);
     }
   };
 
   const getRoleLabel = (code: string): string => {
-    return ROLE_OPTIONS.find((r) => r.value === code)?.label || code;
+    return roleLabelMap(code);
   };
 
   return (
@@ -276,13 +288,13 @@ export const UserManagement: React.FC = () => {
             >
               <Users size={24} />
             </div>
-            <h1 className="text-headline-lg">Gestion de Usuarios</h1>
+            <h1 className="text-headline-lg">{t('users.pageTitle')}</h1>
           </div>
           <p
             className="text-body-md"
             style={{ color: 'var(--on-surface-variant)', marginTop: '8px' }}
           >
-            Administre el personal y alumnos del sistema. Cree, edite, active o desactive cuentas.
+            {t('users.pageSubtitle')}
           </p>
         </div>
 
@@ -293,10 +305,10 @@ export const UserManagement: React.FC = () => {
             onClick={loadUsers}
             disabled={loading}
           >
-            Actualizar
+            {t('users.btnUpdate')}
           </Button>
           <Button variant="primary" icon={<UserPlus size={16} />} onClick={openCreateForm}>
-            Nuevo Usuario
+            {t('users.btnNew')}
           </Button>
         </div>
       </div>
@@ -312,8 +324,8 @@ export const UserManagement: React.FC = () => {
       >
         <div style={{ flex: 1, maxWidth: '400px' }}>
           <Input
-            label="Buscar"
-            placeholder="DNI, nombre, correo o rol..."
+            label={t('users.searchLabel')}
+            placeholder={t('users.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -324,7 +336,7 @@ export const UserManagement: React.FC = () => {
           icon={<Search size={16} />}
           onClick={handleSearch}
         >
-          Buscar
+          {t('users.btnSearch')}
         </Button>
       </div>
 
@@ -344,7 +356,7 @@ export const UserManagement: React.FC = () => {
                 <strong style={{ display: 'block', fontSize: '24px' }}>
                   {users.length}
                 </strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>Total</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('users.statsTotal')}</span>
               </div>
             </div>
           </CardContent>
@@ -357,7 +369,7 @@ export const UserManagement: React.FC = () => {
                 <strong style={{ display: 'block', fontSize: '24px' }}>
                   {users.filter((u) => u.active).length}
                 </strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>Activos</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('users.statsActive')}</span>
               </div>
             </div>
           </CardContent>
@@ -370,7 +382,7 @@ export const UserManagement: React.FC = () => {
                 <strong style={{ display: 'block', fontSize: '24px' }}>
                   {users.filter((u) => !u.active).length}
                 </strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>Inactivos</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('users.statsInactive')}</span>
               </div>
             </div>
           </CardContent>
@@ -379,7 +391,7 @@ export const UserManagement: React.FC = () => {
 
       {error && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert title="Error de conexion">
+          <Alert title={t('users.errorTitle')}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <AlertCircle size={18} />
               <span>{error}</span>
@@ -391,27 +403,27 @@ export const UserManagement: React.FC = () => {
       <TableContainer>
         <TableHead>
           <TableRow>
-            <TableHeader>DNI</TableHeader>
-            <TableHeader>Nombres y Apellidos</TableHeader>
-            <TableHeader>Correo Institucional</TableHeader>
-            <TableHeader>Telefono</TableHeader>
-            <TableHeader>Rol</TableHeader>
-            <TableHeader>Estado</TableHeader>
-            <TableHeader style={{ textAlign: 'right' }}>Acciones</TableHeader>
+            <TableHeader>{t('users.table.dni')}</TableHeader>
+            <TableHeader>{t('users.table.nameAndLastname')}</TableHeader>
+            <TableHeader>{t('users.table.email')}</TableHeader>
+            <TableHeader>{t('users.table.phone')}</TableHeader>
+            <TableHeader>{t('users.table.role')}</TableHeader>
+            <TableHeader>{t('users.table.status')}</TableHeader>
+            <TableHeader style={{ textAlign: 'right' }}>{t('users.table.actions')}</TableHeader>
           </TableRow>
         </TableHead>
         <TableBody>
           {loading ? (
             <TableRow>
               <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: 'var(--on-surface-variant)' }}>
-                Cargando usuarios...
+                {t('users.table.loading')}
               </td>
             </TableRow>
           ) : users.length === 0 ? (
             <TableRow>
               <td colSpan={7} style={{ textAlign: 'center', padding: '48px', color: 'var(--on-surface-variant)' }}>
                 <Users size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
-                No se encontraron usuarios.
+                {t('users.table.empty')}
               </td>
             </TableRow>
           ) : (
@@ -423,7 +435,7 @@ export const UserManagement: React.FC = () => {
                     {user.firstNames} {user.lastNames}
                   </div>
                 </TableCell>
-                <TableCell>{user.institutionalEmail || <span style={{ color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>Sin correo</span>}</TableCell>
+                <TableCell>{user.institutionalEmail || <span style={{ color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>{t('users.table.noEmail')}</span>}</TableCell>
                 <TableCell>{user.phone || '-'}</TableCell>
                 <TableCell>
                   <Badge variant={ROLE_BADGE_MAP[user.roleCode] || 'neutral'}>
@@ -432,7 +444,7 @@ export const UserManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Badge variant={user.active ? 'success' : 'error'}>
-                    {user.active ? 'Activo' : 'Inactivo'}
+                    {user.active ? t('users.status.active') : t('users.status.inactive')}
                   </Badge>
                 </TableCell>
                 <TableCell style={{ textAlign: 'right' }}>
@@ -442,7 +454,7 @@ export const UserManagement: React.FC = () => {
                   icon={<Pencil size={14} />}
                   onClick={() => openEditForm(user)}
                 >
-                  Editar
+                  {t('users.btnEdit')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -450,7 +462,7 @@ export const UserManagement: React.FC = () => {
                   onClick={() => handleResetPassword(user)}
                   disabled={processingId === user.id}
                 >
-                  Reset Pass
+                  {t('users.btnResetPass')}
                 </Button>
                 <Button
                   variant={user.active ? 'primary' : 'secondary'}
@@ -463,7 +475,7 @@ export const UserManagement: React.FC = () => {
                       : { color: '#ba1a1a', borderColor: '#ba1a1a' }
                   }
                     >
-                      {user.active ? 'Desactivar' : 'Activar'}
+                      {user.active ? t('users.btnDeactivate') : t('users.btnActivate')}
                     </Button>
                   </div>
                 </TableCell>
@@ -503,7 +515,7 @@ export const UserManagement: React.FC = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 className="text-headline-md">
-                {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
+                {editingUser ? t('users.form.editTitle') : t('users.form.newTitle')}
               </h2>
               <button
                 onClick={closeForm}
@@ -515,8 +527,8 @@ export const UserManagement: React.FC = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <Input
-                label="DNI"
-                placeholder="8 caracteres"
+                label={t('users.form.dniLabel')}
+                placeholder={t('users.form.dniPlaceholder')}
                 value={formData.dni}
                 onChange={(e) => setFormData({ ...formData, dni: e.target.value })}
                 error={formErrors.dni}
@@ -526,15 +538,15 @@ export const UserManagement: React.FC = () => {
 
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                 <Input
-                  label="Nombres"
-                  placeholder="Nombres completos"
+                  label={t('users.form.namesLabel')}
+                  placeholder={t('users.form.namesPlaceholder')}
                   value={formData.firstNames}
                   onChange={(e) => setFormData({ ...formData, firstNames: e.target.value })}
                   error={formErrors.firstNames}
                 />
                 <Input
-                  label="Apellidos"
-                  placeholder="Apellidos completos"
+                  label={t('users.form.lastNamesLabel')}
+                  placeholder={t('users.form.lastNamesPlaceholder')}
                   value={formData.lastNames}
                   onChange={(e) => setFormData({ ...formData, lastNames: e.target.value })}
                   error={formErrors.lastNames}
@@ -542,22 +554,22 @@ export const UserManagement: React.FC = () => {
               </div>
 
               <Input
-                label="Correo Institucional"
-                placeholder="Si se deja vacio, se autogenera: apellido.nombre@unas.edu.pe"
+                label={t('users.form.emailLabel')}
+                placeholder={t('users.form.emailPlaceholder')}
                 value={formData.institutionalEmail}
                 onChange={(e) => setFormData({ ...formData, institutionalEmail: e.target.value })}
-                helpText="Dejar vacio para autogenerar con el dominio @unas.edu.pe"
+                helpText={t('users.form.emailHelp')}
               />
 
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                 <Input
-                  label="Telefono"
-                  placeholder="Telefono (opcional)"
+                  label={t('users.form.phoneLabel')}
+                  placeholder={t('users.form.phonePlaceholder')}
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
                 <Select
-                  label="Rol"
+                  label={t('users.form.roleLabel')}
                   value={formData.roleCode}
                   onChange={(e) => setFormData({ ...formData, roleCode: e.target.value })}
                   options={ROLE_OPTIONS}
@@ -566,19 +578,19 @@ export const UserManagement: React.FC = () => {
               </div>
 
               {!editingUser && (
-                <Alert title="Contrasena temporal">
+                <Alert title={t('users.form.tempPasswordTitle')}>
                   <span style={{ fontSize: '0.875rem' }}>
-                    Se enviara una contrasena temporal al correo del usuario. Debera cambiarla en su primer inicio de sesion.
+                    {t('users.form.tempPasswordMessage')}
                   </span>
                 </Alert>
               )}
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
                 <Button variant="secondary" onClick={closeForm}>
-                  Cancelar
+                  {t('users.form.btnCancel')}
                 </Button>
                 <Button variant="primary" onClick={handleSave} disabled={saving}>
-                  {saving ? 'Guardando...' : editingUser ? 'Actualizar' : 'Crear Usuario'}
+                  {saving ? t('users.form.saving') : editingUser ? t('users.form.btnUpdate') : t('users.form.btnCreate')}
                 </Button>
               </div>
             </div>

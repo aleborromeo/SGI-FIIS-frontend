@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ClipboardList, RefreshCw, Eye, Search, X } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -15,13 +16,14 @@ import {
   TableCell,
 } from '../../components/ui/Table';
 
-function getStatusLabel(status?: string): string {
-  if (!status) return 'Pendiente';
+function getStatusLabel(status?: string, t?: (key: string) => string): string {
+  if (!status) return t ? t('evaluations.statusPending') : 'Pendiente';
+  if (!t) return status;
   const labels: Record<string, string> = {
-    PENDIENTE: 'Pendiente',
-    APROBADO: 'Aprobado',
-    RECHAZADO: 'Rechazado',
-    CON_OBSERVACIONES: 'Con observaciones',
+    PENDIENTE: t('evaluations.statusPending'),
+    APROBADO: t('evaluations.statusApproved'),
+    RECHAZADO: t('evaluations.statusRejected'),
+    CON_OBSERVACIONES: t('evaluations.statusWithObs'),
   };
   return labels[status.toUpperCase()] ?? status;
 }
@@ -48,6 +50,7 @@ function formatDate(value?: string): string {
 }
 
 export const DirectorEvaluations: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const rawToast = useToast();
   const toast = useMemo(() => ({
     ...rawToast,
@@ -69,7 +72,7 @@ export const DirectorEvaluations: React.FC = () => {
       const data = await evaluacionService.listAll();
       setEvaluations(data);
     } catch (err: any) {
-      toast.showError(err.message || 'Error al obtener la lista de evaluaciones.');
+      toast.showError(err.message || t('directorEvaluations.loadError'));
     } finally {
       setLoading(false);
     }
@@ -101,7 +104,7 @@ export const DirectorEvaluations: React.FC = () => {
       const res = await evaluacionService.getById(id);
       setSelectedEval(res);
     } catch (err: any) {
-      toast.showError(err.message || 'Error al obtener los detalles de la evaluación.');
+      toast.showError(err.message || t('directorEvaluations.detailLoadError'));
     } finally {
       setLoadingDetail(false);
     }
@@ -123,7 +126,7 @@ export const DirectorEvaluations: React.FC = () => {
         <div>
           <h1 className="text-headline-lg" style={{ fontWeight: 800, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <ClipboardList size={28} />
-            Monitoreo Global de Evaluaciones
+            {t('directorEvaluations.title')}
           </h1>
           <p
             className="text-body-md"
@@ -133,13 +136,13 @@ export const DirectorEvaluations: React.FC = () => {
               maxWidth: '760px',
             }}
           >
-            Consulte y haga seguimiento a las evaluaciones asignadas a proyectos de investigación y planes de tesis.
+            {t('directorEvaluations.subtitle')}
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>
           <Button variant="secondary" icon={<RefreshCw size={16} />} onClick={fetchEvaluations}>
-            Actualizar
+            {t('directorEvaluations.refresh')}
           </Button>
         </div>
       </div>
@@ -151,7 +154,7 @@ export const DirectorEvaluations: React.FC = () => {
             <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--on-surface-variant)' }} />
             <input
               type="text"
-              placeholder="Buscar por ID de evaluación o expediente..."
+              placeholder={t('directorEvaluations.searchPlaceholder')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
@@ -168,7 +171,7 @@ export const DirectorEvaluations: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)' }}>Estado:</span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)' }}>{t('directorEvaluations.statusLabel')}</span>
             <select
               id="filter-eval-status"
               value={filterStatus}
@@ -183,11 +186,11 @@ export const DirectorEvaluations: React.FC = () => {
                 outline: 'none',
               }}
             >
-              <option value="">Todos los estados</option>
-              <option value="PENDIENTE">Pendientes</option>
-              <option value="APROBADO">Aprobados</option>
-              <option value="RECHAZADO">Rechazados</option>
-              <option value="CON_OBSERVACIONES">Con observaciones</option>
+              <option value="">{t('directorEvaluations.allStatuses')}</option>
+              <option value="PENDIENTE">{t('directorEvaluations.pendingPlural')}</option>
+              <option value="APROBADO">{t('directorEvaluations.approvedPlural')}</option>
+              <option value="RECHAZADO">{t('directorEvaluations.rejectedPlural')}</option>
+              <option value="CON_OBSERVACIONES">{t('directorEvaluations.withObservations')}</option>
             </select>
           </div>
         </CardContent>
@@ -210,19 +213,19 @@ export const DirectorEvaluations: React.FC = () => {
         >
           <ClipboardList size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
           <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)', margin: 0 }}>
-            No se encontraron evaluaciones
+            {t('directorEvaluations.noResults')}
           </p>
         </div>
       ) : (
         <TableContainer>
           <TableHead>
             <TableRow>
-              <TableHeader>ID Evaluación</TableHeader>
-              <TableHeader>Código Expediente</TableHeader>
-              <TableHeader>Fecha Asignación</TableHeader>
-              <TableHeader>Dictamen / Resultado</TableHeader>
-              <TableHeader style={{ textAlign: 'center' }}>Puntaje</TableHeader>
-              <TableHeader style={{ textAlign: 'right' }}>Acciones</TableHeader>
+              <TableHeader>{t('directorEvaluations.thEvalId')}</TableHeader>
+              <TableHeader>{t('directorEvaluations.thFileCode')}</TableHeader>
+              <TableHeader>{t('directorEvaluations.thDateAssigned')}</TableHeader>
+              <TableHeader>{t('directorEvaluations.thDictamen')}</TableHeader>
+              <TableHeader style={{ textAlign: 'center' }}>{t('directorEvaluations.thScore')}</TableHeader>
+              <TableHeader style={{ textAlign: 'right' }}>{t('directorEvaluations.thActions')}</TableHeader>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -234,11 +237,11 @@ export const DirectorEvaluations: React.FC = () => {
               return (
                 <TableRow key={evalId}>
                   <TableCell><strong>EVAL-{evalId}</strong></TableCell>
-                  <TableCell>{e.expedienteCode || 'Expediente Anónimo'}</TableCell>
+                  <TableCell>{e.expedienteCode || t('directorEvaluations.anonymousFile')}</TableCell>
                   <TableCell>{formatDate(e.fechaAsignacion || e.assignedAt || e.dateAssigned)}</TableCell>
                   <TableCell>
                     <Badge variant={getBadgeVariant(result)}>
-                      {getStatusLabel(result)}
+                      {getStatusLabel(result, t)}
                     </Badge>
                   </TableCell>
                   <TableCell style={{ textAlign: 'center', fontWeight: 700 }}>
@@ -250,7 +253,7 @@ export const DirectorEvaluations: React.FC = () => {
                       icon={<Eye size={15} />}
                       onClick={() => handleViewDetail(evalId!)}
                     >
-                      Detalle
+                      {t('directorEvaluations.detail')}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -289,7 +292,7 @@ export const DirectorEvaluations: React.FC = () => {
             <div style={{ padding: '24px 28px', borderBottom: '1px solid var(--outline-variant)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>
-                  Detalle de la Evaluación (EVAL-{selectedEval.id || selectedEval.idEvaluacion})
+                  {t('directorEvaluations.detailTitle')} (EVAL-{selectedEval.id || selectedEval.idEvaluacion})
                 </h3>
               </div>
               <button
@@ -304,40 +307,40 @@ export const DirectorEvaluations: React.FC = () => {
             <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '14px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>Código de Expediente:</strong>
-                  <span>{selectedEval.expedienteCode || 'Anónimo'}</span>
+                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>{t('directorEvaluations.fileCode')}</strong>
+                  <span>{selectedEval.expedienteCode || t('directorEvaluations.anonymous')}</span>
                 </div>
                 <div>
-                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>Dictamen:</strong>
+                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>{t('directorEvaluations.dictamenLabel')}</strong>
                   <Badge variant={getBadgeVariant(selectedEval.resultado || selectedEval.result)}>
-                    {getStatusLabel(selectedEval.resultado || selectedEval.result)}
+                    {getStatusLabel(selectedEval.resultado || selectedEval.result, t)}
                   </Badge>
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>Puntaje Total:</strong>
+                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>{t('directorEvaluations.totalScoreLabel')}</strong>
                   <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--primary)' }}>
-                    {selectedEval.puntaje || selectedEval.score || '—'} puntos
+                    {selectedEval.puntaje || selectedEval.score || '—'} {t('directorEvaluations.points')}
                   </span>
                 </div>
                 <div>
-                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>Fecha Evaluación:</strong>
-                  <span>{formatDate(selectedEval.fechaEvaluacion) || 'Pendiente'}</span>
+                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>{t('directorEvaluations.evalDateLabel')}</strong>
+                  <span>{formatDate(selectedEval.fechaEvaluacion) || t('evaluations.statusPending')}</span>
                 </div>
               </div>
 
               <div>
-                <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px', marginBottom: '4px' }}>Observaciones del Evaluador:</strong>
+                <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px', marginBottom: '4px' }}>{t('directorEvaluations.evaluatorObsLabel')}</strong>
                 <p style={{ margin: 0, padding: '16px', backgroundColor: 'var(--surface-container-low)', borderRadius: 'var(--radius-md)', lineHeight: 1.6 }}>
-                  {selectedEval.observaciones || 'Sin observaciones registradas.'}
+                  {selectedEval.observaciones || t('directorEvaluations.noObs')}
                 </p>
               </div>
             </div>
 
             <div style={{ padding: '16px 28px', borderTop: '1px solid var(--outline-variant)', display: 'flex', justifyContent: 'flex-end', backgroundColor: 'var(--surface-container-low)' }}>
-              <Button onClick={() => setSelectedEval(null)}>Cerrar</Button>
+              <Button onClick={() => setSelectedEval(null)}>{t('directorEvaluations.close')}</Button>
             </div>
           </div>
         </div>

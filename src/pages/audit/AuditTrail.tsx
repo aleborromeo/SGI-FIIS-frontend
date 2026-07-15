@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ShieldCheck,
   Search,
@@ -31,17 +32,11 @@ const STATUS_COLORS: Record<string, string> = {
   RECHAZADO: '#dc2626',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  REGISTRADO: 'Registrado',
-  PENDIENTE_COORDINADOR: 'Pend. Coordinador',
-  PENDIENTE_DIRECCION: 'Pend. Direccion',
-  PENDIENTE_DECANATO: 'Pend. Decanato',
-  OBSERVADO: 'Observado',
-  SUBSANADO: 'Subsanado',
-  APROBADO_CON_RESOLUCION: 'Aprobado c/ Resolucion',
-  FINALIZADO: 'Finalizado',
-  RECHAZADO: 'Rechazado',
-};
+function getStatusLabel(status: string, t: (key: string) => string): string {
+  const key = `tramites:estadosTramite.${status}`;
+  const translated = t(key);
+  return translated !== key ? translated : status;
+}
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return '-';
@@ -82,6 +77,7 @@ function getActionIcon(action: string) {
 }
 
 export const AuditTrail: React.FC = () => {
+  const { t } = useTranslation();
   const [procedureId, setProcedureId] = useState('');
   const [movements, setMovements] = useState<TraceabilityMovement[]>([]);
   const [loading, setLoading] = useState(false);
@@ -140,13 +136,13 @@ export const AuditTrail: React.FC = () => {
             >
               <ShieldCheck size={24} />
             </div>
-            <h1 className="text-headline-lg">Trazabilidad y Auditoria</h1>
+            <h1 className="text-headline-lg">{t('tramites:auditTrail.title')}</h1>
           </div>
           <p
             className="text-body-md"
             style={{ color: 'var(--on-surface-variant)', marginTop: '8px' }}
           >
-            Linea de tiempo inalterable de los movimientos de un tramite. Solo lectura para Director de Investigacion y Administrador.
+            {t('tramites:auditTrail.subtitle')}
           </p>
         </div>
       </div>
@@ -154,10 +150,10 @@ export const AuditTrail: React.FC = () => {
       <Card style={{ marginBottom: '28px', maxWidth: '600px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)' }}>
         <CardContent style={{ padding: '24px' }}>
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '6px' }}>
-            Buscar Trámite para Auditoría
+            {t('tramites:auditTrail.searchTitle')}
           </h3>
           <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', marginBottom: '18px', lineHeight: '1.4' }}>
-            Ingrese el identificador único del trámite para visualizar su historial completo y línea de tiempo de auditoría.
+            {t('tramites:auditTrail.searchDescription')}
           </p>
           <div
             className="search-card-input"
@@ -194,7 +190,7 @@ export const AuditTrail: React.FC = () => {
                 boxSizing: 'border-box'
               }}
             >
-              {loading ? 'Buscando...' : 'Buscar Trazabilidad'}
+              {loading ? t('common:searching') : t('tramites:auditTrail.searchButton')}
             </Button>
           </div>
         </CardContent>
@@ -202,7 +198,7 @@ export const AuditTrail: React.FC = () => {
 
       {error && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert title="Error">
+            <Alert title={t('common:error')}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <AlertTriangle size={18} />
               <span>{error}</span>
@@ -216,7 +212,7 @@ export const AuditTrail: React.FC = () => {
           <CardContent>
             <div style={{ textAlign: 'center', padding: '48px', color: 'var(--on-surface-variant)' }}>
               <ShieldCheck size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
-              <p>No se encontraron movimientos para el tramite #{procedureId}.</p>
+              <p>{t('tramites:auditTrail.noMovements', { id: procedureId })}</p>
             </div>
           </CardContent>
         </Card>
@@ -241,7 +237,7 @@ export const AuditTrail: React.FC = () => {
                       {movements[0]?.procedureCode || `#${procedureId}`}
                     </strong>
                     <span style={{ color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-                      Codigo del tramite
+                      {t('tramites:auditTrail.procedureCode')}
                     </span>
                   </div>
                 </div>
@@ -256,7 +252,7 @@ export const AuditTrail: React.FC = () => {
                       {movements.length}
                     </strong>
                     <span style={{ color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-                      Movimientos totales
+                      {t('tramites:auditTrail.totalMovements')}
                     </span>
                   </div>
                 </div>
@@ -268,10 +264,10 @@ export const AuditTrail: React.FC = () => {
                   <CheckCircle size={24} color="#15803d" />
                   <div>
                     <strong style={{ display: 'block', fontSize: '20px' }}>
-                      {STATUS_LABELS[movements.at(-1)?.newStatus || ''] || '-'}
+                      {getStatusLabel(movements.at(-1)?.newStatus || '', t) || '-'}
                     </strong>
                     <span style={{ color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-                      Estado actual
+                      {t('tramites:auditTrail.currentStatus')}
                     </span>
                   </div>
                 </div>
@@ -286,7 +282,7 @@ export const AuditTrail: React.FC = () => {
                       {movements.filter((m) => m.observation).length}
                     </strong>
                     <span style={{ color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-                      Con observacion
+                      {t('tramites:auditTrail.withObservation')}
                     </span>
                   </div>
                 </div>
@@ -307,10 +303,10 @@ export const AuditTrail: React.FC = () => {
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 <ShieldCheck size={20} />
-                Linea de Tiempo de Auditoria
+                {t('tramites:auditTrail.timelineTitle')}
               </h2>
               <p style={{ color: '#9ca3af', fontSize: '0.85rem', marginTop: '4px' }}>
-                Tramite {movements[0]?.procedureCode || `#${procedureId}`}
+                {t('tramites:auditTrail.procedureLabel')} {movements[0]?.procedureCode || `#${procedureId}`}
               </p>
             </div>
 
@@ -402,7 +398,7 @@ export const AuditTrail: React.FC = () => {
                                   fontSize: '0.7rem',
                                 }}
                               >
-                                {STATUS_LABELS[m.previousStatus] || m.previousStatus}
+                                 {getStatusLabel(m.previousStatus, t) || m.previousStatus}
                               </Badge>
                               <span style={{ color: '#6b7280', alignSelf: 'center' }}>→</span>
                             </>
@@ -415,7 +411,7 @@ export const AuditTrail: React.FC = () => {
                               fontSize: '0.7rem',
                             }}
                           >
-                            {STATUS_LABELS[m.newStatus] || m.newStatus}
+                             {getStatusLabel(m.newStatus, t) || m.newStatus}
                           </Badge>
                         </div>
                       </div>
@@ -431,7 +427,7 @@ export const AuditTrail: React.FC = () => {
                           }}
                         >
                           <span style={{ color: '#fca5a5', fontSize: '0.8rem', fontWeight: 600 }}>
-                            Observacion:
+                            {t('tramites:auditTrail.observationLabel')}
                           </span>
                           <p style={{ color: '#e5e7eb', margin: '4px 0 0', lineHeight: 1.5, fontSize: '0.875rem' }}>
                             {m.observation}

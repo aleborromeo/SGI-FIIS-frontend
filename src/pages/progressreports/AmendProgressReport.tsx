@@ -6,8 +6,10 @@ import { progressReportService, type ProgressReportDetail } from '../../services
 import { documentService } from '../../services/documentService';
 import { useToast } from '../../context/ToastContext';
 import { Spinner } from '../../components/common/Spinner';
+import { useTranslation } from 'react-i18next';
 
 export const AmendProgressReport: React.FC = () => {
+  const { t } = useTranslation('progressreports');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const rawToast = useToast();
@@ -35,8 +37,8 @@ export const AmendProgressReport: React.FC = () => {
         const data = await progressReportService.getDetail(Number(id));
         setReport(data);
       } catch (err: any) {
-        toast.showError(err.message || 'Error al cargar el detalle del informe.');
-        setErrorMsg('No se pudo obtener el informe de avance seleccionado.');
+        toast.showError(err.message || t('amend.toast.loadError'));
+        setErrorMsg(t('amend.loadErrorMsg'));
       } finally {
         setLoadingReport(false);
       }
@@ -50,7 +52,7 @@ export const AmendProgressReport: React.FC = () => {
 
     const extension = file.name.split('.').pop()?.toUpperCase();
     if (extension !== 'PDF' && extension !== 'DOC' && extension !== 'DOCX') {
-      toast.showError('Solo se permiten archivos en formato PDF, DOC o DOCX.');
+      toast.showError(t('amend.toast.invalidFileFormat'));
       return;
     }
 
@@ -59,9 +61,9 @@ export const AmendProgressReport: React.FC = () => {
       const res = await documentService.upload(file);
       setAmendmentDocumentId(res.id);
       setFileName(file.name);
-      toast.showSuccess('Documento de subsanación cargado exitosamente.');
+      toast.showSuccess(t('amend.toast.fileUploaded'));
     } catch (err: any) {
-      toast.showError(err.message || 'Error al cargar el archivo.');
+      toast.showError(err.message || t('amend.toast.uploadError'));
     } finally {
       setUploadingFile(false);
     }
@@ -73,7 +75,7 @@ export const AmendProgressReport: React.FC = () => {
 
     if (!id) return;
     if (amendmentDocumentId === null) {
-      toast.showError('Es obligatorio cargar el documento corregido para enviar la subsanación.');
+      toast.showError(t('amend.toast.documentRequired'));
       return;
     }
 
@@ -83,11 +85,11 @@ export const AmendProgressReport: React.FC = () => {
         amendmentDocumentId,
       });
 
-      toast.showSuccess('Subsanación enviada exitosamente.');
+      toast.showSuccess(t('amend.toast.success'));
       navigate('/progressreports/history');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Ocurrió un error al enviar la subsanación.');
-      toast.showError(err.message || 'Error al subsanar el informe.');
+      setErrorMsg(err.message || t('amend.toast.saveError'));
+      toast.showError(err.message || t('amend.toast.saveErrorDetail'));
     } finally {
       setSubmitting(false);
     }
@@ -97,7 +99,7 @@ export const AmendProgressReport: React.FC = () => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '16px' }}>
         <Spinner size="large" />
-        <p style={{ color: 'var(--on-surface-variant)', fontSize: '14px' }}>Cargando datos del informe de avance...</p>
+        <p style={{ color: 'var(--on-surface-variant)', fontSize: '14px' }}>{t('amend.loadingData')}</p>
       </div>
     );
   }
@@ -106,9 +108,9 @@ export const AmendProgressReport: React.FC = () => {
     return (
       <div style={{ padding: '28px', maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ padding: '16px', backgroundColor: 'var(--error-container)', color: 'var(--on-error-container)', borderRadius: 'var(--radius-md)', marginBottom: '24px' }}>
-          <strong>Error:</strong> {errorMsg || 'No se encontró el informe de avance especificado.'}
+          <strong>Error:</strong> {errorMsg || t('amend.notFound')}
         </div>
-        <Button onClick={() => navigate('/progressreports/history')}>Volver al Historial</Button>
+        <Button onClick={() => navigate('/progressreports/history')}>{t('amend.backToHistory')}</Button>
       </div>
     );
   }
@@ -131,7 +133,7 @@ export const AmendProgressReport: React.FC = () => {
         }}
       >
         <ArrowLeft size={18} />
-        Volver al Historial de Informes
+        {t('new.backToHistory')}
       </button>
 
       <div
@@ -160,10 +162,10 @@ export const AmendProgressReport: React.FC = () => {
           </div>
           <div>
             <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-              Subsanar Informe de Avance #{report.id}
+              {t('amend.title', { id: report.id })}
             </h1>
             <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', margin: 0, marginTop: '2px' }}>
-              Suba una nueva versión del informe corrigiendo las observaciones señaladas.
+              {t('amend.subtitle')}
             </p>
           </div>
         </div>
@@ -183,7 +185,7 @@ export const AmendProgressReport: React.FC = () => {
             }}
           >
             <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <AlertCircle size={18} /> Observación Registrada
+              <AlertCircle size={18} /> {t('amend.observationRegistered')}
             </h3>
             <p style={{ fontSize: '14px', margin: 0, lineHeight: 1.6 }}>
               {report.comments[0].content}
@@ -206,19 +208,19 @@ export const AmendProgressReport: React.FC = () => {
           }}
         >
           <div>
-            <span style={{ fontWeight: 600, color: 'var(--on-surface-variant)' }}>Proyecto: </span>
+            <span style={{ fontWeight: 600, color: 'var(--on-surface-variant)' }}>{t('amend.context.project')} </span>
             <span style={{ color: 'var(--on-surface)' }}>{report.projectTitle || `Proyecto #${report.projectId}`}</span>
           </div>
           <div>
-            <span style={{ fontWeight: 600, color: 'var(--on-surface-variant)' }}>Período: </span>
+            <span style={{ fontWeight: 600, color: 'var(--on-surface-variant)' }}>{t('amend.context.period')} </span>
             <span style={{ color: 'var(--on-surface)' }}>{report.period}</span>
           </div>
           <div>
-            <span style={{ fontWeight: 600, color: 'var(--on-surface-variant)' }}>Porcentaje de Avance Reportado: </span>
+            <span style={{ fontWeight: 600, color: 'var(--on-surface-variant)' }}>{t('amend.context.progress')} </span>
             <span style={{ color: 'var(--on-surface)' }}>{report.physicalProgress}%</span>
           </div>
           <div>
-            <span style={{ fontWeight: 600, color: 'var(--on-surface-variant)' }}>Estado Actual: </span>
+            <span style={{ fontWeight: 600, color: 'var(--on-surface-variant)' }}>{t('amend.context.status')} </span>
             <span style={{ color: 'var(--on-surface)', fontWeight: 700 }}>{report.status}</span>
           </div>
         </div>
@@ -227,7 +229,7 @@ export const AmendProgressReport: React.FC = () => {
           {/* Carga del nuevo Archivo */}
           <div>
             <label className="text-label-md" style={{ display: 'block', marginBottom: '12px', fontWeight: 600, color: 'var(--on-surface)' }}>
-              Subir Documento Corregido (Firmado) *
+              {t('amend.form.uploadLabel')} *
             </label>
             <div
               style={{
@@ -271,10 +273,10 @@ export const AmendProgressReport: React.FC = () => {
                     textDecoration: 'underline',
                   }}
                 >
-                  {uploadingFile ? 'Cargando archivo...' : 'Seleccione el nuevo informe corregido'}
+                  {uploadingFile ? t('new.form.uploadingFile') : t('amend.form.selectFile')}
                 </label>
                 <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>
-                  Formatos permitidos: PDF, DOC, DOCX (Máx. 10MB)
+                  {t('new.form.allowedFormats')}
                 </span>
 
                 {fileName && (
@@ -319,7 +321,7 @@ export const AmendProgressReport: React.FC = () => {
               onClick={() => navigate('/progressreports/history')}
               disabled={submitting}
             >
-              Cancelar
+              {t('new.form.cancel')}
             </Button>
             <Button
               type="submit"
@@ -327,7 +329,7 @@ export const AmendProgressReport: React.FC = () => {
               icon={<Save size={16} />}
               disabled={submitting || uploadingFile}
             >
-              {submitting ? 'Enviando...' : 'Enviar Correcciones'}
+              {submitting ? t('amend.form.sending') : t('amend.form.submit')}
             </Button>
           </div>
         </form>

@@ -23,6 +23,7 @@ import {
   type ProgressReportStatus,
   type ProjectSummary,
 } from '../../services/progressReportService';
+import { useTranslation } from 'react-i18next';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -43,10 +44,10 @@ function getStatusColor(status: ProgressReportStatus): { bg: string; text: strin
   }
 }
 
-function getStatusLabel(status: ProgressReportStatus): string {
+function getStatusLabel(status: ProgressReportStatus, t: (key: string) => string): string {
   const map: Record<ProgressReportStatus, string> = {
-    PENDIENTE: 'Pendiente', EN_REVISION: 'En revisión',
-    OBSERVADO: 'Observado', APROBADO: 'Aprobado', RECHAZADO: 'Rechazado',
+    PENDIENTE: t('status.pending'), EN_REVISION: t('status.inReview'),
+    OBSERVADO: t('status.observed'), APROBADO: t('status.approved'), RECHAZADO: t('status.rejected'),
   };
   return map[status] ?? status;
 }
@@ -101,6 +102,7 @@ interface DetailPanelProps {
 }
 
 const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
+  const { t } = useTranslation('progressreports');
   const [detail, setDetail] = useState<ProgressReportDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<'activities' | 'evidences' | 'comments' | 'history'>('activities');
@@ -116,10 +118,10 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
   }, [report.id]);
 
   const sections = [
-    { id: 'activities' as const, label: 'Actividades', icon: <Activity size={15} />, count: detail?.executedActivities.length },
-    { id: 'evidences' as const, label: 'Evidencias', icon: <Eye size={15} />, count: detail?.evidences.length },
-    { id: 'comments' as const, label: 'Comentarios', icon: <MessageSquare size={15} />, count: detail?.comments.length },
-    { id: 'history' as const, label: 'Historial de Cambios', icon: <History size={15} />, count: detail?.changeHistory.length },
+    { id: 'activities' as const, label: t('history.sections.activities'), icon: <Activity size={15} />, count: detail?.executedActivities.length },
+    { id: 'evidences' as const, label: t('history.sections.evidences'), icon: <Eye size={15} />, count: detail?.evidences.length },
+    { id: 'comments' as const, label: t('history.sections.comments'), icon: <MessageSquare size={15} />, count: detail?.comments.length },
+    { id: 'history' as const, label: t('history.sections.changeHistory'), icon: <History size={15} />, count: detail?.changeHistory.length },
   ];
 
   return (
@@ -136,7 +138,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
                 Informe #{report.reportNumber}
               </div>
               <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-                Detalle del Informe de Avance
+                {t('history.detail.title')}
               </h2>
             </div>
             <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: '4px' }}>
@@ -152,13 +154,13 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <User size={13} /> {report.responsibleName}
             </span>
-            <Badge variant={getStatusBadgeVariant(report.status)}>{getStatusLabel(report.status)}</Badge>
+            <Badge variant={getStatusBadgeVariant(report.status)}>{getStatusLabel(report.status, t)}</Badge>
           </div>
 
           {/* Progreso */}
           <div className="form-row" style={{ marginTop: '16px', gap: '12px' }}>
-            <ProgressBar label="Avance Físico" value={report.physicalProgress} icon={<Activity size={12} />} />
-            <ProgressBar label="Avance Financiero" value={report.financialProgress} icon={<BarChart2 size={12} />} />
+            <ProgressBar label={t('history.detail.physicalProgress')} value={report.physicalProgress} icon={<Activity size={12} />} />
+            <ProgressBar label={t('history.detail.financialProgress')} value={report.financialProgress} icon={<BarChart2 size={12} />} />
           </div>
         </div>
 
@@ -170,7 +172,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
             {report.observations && (
               <div style={{ backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '20px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--on-surface-variant)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <AlertTriangle size={13} /> Observaciones
+                  <AlertTriangle size={13} /> {t('history.detail.observations')}
                 </div>
                 <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.6, margin: 0 }}>{report.observations}</p>
               </div>
@@ -200,13 +202,13 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
             {activeSection === 'activities' && (
               <div>
                 {detail.executedActivities.length === 0 ? (
-                  <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', textAlign: 'center', padding: '32px' }}>Sin actividades registradas.</p>
+                  <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', textAlign: 'center', padding: '32px' }}>{t('history.detail.noActivities')}</p>
                 ) : detail.executedActivities.map(a => (
                   <div key={a.id} style={{ padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', marginBottom: '10px', backgroundColor: 'var(--surface)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
                       <p style={{ fontWeight: 600, fontSize: '14px', color: 'var(--on-surface)', margin: 0, flex: 1 }}>{a.description}</p>
                       <span style={{ marginLeft: '12px', fontSize: '11px', padding: '2px 8px', borderRadius: 'var(--radius-full)', backgroundColor: a.completed ? '#d1fae5' : 'var(--surface-container-high)', color: a.completed ? '#065f46' : 'var(--on-surface-variant)', fontWeight: 700, whiteSpace: 'nowrap' }}>
-                        {a.completed ? '✓ Completada' : 'En curso'}
+                        {a.completed ? t('history.detail.completed') : t('history.detail.inProgress')}
                       </span>
                     </div>
                     <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0 }}>
@@ -221,7 +223,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
             {activeSection === 'evidences' && (
               <div>
                 {detail.evidences.length === 0 ? (
-                  <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', textAlign: 'center', padding: '32px' }}>Sin evidencias registradas.</p>
+                  <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', textAlign: 'center', padding: '32px' }}>{t('history.detail.noEvidences')}</p>
                 ) : detail.evidences.map(e => (
                   <div key={e.id} style={{ padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', marginBottom: '10px', backgroundColor: 'var(--surface)', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <Eye size={16} style={{ color: 'var(--primary)', marginTop: '2px', flexShrink: 0 }} />
@@ -238,7 +240,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
             {activeSection === 'comments' && (
               <div>
                 {detail.comments.length === 0 ? (
-                  <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', textAlign: 'center', padding: '32px' }}>Sin comentarios.</p>
+                  <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', textAlign: 'center', padding: '32px' }}>{t('history.detail.noComments')}</p>
                 ) : detail.comments.map(c => (
                   <div key={c.id} style={{ padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', marginBottom: '10px', backgroundColor: 'var(--surface)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -258,7 +260,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
             {activeSection === 'history' && (
               <div>
                 {detail.changeHistory.length === 0 ? (
-                  <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', textAlign: 'center', padding: '32px' }}>Sin historial de cambios.</p>
+                  <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', textAlign: 'center', padding: '32px' }}>{t('history.detail.noChangeHistory')}</p>
                 ) : detail.changeHistory.map(h => (
                   <div key={h.id} style={{ padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', marginBottom: '10px', backgroundColor: 'var(--surface)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
@@ -279,7 +281,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
             {detail.attachments.length > 0 && (
               <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--outline-variant)' }}>
                 <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Paperclip size={14} /> Archivos Adjuntos ({detail.attachments.length})
+                  <Paperclip size={14} /> {t('history.detail.attachedFiles', { count: detail.attachments.length })}
                 </h4>
                 {detail.attachments.map(a => (
                   <a
@@ -301,7 +303,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
           </div>
         ) : (
           <div style={{ padding: '48px', textAlign: 'center', color: 'var(--on-surface-variant)' }}>
-            No se pudo cargar el detalle del informe.
+            {t('history.detail.loadError')}
           </div>
         )}
       </div>
@@ -318,6 +320,7 @@ interface TimelineNodeProps {
 }
 
 const TimelineNode: React.FC<TimelineNodeProps> = ({ report, isLast, onViewDetail }) => {
+  const { t } = useTranslation('progressreports');
   const [expanded, setExpanded] = useState(false);
   const statusStyle = getStatusColor(report.status);
 
@@ -350,9 +353,9 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({ report, isLast, onViewDetai
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--on-surface)' }}>
-                  Informe #{report.reportNumber}
+                {t('history.detail.reportNumber', { number: report.reportNumber })}
                 </span>
-                <Badge variant={getStatusBadgeVariant(report.status)}>{getStatusLabel(report.status)}</Badge>
+                <Badge variant={getStatusBadgeVariant(report.status)}>{getStatusLabel(report.status, t)}</Badge>
               </div>
               <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--on-surface-variant)', flexWrap: 'wrap' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -370,7 +373,7 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({ report, isLast, onViewDetai
                 onClick={() => onViewDetail(report)}
                 style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: 'var(--primary)', transition: 'all 0.15s' }}
               >
-                <Eye size={14} /> Ver detalle
+                <Eye size={14} /> {t('history.timeline.viewDetail')}
               </button>
               <button
                 type="button"
@@ -384,15 +387,15 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({ report, isLast, onViewDetai
 
           {/* Barras de progreso */}
           <div className="form-row" style={{ gap: '16px', marginBottom: expanded ? '16px' : '0' }}>
-            <ProgressBar label="Avance Físico" value={report.physicalProgress} icon={<Activity size={12} />} />
-            <ProgressBar label="Avance Financiero" value={report.financialProgress} icon={<BarChart2 size={12} />} />
+            <ProgressBar label={t('history.detail.physicalProgress')} value={report.physicalProgress} icon={<Activity size={12} />} />
+            <ProgressBar label={t('history.detail.financialProgress')} value={report.financialProgress} icon={<BarChart2 size={12} />} />
           </div>
 
           {/* Observaciones expandidas */}
           {expanded && report.observations && (
             <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--outline-variant)' }}>
               <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--on-surface-variant)', marginBottom: '6px' }}>
-                Observaciones
+                {t('history.detail.observations')}
               </div>
               <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.6, margin: 0 }}>
                 {report.observations}
@@ -408,6 +411,7 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({ report, isLast, onViewDetai
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export const ProgressReportHistory: React.FC = () => {
+  const { t } = useTranslation('progressreports');
   const { currentRole } = useContext(AuthContext);
   const isDirector = currentRole === 'DIRECTOR_INVESTIGACION';
 
@@ -431,7 +435,7 @@ export const ProgressReportHistory: React.FC = () => {
       setProjects(data);
       if (data.length === 1) setSelectedProjectId(data[0].id);
     } catch (err: unknown) {
-      setErrorProjects(err instanceof Error ? err.message : 'Error al cargar proyectos');
+      setErrorProjects(err instanceof Error ? err.message : t('history.error.loadProjects'));
     } finally {
       setLoadingProjects(false);
     }
@@ -448,7 +452,7 @@ export const ProgressReportHistory: React.FC = () => {
       const data = await progressReportService.getByProject(selectedProjectId);
       setReports(data);
     } catch (err: unknown) {
-      setErrorReports(err instanceof Error ? err.message : 'Error al cargar los informes');
+      setErrorReports(err instanceof Error ? err.message : t('history.error.loadReports'));
     } finally {
       setLoadingReports(false);
     }
@@ -476,16 +480,16 @@ export const ProgressReportHistory: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '6px' }}>
-            Historial de Informes de Avance
+            {t('history.title')}
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--on-surface-variant)' }}>
             {isDirector
-              ? 'Seguimiento cronológico del avance de todos los proyectos activos.'
-              : 'Evolución cronológica de tus proyectos de investigación.'}
+              ? t('history.descriptionDirector')
+              : t('history.descriptionTeacher')}
           </p>
         </div>
         <Button variant="secondary" onClick={fetchReports} icon={<RefreshCcw size={15} />} disabled={!selectedProjectId}>
-          Actualizar
+          {t('history.update')}
         </Button>
       </div>
 
@@ -502,7 +506,7 @@ export const ProgressReportHistory: React.FC = () => {
           {projects.length > 1 && (
             <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', padding: '20px', marginBottom: '24px' }}>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '10px' }}>
-                Seleccionar Proyecto
+                {t('history.selectProject')}
               </label>
               <select
                 id="select-project-history"
@@ -512,7 +516,7 @@ export const ProgressReportHistory: React.FC = () => {
                 onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
                 onBlur={e => (e.target.style.borderColor = 'var(--outline)')}
               >
-                <option value="">— Seleccione un proyecto —</option>
+                <option value="">{t('history.selectProjectPlaceholder')}</option>
                 {projects.map(p => (
                   <option key={p.id} value={p.id}>{p.title}</option>
                 ))}
@@ -527,7 +531,7 @@ export const ProgressReportHistory: React.FC = () => {
                 <div style={{ backgroundColor: 'var(--primary-container)', borderRadius: 'var(--radius-lg)', padding: '20px 24px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
                     <div style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--on-primary-container)', opacity: 0.8, marginBottom: '4px' }}>
-                      Proyecto seleccionado
+                      {t('history.selectedProject')}
                     </div>
                     <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-primary-container)' }}>
                       {selectedProject.title}
@@ -541,10 +545,10 @@ export const ProgressReportHistory: React.FC = () => {
               {stats && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '28px' }}>
                   {[
-                    { label: 'Total de Informes', value: String(reports.length), icon: <FileText size={20} />, color: 'var(--primary)' },
-                    { label: 'Informes Aprobados', value: String(stats.approved), icon: <CheckCircle size={20} />, color: '#059669' },
-                    { label: 'Avance Físico Prom.', value: `${stats.avgPhysical}%`, icon: <Activity size={20} />, color: getProgressColor(stats.avgPhysical) },
-                    { label: 'Avance Financiero Prom.', value: `${stats.avgFinancial}%`, icon: <TrendingUp size={20} />, color: getProgressColor(stats.avgFinancial) },
+                    { label: t('history.stats.totalReports'), value: String(reports.length), icon: <FileText size={20} />, color: 'var(--primary)' },
+                    { label: t('history.stats.approvedReports'), value: String(stats.approved), icon: <CheckCircle size={20} />, color: '#059669' },
+                    { label: t('history.stats.avgPhysicalProgress'), value: `${stats.avgPhysical}%`, icon: <Activity size={20} />, color: getProgressColor(stats.avgPhysical) },
+                    { label: t('history.stats.avgFinancialProgress'), value: `${stats.avgFinancial}%`, icon: <TrendingUp size={20} />, color: getProgressColor(stats.avgFinancial) },
                   ].map(stat => (
                     <div key={stat.label} style={{ backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', padding: '20px', boxShadow: 'var(--shadow-sm)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
@@ -570,18 +574,18 @@ export const ProgressReportHistory: React.FC = () => {
               ) : reports.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '64px 24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--outline)' }}>
                   <FileText size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)', marginBottom: '8px' }}>Sin informes de avance</p>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)', marginBottom: '8px' }}>{t('history.emptyState.noReports')}</p>
                   <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>
-                    Aún no se han registrado informes de avance para este proyecto.
+                    {t('history.emptyState.noReportsDescription')}
                   </p>
                 </div>
               ) : (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
                     <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-                      Línea de Tiempo ({reports.length} informe{reports.length !== 1 ? 's' : ''})
+                      {t('history.timeline.title', { count: reports.length, plural: reports.length !== 1 ? 's' : '' })}
                     </h2>
-                    <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>— Del más reciente al más antiguo</span>
+                    <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>— {t('history.timeline.order')}</span>
                   </div>
                   <div>
                     {[...reports].reverse().map((report, idx) => (
@@ -602,7 +606,7 @@ export const ProgressReportHistory: React.FC = () => {
             <div style={{ textAlign: 'center', padding: '64px 24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--outline)' }}>
               <BarChart2 size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
               <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)' }}>
-                Selecciona un proyecto para ver su historial
+                {t('history.selectProjectPrompt')}
               </p>
             </div>
           )}

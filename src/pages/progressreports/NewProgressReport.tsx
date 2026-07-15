@@ -6,8 +6,10 @@ import { progressReportService, type ProjectSummary } from '../../services/progr
 import { documentService } from '../../services/documentService';
 import { useToast } from '../../context/ToastContext';
 import { AuthContext } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 export const NewProgressReport: React.FC = () => {
+  const { t } = useTranslation('progressreports');
   const navigate = useNavigate();
   const rawToast = useToast();
   const toast = useMemo(() => ({
@@ -43,7 +45,7 @@ export const NewProgressReport: React.FC = () => {
         const data = await progressReportService.getProjectsByRole();
         setProjects(data);
       } catch (err: any) {
-        toast.showError(err.message || 'Error al cargar los proyectos del docente.');
+        toast.showError(err.message || t('new.fetchProjectsError'));
       } finally {
         setLoadingProjects(false);
       }
@@ -57,7 +59,7 @@ export const NewProgressReport: React.FC = () => {
 
     const extension = file.name.split('.').pop()?.toUpperCase();
     if (extension !== 'PDF' && extension !== 'DOC' && extension !== 'DOCX') {
-      toast.showError('Solo se permiten archivos en formato PDF, DOC o DOCX.');
+      toast.showError(t('new.toast.invalidFileFormat'));
       return;
     }
 
@@ -66,9 +68,9 @@ export const NewProgressReport: React.FC = () => {
       const res = await documentService.upload(file);
       setAttachedDocumentId(res.id);
       setFileName(file.name);
-      toast.showSuccess('Archivo cargado exitosamente.');
+      toast.showSuccess(t('new.toast.fileUploaded'));
     } catch (err: any) {
-      toast.showError(err.message || 'Error al cargar el archivo.');
+      toast.showError(err.message || t('new.toast.uploadError'));
     } finally {
       setUploadingFile(false);
     }
@@ -86,19 +88,19 @@ export const NewProgressReport: React.FC = () => {
     setErrorMsg(null);
 
     if (!projectId) {
-      toast.showError('Debe seleccionar un proyecto.');
+      toast.showError(t('new.toast.projectRequired'));
       return;
     }
     if (!period.trim()) {
-      toast.showError('Debe ingresar el período.');
+      toast.showError(t('new.toast.periodRequired'));
       return;
     }
     if (!achievements.trim() || !difficulties.trim() || !recommendations.trim()) {
-      toast.showError('Por favor complete todos los campos de texto obligatorios.');
+      toast.showError(t('new.toast.fieldsRequired'));
       return;
     }
     if (attachedDocumentId === null) {
-      toast.showError('Es obligatorio adjuntar un archivo con el informe firmado.');
+      toast.showError(t('new.toast.documentRequired'));
       return;
     }
 
@@ -115,11 +117,11 @@ export const NewProgressReport: React.FC = () => {
         attachedDocumentId,
       });
 
-      toast.showSuccess('Informe de avance registrado y enviado exitosamente.');
+      toast.showSuccess(t('new.toast.success'));
       navigate('/progressreports/history');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Ocurrió un error al registrar el informe.');
-      toast.showError(err.message || 'Error al guardar el informe.');
+      setErrorMsg(err.message || t('new.toast.saveError'));
+      toast.showError(err.message || t('new.toast.saveError'));
     } finally {
       setLoading(false);
     }
@@ -143,7 +145,7 @@ export const NewProgressReport: React.FC = () => {
         }}
       >
         <ArrowLeft size={18} />
-        Volver al Historial de Informes
+        {t('new.backToHistory')}
       </button>
 
       <div
@@ -172,10 +174,10 @@ export const NewProgressReport: React.FC = () => {
           </div>
           <div>
             <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-              Registrar Nuevo Informe de Avance
+              {t('new.title')}
             </h1>
             <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', margin: 0, marginTop: '2px' }}>
-              Envíe el reporte físico y financiero correspondiente al período de ejecución.
+              {t('new.subtitle')}
             </p>
           </div>
         </div>
@@ -197,7 +199,7 @@ export const NewProgressReport: React.FC = () => {
           >
             <AlertCircle size={20} />
             <div>
-              <strong>Error al registrar:</strong> {errorMsg}
+              <strong>{t('new.errorTitle')}:</strong> {errorMsg}
             </div>
           </div>
         )}
@@ -205,10 +207,10 @@ export const NewProgressReport: React.FC = () => {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div>
             <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--on-surface)' }}>
-              Proyecto de Investigación *
+              {t('new.form.project')} *
             </label>
             {loadingProjects ? (
-              <div style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>Cargando proyectos del docente...</div>
+              <div style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>{t('new.form.loadingProjects')}</div>
             ) : (
               <select
                 id="select-project-new-report"
@@ -226,7 +228,7 @@ export const NewProgressReport: React.FC = () => {
                   outline: 'none',
                 }}
               >
-                <option value="">— Seleccione un proyecto en ejecución —</option>
+                <option value="">{t('new.form.selectProject')}</option>
                 {projects.map(p => (
                   <option key={p.id} value={p.id}>
                     {p.title} ({p.status})
@@ -239,7 +241,7 @@ export const NewProgressReport: React.FC = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div>
               <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--on-surface)' }}>
-                Tipo de Informe *
+                {t('new.form.reportType')} *
               </label>
               <select
                 id="select-report-type"
@@ -257,14 +259,14 @@ export const NewProgressReport: React.FC = () => {
                   outline: 'none',
                 }}
               >
-                <option value="PARCIAL">Parcial</option>
-                <option value="FINAL">Final</option>
+                <option value="PARCIAL">{t('new.form.typePartial')}</option>
+                <option value="FINAL">{t('new.form.typeFinal')}</option>
               </select>
             </div>
 
             <div>
               <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--on-surface)' }}>
-                Período Reportado *
+                {t('new.form.period')} *
               </label>
               <input
                 type="text"
@@ -272,7 +274,7 @@ export const NewProgressReport: React.FC = () => {
                 value={period}
                 onChange={e => setPeriod(e.target.value)}
                 required
-                placeholder="Ej: Primer Trimestre / Semestre I"
+                placeholder={t('new.form.periodPlaceholder')}
                 style={{
                   width: '100%',
                   padding: '12px 14px',
@@ -289,7 +291,7 @@ export const NewProgressReport: React.FC = () => {
 
           <div>
             <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--on-surface)' }}>
-              Porcentaje de Avance General (0 - 100%) *
+              {t('new.form.progressPercentage')} *
             </label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <input
@@ -329,7 +331,7 @@ export const NewProgressReport: React.FC = () => {
 
           <div>
             <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--on-surface)' }}>
-              Logros Alcanzados *
+              {t('new.form.achievements')} *
             </label>
             <textarea
               id="input-achievements"
@@ -337,7 +339,7 @@ export const NewProgressReport: React.FC = () => {
               value={achievements}
               onChange={e => setAchievements(e.target.value)}
               required
-              placeholder="Describa los hitos y actividades completadas satisfactoriamente..."
+              placeholder={t('new.form.achievementsPlaceholder')}
               style={{
                 width: '100%',
                 padding: '12px 14px',
@@ -355,7 +357,7 @@ export const NewProgressReport: React.FC = () => {
 
           <div>
             <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--on-surface)' }}>
-              Dificultades Presentadas *
+              {t('new.form.difficulties')} *
             </label>
             <textarea
               id="input-difficulties"
@@ -363,7 +365,7 @@ export const NewProgressReport: React.FC = () => {
               value={difficulties}
               onChange={e => setDifficulties(e.target.value)}
               required
-              placeholder="Describa cualquier contratiempo técnico, administrativo o logístico..."
+              placeholder={t('new.form.difficultiesPlaceholder')}
               style={{
                 width: '100%',
                 padding: '12px 14px',
@@ -381,7 +383,7 @@ export const NewProgressReport: React.FC = () => {
 
           <div>
             <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--on-surface)' }}>
-              Medidas Correctivas y Recomendaciones *
+              {t('new.form.recommendations')} *
             </label>
             <textarea
               id="input-recommendations"
@@ -389,7 +391,7 @@ export const NewProgressReport: React.FC = () => {
               value={recommendations}
               onChange={e => setRecommendations(e.target.value)}
               required
-              placeholder="Proponga recomendaciones o soluciones para superar los problemas presentados..."
+              placeholder={t('new.form.recommendationsPlaceholder')}
               style={{
                 width: '100%',
                 padding: '12px 14px',
@@ -447,10 +449,10 @@ export const NewProgressReport: React.FC = () => {
                   textDecoration: 'underline',
                 }}
               >
-                {uploadingFile ? 'Cargando archivo...' : 'Seleccione el informe firmado'}
+                {uploadingFile ? t('new.form.uploadingFile') : t('new.form.selectSignedReport')}
               </label>
               <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>
-                Formatos permitidos: PDF, DOC, DOCX (Máx. 10MB)
+                {t('new.form.allowedFormats')}
               </span>
 
               {fileName && (
@@ -492,7 +494,7 @@ export const NewProgressReport: React.FC = () => {
               icon={<X size={16} />}
               onClick={() => navigate('/progressreports/history')}
             >
-              Cancelar
+              {t('new.form.cancel')}
             </Button>
             <Button
               type="submit"
@@ -500,7 +502,7 @@ export const NewProgressReport: React.FC = () => {
               icon={<Save size={16} />}
               disabled={loading || uploadingFile}
             >
-              {loading ? 'Guardando...' : 'Enviar Informe'}
+              {loading ? t('new.form.saving') : t('new.form.submit')}
             </Button>
           </div>
         </form>

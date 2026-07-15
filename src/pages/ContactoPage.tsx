@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../hooks/useLanguage';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import './WelcomePage.css';
 import frontisImage from '../assets/images/frontis_fiis.png';
 import universityIcon from '../assets/images/icon-sgi-fiis.png';
 import whatsappGif from '../assets/images/icons8-whatsapp.gif';
-import { Globe, User, ChevronDown } from 'lucide-react';
+import { User, ChevronDown } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
 export const ContactoPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
-  const [language, setLanguage] = useState<'es' | 'en'>('es');
+  const { t } = useTranslation('public');
+  const { language, toggleLanguage } = useLanguage();
   const [activeSection, setActiveSection] = useState('contacto-form-section');
 
   const [contactForm, setContactForm] = useState({
@@ -21,17 +25,9 @@ export const ContactoPage: React.FC = () => {
     message: ''
   });
 
-  const handleToggleLanguage = () => {
-    setLanguage((prev) => (prev === 'es' ? 'en' : 'es'));
-  };
-
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success(
-      language === 'es' 
-        ? '¡Mensaje enviado con éxito al departamento!' 
-        : 'Message sent successfully to the department!'
-    );
+    toast.success(t('contact.page.successMessage'));
     setContactForm({
       userEmail: '',
       deptEmail: 'sgi.decanato@unas.edu.pe',
@@ -65,7 +61,7 @@ export const ContactoPage: React.FC = () => {
         {/* Enlaces de Navegación */}
         <nav className="welcome-nav-links">
           <a href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="nav-link">
-            {language === 'es' ? 'Inicio' : 'Home'}
+            {t('nav.home')}
           </a>
 
           {/* Dropdown: Novedades */}
@@ -75,7 +71,7 @@ export const ContactoPage: React.FC = () => {
               onClick={(e) => { e.preventDefault(); navigate('/novedades'); }}
               className="nav-link dropdown-toggle"
             >
-              <span>{language === 'es' ? 'Novedades' : 'News'}</span>
+              <span>{t('nav.news')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -84,21 +80,21 @@ export const ContactoPage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-convocatorias' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Convocatorias' : 'Announcements'}
+                {t('nav.announcements')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-reconocimientos' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Reconocimiento' : 'Recognition'}
+                {t('nav.recognition')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-congresos' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Congresos' : 'Congresses'}
+                {t('nav.congresses')}
               </a>
             </div>
           </div>
@@ -110,7 +106,7 @@ export const ContactoPage: React.FC = () => {
               onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi'); }}
               className="nav-link dropdown-toggle"
             >
-              <span>{language === 'es' ? 'Sobre nosotros' : 'About us'}</span>
+              <span>{t('nav.aboutUs')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -119,21 +115,21 @@ export const ContactoPage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'quienes-somos' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Quiénes somos' : 'Who we are'}
+                {t('nav.whoWeAre')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'lineas-investigacion' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Líneas de investigación' : 'Research lines'}
+                {t('nav.researchLines')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'grupos-investigacion' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Grupos' : 'Groups'}
+                {t('nav.groups')}
               </a>
             </div>
           </div>
@@ -145,7 +141,7 @@ export const ContactoPage: React.FC = () => {
               onClick={(e) => e.preventDefault()}
               className="nav-link dropdown-toggle active"
             >
-              <span>{language === 'es' ? 'Contacto' : 'Contact'}</span>
+              <span>{t('nav.contact')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -154,14 +150,14 @@ export const ContactoPage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); handleScrollToSection('contacto-form-section'); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Correo' : 'Email'}
+                {t('nav.email')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); handleScrollToSection('whatsapp-contact-section'); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'WhatsApp' : 'WhatsApp'}
+                {t('nav.whatsapp')}
               </a>
             </div>
           </div>
@@ -172,20 +168,12 @@ export const ContactoPage: React.FC = () => {
             onClick={(e) => { e.preventDefault(); navigate('/login'); }}
             className="nav-link btn-submit-research"
           >
-            {language === 'es' ? 'Envía tu investigación' : 'Submit your research'}
+            {t('nav.submitResearch')}
           </a>
         </nav>
 
         <div className="welcome-navbar-actions">
-          <button 
-            type="button" 
-            onClick={handleToggleLanguage} 
-            className="btn-nav btn-language-selector"
-            title={language === 'es' ? 'Cambiar idioma' : 'Change language'}
-          >
-            <Globe size={15} />
-            <span>{language === 'es' ? 'Español' : 'English'}</span>
-          </button>
+          <LanguageSwitcher variant="button" className="btn-nav btn-language-selector" />
           
           <button 
             type="button" 
@@ -193,7 +181,7 @@ export const ContactoPage: React.FC = () => {
             className="btn-nav btn-login-navbar"
           >
             <User size={15} />
-            <span>{language === 'es' ? 'Iniciar sesión' : 'Log In'}</span>
+            <span>{t('nav.login')}</span>
           </button>
         </div>
       </header>
@@ -205,19 +193,17 @@ export const ContactoPage: React.FC = () => {
           {/* Columna Izquierda: Formulario y Detalles */}
           <div className="about-fiis-main-content">
             <div className="about-fiis-breadcrumbs">
-              {language === 'es' ? 'Inicio » Contacto » Correo y Sugerencias' : 'Home » Contact » Email & Suggestions'}
+              {t('contact.page.breadcrumbs')}
             </div>
 
             {/* Sección: Formulario */}
             {activeSection === 'contacto-form-section' && (
               <section id="contacto-form-section" className="about-stacked-section">
                 <h2 className="about-fiis-title" style={{ marginBottom: '1rem' }}>
-                  {language === 'es' ? 'Enviar un Correo o Sugerencia' : 'Send an Email or Suggestion'}
+                  {t('contact.page.formTitle')}
                 </h2>
                 <p className="about-tab-description">
-                  {language === 'es'
-                    ? 'Utiliza nuestro formulario oficial para remitir quejas, comentarios o sugerencias directamente a la Unidad o Decanato de la facultad.'
-                    : 'Use our official form to submit complaints, comments or suggestions directly to the Unit or Deanery of the faculty.'}
+                  {t('contact.page.formDescription')}
                 </p>
 
                 {/* Formulario de contacto */}
@@ -225,7 +211,7 @@ export const ContactoPage: React.FC = () => {
                   <form onSubmit={handleContactSubmit} className="contact-form">
                     <div className="form-group-row">
                       <div className="form-input-group">
-                        <label htmlFor="userEmail">{language === 'es' ? 'Tu Correo Electrónico' : 'Your Email'}</label>
+                        <label htmlFor="userEmail">{t('contact.page.userEmail')}</label>
                         <input 
                           type="email" 
                           id="userEmail" 
@@ -237,46 +223,46 @@ export const ContactoPage: React.FC = () => {
                       </div>
 
                       <div className="form-input-group">
-                        <label htmlFor="deptEmail">{language === 'es' ? 'Enviar al Departamento' : 'Send to Department'}</label>
+                        <label htmlFor="deptEmail">{t('contact.page.sendToDepartment')}</label>
                         <select 
                           id="deptEmail"
                           value={contactForm.deptEmail}
                           onChange={(e) => setContactForm({ ...contactForm, deptEmail: e.target.value })}
                         >
-                          <option value="sgi.decanato@unas.edu.pe">{language === 'es' ? 'Decanato FIIS (decanato@unas.edu.pe)' : 'FIIS Deanery (decanato@unas.edu.pe)'}</option>
-                          <option value="sgi.investigacion@unas.edu.pe">{language === 'es' ? 'Unidad de Investigación (investigacion@unas.edu.pe)' : 'Research Unit (investigacion@unas.edu.pe)'}</option>
-                          <option value="sgi.soporte@unas.edu.pe">{language === 'es' ? 'Soporte Técnico SGI (soporte@unas.edu.pe)' : 'SGI Tech Support (soporte@unas.edu.pe)'}</option>
+                          <option value="sgi.decanato@unas.edu.pe">{t('contact.page.deptDecanato')}</option>
+                          <option value="sgi.investigacion@unas.edu.pe">{t('contact.page.deptInvestigacion')}</option>
+                          <option value="sgi.soporte@unas.edu.pe">{t('contact.page.deptSoporte')}</option>
                         </select>
                       </div>
                     </div>
 
                     <div className="form-input-group">
-                      <label htmlFor="msgType">{language === 'es' ? 'Tipo de Mensaje' : 'Message Type'}</label>
+                      <label htmlFor="msgType">{t('contact.page.messageType')}</label>
                       <select 
                         id="msgType"
                         value={contactForm.msgType}
                         onChange={(e) => setContactForm({ ...contactForm, msgType: e.target.value })}
                       >
-                        <option value="queja">{language === 'es' ? 'Queja' : 'Complaint'}</option>
-                        <option value="comentario">{language === 'es' ? 'Comentario' : 'Comment'}</option>
-                        <option value="consulta">{language === 'es' ? 'Consulta' : 'Inquiry'}</option>
+                        <option value="queja">{t('contact.page.complaint')}</option>
+                        <option value="comentario">{t('contact.page.comment')}</option>
+                        <option value="consulta">{t('contact.page.inquiry')}</option>
                       </select>
                     </div>
 
                     <div className="form-input-group">
-                      <label htmlFor="message">{language === 'es' ? 'Mensaje o Sugerencia' : 'Message or Suggestion'}</label>
+                      <label htmlFor="message">{t('contact.page.messageLabel')}</label>
                       <textarea 
                         id="message" 
                         rows={5} 
                         required 
-                        placeholder={language === 'es' ? 'Detalla aquí tu queja o comentario con el mayor detalle posible...' : 'Detail your complaint or comment here with as much detail as possible...'}
+                        placeholder={t('contact.page.messagePlaceholder')}
                         value={contactForm.message}
                         onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
                       />
                     </div>
 
                     <button type="submit" className="btn-submit-contact">
-                      {language === 'es' ? 'Enviar Mensaje' : 'Send Message'}
+                      {t('contact.page.sendButton')}
                     </button>
                   </form>
                 </div>
@@ -287,12 +273,10 @@ export const ContactoPage: React.FC = () => {
             {activeSection === 'whatsapp-contact-section' && (
               <section id="whatsapp-contact-section" className="about-stacked-section" style={{ paddingBottom: '4rem' }}>
                 <h2 className="about-fiis-title" style={{ marginBottom: '1rem' }}>
-                  {language === 'es' ? 'Contacto Directo por WhatsApp' : 'Direct Contact via WhatsApp'}
+                  {t('contact.page.whatsappTitle')}
                 </h2>
                 <p className="about-tab-description">
-                  {language === 'es' 
-                    ? 'Si prefieres una respuesta más ágil, puedes abrir una ventana de conversación directa con nosotros en cualquier momento.'
-                    : 'If you prefer a faster response, you can open a direct conversation window with us at any time.'}
+                  {t('contact.page.whatsappDescription')}
                 </p>
 
                 <div style={{ marginTop: '1.5rem' }}>
@@ -303,7 +287,7 @@ export const ContactoPage: React.FC = () => {
                     className="contact-whatsapp-direct"
                   >
                     <img src={whatsappGif} alt="WhatsApp" className="whatsapp-contact-icon" />
-                    <span>{language === 'es' ? 'Abrir chat de WhatsApp' : 'Open WhatsApp chat'}</span>
+                    <span>{t('contact.page.openWhatsApp')}</span>
                   </a>
                 </div>
               </section>
@@ -312,7 +296,7 @@ export const ContactoPage: React.FC = () => {
 
           {/* Columna Derecha: Sidebar Indices Sticky */}
           <aside className="about-fiis-sidebar">
-            <h4 className="sidebar-title">{language === 'es' ? 'Contacto' : 'Contact'}</h4>
+            <h4 className="sidebar-title">{t('contact.page.sidebarTitle')}</h4>
             <ul className="sidebar-menu">
               <li>
                 <a 
@@ -320,7 +304,7 @@ export const ContactoPage: React.FC = () => {
                   onClick={(e) => { e.preventDefault(); handleScrollToSection('contacto-form-section'); }} 
                   className={`sidebar-link ${activeSection === 'contacto-form-section' ? 'active' : ''}`}
                 >
-                  {language === 'es' ? 'Correo' : 'Email'}
+                  {t('nav.email')}
                 </a>
               </li>
               <li>
@@ -329,7 +313,7 @@ export const ContactoPage: React.FC = () => {
                   onClick={(e) => { e.preventDefault(); handleScrollToSection('whatsapp-contact-section'); }} 
                   className={`sidebar-link ${activeSection === 'whatsapp-contact-section' ? 'active' : ''}`}
                 >
-                  {language === 'es' ? 'WhatsApp Directo' : 'Direct WhatsApp'}
+                  {t('contact.page.directWhatsApp')}
                 </a>
               </li>
             </ul>
@@ -348,7 +332,7 @@ export const ContactoPage: React.FC = () => {
             onClick={() => {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            title={language === 'es' ? 'Volver arriba' : 'Back to top'}
+            title={t('contact.page.backToTop')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
@@ -359,30 +343,30 @@ export const ContactoPage: React.FC = () => {
         <div className="footer-premium-content">
           <div className="footer-columns-wrapper" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             <div className="footer-column">
-              <h4>Facultad</h4>
+              <h4>{t('footer.faculty')}</h4>
               <ul>
-                <li><a href="https://www.sistemasunas.edu.pe/nuestra-facultad/decanatura" target="_blank" rel="noopener noreferrer">Decanato FIIS</a></li>
-                <li><a href="https://www.sistemasunas.edu.pe/departamentos-academicos" target="_blank" rel="noopener noreferrer">Departamentos Académicos</a></li>
+                <li><a href="https://www.sistemasunas.edu.pe/nuestra-facultad/decanatura" target="_blank" rel="noopener noreferrer">{t('footer.decanatoFiis')}</a></li>
+                <li><a href="https://www.sistemasunas.edu.pe/departamentos-academicos" target="_blank" rel="noopener noreferrer">{t('footer.academicDepartments')}</a></li>
               </ul>
             </div>
             <div className="footer-column">
-              <h4>Investigación</h4>
+              <h4>{t('footer.researchTitle')}</h4>
               <ul>
-                <li><a href="https://investigacion.unas.edu.pe" target="_blank" rel="noopener noreferrer">Dirección General</a></li>
-                <li><a href="https://investigacion.unas.edu.pe/documentos-normativos" target="_blank" rel="noopener noreferrer">Documentos Normativos</a></li>
+                <li><a href="https://investigacion.unas.edu.pe" target="_blank" rel="noopener noreferrer">{t('footer.generalDirection')}</a></li>
+                <li><a href="https://investigacion.unas.edu.pe/documentos-normativos" target="_blank" rel="noopener noreferrer">{t('footer.regulatoryDocuments')}</a></li>
               </ul>
             </div>
             <div className="footer-column">
-              <h4>Soporte</h4>
+              <h4>{t('footer.supportTitle')}</h4>
               <ul>
-                <li><a href="#" onClick={(e) => e.preventDefault()}>Preguntas Frecuentes</a></li>
-                <li><a href="#" onClick={(e) => e.preventDefault()}>Manual de Usuario</a></li>
+                <li><a href="#" onClick={(e) => e.preventDefault()}>{t('footer.faq')}</a></li>
+                <li><a href="#" onClick={(e) => e.preventDefault()}>{t('footer.userManual')}</a></li>
               </ul>
             </div>
           </div>
         </div>
         <div className="footer-bottom-copyright">
-          <p>© 2026 SGI - Facultad de Ingeniería en Informática y Sistemas - UNAS. Todos los derechos reservados.</p>
+          <p>{t('footer.copyrightFull')}</p>
         </div>
       </footer>
     </div>

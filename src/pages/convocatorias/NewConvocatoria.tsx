@@ -4,6 +4,7 @@
  * Diseño premium con pasos visuales, validación en tiempo real, selector de líneas interactivo.
  */
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   Save, ArrowLeft, AlertCircle, Calendar, BookOpen,
@@ -29,26 +30,6 @@ interface FormErrors {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const validateTitle = (value: string): string | undefined => {
-  const trimmed = value.trim();
-  if (!trimmed) return 'El título es obligatorio';
-  if (trimmed.length < 5) return 'Mínimo 5 caracteres';
-  return undefined;
-};
-
-const validateDescription = (value: string): string | undefined => {
-  const trimmed = value.trim();
-  if (!trimmed) return 'La descripción es obligatoria';
-  if (trimmed.length < 20) return 'Mínimo 20 caracteres';
-  return undefined;
-};
-
-const validateEndDate = (value: string, startDate?: string): string | undefined => {
-  if (!value) return 'La fecha de fin es obligatoria';
-  if (startDate && value < startDate) return 'Debe ser posterior a la fecha de inicio';
-  return undefined;
-};
-
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '12px 14px',
@@ -65,6 +46,7 @@ const inputStyle: React.CSSProperties = {
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export const NewConvocatoria: React.FC = () => {
+  const { t } = useTranslation('convocatorias');
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -81,19 +63,37 @@ export const NewConvocatoria: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  // Cargar líneas activas
   useEffect(() => {
     researchService.getLines(true)
       .then(data => setLines(data || []))
-      .catch(() => toast.error('No se pudieron cargar las líneas de investigación.'))
+      .catch(() => toast.error(t('pages.newPage.linesLoadError')))
       .finally(() => setLoadingLines(false));
   }, []);
 
-  // Validación de campo individual
+  const validateTitle = (value: string): string | undefined => {
+    const trimmed = value.trim();
+    if (!trimmed) return t('pages.newPage.titleRequired');
+    if (trimmed.length < 5) return t('pages.newPage.titleMinChars');
+    return undefined;
+  };
+
+  const validateDescription = (value: string): string | undefined => {
+    const trimmed = value.trim();
+    if (!trimmed) return t('pages.newPage.descriptionRequired');
+    if (trimmed.length < 20) return t('pages.newPage.descriptionMinChars');
+    return undefined;
+  };
+
+  const validateEndDate = (value: string, startDate?: string): string | undefined => {
+    if (!value) return t('pages.newPage.endDateRequired');
+    if (startDate && value < startDate) return t('pages.newPage.endDateAfterStart');
+    return undefined;
+  };
+
   const validateField = (field: string, value: string): string | undefined => {
     if (field === 'title') return validateTitle(value);
     if (field === 'description') return validateDescription(value);
-    if (field === 'startDate') return !value ? 'La fecha de inicio es obligatoria' : undefined;
+    if (field === 'startDate') return !value ? t('pages.newPage.startDateRequired') : undefined;
     if (field === 'endDate') return validateEndDate(value, formData.startDate);
     return undefined;
   };
@@ -129,7 +129,7 @@ export const NewConvocatoria: React.FC = () => {
     if (descErr) e.description = descErr;
     if (startErr) e.startDate = startErr;
     if (endErr) e.endDate = endErr;
-    if (selectedLineIds.length === 0) e.lines = 'Selecciona al menos una línea de investigación';
+    if (selectedLineIds.length === 0) e.lines = t('pages.newPage.linesRequired');
     setErrors(e);
     setTouched({ title: true, description: true, startDate: true, endDate: true });
     return Object.keys(e).length === 0;
@@ -137,7 +137,7 @@ export const NewConvocatoria: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!validate()) {
-      toast.error('Completa todos los campos requeridos correctamente.');
+      toast.error(t('pages.newPage.validationError'));
       return;
     }
     setLoading(true);
@@ -149,10 +149,10 @@ export const NewConvocatoria: React.FC = () => {
         endDate: formData.endDate,
         researchLineIds: selectedLineIds,
       });
-      toast.success('Convocatoria creada y publicada exitosamente en estado Abierta.');
+      toast.success(t('pages.newPage.createSuccess'));
       navigate('/convocatorias');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al crear la convocatoria.');
+      toast.error(err instanceof Error ? err.message : t('pages.newPage.createError'));
     } finally {
       setLoading(false);
     }
@@ -175,7 +175,7 @@ export const NewConvocatoria: React.FC = () => {
     if (lines.length === 0) {
       return (
         <div style={{ padding: '24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '14px' }}>
-          No hay líneas de investigación activas registradas.
+          {t('pages.newPage.noActiveLines')}
         </div>
       );
     }
@@ -220,7 +220,7 @@ export const NewConvocatoria: React.FC = () => {
         onClick={() => navigate('/convocatorias')}
         style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--on-surface-variant)', fontWeight: 600, marginBottom: '24px', fontSize: '14px' }}
       >
-        <ArrowLeft size={18} /> Volver a Convocatorias
+        <ArrowLeft size={18} /> {t('pages.newPage.backToCalls')}
       </button>
 
       {/* Header */}
@@ -230,7 +230,7 @@ export const NewConvocatoria: React.FC = () => {
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--on-surface)', marginBottom: '6px' }}>
-            Nueva Convocatoria
+            {t('pages.newPage.title')}
           </h1>
           <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>
             Se registrará y publicará de inmediato en estado <strong>Abierta</strong>.
@@ -242,7 +242,7 @@ export const NewConvocatoria: React.FC = () => {
           <div style={{ fontSize: '22px', fontWeight: 900, color: completionScore === 5 ? '#059669' : 'var(--primary)', lineHeight: 1 }}>
             {completionScore}/5
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)', marginTop: '4px' }}>campos completados</div>
+          <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)', marginTop: '4px' }}>{t('pages.newPage.fieldsCompleted')}</div>
           <div style={{ height: '4px', backgroundColor: 'var(--surface-container-high)', borderRadius: 'var(--radius-full)', marginTop: '8px' }}>
             <div style={{ height: '100%', borderRadius: 'var(--radius-full)', width: `${(completionScore / 5) * 100}%`, backgroundColor: completionScore === 5 ? '#059669' : 'var(--primary)', transition: 'width 0.4s' }} />
           </div>
@@ -256,7 +256,7 @@ export const NewConvocatoria: React.FC = () => {
             <FileText size={16} style={{ color: 'var(--primary)' }} />
           </span>
           <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-            Datos de la Convocatoria
+            {t('pages.newPage.callData')}
           </h2>
         </div>
 
@@ -268,7 +268,7 @@ export const NewConvocatoria: React.FC = () => {
           <input
             id="conv-title"
             type="text"
-            placeholder="Ej. Convocatoria de Proyectos FIIS 2026-II"
+            placeholder={t('pages.newPage.titlePlaceholder')}
             value={formData.title}
             onChange={e => handleChange('title', e.target.value)}
             onBlur={e => handleBlur('title', e.target.value)}
@@ -284,12 +284,12 @@ export const NewConvocatoria: React.FC = () => {
           <label htmlFor="conv-description" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
             <span>Descripción <span style={{ color: 'var(--error)' }}>*</span></span>
             <span style={{ fontWeight: 400, color: charCount < 20 ? 'var(--error)' : 'var(--on-surface-variant)' }}>
-              {charCount} / mín. 20 caracteres
+              {charCount} {t('pages.newPage.minChars')}
             </span>
           </label>
           <textarea
             id="conv-description"
-            placeholder="Describe los objetivos, requisitos, alcance y condiciones de esta convocatoria..."
+            placeholder={t('pages.newPage.descriptionPlaceholder')}
             rows={5}
             value={formData.description}
             onChange={e => handleChange('description', e.target.value)}
@@ -306,7 +306,7 @@ export const NewConvocatoria: React.FC = () => {
           <div>
             <label htmlFor="conv-start-date" style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
               <Calendar size={13} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} />
-              Fecha de Inicio <span style={{ color: 'var(--error)' }}>*</span>
+              {t('pages.newPage.startDateLabel')}
             </label>
             <input
               id="conv-start-date"
@@ -323,7 +323,7 @@ export const NewConvocatoria: React.FC = () => {
           <div>
             <label htmlFor="conv-end-date" style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
               <Calendar size={13} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} />
-              Fecha de Cierre <span style={{ color: 'var(--error)' }}>*</span>
+              {t('pages.newPage.endDateLabel')}
             </label>
             <input
               id="conv-end-date"
@@ -353,13 +353,13 @@ export const NewConvocatoria: React.FC = () => {
                 Líneas de Investigación <span style={{ color: 'var(--error)' }}>*</span>
               </h2>
               <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0 }}>
-                Solo se listan líneas activas. Selecciona las que aplican a esta convocatoria.
+                {t('pages.newPage.researchLinesHint')}
               </p>
             </div>
           </div>
           {selectedLineIds.length > 0 && (
             <span style={{ padding: '5px 14px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--primary-container)', color: 'var(--on-primary-container)', fontSize: '13px', fontWeight: 700 }}>
-              ✓ {selectedLineIds.length} seleccionada{selectedLineIds.length !== 1 ? 's' : ''}
+              {t('pages.newPage.selectedCount', { count: selectedLineIds.length })}
             </span>
           )}
         </div>
@@ -379,7 +379,7 @@ export const NewConvocatoria: React.FC = () => {
           onClick={() => navigate('/convocatorias')}
           style={{ background: 'none', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', padding: '10px 20px', fontSize: '14px', fontWeight: 600, color: 'var(--on-surface-variant)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
         >
-          <ArrowLeft size={15} /> Cancelar
+          <ArrowLeft size={15} /> {t('pages.newPage.cancel')}
         </button>
         <button
           id="btn-create-convocatoria"
@@ -395,8 +395,8 @@ export const NewConvocatoria: React.FC = () => {
           }}
         >
           {loading
-            ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Creando convocatoria...</>
-            : <><Save size={16} /> Crear Convocatoria <ChevronRight size={15} /></>
+            ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> {t('pages.newPage.creating')}</>
+            : <><Save size={16} /> {t('pages.newPage.createCall')} <ChevronRight size={15} /></>
           }
         </button>
       </div>

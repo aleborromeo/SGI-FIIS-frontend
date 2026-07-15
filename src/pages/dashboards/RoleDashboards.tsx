@@ -1,4 +1,6 @@
 import { useContext, useEffect, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -85,35 +87,35 @@ interface QuickAction {
   tone: MetricTone;
 }
 
-function getQuickActions(role: string | null): QuickAction[] {
+function getQuickActions(role: string | null, t: TFunction): QuickAction[] {
   switch (role) {
     case 'ADMIN':
       return [
         {
           to: '/projects',
-          label: 'Gestionar proyectos',
-          description: 'Consultar proyectos registrados y su estado actual.',
+          label: t('dashboard:quickActions.admin.manageProjects'),
+          description: t('dashboard:quickActions.admin.manageProjectsDesc'),
           icon: FileText,
           tone: 'blue',
         },
         {
           to: '/projects/assign',
-          label: 'Asignar revisores',
-          description: 'Derivar proyectos o trámites para evaluación.',
+          label: t('dashboard:quickActions.admin.assignReviewers'),
+          description: t('dashboard:quickActions.admin.assignReviewersDesc'),
           icon: ClipboardList,
           tone: 'purple',
         },
         {
           to: '/progressreports/review',
-          label: 'Revisar informes',
-          description: 'Supervisar informes de avance pendientes.',
+          label: t('dashboard:quickActions.admin.reviewReports'),
+          description: t('dashboard:quickActions.admin.reviewReportsDesc'),
           icon: BarChart2,
           tone: 'orange',
         },
         {
           to: '/projects/audit',
-          label: 'Auditoría de proyectos',
-          description: 'Revisar trazabilidad y cambios del proceso.',
+          label: t('dashboard:quickActions.admin.projectAudit'),
+          description: t('dashboard:quickActions.admin.projectAuditDesc'),
           icon: Scale,
           tone: 'green',
         },
@@ -123,22 +125,22 @@ function getQuickActions(role: string | null): QuickAction[] {
       return [
         {
           to: '/evaluations/my-evaluations',
-          label: 'Mis evaluaciones',
-          description: 'Revisar evaluaciones asignadas y pendientes.',
+          label: t('dashboard:quickActions.evaluator.myEvaluations'),
+          description: t('dashboard:quickActions.evaluator.myEvaluationsDesc'),
           icon: ClipboardList,
           tone: 'blue',
         },
         {
           to: '/projects/evaluate',
-          label: 'Evaluar proyecto',
-          description: 'Registrar resultado, puntaje u observaciones.',
+          label: t('dashboard:quickActions.evaluator.evaluateProject'),
+          description: t('dashboard:quickActions.evaluator.evaluateProjectDesc'),
           icon: CheckCircle,
           tone: 'green',
         },
         {
           to: '/observations/panel',
-          label: 'Observaciones',
-          description: 'Consultar observaciones realizadas o recibidas.',
+          label: t('dashboard:quickActions.evaluator.observations'),
+          description: t('dashboard:quickActions.evaluator.observationsDesc'),
           icon: AlertTriangle,
           tone: 'orange',
         },
@@ -148,22 +150,22 @@ function getQuickActions(role: string | null): QuickAction[] {
       return [
         {
           to: '/projects',
-          label: 'Mis proyectos',
-          description: 'Consultar proyectos donde participa como responsable o integrante.',
+          label: t('dashboard:quickActions.teacher.myProjects'),
+          description: t('dashboard:quickActions.teacher.myProjectsDesc'),
           icon: Microscope,
           tone: 'blue',
         },
         {
           to: '/projects/new',
-          label: 'Nueva propuesta',
-          description: 'Registrar una nueva propuesta de investigación.',
+          label: t('dashboard:quickActions.teacher.newProposal'),
+          description: t('dashboard:quickActions.teacher.newProposalDesc'),
           icon: FileText,
           tone: 'green',
         },
         {
           to: '/observations/panel',
-          label: 'Mis observaciones',
-          description: 'Revisar observaciones asociadas a sus trámites.',
+          label: t('dashboard:quickActions.teacher.myObservations'),
+          description: t('dashboard:quickActions.teacher.myObservationsDesc'),
           icon: AlertTriangle,
           tone: 'orange',
         },
@@ -173,22 +175,22 @@ function getQuickActions(role: string | null): QuickAction[] {
       return [
         {
           to: '/projects',
-          label: 'Proyectos del grupo',
-          description: 'Supervisar proyectos vinculados al grupo de investigación.',
+          label: t('dashboard:quickActions.coordinator.groupProjects'),
+          description: t('dashboard:quickActions.coordinator.groupProjectsDesc'),
           icon: Building,
           tone: 'blue',
         },
         {
           to: '/progressreports/review',
-          label: 'Informes del grupo',
-          description: 'Revisar avances e información enviada por integrantes.',
+          label: t('dashboard:quickActions.coordinator.groupReports'),
+          description: t('dashboard:quickActions.coordinator.groupReportsDesc'),
           icon: BookOpen,
           tone: 'purple',
         },
         {
           to: '/observations/panel',
-          label: 'Observaciones',
-          description: 'Atender observaciones de trámites del grupo.',
+          label: t('dashboard:quickActions.coordinator.observations'),
+          description: t('dashboard:quickActions.coordinator.observationsDesc'),
           icon: AlertTriangle,
           tone: 'orange',
         },
@@ -199,22 +201,22 @@ function getQuickActions(role: string | null): QuickAction[] {
       return [
         {
           to: '/projects',
-          label: 'Proyectos institucionales',
-          description: 'Revisar proyectos registrados en la facultad.',
+          label: t('dashboard:quickActions.director.institutionalProjects'),
+          description: t('dashboard:quickActions.director.institutionalProjectsDesc'),
           icon: Building2,
           tone: 'blue',
         },
         {
           to: '/progressreports/review',
-          label: 'Informes pendientes',
-          description: 'Consultar informes que requieren revisión jerárquica.',
+          label: t('dashboard:quickActions.director.pendingReports'),
+          description: t('dashboard:quickActions.director.pendingReportsDesc'),
           icon: BarChart2,
           tone: 'orange',
         },
         {
           to: '/projects/audit',
-          label: 'Trazabilidad',
-          description: 'Ver seguimiento y auditoría de procesos.',
+          label: t('dashboard:quickActions.director.traceability'),
+          description: t('dashboard:quickActions.director.traceabilityDesc'),
           icon: Scale,
           tone: 'green',
         },
@@ -224,22 +226,22 @@ function getQuickActions(role: string | null): QuickAction[] {
       return [
         {
           to: '/thesis/plans',
-          label: 'Mis Planes de Tesis',
-          description: 'Ver el estado y trazabilidad de sus propuestas de tesis.',
+          label: t('dashboard:quickActions.student.myThesisPlans'),
+          description: t('dashboard:quickActions.student.myThesisPlansDesc'),
           icon: GraduationCap,
           tone: 'blue',
         },
         {
           to: '/thesis/new',
-          label: 'Registrar Plan de Tesis',
-          description: 'Iniciar la presentación de un plan de tesis académica.',
+          label: t('dashboard:quickActions.student.registerThesisPlan'),
+          description: t('dashboard:quickActions.student.registerThesisPlanDesc'),
           icon: PenTool,
           tone: 'green',
         },
         {
           to: '/observations/panel',
-          label: 'Mis observaciones',
-          description: 'Consultar observaciones pendientes de atención.',
+          label: t('dashboard:quickActions.student.myObservations'),
+          description: t('dashboard:quickActions.student.myObservationsDesc'),
           icon: AlertTriangle,
           tone: 'orange',
         },
@@ -249,8 +251,8 @@ function getQuickActions(role: string | null): QuickAction[] {
       return [
         {
           to: '/projects',
-          label: 'Ver proyectos',
-          description: 'Consultar información disponible del sistema.',
+          label: t('dashboard:quickActions.default.viewProjects'),
+          description: t('dashboard:quickActions.default.viewProjectsDesc'),
           icon: FolderOpen,
           tone: 'blue',
         },
@@ -284,26 +286,26 @@ function getPercent(value: number | null | undefined, total?: number): number {
   return Math.min(100, Math.round((numericValue / numericTotal) * 100));
 }
 
-function translateAlertType(type: string): string {
+function translateAlertType(type: string, t: TFunction): string {
   const normalized = type.toUpperCase();
 
   const dictionary: Record<string, string> = {
-    REVIEW: 'Revisión',
-    WARNING: 'Advertencia',
-    ERROR: 'Error',
-    INFO: 'Información',
-    SUCCESS: 'Correcto',
+    REVIEW: t('dashboard:alertTypes.REVIEW'),
+    WARNING: t('dashboard:alertTypes.WARNING'),
+    ERROR: t('dashboard:alertTypes.ERROR'),
+    INFO: t('dashboard:alertTypes.INFO'),
+    SUCCESS: t('dashboard:alertTypes.SUCCESS'),
   };
 
   return dictionary[normalized] ?? type;
 }
 
-function translateAlertTitle(title: string): string {
+function translateAlertTitle(title: string, t: TFunction): string {
   const normalized = title.toLowerCase();
 
-  if (normalized.includes('pending procedures')) return 'Trámites pendientes';
-  if (normalized.includes('pending')) return 'Pendiente de atención';
-  if (normalized.includes('review')) return 'Revisión pendiente';
+  if (normalized.includes('pending procedures')) return t('dashboard:alertTitles.pendingProcedures');
+  if (normalized.includes('pending')) return t('dashboard:alertTitles.pendingAttention');
+  if (normalized.includes('review')) return t('dashboard:alertTitles.reviewPending');
 
   return title;
 }
@@ -321,14 +323,15 @@ function translateAlertDescription(description: string): string {
 
 function QuickActionsSection() {
   const { currentRole } = useContext(AuthContext);
-  const actions = getQuickActions(currentRole);
+  const { t } = useTranslation('dashboard');
+  const actions = getQuickActions(currentRole, t);
 
   return (
     <section className="quick-actions-section">
       <div className="quick-actions-header">
         <div>
-          <h3>Accesos rápidos</h3>
-          <p>Atajos operativos según tu rol dentro del sistema.</p>
+          <h3>{t('dashboard:quickActions.sectionTitle')}</h3>
+          <p>{t('dashboard:quickActions.sectionSubtitle')}</p>
         </div>
       </div>
 
@@ -397,13 +400,15 @@ function ProgressBars({ items }: Readonly<{ items: readonly ProgressItem[] }>) {
 }
 
 function AlertsList({ alerts }: Readonly<{ alerts?: readonly AlertItem[] }>) {
+  const { t } = useTranslation('dashboard');
+
   if (!alerts || alerts.length === 0) {
     return (
       <div className="empty-alerts">
         <span className="empty-icon">
           <CheckCircle size={32} color="#15803d" />
         </span>
-        <p>No tiene notificaciones ni alertas pendientes en este momento.</p>
+        <p>{t('dashboard:alerts.noAlerts')}</p>
       </div>
     );
   }
@@ -413,8 +418,8 @@ function AlertsList({ alerts }: Readonly<{ alerts?: readonly AlertItem[] }>) {
       {alerts.map((alert, index) => (
         <div key={`${alert.type}-${index}`} className={`alert-card-item alert-type-${alert.type.toLowerCase()}`}>
           <div className="alert-item-header">
-            <span className="alert-badge">{translateAlertType(alert.type)}</span>
-            <h4 className="alert-item-title">{translateAlertTitle(alert.title)}</h4>
+            <span className="alert-badge">{translateAlertType(alert.type, t)}</span>
+            <h4 className="alert-item-title">{translateAlertTitle(alert.title, t)}</h4>
           </div>
           <p className="alert-item-desc">{translateAlertDescription(alert.description)}</p>
         </div>
@@ -468,6 +473,7 @@ function DashboardLayout({
 
 export const RoleDashboards = () => {
   const { currentRole } = useContext(AuthContext);
+  const { t } = useTranslation('dashboard');
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -492,7 +498,7 @@ export const RoleDashboards = () => {
           setError(
             err instanceof Error
               ? err.message
-              : 'No se pudo cargar la información del panel de control.'
+              : t('dashboard:error.defaultMessage')
           );
         }
       } finally {
@@ -507,13 +513,13 @@ export const RoleDashboards = () => {
     return () => {
       mounted = false;
     };
-  }, [currentRole]);
+  }, [currentRole, t]);
 
   if (loading) {
     return (
       <div className="dashboard-loading">
         <Spinner size="large" color="#0b5ed7" />
-        <p className="loading-text">Cargando datos del panel...</p>
+        <p className="loading-text">{t('dashboard:loading.dashboard')}</p>
       </div>
     );
   }
@@ -524,10 +530,10 @@ export const RoleDashboards = () => {
         <span className="error-icon">
           <XCircle size={48} color="#991b1b" />
         </span>
-        <h3 className="error-title">Error al cargar dashboard</h3>
+        <h3 className="error-title">{t('dashboard:error.dashboardLoad')}</h3>
         <p className="error-desc">{error}</p>
         <button onClick={() => window.location.reload()} className="error-retry-btn">
-          Reintentar
+          {t('dashboard:error.retry')}
         </button>
       </div>
     );
@@ -539,8 +545,8 @@ export const RoleDashboards = () => {
         <span className="unsupported-icon">
           <AlertTriangle size={48} color="#64748b" />
         </span>
-        <h3>Sin información disponible</h3>
-        <p>No se encontraron datos para construir el dashboard.</p>
+        <h3>{t('dashboard:empty.noData')}</h3>
+        <p>{t('dashboard:empty.noDataDescription')}</p>
       </div>
     );
   }
@@ -559,39 +565,39 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="admin-view"
-        title="Dashboard general del administrador"
-        subtitle="Indicadores institucionales macro de usuarios, grupos, proyectos y trámites del sistema."
+        title={t('dashboard:admin.title')}
+        subtitle={t('dashboard:admin.subtitle')}
         metrics={[
           {
             icon: Users,
             value: adminData.totalUsers,
-            label: 'Usuarios registrados',
-            sublabel: `${formatNumber(adminData.totalActiveUsers)} usuarios activos`,
+            label: t('dashboard:admin.metrics.registeredUsers'),
+            sublabel: `${formatNumber(adminData.totalActiveUsers)} ${t('dashboard:admin.metrics.activeUsersSuffix')}`,
             tone: 'blue',
           },
           {
             icon: Building,
             value: adminData.totalGroups,
-            label: 'Grupos de investigación',
-            sublabel: `${formatNumber(adminData.totalActiveGroups)} grupos activos`,
+            label: t('dashboard:admin.metrics.researchGroups'),
+            sublabel: `${formatNumber(adminData.totalActiveGroups)} ${t('dashboard:admin.metrics.activeGroupsSuffix')}`,
             tone: 'green',
           },
           {
             icon: FileText,
             value: adminData.totalProjects,
-            label: 'Proyectos institucionales',
-            sublabel: `${formatNumber(adminData.activeProjects)} proyectos activos`,
+            label: t('dashboard:admin.metrics.institutionalProjects'),
+            sublabel: `${formatNumber(adminData.activeProjects)} ${t('dashboard:admin.metrics.activeProjectsSuffix')}`,
             tone: 'purple',
           },
           {
             icon: RefreshCw,
             value: activeProcedures,
-            label: 'Trámites activos',
-            sublabel: 'Pendientes o en revisión dentro del sistema',
+            label: t('dashboard:admin.metrics.activeProcedures'),
+            sublabel: t('dashboard:admin.metrics.activeProceduresSublabel'),
             tone: 'orange',
           },
         ]}
-        leftTitle="Indicadores institucionales de trámites"
+        leftTitle={t('dashboard:admin.sections.procedureIndicators')}
         leftContent={
           <>
             <div className="affiliation-card" style={{ marginBottom: '20px' }}>
@@ -600,9 +606,9 @@ export const RoleDashboards = () => {
                   <Scale size={24} />
                 </span>
                 <div>
-                  <h4>Vista macro institucional</h4>
+                  <h4>{t('dashboard:admin.sections.macroView')}</h4>
                   <p>
-                    Información consolidada para administración general del sistema.
+                    {t('dashboard:admin.sections.macroViewDesc')}
                   </p>
                 </div>
               </div>
@@ -611,25 +617,25 @@ export const RoleDashboards = () => {
             <ProgressBars
               items={[
                 {
-                  label: 'Trámites en revisión',
+                  label: t('dashboard:admin.procedures.underReview'),
                   value: adminData.proceduresUnderReview,
                   total: proceduresTotal,
                   tone: 'blue',
                 },
                 {
-                  label: 'Trámites aprobados',
+                  label: t('dashboard:admin.procedures.approved'),
                   value: adminData.approvedProcedures,
                   total: proceduresTotal,
                   tone: 'green',
                 },
                 {
-                  label: 'Trámites pendientes',
+                  label: t('dashboard:admin.procedures.pending'),
                   value: adminData.pendingProcedures,
                   total: proceduresTotal,
                   tone: 'orange',
                 },
                 {
-                  label: 'Trámites rechazados',
+                  label: t('dashboard:admin.procedures.rejected'),
                   value: adminData.rejectedProcedures,
                   total: proceduresTotal,
                   tone: 'gray',
@@ -638,7 +644,7 @@ export const RoleDashboards = () => {
             />
           </>
         }
-        alertsTitle="Alertas institucionales"
+        alertsTitle={t('dashboard:admin.sections.alerts')}
         alerts={adminData.alerts}
       />
     );
@@ -648,39 +654,39 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="student-view"
-        title="Portal del tesista / estudiante"
-        subtitle="Monitoreo de planes de tesis, trámites y convocatorias académicas."
+        title={t('dashboard:student.title')}
+        subtitle={t('dashboard:student.subtitle')}
         metrics={[
           {
             icon: GraduationCap,
             value: studentData.submittedThesisPlans,
-            label: 'Planes de tesis presentados',
-            sublabel: <>Estado actual: <strong>{studentData.currentPlanStatus || 'Ninguno'}</strong></>,
+            label: t('dashboard:student.metrics.thesisPlansSubmitted'),
+            sublabel: <>{t('dashboard:student.metrics.currentStatusLabel')} <strong>{studentData.currentPlanStatus || t('dashboard:student.metrics.currentStatusNone')}</strong></>,
             tone: 'blue',
           },
           {
             icon: RefreshCw,
             value: studentData.pendingProcedures,
-            label: 'Trámites en curso',
-            sublabel: 'Seguimiento en tiempo real',
+            label: t('dashboard:student.metrics.proceduresInProgress'),
+            sublabel: t('dashboard:student.metrics.realTimeTracking'),
             tone: 'orange',
           },
           {
             icon: FolderOpen,
             value: studentData.uploadedDocuments,
-            label: 'Documentos subidos',
-            sublabel: 'Archivos adjuntos en la plataforma',
+            label: t('dashboard:student.metrics.uploadedDocuments'),
+            sublabel: t('dashboard:student.metrics.platformFiles'),
             tone: 'purple',
           },
           {
             icon: Megaphone,
             value: studentData.openCallsForApplication,
-            label: 'Convocatorias abiertas',
-            sublabel: 'Oportunidades de investigación activas',
+            label: t('dashboard:student.metrics.openCalls'),
+            sublabel: t('dashboard:student.metrics.activeOpportunities'),
             tone: 'green',
           },
         ]}
-        leftTitle="Información de afiliación"
+        leftTitle={t('dashboard:student.sections.affiliation')}
         leftContent={
           <div className="affiliation-card">
             <div className="affiliation-header">
@@ -688,19 +694,18 @@ export const RoleDashboards = () => {
                 <Building size={24} />
               </span>
               <div>
-                <h4>{studentData.groupName || 'Sin grupo asignado'}</h4>
+                <h4>{studentData.groupName || t('dashboard:student.affiliation.noGroup')}</h4>
                 <p>
-                  Código del grupo: <strong>{studentData.groupCode || 'N/A'}</strong>
+                  {t('dashboard:student.affiliation.groupCode')} <strong>{studentData.groupCode || 'N/A'}</strong>
                 </p>
               </div>
             </div>
             <p className="affiliation-body">
-              Los trámites y planes de tesis se derivan al coordinador del grupo de
-              investigación para su revisión inicial cuando corresponde.
+              {t('dashboard:student.affiliation.description')}
             </p>
           </div>
         }
-        alertsTitle="Mis notificaciones"
+        alertsTitle={t('dashboard:student.sections.notifications')}
         alerts={studentData.alerts}
       />
     );
@@ -720,14 +725,14 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="teacher-view"
-        title="Dashboard del docente investigador"
+        title={t('dashboard:teacher.title')}
         subtitle={
           <>
-            Resumen personalizado de proyectos, documentos, trámites e informes.
+            {t('dashboard:teacher.subtitlePart1')}
             {' '}
-            Grupo:{' '}
+            {t('dashboard:teacher.groupLabel')}{' '}
             <strong>
-              {teacherData.groupCode || 'N/A'} - {teacherData.groupName || 'Grupo pendiente de asignación'}
+              {teacherData.groupCode || 'N/A'} - {teacherData.groupName || t('dashboard:teacher.pendingGroup')}
             </strong>
           </>
         }
@@ -735,33 +740,33 @@ export const RoleDashboards = () => {
           {
             icon: Microscope,
             value: myProjectsTotal,
-            label: 'Mis proyectos registrados',
-            sublabel: `${formatNumber(teacherData.projectsAsLead)} como responsable y ${formatNumber(teacherData.projectsAsMember)} como integrante`,
+            label: t('dashboard:teacher.metrics.registeredProjects'),
+            sublabel: `${formatNumber(teacherData.projectsAsLead)} ${t('dashboard:teacher.metrics.asLeadAnd')} ${formatNumber(teacherData.projectsAsMember)} ${t('dashboard:teacher.metrics.asMember')}`,
             tone: 'blue',
           },
           {
             icon: FolderOpen,
             value: teacherData.uploadedDocuments,
-            label: 'Mis documentos',
-            sublabel: 'Documentos cargados por el docente investigador',
+            label: t('dashboard:teacher.metrics.myDocuments'),
+            sublabel: t('dashboard:teacher.metrics.myDocumentsSublabel'),
             tone: 'purple',
           },
           {
             icon: RefreshCw,
             value: teacherData.pendingProcedures,
-            label: 'Mis trámites en curso',
-            sublabel: 'Trámites pendientes de atención o revisión',
+            label: t('dashboard:teacher.metrics.myProceduresInProgress'),
+            sublabel: t('dashboard:teacher.metrics.myProceduresInProgressSublabel'),
             tone: 'orange',
           },
           {
             icon: BarChart2,
             value: teacherData.pendingProgressReports,
-            label: 'Mis informes presentados',
-            sublabel: 'Informes de avance registrados o pendientes de seguimiento',
+            label: t('dashboard:teacher.metrics.myReportsSubmitted'),
+            sublabel: t('dashboard:teacher.metrics.myReportsSubmittedSublabel'),
             tone: 'green',
           },
         ]}
-        leftTitle="Grupo de investigación y mis proyectos"
+        leftTitle={t('dashboard:teacher.sections.groupAndProjects')}
         leftContent={
           <>
             <div className="affiliation-card" style={{ marginBottom: '20px' }}>
@@ -770,41 +775,40 @@ export const RoleDashboards = () => {
                   <Building size={24} />
                 </span>
                 <div>
-                  <h4>{teacherData.groupName || 'Grupo pendiente de asignación'}</h4>
+                  <h4>{teacherData.groupName || t('dashboard:teacher.pendingGroup')}</h4>
                   <p>
-                    Código del grupo:{' '}
+                    {t('dashboard:teacher.groupCode')}{' '}
                     <strong>{teacherData.groupCode || 'N/A'}</strong>
                   </p>
                 </div>
               </div>
               <p className="affiliation-body">
-                Esta vista muestra únicamente la información vinculada al docente
-                autenticado y a su grupo de investigación.
+                {t('dashboard:teacher.affiliation.description')}
               </p>
             </div>
 
             <ProgressBars
               items={[
                 {
-                  label: 'Proyectos postulados',
+                  label: t('dashboard:teacher.projects.submitted'),
                   value: teacherData.submittedProjects,
                   total: projectsTotal,
                   tone: 'blue',
                 },
                 {
-                  label: 'Proyectos aprobados',
+                  label: t('dashboard:teacher.projects.approved'),
                   value: teacherData.approvedProjects,
                   total: projectsTotal,
                   tone: 'green',
                 },
                 {
-                  label: 'Proyectos en ejecución',
+                  label: t('dashboard:teacher.projects.inExecution'),
                   value: teacherData.projectsInExecution,
                   total: projectsTotal,
                   tone: 'purple',
                 },
                 {
-                  label: 'Proyectos finalizados',
+                  label: t('dashboard:teacher.projects.completed'),
                   value: teacherData.completedProjects,
                   total: projectsTotal,
                   tone: 'gray',
@@ -813,7 +817,7 @@ export const RoleDashboards = () => {
             />
           </>
         }
-        alertsTitle="Mis alertas"
+        alertsTitle={t('dashboard:teacher.sections.alerts')}
         alerts={teacherData.alerts}
         extraContent={<ConvocatoriasDashboard />}
       />
@@ -831,43 +835,43 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="coordinator-view"
-        title="Dashboard del coordinador de grupo"
+        title={t('dashboard:coordinator.title')}
         subtitle={
           <>
-            Información restringida al grupo <strong>{coordData.groupName}</strong> ({coordData.groupCode}).
+            {t('dashboard:coordinator.subtitlePrefix')} <strong>{coordData.groupName}</strong> ({coordData.groupCode}).
           </>
         }
         metrics={[
           {
             icon: Users,
             value: coordData.totalMembers,
-            label: 'Miembros de mi grupo',
-            sublabel: `${formatNumber(coordData.activeMembers)} miembros activos`,
+            label: t('dashboard:coordinator.metrics.groupMembers'),
+            sublabel: `${formatNumber(coordData.activeMembers)} ${t('dashboard:coordinator.metrics.activeMembersSuffix')}`,
             tone: 'blue',
           },
           {
             icon: FileText,
             value: coordData.totalGroupProjects,
-            label: 'Proyectos de mi grupo',
-            sublabel: `${formatNumber(coordData.activeGroupProjects)} proyectos activos`,
+            label: t('dashboard:coordinator.metrics.groupProjects'),
+            sublabel: `${formatNumber(coordData.activeGroupProjects)} ${t('dashboard:coordinator.metrics.activeProjectsSuffix')}`,
             tone: 'purple',
           },
           {
             icon: RefreshCw,
             value: coordData.pendingGroupProcedures,
-            label: 'Trámites de mi grupo',
-            sublabel: 'Pendientes de revisión del coordinador',
+            label: t('dashboard:coordinator.metrics.groupProcedures'),
+            sublabel: t('dashboard:coordinator.metrics.groupProceduresSublabel'),
             tone: 'orange',
           },
           {
             icon: BookOpen,
             value: coordData.groupProgressReports,
-            label: 'Informes de mi grupo',
-            sublabel: `${formatNumber(coordData.groupThesisPlans)} planes de tesis asociados`,
+            label: t('dashboard:coordinator.metrics.groupReports'),
+            sublabel: `${formatNumber(coordData.groupThesisPlans)} ${t('dashboard:coordinator.metrics.associatedThesisPlans')}`,
             tone: 'green',
           },
         ]}
-        leftTitle="Control de trámites del grupo"
+        leftTitle={t('dashboard:coordinator.sections.procedureControl')}
         leftContent={
           <>
             <div className="affiliation-card" style={{ marginBottom: '20px' }}>
@@ -876,41 +880,40 @@ export const RoleDashboards = () => {
                   <Building size={24} />
                 </span>
                 <div>
-                  <h4>{coordData.groupName || 'Grupo no identificado'}</h4>
+                  <h4>{coordData.groupName || t('dashboard:coordinator.affiliation.noGroup')}</h4>
                   <p>
-                    Código del grupo:{' '}
+                    {t('dashboard:coordinator.groupCode')}{' '}
                     <strong>{coordData.groupCode || 'N/A'}</strong>
                   </p>
                 </div>
               </div>
               <p className="affiliation-body">
-                El coordinador visualiza solo miembros, proyectos, trámites e
-                informes correspondientes a su propio grupo de investigación.
+                {t('dashboard:coordinator.affiliation.description')}
               </p>
             </div>
 
             <ProgressBars
               items={[
                 {
-                  label: 'Trámites presentados',
+                  label: t('dashboard:coordinator.procedures.submitted'),
                   value: coordData.submittedProcedures,
                   total: proceduresTotal,
                   tone: 'blue',
                 },
                 {
-                  label: 'Trámites en revisión',
+                  label: t('dashboard:coordinator.procedures.underReview'),
                   value: coordData.proceduresUnderReview,
                   total: proceduresTotal,
                   tone: 'purple',
                 },
                 {
-                  label: 'Trámites aprobados',
+                  label: t('dashboard:coordinator.procedures.approved'),
                   value: coordData.approvedProcedures,
                   total: proceduresTotal,
                   tone: 'green',
                 },
                 {
-                  label: 'Trámites observados',
+                  label: t('dashboard:coordinator.procedures.observed'),
                   value: coordData.observedProcedures,
                   total: proceduresTotal,
                   tone: 'orange',
@@ -919,7 +922,7 @@ export const RoleDashboards = () => {
             />
           </>
         }
-        alertsTitle="Alertas de mi grupo"
+        alertsTitle={t('dashboard:coordinator.sections.alerts')}
         alerts={coordData.alerts}
       />
     );
@@ -941,39 +944,39 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="director-view"
-        title="Dashboard institucional del director de investigación"
-        subtitle="Consolidado institucional de proyectos, grupos de investigación, trámites activos y convocatorias."
+        title={t('dashboard:director.title')}
+        subtitle={t('dashboard:director.subtitle')}
         metrics={[
           {
             icon: Building2,
             value: directorData.totalProjects,
-            label: 'Proyectos de investigación',
-            sublabel: `${formatNumber(directorData.activeProjects)} proyectos activos`,
+            label: t('dashboard:director.metrics.researchProjects'),
+            sublabel: `${formatNumber(directorData.activeProjects)} ${t('dashboard:director.metrics.activeProjectsSuffix')}`,
             tone: 'blue',
           },
           {
             icon: Users,
             value: 'Global',
-            label: 'Grupos de investigación',
-            sublabel: 'Información consolidada por grupos institucionales',
+            label: t('dashboard:director.metrics.researchGroups'),
+            sublabel: t('dashboard:director.metrics.researchGroupsSublabel'),
             tone: 'green',
           },
           {
             icon: RefreshCw,
             value: activeProcedures,
-            label: 'Trámites activos',
-            sublabel: `${formatNumber(directorData.pendingReviewProcedures)} pendientes de revisión`,
+            label: t('dashboard:director.metrics.activeProcedures'),
+            sublabel: `${formatNumber(directorData.pendingReviewProcedures)} ${t('dashboard:director.metrics.pendingReviewSuffix')}`,
             tone: 'orange',
           },
           {
             icon: Megaphone,
             value: directorData.openCallsForApplication,
-            label: 'Convocatorias',
-            sublabel: 'Convocatorias vigentes para investigación',
+            label: t('dashboard:director.metrics.calls'),
+            sublabel: t('dashboard:director.metrics.callsSublabel'),
             tone: 'purple',
           },
         ]}
-        leftTitle="Distribución institucional de trámites"
+        leftTitle={t('dashboard:director.sections.procedureDistribution')}
         leftContent={
           <>
             <div className="affiliation-card" style={{ marginBottom: '20px' }}>
@@ -982,9 +985,9 @@ export const RoleDashboards = () => {
                   <Building2 size={24} />
                 </span>
                 <div>
-                  <h4>Vista institucional consolidada</h4>
+                  <h4>{t('dashboard:director.sections.institutionalView')}</h4>
                   <p>
-                    El director visualiza información global para supervisión académica e institucional.
+                    {t('dashboard:director.sections.institutionalViewDesc')}
                   </p>
                 </div>
               </div>
@@ -993,25 +996,25 @@ export const RoleDashboards = () => {
             <ProgressBars
               items={[
                 {
-                  label: 'Trámites en coordinación',
+                  label: t('dashboard:director.procedures.withCoordinator'),
                   value: directorData.proceduresWithCoordinator,
                   total: proceduresTotal,
                   tone: 'blue',
                 },
                 {
-                  label: 'Trámites en dirección',
+                  label: t('dashboard:director.procedures.withDirector'),
                   value: directorData.proceduresWithDirector,
                   total: proceduresTotal,
                   tone: 'purple',
                 },
                 {
-                  label: 'Trámites en decanato',
+                  label: t('dashboard:director.procedures.withDean'),
                   value: directorData.proceduresWithDean,
                   total: proceduresTotal,
                   tone: 'orange',
                 },
                 {
-                  label: 'Trámites concluidos',
+                  label: t('dashboard:director.procedures.completed'),
                   value: directorData.completedProcedures,
                   total: proceduresTotal,
                   tone: 'green',
@@ -1020,7 +1023,7 @@ export const RoleDashboards = () => {
             />
           </>
         }
-        alertsTitle="Notificaciones institucionales"
+        alertsTitle={t('dashboard:director.sections.notifications')}
         alerts={directorData.alerts}
       />
     );
@@ -1036,56 +1039,56 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="dean-view"
-        title="Consola del decanato de la facultad"
-        subtitle="Supervisión institucional, resoluciones finales e informes de gestión."
+        title={t('dashboard:dean.title')}
+        subtitle={t('dashboard:dean.subtitle')}
         metrics={[
           {
             icon: Scale,
             value: deanData.totalFacultyProjects,
-            label: 'Proyectos en la facultad',
-            sublabel: `${formatNumber(deanData.activeProjects)} proyectos activos`,
+            label: t('dashboard:dean.metrics.facultyProjects'),
+            sublabel: `${formatNumber(deanData.activeProjects)} ${t('dashboard:dean.metrics.activeProjectsSuffix')}`,
             tone: 'blue',
           },
           {
             icon: PenTool,
             value: deanData.pendingSignatureProcedures,
-            label: 'Trámites pendientes de firma',
-            sublabel: 'Espera de resolución decanal',
+            label: t('dashboard:dean.metrics.pendingSignatureProcedures'),
+            sublabel: t('dashboard:dean.metrics.pendingSignatureSublabel'),
             tone: 'purple',
           },
           {
             icon: ScrollText,
             value: deanData.issuedResolutions,
-            label: 'Resoluciones emitidas',
-            sublabel: 'Histórico de firmas administrativas',
+            label: t('dashboard:dean.metrics.issuedResolutions'),
+            sublabel: t('dashboard:dean.metrics.issuedResolutionsSublabel'),
             tone: 'orange',
           },
           {
             icon: Building,
             value: deanData.totalActiveGroups,
-            label: 'Grupos de investigación activos',
-            sublabel: `${formatNumber(deanData.activeCallsForApplication)} convocatorias vigentes`,
+            label: t('dashboard:dean.metrics.activeResearchGroups'),
+            sublabel: `${formatNumber(deanData.activeCallsForApplication)} ${t('dashboard:dean.metrics.activeCallsSuffix')}`,
             tone: 'green',
           },
         ]}
-        leftTitle="Estadísticas mensuales del decanato"
+        leftTitle={t('dashboard:dean.sections.monthlyStats')}
         leftContent={
           <ProgressBars
             items={[
               {
-                label: 'Trámites en espera',
+                label: t('dashboard:dean.procedures.waiting'),
                 value: deanData.waitingProcedures,
                 total: monthlyTotal,
                 tone: 'blue',
               },
               {
-                label: 'Aprobados este mes',
+                label: t('dashboard:dean.procedures.approvedThisMonth'),
                 value: deanData.approvedProceduresThisMonth,
                 total: monthlyTotal,
                 tone: 'green',
               },
               {
-                label: 'Rechazados o devueltos este mes',
+                label: t('dashboard:dean.procedures.rejectedThisMonth'),
                 value: deanData.rejectedProceduresThisMonth,
                 total: monthlyTotal,
                 tone: 'orange',
@@ -1093,7 +1096,7 @@ export const RoleDashboards = () => {
             ]}
           />
         }
-        alertsTitle="Notificaciones del decano"
+        alertsTitle={t('dashboard:dean.sections.notifications')}
         alerts={deanData.alerts}
       />
     );
@@ -1109,14 +1112,14 @@ export const RoleDashboards = () => {
     return (
       <DashboardLayout
         viewClassName="evaluator-view"
-        title="Dashboard del evaluador"
+        title={t('dashboard:evaluator.title')}
         subtitle={
           <>
-            Panel enfocado en proyectos y evaluaciones asignadas.
+            {t('dashboard:evaluator.subtitlePart1')}
             {' '}
-            Grupo:{' '}
+            {t('dashboard:evaluator.groupLabel')}{' '}
             <strong>
-              {evalData.groupCode || 'N/A'} - {evalData.groupName || 'Grupo pendiente de asignación'}
+              {evalData.groupCode || 'N/A'} - {evalData.groupName || t('dashboard:evaluator.pendingGroup')}
             </strong>
           </>
         }
@@ -1124,33 +1127,33 @@ export const RoleDashboards = () => {
           {
             icon: Microscope,
             value: evalData.assignedProjects,
-            label: 'Proyectos asignados',
-            sublabel: `${formatNumber(evalData.assignedThesisPlans)} planes de tesis asignados`,
+            label: t('dashboard:evaluator.metrics.assignedProjects'),
+            sublabel: `${formatNumber(evalData.assignedThesisPlans)} ${t('dashboard:evaluator.metrics.assignedThesisPlansSuffix')}`,
             tone: 'blue',
           },
           {
             icon: ClipboardList,
             value: evalData.pendingEvaluations,
-            label: 'Evaluaciones pendientes',
-            sublabel: 'Evaluaciones asignadas por atender',
+            label: t('dashboard:evaluator.metrics.pendingEvaluations'),
+            sublabel: t('dashboard:evaluator.metrics.pendingEvaluationsSublabel'),
             tone: 'orange',
           },
           {
             icon: CheckCircle,
             value: evalData.completedEvaluations,
-            label: 'Evaluaciones realizadas',
-            sublabel: 'Resultados registrados por el evaluador',
+            label: t('dashboard:evaluator.metrics.completedEvaluations'),
+            sublabel: t('dashboard:evaluator.metrics.completedEvaluationsSublabel'),
             tone: 'green',
           },
           {
             icon: AlertTriangle,
             value: evalData.evaluationsWithObservations,
-            label: 'Observaciones emitidas',
-            sublabel: 'Evaluaciones devueltas con observaciones',
+            label: t('dashboard:evaluator.metrics.observationsIssued'),
+            sublabel: t('dashboard:evaluator.metrics.observationsIssuedSublabel'),
             tone: 'purple',
           },
         ]}
-        leftTitle="Grupo de investigación y mis evaluaciones"
+        leftTitle={t('dashboard:evaluator.sections.groupAndEvaluations')}
         leftContent={
           <>
             <div className="affiliation-card" style={{ marginBottom: '20px' }}>
@@ -1159,35 +1162,34 @@ export const RoleDashboards = () => {
                   <Building size={24} />
                 </span>
                 <div>
-                  <h4>{evalData.groupName || 'Grupo pendiente de asignación'}</h4>
+                  <h4>{evalData.groupName || t('dashboard:evaluator.pendingGroup')}</h4>
                   <p>
-                    Código del grupo:{' '}
+                    {t('dashboard:evaluator.groupCode')}{' '}
                     <strong>{evalData.groupCode || 'N/A'}</strong>
                   </p>
                 </div>
               </div>
               <p className="affiliation-body">
-                Esta vista muestra únicamente proyectos y evaluaciones asignadas
-                al evaluador autenticado.
+                {t('dashboard:evaluator.affiliation.description')}
               </p>
             </div>
 
             <ProgressBars
               items={[
                 {
-                  label: 'Evaluaciones aprobadas',
+                  label: t('dashboard:evaluator.evaluations.approved'),
                   value: evalData.approvedEvaluations,
                   total: evaluationsTotal,
                   tone: 'green',
                 },
                 {
-                  label: 'Evaluaciones rechazadas',
+                  label: t('dashboard:evaluator.evaluations.rejected'),
                   value: evalData.rejectedEvaluations,
                   total: evaluationsTotal,
                   tone: 'orange',
                 },
                 {
-                  label: 'Evaluaciones pendientes',
+                  label: t('dashboard:evaluator.evaluations.pending'),
                   value: evalData.pendingEvaluations,
                   total: evaluationsTotal,
                   tone: 'blue',
@@ -1196,7 +1198,7 @@ export const RoleDashboards = () => {
             />
           </>
         }
-        alertsTitle="Mis notificaciones"
+        alertsTitle={t('dashboard:evaluator.sections.notifications')}
         alerts={evalData.alerts}
       />
     );
@@ -1223,8 +1225,8 @@ export const RoleDashboards = () => {
           <span className="unsupported-icon">
             <AlertTriangle size={48} color="#64748b" />
           </span>
-          <h3>Rol no soportado</h3>
-          <p>El rol "{currentRole}" no tiene una vista de dashboard implementada.</p>
+          <h3>{t('dashboard:unsupportedRole.title')}</h3>
+          <p>{t('dashboard:unsupportedRole.message', { role: currentRole })}</p>
         </div>
       );
   }

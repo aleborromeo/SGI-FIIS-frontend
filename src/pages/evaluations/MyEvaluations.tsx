@@ -5,6 +5,7 @@
  * Incluye panel de evaluación con criterios, cálculo automático y dictamen.
  */
 import React, { useContext, useEffect, useMemo, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ClipboardCheck, RefreshCcw, Clock, CheckCircle,
   ChevronRight, AlertTriangle, Search, X, Send, Calculator,
@@ -70,12 +71,12 @@ function getStatusBadge(status: string): 'warning' | 'success' | 'info' | 'neutr
   return 'neutral';
 }
 
-function getStatusLabel(status: string): string {
+function getStatusLabel(status: string, t: (key: string) => string): string {
   const map: Record<string, string> = {
-    PENDIENTE: 'Pendiente',
-    EN_REVISION: 'En revisión',
-    COMPLETADO: 'Completado',
-    ENVIADO: 'Enviado',
+    PENDIENTE: t('evaluations.statusPending'),
+    EN_REVISION: t('evaluations.statusInReview'),
+    COMPLETADO: t('evaluations.statusCompleted'),
+    ENVIADO: t('evaluations.statusSent'),
   };
   return map[status.toUpperCase()] ?? status;
 }
@@ -99,6 +100,7 @@ interface EvaluationPanelProps {
 }
 
 const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, onSubmitted }) => {
+  const { t } = useTranslation('dashboard');
   const { user } = useContext(AuthContext);
   const toast = useToast();
   const evalId = getEvalId(evalItem);
@@ -120,7 +122,6 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
     evaluacionService.getAnonymousDetail(evalId)
       .then(d => { if (!cancelled) setDetail(d); })
       .catch(() => {
-        // Si el endpoint no está disponible, usamos criterios por defecto
         if (!cancelled) setDetail(null);
       })
       .finally(() => { if (!cancelled) setLoadingDetail(false); });
@@ -136,17 +137,17 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
     const e: Record<string, string> = {};
     criteria.forEach(c => {
       const v = scores[c.id];
-      if (v === undefined || v === null) e[`score_${c.id}`] = 'Requerido';
-      else if (v < 0 || v > c.maxScore) e[`score_${c.id}`] = `0–${c.maxScore}`;
+      if (v === undefined || v === null) e[`score_${c.id}`] = t('evaluations.criterionRequired');
+      else if (v < 0 || v > c.maxScore) e[`score_${c.id}`] = t('evaluations.scoreMustBeBetween', { max: c.maxScore });
     });
-    if (!dictamen) e.dictamen = 'Seleccione un dictamen';
+    if (!dictamen) e.dictamen = t('evaluations.dictamenRequired');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validate()) {
-      toast.error('Complete todos los criterios y seleccione un dictamen antes de enviar.');
+      toast.error(t('evaluations.validationError'));
       return;
     }
     setSubmitting(true);
@@ -165,19 +166,19 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
         recommendations,
         dictamen: dictamen as Dictamen,
       });
-      toast.success('Evaluación enviada exitosamente');
+      toast.success(t('evaluations.submitSuccess'));
       onSubmitted();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al enviar la evaluación');
+      toast.error(err instanceof Error ? err.message : t('evaluations.submitError'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const dictamenOptions: { value: Dictamen; label: string; color: string }[] = [
-    { value: 'APROBADO', label: '✓ Aprobado', color: '#065f46' },
-    { value: 'APROBADO_CON_OBSERVACIONES', label: '⚠ Aprobado con observaciones', color: '#92400e' },
-    { value: 'DESAPROBADO', label: '✗ Desaprobado', color: '#9b1c1c' },
+    { value: 'APROBADO', label: t('evaluations.dictamenApproved'), color: '#065f46' },
+    { value: 'APROBADO_CON_OBSERVACIONES', label: t('evaluations.dictamenApprovedWithObs'), color: '#92400e' },
+    { value: 'DESAPROBADO', label: t('evaluations.dictamenRejected'), color: '#9b1c1c' },
   ];
 
   return (
@@ -198,14 +199,14 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
               <ClipboardCheck size={22} style={{ color: 'var(--primary)' }} />
               <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-                Formulario de Evaluación
+                {t('evaluations.formTitle')}
               </h2>
             </div>
             <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--on-surface-variant)', flexWrap: 'wrap' }}>
-              <span>Expediente: <strong style={{ fontFamily: 'monospace' }}>
+              <span>{t('evaluations.fileLabel')} <strong style={{ fontFamily: 'monospace' }}>
                 {readValue(evalItem, ['expedienteCode', 'id', 'evaluationId', 'idEvaluacion'])}
               </strong></span>
-              <span>Convocatoria: <strong>{readValue(evalItem, ['convocatoria', 'convocatoriaName'], '—')}</strong></span>
+              <span>{t('evaluations.callLabel')} <strong>{readValue(evalItem, ['convocatoria', 'convocatoriaName'], '—')}</strong></span>
             </div>
           </div>
           <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: '4px' }}>
@@ -221,28 +222,28 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
             {detail && (
               <div style={{ backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', padding: '24px', marginBottom: '32px' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <FileText size={16} /> Información Técnica del Proyecto
+                  <FileText size={16} /> {t('evaluations.projectTechnicalInfo')}
                 </h3>
                 <div className="form-row" style={{ gap: '16px', fontSize: '14px' }}>
                   <div>
-                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>Título</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>{t('evaluations.titleLabel')}</div>
                     <div style={{ color: 'var(--on-surface)', fontWeight: 600 }}>{detail.titulo}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>Convocatoria</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>{t('evaluations.callInfoLabel')}</div>
                     <div style={{ color: 'var(--on-surface)' }}>{detail.convocatoria}</div>
                   </div>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>Resumen</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>{t('evaluations.summaryLabel')}</div>
                     <div style={{ color: 'var(--on-surface)', lineHeight: 1.6 }}>{detail.resumen}</div>
                   </div>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>Objetivo General</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>{t('evaluations.generalObjectiveLabel')}</div>
                     <div style={{ color: 'var(--on-surface)', lineHeight: 1.6 }}>{detail.objetivoGeneral}</div>
                   </div>
                   {detail.presupuestoTotal && (
                     <div>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>Presupuesto Total</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>{t('evaluations.totalBudgetLabel')}</div>
                       <div style={{ color: 'var(--on-surface)', fontWeight: 600 }}>
                         S/. {detail.presupuestoTotal.toLocaleString('es-PE')}
                       </div>
@@ -250,8 +251,8 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
                   )}
                   {detail.duracionMeses && (
                     <div>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>Duración</div>
-                      <div style={{ color: 'var(--on-surface)' }}>{detail.duracionMeses} meses</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: '4px' }}>{t('evaluations.durationLabel')}</div>
+                      <div style={{ color: 'var(--on-surface)' }}>{detail.duracionMeses} {t('evaluations.months')}</div>
                     </div>
                   )}
                 </div>
@@ -262,7 +263,7 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
             <div style={{ backgroundColor: 'var(--primary-container)', borderRadius: 'var(--radius-lg)', padding: '20px 24px', marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--on-primary-container)' }}>
                 <Calculator size={20} />
-                <span style={{ fontWeight: 700, fontSize: '15px' }}>Puntaje Total Calculado</span>
+                <span style={{ fontWeight: 700, fontSize: '15px' }}>{t('evaluations.totalCalculatedScore')}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.3)', borderRadius: 'var(--radius-full)', height: '8px', width: '160px' }}>
@@ -276,7 +277,7 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
 
             {/* Criterios de evaluación */}
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '16px' }}>
-              Criterios de Evaluación
+              {t('evaluations.evaluationCriteriaTitle')}
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '28px' }}>
@@ -304,7 +305,7 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
                         )}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>Puntaje (máx. {criterion.maxScore}):</span>
+                        <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>{t('evaluations.scoreMax', { max: criterion.maxScore })}</span>
                         <input
                           id={`score-criterion-${criterion.id}`}
                           type="number"
@@ -327,13 +328,13 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
                     </div>
                   {errors[`score_${criterion.id}`] && (
                     <p style={{ fontSize: '12px', color: 'var(--error)', marginBottom: '8px' }}>
-                      {errors[`score_${criterion.id}`] === 'Requerido' ? 'Este criterio es obligatorio' : `El puntaje debe estar entre 0 y ${criterion.maxScore}`}
+                      {errors[`score_${criterion.id}`]}
                     </p>
                   )}
                   <input
                     id={`obs-criterion-${criterion.id}`}
                     type="text"
-                    placeholder="Observación sobre este criterio (opcional)"
+                    placeholder={t('evaluations.criterionObsPlaceholder')}
                     value={criterionObs[criterion.id] ?? ''}
                     onChange={e => setCriterionObs(prev => ({ ...prev, [criterion.id]: e.target.value }))}
                     style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '13px', backgroundColor: 'var(--surface-container-lowest)', color: 'var(--on-surface)', outline: 'none' }}
@@ -348,14 +349,14 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
             {/* Observaciones generales */}
             <div style={{ marginBottom: '20px' }}>
               <label htmlFor="eval-observations" style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-                Observaciones Generales
+                {t('evaluations.generalObservations')}
               </label>
               <textarea
                 id="eval-observations"
                 value={observations}
                 onChange={e => setObservations(e.target.value)}
                 rows={4}
-                placeholder="Comentarios generales sobre el proyecto evaluado..."
+                placeholder={t('evaluations.generalObservationsPlaceholder')}
                 style={{ width: '100%', padding: '12px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '14px', backgroundColor: 'var(--surface)', color: 'var(--on-surface)', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
                 onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
                 onBlur={e => (e.target.style.borderColor = 'var(--outline-variant)')}
@@ -365,14 +366,14 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
             {/* Recomendaciones */}
             <div style={{ marginBottom: '28px' }}>
               <label htmlFor="eval-recommendations" style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-                Recomendaciones
+                {t('evaluations.recommendations')}
               </label>
               <textarea
                 id="eval-recommendations"
                 value={recommendations}
                 onChange={e => setRecommendations(e.target.value)}
                 rows={3}
-                placeholder="Recomendaciones para mejorar el proyecto..."
+                placeholder={t('evaluations.recommendationsPlaceholder')}
                 style={{ width: '100%', padding: '12px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '14px', backgroundColor: 'var(--surface)', color: 'var(--on-surface)', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
                 onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
                 onBlur={e => (e.target.style.borderColor = 'var(--outline-variant)')}
@@ -382,7 +383,7 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
             {/* Dictamen final */}
             <div style={{ marginBottom: '32px' }}>
               <div style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '12px' }}>
-                Dictamen Final <span style={{ color: 'var(--error)' }}>*</span>
+                {t('evaluations.finalDictamen')} <span style={{ color: 'var(--error)' }}>*</span>
               </div>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 {dictamenOptions.map(opt => (
@@ -408,14 +409,14 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
 
             {/* Botones de acción */}
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '20px', borderTop: '1px solid var(--outline-variant)' }}>
-              <Button variant="secondary" onClick={onClose} disabled={submitting}>Cancelar</Button>
+              <Button variant="secondary" onClick={onClose} disabled={submitting}>{t('evaluations.cancel')}</Button>
               <Button
                 variant="primary"
                 onClick={handleSubmit}
                 disabled={submitting}
                 icon={submitting ? undefined : <Send size={16} />}
               >
-                {submitting ? 'Enviando…' : 'Enviar Evaluación'}
+                {submitting ? t('evaluations.submitting') : t('evaluations.submitEvaluation')}
               </Button>
             </div>
           </div>
@@ -428,6 +429,7 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export const MyEvaluations: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const { user } = useContext(AuthContext);
 
   const [items, setItems] = useState<EvaluationItem[]>([]);
@@ -450,11 +452,11 @@ export const MyEvaluations: React.FC = () => {
       const arr = Array.isArray(raw) ? raw : (raw as Record<string, unknown>).content as EvaluationItem[] ?? [];
       setItems(arr);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al cargar las evaluaciones');
+      setError(err instanceof Error ? err.message : t('evaluations.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, t]);
 
   useEffect(() => { fetchEvaluations(); }, [fetchEvaluations]);
 
@@ -495,10 +497,10 @@ export const MyEvaluations: React.FC = () => {
         <div style={{ textAlign: 'center', padding: '64px 24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--outline)' }}>
           <ClipboardCheck size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
           <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)', marginBottom: '8px' }}>
-            {search || filterStatus ? 'No se encontraron evaluaciones con esos filtros' : 'No tienes evaluaciones asignadas'}
+            {search || filterStatus ? t('evaluations.noResultsFiltered') : t('evaluations.noEvaluations')}
           </p>
           <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>
-            {search || filterStatus ? 'Intenta con otros criterios de búsqueda.' : 'Cuando se te asignen expedientes, aparecerán aquí.'}
+            {search || filterStatus ? t('evaluations.tryOtherFilters') : t('evaluations.assignedLater')}
           </p>
         </div>
       );
@@ -510,12 +512,12 @@ export const MyEvaluations: React.FC = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                <th style={thS}>Código Expediente</th>
-                <th style={thS}>Convocatoria</th>
-                <th style={thS}>Estado</th>
-                <th style={thS}>Fecha Asignación</th>
-                <th style={thS}>Fecha Límite</th>
-                <th style={{ ...thS, textAlign: 'center' }}>Acción</th>
+                <th style={thS}>{t('evaluations.thCode')}</th>
+                <th style={thS}>{t('evaluations.thCall')}</th>
+                <th style={thS}>{t('evaluations.thStatus')}</th>
+                <th style={thS}>{t('evaluations.thDateAssigned')}</th>
+                <th style={thS}>{t('evaluations.thDeadline')}</th>
+                <th style={{ ...thS, textAlign: 'center' }}>{t('evaluations.thAction')}</th>
               </tr>
             </thead>
             <tbody>
@@ -536,10 +538,9 @@ export const MyEvaluations: React.FC = () => {
 
                 if (daysLeft !== null) {
                   if (isOverdue) {
-                    daysText = `Vencido hace ${Math.abs(daysLeft)}d`;
+                    daysText = t('evaluations.daysOverdue', { days: Math.abs(daysLeft) });
                   } else {
-                    const suffix = daysLeft !== 1 ? 's' : '';
-                    daysText = `${daysLeft}d restante${suffix}`;
+                    daysText = t('evaluations.daysRemaining', { count: daysLeft, days: daysLeft });
                   }
                 }
 
@@ -555,7 +556,7 @@ export const MyEvaluations: React.FC = () => {
                     </td>
                     <td style={tdS}>{readValue(item, ['convocatoria', 'convocatoriaName'])}</td>
                     <td style={tdS}>
-                      <Badge variant={getStatusBadge(status)}>{getStatusLabel(status)}</Badge>
+                      <Badge variant={getStatusBadge(status)}>{getStatusLabel(status, t)}</Badge>
                     </td>
                     <td style={{ ...tdS, color: 'var(--on-surface-variant)', fontSize: '13px' }}>
                       {formatDate(readValue(item, ['dateAssigned', 'fechaAsignacion', 'assignedAt'], ''))}
@@ -580,11 +581,11 @@ export const MyEvaluations: React.FC = () => {
                           onClick={() => setEvaluatingItem(item)}
                           style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 18px', borderRadius: 'var(--radius-md)', border: 'none', backgroundColor: 'var(--primary)', color: 'var(--on-primary)', cursor: 'pointer', fontWeight: 700, fontSize: '13px', transition: 'all 0.15s' }}
                         >
-                          <ClipboardCheck size={15} /> Evaluar <ChevronRight size={14} />
+                          <ClipboardCheck size={15} /> {t('evaluations.evaluate')} <ChevronRight size={14} />
                         </button>
                       ) : (
                         <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '5px', justifyContent: 'center' }}>
-                          <CheckCircle size={15} style={{ color: '#065f46' }} /> Completado
+                          <CheckCircle size={15} style={{ color: '#065f46' }} /> {t('evaluations.completed')}
                         </span>
                       )}
                     </td>
@@ -633,20 +634,20 @@ export const MyEvaluations: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '6px' }}>
-            Bandeja de Evaluaciones
+            {t('evaluations.inboxTitle')}
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--on-surface-variant)' }}>
-            Expedientes asignados para evaluación. Los datos del investigador son confidenciales.
+            {t('evaluations.inboxSubtitle')}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {pendingCount > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: '#fef3c7', borderRadius: 'var(--radius-full)', border: '1px solid #f59e0b' }}>
               <Clock size={15} style={{ color: '#92400e' }} />
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>{pendingCount} pendiente{pendingCount !== 1 ? 's' : ''}</span>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>{t('evaluations.pendingCount', { count: pendingCount })}</span>
             </div>
           )}
-          <Button variant="secondary" onClick={fetchEvaluations} icon={<RefreshCcw size={15} />}>Actualizar</Button>
+          <Button variant="secondary" onClick={fetchEvaluations} icon={<RefreshCcw size={15} />}>{t('evaluations.refresh')}</Button>
         </div>
       </div>
 
@@ -654,7 +655,7 @@ export const MyEvaluations: React.FC = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 18px', backgroundColor: 'var(--primary-fixed)', borderRadius: 'var(--radius-md)', marginBottom: '20px', border: '1px solid var(--outline-variant)' }}>
         <AlertTriangle size={16} style={{ color: 'var(--on-primary-fixed)', flexShrink: 0 }} />
         <p style={{ fontSize: '13px', color: 'var(--on-primary-fixed)', margin: 0 }}>
-          <strong>Proceso anónimo:</strong> Por integridad del proceso, no se muestra el nombre del investigador, grupo de investigación ni escuela profesional.
+          <strong>{t('evaluations.anonymousProcess')}</strong> {t('evaluations.anonymousProcessDesc')}
         </p>
       </div>
 
@@ -664,7 +665,7 @@ export const MyEvaluations: React.FC = () => {
           <AlertTriangle size={20} />
           <span>{error}</span>
           <button type="button" onClick={fetchEvaluations} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <RefreshCcw size={14} /> Reintentar
+            <RefreshCcw size={14} /> {t('evaluations.retry')}
           </button>
         </div>
       )}
@@ -676,7 +677,7 @@ export const MyEvaluations: React.FC = () => {
           <input
             id="search-evaluations"
             type="text"
-            placeholder="Buscar por código o convocatoria..."
+            placeholder={t('evaluations.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ width: '100%', paddingLeft: '38px', paddingRight: '12px', paddingTop: '10px', paddingBottom: '10px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '14px', backgroundColor: 'var(--surface)', color: 'var(--on-surface)', outline: 'none' }}
@@ -690,10 +691,10 @@ export const MyEvaluations: React.FC = () => {
           onChange={e => setFilterStatus(e.target.value)}
           style={{ padding: '10px 14px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '14px', backgroundColor: 'var(--surface)', color: 'var(--on-surface)', cursor: 'pointer', outline: 'none' }}
         >
-          <option value="">Todos los estados</option>
-          <option value="PENDIENTE">Pendiente</option>
-          <option value="EN_REVISION">En revisión</option>
-          <option value="COMPLETADO">Completado</option>
+          <option value="">{t('evaluations.allStatuses')}</option>
+          <option value="PENDIENTE">{t('evaluations.statusPending')}</option>
+          <option value="EN_REVISION">{t('evaluations.statusInReview')}</option>
+          <option value="COMPLETADO">{t('evaluations.statusCompleted')}</option>
         </select>
       </div>
 

@@ -4,6 +4,7 @@
  * Solo permite editar convocatorias en estado ABIERTA.
  */
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Save, ArrowLeft, AlertCircle, Calendar, BookOpen,
@@ -39,6 +40,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 export const EditConvocatoria: React.FC = () => {
+  const { t } = useTranslation('convocatorias');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
@@ -88,19 +90,19 @@ export const EditConvocatoria: React.FC = () => {
   const validateField = (field: string, value: string): string | undefined => {
     switch (field) {
       case 'title':
-        if (!value.trim()) return 'El titulo es obligatorio';
-        if (value.trim().length < 5) return 'Minimo 5 caracteres';
+        if (!value.trim()) return t('pages.editPage.titleRequired');
+        if (value.trim().length < 5) return t('pages.editPage.titleMinChars');
         return undefined;
       case 'description':
-        if (!value.trim()) return 'La descripcion es obligatoria';
-        if (value.trim().length < 20) return 'Minimo 20 caracteres';
+        if (!value.trim()) return t('pages.editPage.descriptionRequired');
+        if (value.trim().length < 20) return t('pages.editPage.descriptionMinChars');
         return undefined;
       case 'startDate':
-        if (!value) return 'La fecha de inicio es obligatoria';
+        if (!value) return t('pages.editPage.startDateRequired');
         return undefined;
       case 'endDate':
-        if (!value) return 'La fecha de fin es obligatoria';
-        if (formData.startDate && value < formData.startDate) return 'Debe ser posterior a la fecha de inicio';
+        if (!value) return t('pages.editPage.endDateRequired');
+        if (formData.startDate && value < formData.startDate) return t('pages.editPage.endDateAfterStart');
         return undefined;
       default:
         return undefined;
@@ -138,7 +140,7 @@ export const EditConvocatoria: React.FC = () => {
     if (descErr) e.description = descErr;
     if (startErr) e.startDate = startErr;
     if (endErr) e.endDate = endErr;
-    if (selectedLineIds.length === 0) e.lines = 'Selecciona al menos una linea de investigacion';
+    if (selectedLineIds.length === 0) e.lines = t('pages.editPage.linesRequired');
     setErrors(e);
     setTouched({ title: true, description: true, startDate: true, endDate: true });
     return Object.keys(e).length === 0;
@@ -146,7 +148,7 @@ export const EditConvocatoria: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!validate() || !id) {
-      toast.error('Completa todos los campos requeridos correctamente.');
+      toast.error(t('pages.editPage.validationError'));
       return;
     }
     setLoading(true);
@@ -158,10 +160,10 @@ export const EditConvocatoria: React.FC = () => {
         endDate: formData.endDate,
         researchLineIds: selectedLineIds,
       });
-      toast.success('Convocatoria actualizada exitosamente.');
+      toast.success(t('pages.editPage.updateSuccess'));
       navigate('/convocatorias');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al actualizar la convocatoria.');
+      toast.error(err instanceof Error ? err.message : t('pages.editPage.updateError'));
     } finally {
       setLoading(false);
     }
@@ -188,10 +190,10 @@ export const EditConvocatoria: React.FC = () => {
     return (
       <div className="animate-fade-in" style={{ padding: '28px', textAlign: 'center', paddingTop: '80px' }}>
         <AlertCircle size={48} style={{ color: 'var(--error)', opacity: 0.5, margin: '0 auto 16px' }} />
-        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Convocatoria no encontrada</h2>
-        <p style={{ color: 'var(--on-surface-variant)', marginBottom: '24px' }}>La convocatoria solicitada no existe o fue eliminada.</p>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>{t('pages.editPage.notFound')}</h2>
+        <p style={{ color: 'var(--on-surface-variant)', marginBottom: '24px' }}>{t('pages.editPage.notFoundDesc')}</p>
         <Button variant="primary" icon={<ArrowLeft size={16} />} onClick={() => navigate('/convocatorias')}>
-          Volver
+          {t('pages.editPage.back')}
         </Button>
       </div>
     );
@@ -201,12 +203,12 @@ export const EditConvocatoria: React.FC = () => {
     return (
       <div className="animate-fade-in" style={{ padding: '28px', textAlign: 'center', paddingTop: '80px' }}>
         <Lock size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.3, margin: '0 auto 16px' }} />
-        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Convocatoria no editable</h2>
-        <p style={{ color: 'var(--on-surface-variant)', marginBottom: '24px' }}>
-          Solo se pueden editar convocatorias en estado <strong>Abierta</strong>. Esta convocatoria esta en estado <strong>{callStatus}</strong>.
-        </p>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>{t('pages.editPage.notEditable')}</h2>
+        <p style={{ color: 'var(--on-surface-variant)', marginBottom: '24px' }}
+           dangerouslySetInnerHTML={{ __html: t('pages.editPage.notEditableDesc', { status: callStatus }) }}
+        />
         <Button variant="primary" icon={<ArrowLeft size={16} />} onClick={() => navigate('/convocatorias')}>
-          Volver
+          {t('pages.editPage.back')}
         </Button>
       </div>
     );
@@ -220,7 +222,7 @@ export const EditConvocatoria: React.FC = () => {
         onClick={() => navigate('/convocatorias')}
         style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--on-surface-variant)', fontWeight: 600, marginBottom: '24px', fontSize: '14px' }}
       >
-        <ArrowLeft size={18} /> Volver a Convocatorias
+        <ArrowLeft size={18} /> {t('pages.editPage.backToCalls')}
       </button>
 
       {/* Header */}
@@ -230,10 +232,10 @@ export const EditConvocatoria: React.FC = () => {
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--on-surface)', marginBottom: '6px' }}>
-            Editar Convocatoria
+            {t('pages.editPage.title')}
           </h1>
           <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>
-            Modifica los datos de la convocatoria. Los cambios se aplicaran inmediatamente.
+            {t('pages.editPage.subtitle')}
           </p>
         </div>
 
@@ -241,7 +243,7 @@ export const EditConvocatoria: React.FC = () => {
           <div style={{ fontSize: '22px', fontWeight: 900, color: completionScore === 5 ? '#059669' : 'var(--primary)', lineHeight: 1 }}>
             {completionScore}/5
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)', marginTop: '4px' }}>campos completados</div>
+          <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)', marginTop: '4px' }}>{t('pages.editPage.fieldsCompleted')}</div>
           <div style={{ height: '4px', backgroundColor: 'var(--surface-container-high)', borderRadius: 'var(--radius-full)', marginTop: '8px' }}>
             <div style={{ height: '100%', borderRadius: 'var(--radius-full)', width: `${(completionScore / 5) * 100}%`, backgroundColor: completionScore === 5 ? '#059669' : 'var(--primary)', transition: 'width 0.4s' }} />
           </div>
@@ -255,7 +257,7 @@ export const EditConvocatoria: React.FC = () => {
             <FileText size={16} style={{ color: 'var(--primary)' }} />
           </span>
           <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-            Datos de la Convocatoria
+            {t('pages.editPage.callData')}
           </h2>
         </div>
 
@@ -266,7 +268,7 @@ export const EditConvocatoria: React.FC = () => {
           <input
             id="conv-title"
             type="text"
-            placeholder="Ej. Convocatoria de Proyectos FIIS 2026-II"
+            placeholder={t('pages.editPage.titlePlaceholder')}
             value={formData.title}
             onChange={e => handleChange('title', e.target.value)}
             onBlur={e => handleBlur('title', e.target.value)}
@@ -281,12 +283,12 @@ export const EditConvocatoria: React.FC = () => {
           <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
             <span>Descripcion <span style={{ color: 'var(--error)' }}>*</span></span>
             <span style={{ fontWeight: 400, color: charCount < 20 ? 'var(--error)' : 'var(--on-surface-variant)' }}>
-              {charCount} / min. 20 caracteres
+              {charCount} {t('pages.editPage.minChars')}
             </span>
           </label>
           <textarea
             id="conv-description"
-            placeholder="Describe los objetivos, requisitos, alcance y condiciones de esta convocatoria..."
+            placeholder={t('pages.editPage.descriptionPlaceholder')}
             rows={5}
             value={formData.description}
             onChange={e => handleChange('description', e.target.value)}
@@ -302,7 +304,7 @@ export const EditConvocatoria: React.FC = () => {
           <div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
               <Calendar size={13} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} />
-              Fecha de Inicio <span style={{ color: 'var(--error)' }}>*</span>
+              {t('pages.editPage.startDateLabel')}
             </label>
             <input
               id="conv-start-date"
@@ -319,7 +321,7 @@ export const EditConvocatoria: React.FC = () => {
           <div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
               <Calendar size={13} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} />
-              Fecha de Cierre <span style={{ color: 'var(--error)' }}>*</span>
+              {t('pages.editPage.endDateLabel')}
             </label>
             <input
               id="conv-end-date"
@@ -349,13 +351,13 @@ export const EditConvocatoria: React.FC = () => {
                 Lineas de Investigacion <span style={{ color: 'var(--error)' }}>*</span>
               </h2>
               <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0 }}>
-                Solo se listan lineas activas. Selecciona las que aplican a esta convocatoria.
+                {t('pages.editPage.researchLinesHint')}
               </p>
             </div>
           </div>
           {selectedLineIds.length > 0 && (
             <span style={{ padding: '5px 14px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--primary-container)', color: 'var(--on-primary-container)', fontSize: '13px', fontWeight: 700 }}>
-              {selectedLineIds.length} seleccionada{selectedLineIds.length !== 1 ? 's' : ''}
+              {t('pages.editPage.selectedCount', { count: selectedLineIds.length })}
             </span>
           )}
         </div>
@@ -364,7 +366,7 @@ export const EditConvocatoria: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}><Spinner size="medium" /></div>
         ) : lines.length === 0 ? (
           <div style={{ padding: '24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '14px' }}>
-            No hay lineas de investigacion activas registradas.
+            {t('pages.editPage.noActiveLines')}
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
@@ -410,7 +412,7 @@ export const EditConvocatoria: React.FC = () => {
           onClick={() => navigate('/convocatorias')}
           style={{ background: 'none', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', padding: '10px 20px', fontSize: '14px', fontWeight: 600, color: 'var(--on-surface-variant)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
         >
-          <ArrowLeft size={15} /> Cancelar
+          <ArrowLeft size={15} /> {t('pages.editPage.cancel')}
         </button>
         <button
           id="btn-update-convocatoria"
@@ -426,8 +428,8 @@ export const EditConvocatoria: React.FC = () => {
           }}
         >
           {loading
-            ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Guardando cambios...</>
-            : <><Save size={16} /> Guardar Cambios <ChevronRight size={15} /></>
+            ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> {t('pages.editPage.saving')}</>
+            : <><Save size={16} /> {t('pages.editPage.saveChanges')} <ChevronRight size={15} /></>
           }
         </button>
       </div>

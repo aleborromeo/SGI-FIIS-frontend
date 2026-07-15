@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -15,6 +16,7 @@ import {
 } from '../../utils/tramiteLabels';
 import { ArrowLeft, CheckCircle, Paperclip, Send } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { tramiteService } from '../../services/tramiteService';
 import type { ObservacionTramite, Tramite } from '../../types/tramites';
 
@@ -28,6 +30,7 @@ interface FormularioSubsanacion {
 }
 
 export const SubsanacionPanel: React.FC = () => {
+  const { t } = useTranslation('observations');
   const location = useLocation();
   const tramiteId = Number(new URLSearchParams(location.search).get('tramiteId'));
 
@@ -48,12 +51,12 @@ export const SubsanacionPanel: React.FC = () => {
         setTramite(dataTramite);
         setObservaciones(dataObservaciones);
       })
-      .catch((err: Error) => setError(err.message || 'Error al cargar las observaciones'));
+      .catch((err: Error) => setError(err.message || t('subsancion.toast.loadError')));
   }, [tramiteId]);
 
   useEffect(() => {
     if (!Number.isFinite(tramiteId) || tramiteId <= 0) {
-      setError('No se indicó el trámite a subsanar. Regresa a la bandeja y usa la acción "Subsanar".');
+      setError(t('subsancion.noTramite'));
       setLoading(false);
       return;
     }
@@ -71,7 +74,7 @@ export const SubsanacionPanel: React.FC = () => {
     const formulario = formularios[idObservacion];
     const descripcion = formulario?.descripcion?.trim() ?? '';
     if (!descripcion) {
-      actualizarFormulario(idObservacion, { error: 'La descripción de la subsanación es obligatoria.' });
+      actualizarFormulario(idObservacion, { error: t('subsancion.form.descriptionRequired') });
       return;
     }
     setEnviandoId(idObservacion);
@@ -79,14 +82,14 @@ export const SubsanacionPanel: React.FC = () => {
     tramiteService.subsanarObservacion(idObservacion, descripcion, formulario?.nombreArchivo ?? null)
       .then(() => cargarDatos())
       .then(() => {
-        setFeedback('Subsanación registrada correctamente.');
+        setFeedback(t('subsancion.toast.success'));
         setFormularios((prev) => {
           const siguiente = { ...prev };
           delete siguiente[idObservacion];
           return siguiente;
         });
       })
-      .catch((err: Error) => setError(err.message || 'Error al registrar la subsanación'))
+      .catch((err: Error) => setError(err.message || t('subsancion.toast.error')))
       .finally(() => setEnviandoId(null));
   };
 
@@ -101,9 +104,9 @@ export const SubsanacionPanel: React.FC = () => {
   if (error || !tramite) {
     return (
       <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
-        <div style={{ color: 'var(--error)', marginBottom: '16px' }}>{error || 'Trámite no encontrado.'}</div>
+        <div style={{ color: 'var(--error)', marginBottom: '16px' }}>{error || t('subsancion.tramiteNotFound')}</div>
         <Link to="/tramites">
-          <Button variant="secondary" icon={<ArrowLeft size={16} />}>Volver a la bandeja</Button>
+          <Button variant="secondary" icon={<ArrowLeft size={16} />}>{t('subsancion.backToTray')}</Button>
         </Link>
       </div>
     );
@@ -117,11 +120,11 @@ export const SubsanacionPanel: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', gap: '16px', flexWrap: 'wrap' }}>
         <div>
           <Link to={`/tramites/${tramite.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, marginBottom: '8px' }} className="text-label-md">
-            <ArrowLeft size={16} /> Volver al detalle del trámite
+            <ArrowLeft size={16} /> {t('subsancion.backToDetail')}
           </Link>
-          <h1 className="text-headline-lg">Subsanación de Observaciones</h1>
+          <h1 className="text-headline-lg">{t('subsancion.title')}</h1>
           <p className="text-body-md" style={{ color: 'var(--on-surface-variant)' }}>
-            {tramite.codigoTramite} · {getTipoTramiteLabel(tramite.tipoTramite)} — {tramite.tituloReferencia}
+            {tramite.codigoTramite} · {getTipoTramiteLabel(tramite.tipoTramite, t)} — {tramite.tituloReferencia}
           </p>
         </div>
         <TramiteStatusBadge estado={tramite.estadoActual} />
@@ -136,8 +139,8 @@ export const SubsanacionPanel: React.FC = () => {
 
       {tramite.estadoActual !== 'OBSERVADO' && pendientes.length === 0 && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert variant="warning" title="Sin observaciones pendientes">
-            Este trámite no tiene observaciones pendientes de subsanar en este momento.
+          <Alert variant="warning" title={t('subsancion.noPendingTitle')}>
+            {t('subsancion.noPendingDescription')}
           </Alert>
         </div>
       )}
@@ -146,7 +149,7 @@ export const SubsanacionPanel: React.FC = () => {
         <Card>
           <CardContent>
             <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', textAlign: 'center', padding: '16px' }}>
-              No hay observaciones registradas para este trámite.
+              {t('subsancion.noObservations')}
             </p>
           </CardContent>
         </Card>
@@ -160,13 +163,13 @@ export const SubsanacionPanel: React.FC = () => {
                 <CardContent>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <Badge variant="neutral">{getTipoObservacionLabel(obs.tipoObservacion)}</Badge>
+                      <Badge variant="neutral">{getTipoObservacionLabel(obs.tipoObservacion, t)}</Badge>
                       <Badge variant={getEstadoObservacionVariant(obs.estadoObservacion)}>
-                        {getEstadoObservacionLabel(obs.estadoObservacion)}
+                        {getEstadoObservacionLabel(obs.estadoObservacion, t)}
                       </Badge>
                     </div>
                     <span className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>
-                      {getRolLabel(obs.rolRevisor)} · {formatFechaHora(obs.fechaRegistro)}
+                      {getRolLabel(obs.rolRevisor, t)} · {formatFechaHora(obs.fechaRegistro)}
                     </span>
                   </div>
 
@@ -176,7 +179,7 @@ export const SubsanacionPanel: React.FC = () => {
                   {obs.subsanaciones.map((sub) => (
                     <div key={sub.id} style={{ backgroundColor: 'var(--surface-container-low)', borderRadius: 'var(--radius-md)', padding: '12px', marginBottom: '12px' }}>
                       <div className="text-caption" style={{ color: 'var(--on-surface-variant)', marginBottom: '4px' }}>
-                        Tu subsanación · {formatFechaHora(sub.fechaRegistro)}
+                        {t('subsancion.yourRemedy')} · {formatFechaHora(sub.fechaRegistro)}
                       </div>
                       <p className="text-body-md" style={{ margin: 0 }}>{sub.descripcion}</p>
                       {sub.nombreDocumentoAdjunto && (
@@ -191,15 +194,15 @@ export const SubsanacionPanel: React.FC = () => {
                   {esPendiente && (
                     <div style={{ borderTop: '1px solid var(--outline-variant)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <Textarea
-                        label="Descripción de la subsanación"
+                        label={t('subsancion.form.description')}
                         rows={3}
-                        placeholder="Explica cómo levantaste esta observación..."
+                        placeholder={t('subsancion.form.descriptionPlaceholder')}
                         value={formulario?.descripcion ?? ''}
                         error={formulario?.error}
                         onChange={(e) => actualizarFormulario(obs.id, { descripcion: e.target.value, error: undefined })}
                       />
                       <div>
-                        <label className="label" htmlFor={`archivo-obs-${obs.id}`}>Documento adjunto (opcional)</label>
+                        <label className="label" htmlFor={`archivo-obs-${obs.id}`}>{t('subsancion.form.document')}</label>
                         <input
                           id={`archivo-obs-${obs.id}`}
                           type="file"
@@ -214,7 +217,7 @@ export const SubsanacionPanel: React.FC = () => {
                           disabled={enviandoId === obs.id}
                           onClick={() => handleSubsanar(obs.id)}
                         >
-                          {enviandoId === obs.id ? 'Registrando...' : 'Registrar subsanación'}
+                          {enviandoId === obs.id ? t('subsancion.form.registering') : t('subsancion.form.register')}
                         </Button>
                       </div>
                     </div>

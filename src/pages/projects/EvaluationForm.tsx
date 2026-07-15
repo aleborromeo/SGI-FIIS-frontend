@@ -7,6 +7,7 @@ import {
   Save,
 } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -53,6 +54,7 @@ function getVerdictVariant(verdict: string): 'success' | 'warning' | 'error' {
 }
 
 export const EvaluationForm: React.FC = () => {
+  const { t } = useTranslation('projects');
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -103,12 +105,12 @@ export const EvaluationForm: React.FC = () => {
 
   function validateForm(): boolean {
     if (completedCriteria < criteriaList.length) {
-      setErrorMsg('Complete el puntaje de todos los criterios antes de emitir el dictamen.');
+      setErrorMsg(t('projects:evaluation.validationAllCriteria'));
       return false;
     }
 
     if (generalComments.trim().length < 10) {
-      setErrorMsg('Ingrese observaciones generales con al menos 10 caracteres.');
+      setErrorMsg(t('projects:evaluation.validationMinComments'));
       return false;
     }
 
@@ -117,7 +119,7 @@ export const EvaluationForm: React.FC = () => {
   }
 
   function handleSaveProgress() {
-    setMessage('Avance guardado en la vista. La integración real con backend queda pendiente.');
+    setMessage(t('projects:evaluation.progressSaved'));
     setErrorMsg('');
   }
 
@@ -133,11 +135,11 @@ export const EvaluationForm: React.FC = () => {
         puntaje: Math.round(Number(totalScore)),
         observaciones: generalComments
       });
-      toast.success('Evaluación enviada con éxito');
+      toast.success(t('projects:evaluation.evaluationSubmitted'));
       navigate('/evaluations/my-evaluations');
     } catch (err) {
       console.error(err);
-      toast.error('Error al enviar evaluación');
+      toast.error(t('projects:evaluation.evaluationSubmitError'));
     } finally {
       setSubmitting(false);
     }
@@ -157,7 +159,7 @@ export const EvaluationForm: React.FC = () => {
         }}
       >
         <ArrowLeft size={16} />
-        Volver a mis evaluaciones
+        {t('projects:evaluation.backToEvaluations')}
       </Link>
 
       <div
@@ -170,7 +172,7 @@ export const EvaluationForm: React.FC = () => {
         }}
       >
         <div>
-          <h1 className="text-headline-lg">Evaluación de propuesta</h1>
+          <h1 className="text-headline-lg">{t('projects:evaluation.pageTitle')}</h1>
 
           <p
             className="text-body-md"
@@ -179,7 +181,7 @@ export const EvaluationForm: React.FC = () => {
               marginTop: '8px',
             }}
           >
-            Evaluación ID: <strong>{evaluacionId}</strong>
+            {t('projects:evaluation.evaluationId', { id: evaluacionId })}
           </p>
         </div>
 
@@ -190,7 +192,7 @@ export const EvaluationForm: React.FC = () => {
 
       {errorMsg && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert title="Revisa la evaluación">
+          <Alert title={t('projects:evaluation.reviewEvaluation')}>
             {errorMsg}
           </Alert>
         </div>
@@ -198,7 +200,7 @@ export const EvaluationForm: React.FC = () => {
 
       {message && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert title="Acción registrada en la vista">
+          <Alert title={t('projects:evaluation.actionRecorded')}>
             {message}
           </Alert>
         </div>
@@ -218,7 +220,7 @@ export const EvaluationForm: React.FC = () => {
               {totalScore}
             </strong>
             <span style={{ color: 'var(--on-surface-variant)' }}>
-              Puntaje ponderado
+              {t('projects:evaluation.weightedScore')}
             </span>
           </CardContent>
         </Card>
@@ -229,7 +231,7 @@ export const EvaluationForm: React.FC = () => {
               {completedCriteria}/{criteriaList.length}
             </strong>
             <span style={{ color: 'var(--on-surface-variant)' }}>
-              Criterios completados
+              {t('projects:evaluation.completedCriteria')}
             </span>
           </CardContent>
         </Card>
@@ -240,7 +242,7 @@ export const EvaluationForm: React.FC = () => {
               {getVerdictLabel(verdict)}
             </strong>
             <span style={{ color: 'var(--on-surface-variant)' }}>
-              Dictamen referencial
+              {t('projects:evaluation.referentialVerdict')}
             </span>
           </CardContent>
         </Card>
@@ -253,7 +255,7 @@ export const EvaluationForm: React.FC = () => {
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             <ClipboardCheck size={20} />
-            Rúbrica de calificación
+            {t('projects:evaluation.gradingRubric')}
           </h2>
         </CardHeader>
 
@@ -261,10 +263,10 @@ export const EvaluationForm: React.FC = () => {
           <TableContainer>
             <TableHead>
               <TableRow>
-                <TableHeader>Criterio</TableHeader>
-                <TableHeader>Peso</TableHeader>
-                <TableHeader style={{ width: '140px' }}>Puntaje</TableHeader>
-                <TableHeader>Observaciones específicas</TableHeader>
+                <TableHeader>{t('projects:evaluation.criterion')}</TableHeader>
+                <TableHeader>{t('projects:evaluation.weight')}</TableHeader>
+                <TableHeader style={{ width: '140px' }}>{t('projects:evaluation.score')}</TableHeader>
+                <TableHeader>{t('projects:evaluation.specificObservations')}</TableHeader>
               </TableRow>
             </TableHead>
 
@@ -272,7 +274,7 @@ export const EvaluationForm: React.FC = () => {
               {criteriaList.map((criterion) => (
                 <TableRow key={criterion.id}>
                   <TableCell style={{ fontWeight: 600 }}>
-                    {criterion.name}
+                    {t(`projects:evaluation.criteria.${criterion.id}`)}
                   </TableCell>
 
                   <TableCell>{criterion.weight}%</TableCell>
@@ -283,7 +285,7 @@ export const EvaluationForm: React.FC = () => {
                       min="0"
                       max="20"
                       className="input"
-                      placeholder="0 - 20"
+                      placeholder={t('projects:evaluation.scorePlaceholder')}
                       style={{ padding: '8px', textAlign: 'center' }}
                       value={scores[criterion.id] ?? ''}
                       onChange={(event) =>
@@ -296,7 +298,7 @@ export const EvaluationForm: React.FC = () => {
                     <input
                       type="text"
                       className="input"
-                      placeholder="Comentario breve del criterio..."
+                      placeholder={t('projects:evaluation.commentPlaceholder')}
                       style={{ padding: '8px' }}
                       value={observations[criterion.id] ?? ''}
                       onChange={(event) =>
@@ -321,7 +323,7 @@ export const EvaluationForm: React.FC = () => {
               gap: '16px',
             }}
           >
-            <span className="text-title-md">Puntaje total calculado:</span>
+            <span className="text-title-md">{t('projects:evaluation.totalScoreLabel')}</span>
 
             <span
               className="text-headline-md"
@@ -335,13 +337,13 @@ export const EvaluationForm: React.FC = () => {
 
       <Card style={{ marginBottom: '28px' }}>
         <CardHeader>
-          <h2 className="text-title-lg">Dictamen general</h2>
+          <h2 className="text-title-lg">{t('projects:evaluation.generalVerdict')}</h2>
         </CardHeader>
 
         <CardContent>
           <Textarea
-            label="Observaciones generales y recomendaciones"
-            placeholder="Ingrese el sustento final de la evaluación..."
+            label={t('projects:evaluation.generalObservationsLabel')}
+            placeholder={t('projects:evaluation.generalObservationsPlaceholder')}
             rows={6}
             value={generalComments}
             onChange={(event) => {
@@ -365,7 +367,7 @@ export const EvaluationForm: React.FC = () => {
           icon={<Save size={18} />}
           onClick={handleSaveProgress}
         >
-          Guardar avance
+          {t('projects:evaluation.saveProgress')}
         </Button>
 
         <Button
@@ -373,7 +375,7 @@ export const EvaluationForm: React.FC = () => {
           icon={<CheckCircle size={18} />}
           onClick={handleSubmit}
         >
-          Preparar dictamen
+          {t('projects:evaluation.prepareVerdict')}
         </Button>
       </div>
     </div>

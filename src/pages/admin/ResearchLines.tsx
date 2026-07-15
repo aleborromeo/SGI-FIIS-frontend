@@ -5,6 +5,7 @@
  * Edición inline mediante modal/panel. Cambio de estado con confirmación.
  */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus, Search, BookOpen, ChevronUp, ChevronDown, ChevronsUpDown,
@@ -48,6 +49,7 @@ interface EditModalProps {
 }
 
 const EditModal: React.FC<EditModalProps> = ({ line, onSave, onClose }) => {
+  const { t } = useTranslation('admin');
   const [name, setName] = useState(line.lineName);
   const [code, setCode] = useState(line.lineCode ?? '');
   const [desc, setDesc] = useState(line.description ?? '');
@@ -56,7 +58,7 @@ const EditModal: React.FC<EditModalProps> = ({ line, onSave, onClose }) => {
 
   const validate = (): boolean => {
     const e: typeof errors = {};
-    if (!name.trim()) e.name = 'El nombre es obligatorio';
+    if (!name.trim()) e.name = t('lines.editModal.validationNameRequired');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -81,7 +83,7 @@ const EditModal: React.FC<EditModalProps> = ({ line, onSave, onClose }) => {
         onClick={e => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>Editar Línea de Investigación</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>{t('lines.editModal.title')}</h2>
           <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: '4px' }}>
             <X size={20} />
           </button>
@@ -90,7 +92,7 @@ const EditModal: React.FC<EditModalProps> = ({ line, onSave, onClose }) => {
         {/* Nombre */}
         <div style={{ marginBottom: '18px' }}>
           <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-            Nombre <span style={{ color: 'var(--error)' }}>*</span>
+            {t('lines.editModal.nameRequired')} <span style={{ color: 'var(--error)' }}>*</span>
           </label>
           <input
             id="edit-line-name"
@@ -111,14 +113,14 @@ const EditModal: React.FC<EditModalProps> = ({ line, onSave, onClose }) => {
         {/* Código */}
         <div style={{ marginBottom: '18px' }}>
           <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-            Código (opcional)
+            {t('lines.editModal.codeLabel')}
           </label>
           <input
             id="edit-line-code"
             type="text"
             value={code}
             onChange={e => setCode(e.target.value)}
-            placeholder="Ej: LI-001"
+            placeholder={t('lines.editModal.codePlaceholder')}
             style={{ width: '100%', padding: '11px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', fontSize: '14px', backgroundColor: 'var(--surface)', color: 'var(--on-surface)', outline: 'none', fontFamily: 'monospace' }}
             onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
             onBlur={e => (e.target.style.borderColor = 'var(--outline-variant)')}
@@ -128,7 +130,7 @@ const EditModal: React.FC<EditModalProps> = ({ line, onSave, onClose }) => {
         {/* Descripción */}
         <div style={{ marginBottom: '28px' }}>
           <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-            Descripción (opcional)
+            {t('lines.editModal.descLabel')}
           </label>
           <textarea
             id="edit-line-desc"
@@ -142,9 +144,9 @@ const EditModal: React.FC<EditModalProps> = ({ line, onSave, onClose }) => {
         </div>
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancelar</Button>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>{t('lines.editModal.btnCancel')}</Button>
           <Button variant="primary" onClick={handleSubmit} disabled={saving} icon={saving ? <Loader size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={15} />}>
-            {saving ? 'Guardando…' : 'Guardar'}
+            {saving ? t('lines.editModal.saving') : t('lines.editModal.btnSave')}
           </Button>
         </div>
       </div>
@@ -155,6 +157,7 @@ const EditModal: React.FC<EditModalProps> = ({ line, onSave, onClose }) => {
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export const ResearchLines: React.FC = () => {
+  const { t } = useTranslation('admin');
   const navigate = useNavigate();
   const toast = useToast();
   const { confirmDialog } = useConfirm();
@@ -178,11 +181,11 @@ export const ResearchLines: React.FC = () => {
       const data = await researchService.getLines(false);
       setLines(data);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al cargar las líneas de investigación');
+      setError(err instanceof Error ? err.message : t('lines.errorLoad'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { fetchLines(); }, [fetchLines]);
 
@@ -225,18 +228,20 @@ export const ResearchLines: React.FC = () => {
   const handleToggleStatus = async (line: ResearchLine) => {
     const newStatus = !line.active;
     const confirmed = await confirmDialog({
-      title: newStatus ? 'Activar Línea' : 'Desactivar Línea',
-      message: `¿${newStatus ? 'Activar' : 'Desactivar'} la línea "${line.lineName}"?${!newStatus ? ' Las líneas inactivas no aparecerán como opción en otros formularios.' : ''}`,
-      confirmText: newStatus ? 'Activar' : 'Desactivar',
+      title: newStatus ? t('lines.confirm.activateTitle') : t('lines.confirm.deactivateTitle'),
+      message: newStatus
+        ? t('lines.confirm.activateMessage', { name: line.lineName })
+        : t('lines.confirm.deactivateMessage', { name: line.lineName }),
+      confirmText: newStatus ? t('lines.confirm.activateConfirm') : t('lines.confirm.deactivateConfirm'),
       danger: !newStatus,
     });
     if (!confirmed) return;
     try {
       await researchService.changeLineStatus(line.id, newStatus);
-      toast.success(newStatus ? 'Línea activada' : 'Línea desactivada');
+      toast.success(newStatus ? t('lines.toast.activated') : t('lines.toast.deactivated'));
       fetchLines();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al cambiar estado');
+      toast.error(err instanceof Error ? err.message : t('lines.toast.errorToggle'));
     }
   };
 
@@ -244,11 +249,11 @@ export const ResearchLines: React.FC = () => {
     if (!editingLine) return;
     try {
       await researchService.updateLine(editingLine.id, data);
-      toast.success('Línea actualizada');
+      toast.success(t('lines.toast.updated'));
       setEditingLine(null);
       fetchLines();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al guardar');
+      toast.error(err instanceof Error ? err.message : t('lines.toast.errorSave'));
     }
   };
 
@@ -279,11 +284,11 @@ export const ResearchLines: React.FC = () => {
       {/* Encabezado */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '6px' }}>Líneas de Investigación</h1>
-          <p style={{ fontSize: '15px', color: 'var(--on-surface-variant)' }}>Administra las líneas oficiales de investigación de la facultad.</p>
+          <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '6px' }}>{t('lines.pageTitle')}</h1>
+          <p style={{ fontSize: '15px', color: 'var(--on-surface-variant)' }}>{t('lines.pageSubtitle')}</p>
         </div>
         <Button variant="primary" onClick={() => navigate('/lines/new')} icon={<Plus size={17} />}>
-          Nueva Línea
+          {t('lines.btnNew')}
         </Button>
       </div>
 
@@ -291,9 +296,9 @@ export const ResearchLines: React.FC = () => {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: 'var(--error-container)', color: 'var(--on-error-container)', borderRadius: 'var(--radius-md)', marginBottom: '20px' }}>
           <AlertTriangle size={20} />
-          <span><strong>Error:</strong> {error}</span>
+          <span><strong>{t('common.error')}</strong> {error}</span>
           <button type="button" onClick={fetchLines} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
-            <RefreshCcw size={15} /> Reintentar
+            <RefreshCcw size={15} /> {t('common.retry')}
           </button>
         </div>
       )}
@@ -305,7 +310,7 @@ export const ResearchLines: React.FC = () => {
           <input
             id="search-lines"
             type="text"
-            placeholder="Buscar por nombre o código..."
+            placeholder={t('lines.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ width: '100%', paddingLeft: '38px', paddingRight: '12px', paddingTop: '10px', paddingBottom: '10px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '14px', backgroundColor: 'var(--surface)', color: 'var(--on-surface)', outline: 'none', transition: 'border-color 0.2s' }}
@@ -319,11 +324,11 @@ export const ResearchLines: React.FC = () => {
           onChange={e => setFilterStatus(e.target.value as FilterStatus)}
           style={{ padding: '10px 14px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '14px', backgroundColor: 'var(--surface)', color: 'var(--on-surface)', cursor: 'pointer', outline: 'none' }}
         >
-          <option value="all">Todos los estados</option>
-          <option value="active">Solo activas</option>
-          <option value="inactive">Solo inactivas</option>
+          <option value="all">{t('lines.filterAll')}</option>
+          <option value="active">{t('lines.filterActive')}</option>
+          <option value="inactive">{t('lines.filterInactive')}</option>
         </select>
-        <Button variant="secondary" onClick={fetchLines} icon={<RefreshCcw size={15} />}>Actualizar</Button>
+        <Button variant="secondary" onClick={fetchLines} icon={<RefreshCcw size={15} />}>{t('lines.btnUpdate')}</Button>
       </div>
 
       {/* Resumen */}
@@ -339,9 +344,9 @@ export const ResearchLines: React.FC = () => {
       ) : filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '64px 24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--outline)' }}>
           <BookOpen size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
-          <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)', marginBottom: '8px' }}>No se encontraron líneas</p>
+          <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)', marginBottom: '8px' }}>{t('lines.emptyTitle')}</p>
           <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>
-            {search ? 'Intenta con otros términos.' : 'Crea la primera línea con "Nueva Línea".'}
+            {search ? t('lines.emptyWithSearch') : t('lines.emptyCreate')}
           </p>
         </div>
       ) : (
@@ -351,18 +356,18 @@ export const ResearchLines: React.FC = () => {
               <thead>
                 <tr>
                   <th style={thStyle} onClick={() => handleSort('lineName')}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>Nombre <SortIcon field="lineName" /></span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{t('lines.table.name')} <SortIcon field="lineName" /></span>
                   </th>
                   <th style={thStyle} onClick={() => handleSort('lineCode')}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>Código <SortIcon field="lineCode" /></span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{t('lines.table.code')} <SortIcon field="lineCode" /></span>
                   </th>
                   <th style={thStyle} onClick={() => handleSort('active')}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>Estado <SortIcon field="active" /></span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{t('lines.table.status')} <SortIcon field="active" /></span>
                   </th>
                   <th style={thStyle} onClick={() => handleSort('createdAt')}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>Creada <SortIcon field="createdAt" /></span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{t('lines.table.created')} <SortIcon field="createdAt" /></span>
                   </th>
-                  <th style={{ ...thStyle, textAlign: 'right', cursor: 'default' }}>Acciones</th>
+                  <th style={{ ...thStyle, textAlign: 'right', cursor: 'default' }}>{t('lines.table.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -382,7 +387,7 @@ export const ResearchLines: React.FC = () => {
                       ) : <span style={{ color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>—</span>}
                     </td>
                     <td style={tdStyle}>
-                      <Badge variant={line.active ? 'success' : 'neutral'}>{line.active ? 'Activa' : 'Inactiva'}</Badge>
+                      <Badge variant={line.active ? 'success' : 'neutral'}>{line.active ? t('lines.table.active') : t('lines.table.inactive')}</Badge>
                     </td>
                     <td style={{ ...tdStyle, color: 'var(--on-surface-variant)', fontSize: '13px' }}>{formatDate(line.createdAt)}</td>
                     <td style={{ ...tdStyle, textAlign: 'right' }}>
@@ -394,12 +399,12 @@ export const ResearchLines: React.FC = () => {
                           onClick={() => setEditingLine(line)}
                           style={{ padding: '7px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '13px', fontWeight: 600, color: 'var(--primary)' }}
                         >
-                          <Edit2 size={14} /> Editar
+                          <Edit2 size={14} /> {t('lines.btnEdit')}
                         </button>
                         <button
                           id={`btn-toggle-line-${line.id}`}
                           type="button"
-                          title={line.active ? 'Desactivar' : 'Activar'}
+                          title={line.active ? t('lines.btnDeactivate') : t('lines.btnActivate')}
                           onClick={() => handleToggleStatus(line)}
                           style={{
                             padding: '7px 12px', borderRadius: 'var(--radius-md)',
@@ -410,7 +415,7 @@ export const ResearchLines: React.FC = () => {
                             color: line.active ? 'var(--error)' : 'var(--primary)',
                           }}
                         >
-                          {line.active ? <><XCircle size={14} /> Desactivar</> : <><CheckCircle size={14} /> Activar</>}
+                          {line.active ? <><XCircle size={14} /> {t('lines.btnDeactivate')}</> : <><CheckCircle size={14} /> {t('lines.btnActivate')}</>}
                         </button>
                       </div>
                     </td>
@@ -423,7 +428,11 @@ export const ResearchLines: React.FC = () => {
           {/* Paginación */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface-container-low)', flexWrap: 'wrap', gap: '12px' }}>
             <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>
-              Mostrando {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+              {t('lines.pagination.showing', {
+                from: (page - 1) * PAGE_SIZE + 1,
+                to: Math.min(page * PAGE_SIZE, filtered.length),
+                total: filtered.length
+              })}
             </span>
             <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
               <button type="button" disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface)', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1 }}>

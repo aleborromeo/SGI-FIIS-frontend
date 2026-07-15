@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/Button';
 
 interface ConfirmOptions {
@@ -27,6 +28,7 @@ export const useConfirm = () => {
 };
 
 export const ConfirmProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const [resolver, setResolver] = useState<{ resolve: (value: boolean) => void } | null>(null);
@@ -76,7 +78,7 @@ export const ConfirmProvider: React.FC<{ children: ReactNode }> = ({ children })
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(15, 23, 42, 0.3)', // Overlay semitransparente oscuro
+          backgroundColor: 'rgba(15, 23, 42, 0.3)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
           display: 'flex',
@@ -141,7 +143,7 @@ export const ConfirmProvider: React.FC<{ children: ReactNode }> = ({ children })
                     padding: '8px 20px',
                   }}
                 >
-                  {options.cancelText || 'Cancelar'}
+                  {options.cancelText || t('common:cancel')}
                 </Button>
                 <Button
                   variant="primary"
@@ -159,7 +161,7 @@ export const ConfirmProvider: React.FC<{ children: ReactNode }> = ({ children })
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                   }}
                 >
-                  {options.confirmText || 'Confirmar'}
+                  {options.confirmText || t('common:confirm')}
                 </Button>
               </div>
             </div>

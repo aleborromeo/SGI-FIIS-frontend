@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   FileText, 
   Plus, 
@@ -52,6 +53,7 @@ interface ThesisPlanItem {
 
 export const ThesisPlansList: React.FC = () => {
   const { currentRole, user } = useContext(AuthContext);
+  const { t } = useTranslation('thesis');
   const [plans, setPlans] = useState<ThesisPlanItem[]>([]);
   const [pendingPlans, setPendingPlans] = useState<ThesisPlanItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +95,7 @@ export const ThesisPlansList: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error al cargar planes de tesis:', err);
-      setError(err.message || 'Error al obtener la información de planes de tesis.');
+      setError(err.message || t('thesis:error.loadingError'));
     } finally {
       setLoading(false);
     }
@@ -110,23 +112,23 @@ export const ThesisPlansList: React.FC = () => {
   }, [currentRole, user]);
 
   const getStatusLabel = (status: string | undefined): string => {
-    if (!status) return 'Sin estado';
+    if (!status) return t('thesis:statusLabels.noStatus');
     const normalized = status.toUpperCase();
     const dictionary: Record<string, string> = {
-      REGISTERED: 'Registrado',
-      REGISTRADO: 'Registrado',
-      PENDING: 'Pendiente',
-      PENDIENTE: 'Pendiente',
-      UNDER_REVIEW: 'En revisión',
-      EN_REVISION: 'En revisión',
-      OBSERVED: 'Observado',
-      OBSERVADO: 'Observado',
-      APPROVED: 'Aprobado',
-      APROBADO: 'Aprobado',
-      REJECTED: 'Rechazado',
-      RECHAZADO: 'Rechazado',
-      RECTIFIED: 'Subsanado',
-      SUBSANADO: 'Subsanado',
+      REGISTERED: t('thesis:statusLabels.registered'),
+      REGISTRADO: t('thesis:statusLabels.registered'),
+      PENDING: t('thesis:statusLabels.pending'),
+      PENDIENTE: t('thesis:statusLabels.pending'),
+      UNDER_REVIEW: t('thesis:statusLabels.underReview'),
+      EN_REVISION: t('thesis:statusLabels.underReview'),
+      OBSERVED: t('thesis:statusLabels.observed'),
+      OBSERVADO: t('thesis:statusLabels.observed'),
+      APPROVED: t('thesis:statusLabels.approved'),
+      APROBADO: t('thesis:statusLabels.approved'),
+      REJECTED: t('thesis:statusLabels.rejected'),
+      RECHAZADO: t('thesis:statusLabels.rejected'),
+      RECTIFIED: t('thesis:statusLabels.rectified'),
+      SUBSANADO: t('thesis:statusLabels.rectified'),
     };
     return dictionary[normalized] ?? status;
   };
@@ -166,16 +168,16 @@ export const ThesisPlansList: React.FC = () => {
         }}
       >
         <div>
-          <h1 className="text-headline-lg">Planes de Tesis</h1>
+          <h1 className="text-headline-lg">{t('thesis:plansList.title')}</h1>
           <p
             className="text-body-md"
             style={{ color: 'var(--on-surface-variant)', marginTop: '8px' }}
           >
             {currentRole === 'ESTUDIANTE'
-              ? 'Consulta el estado de tu plan de tesis, observaciones registradas y resoluciones emitidas.'
+              ? t('thesis:plansList.subtitleStudent')
               : currentRole === 'DECANO'
-              ? 'Planes de tesis pendientes de firma decanal. Solo se muestran los aprobados por Coordinador y Director.'
-              : 'Herramienta de revisión académica, validación y control del flujo de aprobación de tesis.'}
+              ? t('thesis:plansList.subtitleDean')
+              : t('thesis:plansList.subtitleDefault')}
           </p>
         </div>
 
@@ -186,12 +188,12 @@ export const ThesisPlansList: React.FC = () => {
             onClick={loadData}
             disabled={loading}
           >
-            Actualizar
+            {t('thesis:plansList.refresh')}
           </Button>
 
           {currentRole === 'ESTUDIANTE' && (
             <Link to="/thesis/new">
-              <Button icon={<Plus size={18} />}>Nuevo Plan de Tesis</Button>
+              <Button icon={<Plus size={18} />}>{t('thesis:plansList.newPlan')}</Button>
             </Link>
           )}
         </div>
@@ -212,8 +214,8 @@ export const ThesisPlansList: React.FC = () => {
             }}
           >
             {currentRole === 'DECANO'
-              ? `Pendientes de Firma (${pendingPlans.length})`
-              : `Pendientes de Revisión (${pendingPlans.length})`}
+              ? `${t('thesis:plansList.tabs.pendingSignature')} (${pendingPlans.length})`
+              : `${t('thesis:plansList.tabs.pendingReview')} (${pendingPlans.length})`}
           </button>
           
           {currentRole === 'COORDINADOR_GRUPO' && (
@@ -229,7 +231,7 @@ export const ThesisPlansList: React.FC = () => {
                 cursor: 'pointer'
               }}
             >
-              Todos los Planes del Grupo ({plans.length})
+              {t('thesis:plansList.tabs.allGroupPlans')} ({plans.length})
             </button>
           )}
         </div>
@@ -249,7 +251,7 @@ export const ThesisPlansList: React.FC = () => {
             />
             <input
               type="text"
-              placeholder="Buscar por título o estado del plan de tesis..."
+              placeholder={t('thesis:plansList.searchPlaceholder')}
               className="input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -258,38 +260,38 @@ export const ThesisPlansList: React.FC = () => {
           </div>
 
           {error ? (
-            <Alert title="Error al cargar la información">
+            <Alert title={t('thesis:plansList.errorTitle')}>
               {error}
             </Alert>
           ) : loading ? (
             <div style={{ textAlign: 'center', padding: '32px', color: 'var(--on-surface-variant)' }}>
-              Cargando planes de tesis...
+              {t('thesis:plansList.loading')}
             </div>
           ) : filteredPlans.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--on-surface-variant)' }}>
               <GraduationCap size={48} style={{ margin: '0 auto 16px', color: 'var(--outline)' }} />
               {currentRole === 'ESTUDIANTE' ? (
                 <div>
-                  <p style={{ fontWeight: 600, fontSize: '16px', marginBottom: '8px' }}>No tienes ningún plan de tesis registrado</p>
-                  <p style={{ fontSize: '14px', marginBottom: '20px' }}>Registra una propuesta de tesis para iniciar el proceso de revisión y aprobación.</p>
+                  <p style={{ fontWeight: 600, fontSize: '16px', marginBottom: '8px' }}>{t('thesis:plansList.emptyStudentTitle')}</p>
+                  <p style={{ fontSize: '14px', marginBottom: '20px' }}>{t('thesis:plansList.emptyStudentDesc')}</p>
                   <Link to="/thesis/new">
-                    <Button icon={<Plus size={18} />}>Registrar mi Plan de Tesis</Button>
+                    <Button icon={<Plus size={18} />}>{t('thesis:plansList.emptyStudentAction')}</Button>
                   </Link>
                 </div>
               ) : (
-                <p>No se encontraron planes de tesis en esta bandeja.</p>
+                <p>{t('thesis:plansList.emptyDefault')}</p>
               )}
             </div>
           ) : (
             <TableContainer>
               <TableHead>
                 <TableRow>
-                  <TableHeader>Código</TableHeader>
-                  <TableHeader>Título de Tesis</TableHeader>
-                  <TableHeader>Línea / Grupo</TableHeader>
-                  <TableHeader>Estado del Plan</TableHeader>
-                  <TableHeader>Tramitación</TableHeader>
-                  <TableHeader style={{ textAlign: 'right' }}>Acciones</TableHeader>
+                  <TableHeader>{t('thesis:plansList.columns.code')}</TableHeader>
+                  <TableHeader>{t('thesis:plansList.columns.title')}</TableHeader>
+                  <TableHeader>{t('thesis:plansList.columns.lineGroup')}</TableHeader>
+                  <TableHeader>{t('thesis:plansList.columns.planStatus')}</TableHeader>
+                  <TableHeader>{t('thesis:plansList.columns.processing')}</TableHeader>
+                  <TableHeader style={{ textAlign: 'right' }}>{t('thesis:plansList.columns.actions')}</TableHeader>
                 </TableRow>
               </TableHead>
 
@@ -317,9 +319,9 @@ export const ThesisPlansList: React.FC = () => {
                     </TableCell>
 
                     <TableCell>
-                      <Badge variant="info">Línea ID: {plan.idLinea}</Badge>
+                      <Badge variant="info">{t('thesis:plansList.lineId')} {plan.idLinea}</Badge>
                       <div style={{ fontSize: '11px', marginTop: '4px', color: 'var(--on-surface-variant)' }}>
-                        Grupo ID: {plan.idGrupo}
+                        {t('thesis:plansList.groupId')} {plan.idGrupo}
                       </div>
                     </TableCell>
 
@@ -337,12 +339,12 @@ export const ThesisPlansList: React.FC = () => {
                           </span>
                           {plan.revisorActual && (
                             <div style={{ fontSize: '11px', color: 'var(--primary)' }}>
-                              Revisor: {plan.revisorActual.replace('_', ' ')}
+                              {t('thesis:plansList.reviewer')} {plan.revisorActual.replace('_', ' ')}
                             </div>
                           )}
                         </div>
                       ) : (
-                        <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px' }}>Sin trámite activo</span>
+                        <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px' }}>{t('thesis:plansList.noActiveProcessing')}</span>
                       )}
                     </TableCell>
 
@@ -350,7 +352,7 @@ export const ThesisPlansList: React.FC = () => {
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                         <Link to={`/thesis/plan/${plan.idPlanTesis}`}>
                           <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
-                            Ver Detalle
+                            {t('thesis:plansList.viewDetail')}
                           </Button>
                         </Link>
                       </div>

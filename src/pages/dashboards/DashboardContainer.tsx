@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './DashboardContainer.css';
 import { Sidebar } from '../../layout/Sidebar';
 import { Menu, GraduationCap } from 'lucide-react';
@@ -9,6 +10,7 @@ interface DashboardContainerProps {
 }
 
 export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children }) => {
+  const { t } = useTranslation('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -27,7 +29,7 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children
           <button
             className="sgi-mobile-menu-btn"
             onClick={toggleSidebar}
-            aria-label="Abrir menú"
+            aria-label={t('dashboard:dashboardContainer.openMenu')}
           >
             <Menu size={24} />
           </button>
@@ -46,7 +48,7 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children
           </main>
 
           <footer className="sgi-dashboard-footer">
-            <p>© 2026 Sistema de Gestión de Investigación FIIS - Universidad Nacional Agraria de la Selva</p>
+            <p>{t('dashboard:dashboardContainer.footer')}</p>
           </footer>
         </div>
       </div>

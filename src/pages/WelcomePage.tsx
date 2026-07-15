@@ -5,8 +5,11 @@ import { api } from '../services/api';
 import './WelcomePage.css';
 import frontisImage from '../assets/images/frontis_fiis.png';
 import universityIcon from '../assets/images/icon-sgi-fiis.png';
-import { Globe, User, ChevronDown } from 'lucide-react';
+import { User, ChevronDown } from 'lucide-react';
 import { callService } from '../services/callService';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../hooks/useLanguage';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 // Importar imágenes de las Líneas de Investigación
 import computacionImg from '../assets/images/computacion.jpg';
@@ -29,9 +32,10 @@ export const WelcomePage: React.FC = () => {
   const { isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation('public');
+  const { language, toggleLanguage } = useLanguage();
   const [activeIndex, setActiveIndex] = useState(3);
   const [activeLink, setActiveLink] = useState<'inicio' | 'convocatorias'>('inicio');
-  const [language, setLanguage] = useState<'es' | 'en'>('es');
   const [latestCall, setLatestCall] = useState<any>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -45,11 +49,6 @@ export const WelcomePage: React.FC = () => {
       })
       .catch((err) => console.error('Error fetching vigent calls:', err));
   }, [isAuthenticated]);
-
-
-  const handleToggleLanguage = () => {
-    setLanguage((prev) => (prev === 'es' ? 'en' : 'es'));
-  };
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -90,44 +89,28 @@ export const WelcomePage: React.FC = () => {
 
   const slides = [
     {
-      title: language === 'es' ? (
+      title: (
         <>
-          Sistema de Gestión <br />
-          de Investigación <br />
-          <span className="highlight-text-blue">SGI-FIIS</span>
-        </>
-      ) : (
-        <>
-          Research Management <br />
-          System <br />
-          <span className="highlight-text-blue">SGI-FIIS</span>
+          {t('hero.slide1Line1')} <br />
+          {t('hero.slide1Line2')} <br />
+          <span className="highlight-text-blue">{t('hero.slide1Highlight')}</span>
         </>
       ),
-      description: language === 'es' 
-        ? "Gestiona, coordina y de seguimiento a tus proyectos e iniciativas académicas de investigación."
-        : "Manage, coordinate, and monitor your academic research projects and initiatives.",
+      description: t('hero.slide1Description'),
       image: frontisImage,
       bgColor: '#ffffff',
       desktopGradient: 'linear-gradient(90deg, #ffffff 0%, #ffffff 20%, rgba(255, 255, 255, 0.75) 38%, rgba(255, 255, 255, 0) 65%)',
       mobileGradient: 'linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 60%, rgba(255, 255, 255, 0.4) 100%)',
     },
     {
-      title: language === 'es' ? (
+      title: (
         <>
-          Sistema de Gestión <br />
-          de Investigación <br />
-          <span className="highlight-text-blue">UNAS</span>
-        </>
-      ) : (
-        <>
-          Research Management <br />
-          System <br />
-          <span className="highlight-text-blue">UNAS</span>
+          {t('hero.slide2Line1')} <br />
+          {t('hero.slide2Line2')} <br />
+          <span className="highlight-text-blue">{t('hero.slide2Highlight')}</span>
         </>
       ),
-      description: language === 'es' 
-        ? "Impulsando la investigación, la innovación y el desarrollo académico de nuestra universidad."
-        : "Boosting research, innovation, and academic development at our university.",
+      description: t('hero.slide2Description'),
       image: sedeUnasImage,
       bgColor: '#e8f7f5',
       desktopGradient: 'linear-gradient(90deg, #e8f7f5 0%, #e8f7f5 20%, rgba(232, 247, 245, 0.75) 38%, rgba(232, 247, 245, 0) 65%)',
@@ -320,7 +303,7 @@ export const WelcomePage: React.FC = () => {
             onClick={(e) => { e.preventDefault(); handleNavClick('inicio'); }}
             className={`nav-link ${activeLink === 'inicio' ? 'active' : ''}`}
           >
-            {language === 'es' ? 'Inicio' : 'Home'}
+            {t('nav.home')}
           </a>
 
           {/* Dropdown: Novedades */}
@@ -330,7 +313,7 @@ export const WelcomePage: React.FC = () => {
               onClick={(e) => { e.preventDefault(); navigate('/novedades'); }}
               className={`nav-link dropdown-toggle ${activeLink === 'convocatorias' ? 'active' : ''}`}
             >
-              <span>{language === 'es' ? 'Novedades' : 'News'}</span>
+              <span>{t('nav.news')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -339,21 +322,21 @@ export const WelcomePage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-convocatorias' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Convocatorias' : 'Announcements'}
+                {t('nav.convocatorias')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-reconocimientos' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Reconocimiento' : 'Recognition'}
+                {t('nav.reconocimiento')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-congresos' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Congresos' : 'Congresses'}
+                {t('nav.congresos')}
               </a>
             </div>
           </div>
@@ -365,7 +348,7 @@ export const WelcomePage: React.FC = () => {
               onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi'); }}
               className="nav-link dropdown-toggle"
             >
-              <span>{language === 'es' ? 'Sobre nosotros' : 'About us'}</span>
+              <span>{t('nav.aboutUs')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -374,21 +357,21 @@ export const WelcomePage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'quienes-somos' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Quiénes somos' : 'Who we are'}
+                {t('nav.quienesSomos')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'lineas-investigacion' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Líneas de investigación' : 'Research lines'}
+                {t('nav.lineasInvestigacion')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'grupos-investigacion' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Grupos' : 'Groups'}
+                {t('nav.grupos')}
               </a>
             </div>
           </div>
@@ -400,7 +383,7 @@ export const WelcomePage: React.FC = () => {
               onClick={(e) => { e.preventDefault(); navigate('/contacto'); }}
               className="nav-link dropdown-toggle"
             >
-              <span>{language === 'es' ? 'Contacto' : 'Contact'}</span>
+              <span>{t('nav.contacto')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -409,14 +392,14 @@ export const WelcomePage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/contacto', { state: { scrollToHash: 'contacto-form-section' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Correo' : 'Email'}
+                {t('nav.correo')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/contacto', { state: { scrollToHash: 'whatsapp-contact-section' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'WhatsApp' : 'WhatsApp'}
+                {t('nav.whatsapp')}
               </a>
             </div>
           </div>
@@ -427,20 +410,12 @@ export const WelcomePage: React.FC = () => {
             onClick={(e) => { e.preventDefault(); navigate('/login'); }}
             className="nav-link btn-submit-research"
           >
-            {language === 'es' ? 'Envía tu investigación' : 'Submit your research'}
+            {t('nav.submitResearch')}
           </a>
         </nav>
 
         <div className="welcome-navbar-actions">
-          <button 
-            type="button" 
-            onClick={handleToggleLanguage} 
-            className="btn-nav btn-language-selector"
-            title={language === 'es' ? 'Cambiar idioma' : 'Change language'}
-          >
-            <Globe size={15} />
-            <span>{language === 'es' ? 'Español' : 'English'}</span>
-          </button>
+          <LanguageSwitcher variant="button" className="btn-nav btn-language-selector" />
           
           <button 
             type="button" 
@@ -448,7 +423,7 @@ export const WelcomePage: React.FC = () => {
             className="btn-nav btn-login-navbar"
           >
             <User size={15} />
-            <span>{language === 'es' ? 'Iniciar sesión' : 'Log In'}</span>
+            <span>{t('nav.login')}</span>
           </button>
         </div>
       </header>
@@ -504,7 +479,7 @@ export const WelcomePage: React.FC = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h3a3 3 0 013 3v1" />
                 </svg>
-                <span>{language === 'es' ? 'Iniciar sesión' : 'Log In'}</span>
+                <span>{t('nav.login')}</span>
               </button>
             </div>
 
@@ -520,7 +495,7 @@ export const WelcomePage: React.FC = () => {
                     <span className="hero-mini-stat-number">{stats.proyectosRegistrados}</span>
                   </div>
                   <span className="hero-mini-stat-label">
-                    {language === 'es' ? 'Proyectos Activos' : 'Active Projects'}
+                    {t('hero.stats.activeProjects')}
                   </span>
                 </div>
 
@@ -532,7 +507,7 @@ export const WelcomePage: React.FC = () => {
                     <span className="hero-mini-stat-number">{stats.docentesInvestigadores}</span>
                   </div>
                   <span className="hero-mini-stat-label">
-                    {language === 'es' ? 'Investigadores' : 'Researchers'}
+                    {t('hero.stats.researchers')}
                   </span>
                 </div>
 
@@ -544,7 +519,7 @@ export const WelcomePage: React.FC = () => {
                     <span className="hero-mini-stat-number">{stats.proyectosCulminados}</span>
                   </div>
                   <span className="hero-mini-stat-label">
-                    {language === 'es' ? 'Publicaciones' : 'Publications'}
+                    {t('hero.stats.publications')}
                   </span>
                 </div>
               </div>
@@ -586,10 +561,10 @@ export const WelcomePage: React.FC = () => {
       {/* Sección de Líneas de Investigación */}
       <section id="lineas" className="welcome-lines-section">
         <div className="lines-header-container">
-          <span className="lines-category-label">INVESTIGACIÓN CIENTÍFICA</span>
-          <h3 className="lines-main-title">Explora nuestras líneas de investigación</h3>
+          <span className="lines-category-label">{t('researchLines.categoryLabel')}</span>
+          <h3 className="lines-main-title">{t('researchLines.title')}</h3>
           <p className="lines-main-subtitle">
-            Conoce los campos científicos en los que desarrollamos proyectos de alto impacto y excelencia
+            {t('researchLines.subtitle')}
           </p>
         </div>
 
@@ -602,7 +577,7 @@ export const WelcomePage: React.FC = () => {
                 <h4 className="line-card-title">{line.title}</h4>
                 <p className="line-card-desc">{line.description}</p>
                 <div className="line-card-link">
-                  <span>Explorar línea</span>
+                  <span>{t('researchLines.exploreLine')}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
@@ -616,10 +591,10 @@ export const WelcomePage: React.FC = () => {
       {/* Sección de Grupos de Investigación */}
       <section id="grupos" className="welcome-groups-section">
         <div className="lines-header-container">
-          <span className="lines-category-label">AGRUPACIONES CIENTÍFICAS</span>
-          <h3 className="lines-main-title">Grupos de Investigación</h3>
+          <span className="lines-category-label">{t('researchLines.groupsCategoryLabel')}</span>
+          <h3 className="lines-main-title">{t('researchLines.groupsTitle')}</h3>
           <p className="lines-main-subtitle">
-            Conoce las agrupaciones científicas que impulsan la innovación y desarrollo en la FIIS
+            {t('researchLines.groupsSubtitle')}
           </p>
         </div>
 
@@ -711,7 +686,7 @@ export const WelcomePage: React.FC = () => {
             onClick={() => navigate('/login')}
             className="btn-all-groups"
           >
-            <span>Ver todos los grupos de investigación</span>
+            <span>{t('researchLines.viewAllGroups')}</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
@@ -724,10 +699,10 @@ export const WelcomePage: React.FC = () => {
       {/* Sección de Noticias */}
       <section id="noticias" className="welcome-news-section">
         <div className="lines-header-container">
-          <span className="lines-category-label">NOTICIAS Y EVENTOS</span>
-          <h3 className="lines-main-title">Novedades de Investigación</h3>
+          <span className="lines-category-label">{t('news.categoryLabel')}</span>
+          <h3 className="lines-main-title">{t('news.homeTitle')}</h3>
           <p className="lines-main-subtitle">
-            Mantente informado con los últimos acontecimientos y oportunidades del ecosistema científico.
+            {t('news.homeSubtitle')}
           </p>
         </div>
 
@@ -738,24 +713,22 @@ export const WelcomePage: React.FC = () => {
               backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.25) 0%, rgba(15, 23, 42, 0.88) 100%), url(${convocatoriasBg})`
             }}
           >
-            <div className="news-card-badge">CONVOCATORIA</div>
+            <div className="news-card-badge">{t('news.convocatoriaBadge')}</div>
             <div className="news-card-content">
-              <h4>{latestCall ? latestCall.title : (language === 'es' ? 'Nuevas convocatorias' : 'New announcements')}</h4>
+              <h4>{latestCall ? latestCall.title : t('news.convocatoriaFallbackTitle')}</h4>
               <p className="news-card-desc">
                 {latestCall 
                   ? (latestCall.description.length > 120 ? latestCall.description.substring(0, 120) + '...' : latestCall.description)
-                  : (language === 'es' 
-                      ? 'Se abren las postulaciones para el financiamiento de proyectos de investigación científica aplicada y desarrollo tecnológico.'
-                      : 'Applications are now open for the funding of scientific research and technological development projects.')}
+                  : t('news.convocatoriaFallbackDesc')}
               </p>
               <div className="news-card-bottom-row">
                 <span className="news-card-date">
                   {latestCall 
-                    ? `${language === 'es' ? 'Cierre:' : 'Deadline:'} ${latestCall.endDate}` 
+                    ? `${t('news.deadline')} ${latestCall.endDate}` 
                     : '02 de Julio, 2026'}
                 </span>
                 <button onClick={() => navigate('/novedades', { state: { scrollToHash: 'novedades-convocatorias' } })} className="news-card-action-btn">
-                  <span>{language === 'es' ? 'Ver' : 'View'}</span>
+                  <span>{t('news.view')}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
@@ -770,14 +743,14 @@ export const WelcomePage: React.FC = () => {
               backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.25) 0%, rgba(15, 23, 42, 0.88) 100%), url(${reconocimientoBg})`
             }}
           >
-            <div className="news-card-badge">RECONOCIMIENTO</div>
+            <div className="news-card-badge">{t('news.recognitionBadge')}</div>
             <div className="news-card-content">
-              <h4>Docentes premiados</h4>
-              <p className="news-card-desc">Felicitamos a nuestros docentes investigadores reconocidos a nivel nacional por sus patentes e impacto científico en informática.</p>
+              <h4>{t('news.welcomeRecognitionTitle')}</h4>
+              <p className="news-card-desc">{t('news.welcomeRecognitionDesc')}</p>
               <div className="news-card-bottom-row">
-                <span className="news-card-date">28 de Junio, 2026</span>
+                <span className="news-card-date">{t('news.welcomeRecognitionDate')}</span>
                 <button onClick={() => navigate('/novedades', { state: { scrollToHash: 'novedades-reconocimientos' } })} className="news-card-action-btn">
-                  <span>Ver</span>
+                  <span>{t('news.view')}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
@@ -792,14 +765,14 @@ export const WelcomePage: React.FC = () => {
               backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.25) 0%, rgba(15, 23, 42, 0.88) 100%), url(${congresosBg})`
             }}
           >
-            <div className="news-card-badge">CONGRESOS</div>
+            <div className="news-card-badge">{t('news.congressBadge')}</div>
             <div className="news-card-content">
-              <h4>Próximos congresos</h4>
-              <p className="news-card-desc">Inscríbete en los talleres, ponencias y mesas redondas programadas para el evento académico más grande del año en la UNAS.</p>
+              <h4>{t('news.welcomeCongressTitle')}</h4>
+              <p className="news-card-desc">{t('news.welcomeCongressDesc')}</p>
               <div className="news-card-bottom-row">
-                <span className="news-card-date">15 de Junio, 2026</span>
+                <span className="news-card-date">{t('news.welcomeCongressDate')}</span>
                 <button onClick={() => navigate('/novedades', { state: { scrollToHash: 'novedades-congresos' } })} className="news-card-action-btn">
-                  <span>Ver</span>
+                  <span>{t('news.view')}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
@@ -820,7 +793,7 @@ export const WelcomePage: React.FC = () => {
             onClick={() => {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            title="Volver arriba"
+            title={t('footer.backToTop')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
@@ -831,104 +804,105 @@ export const WelcomePage: React.FC = () => {
         <div className="footer-premium-content">
           <div className="footer-columns-wrapper">
             <div className="footer-column">
-              <h4>Facultad</h4>
+              <h4>{t('footer.facultyTitle')}</h4>
               <ul>
                 <li>
                   <a href="https://www.sistemasunas.edu.pe/nuestra-facultad/decanatura" target="_blank" rel="noopener noreferrer">
-                    Decanato FIIS
+                    {t('footer.decanatoFiis')}
                   </a>
                 </li>
                 <li>
                   <a href="https://www.sistemasunas.edu.pe/departamentos-academicos" target="_blank" rel="noopener noreferrer">
-                    Departamentos Académicos
+                    {t('footer.departamentosAcademicos')}
                   </a>
                 </li>
                 <li>
                   <a href="https://www.sistemasunas.edu.pe/comisiones/comision-grados-y-titulos" target="_blank" rel="noopener noreferrer">
-                    Comisión de Grados y Títulos
+                    {t('footer.comisionGradosTitulos')}
                   </a>
                 </li>
                 <li>
                   <a href="https://www.sistemasunas.edu.pe/unidad-de-investigacion" target="_blank" rel="noopener noreferrer">
-                    Unidad de Investigación FIIS
+                    {t('footer.unidadInvestigacion')}
                   </a>
                 </li>
               </ul>
             </div>
 
             <div className="footer-column">
-              <h4>Universidad</h4>
+              <h4>{t('footer.universityTitle')}</h4>
               <ul>
                 <li>
                   <a href="https://www.unas.edu.pe" target="_blank" rel="noopener noreferrer">
-                    Portal Principal UNAS
+                    {t('footer.portalPrincipalUnas')}
                   </a>
                 </li>
                 <li>
                   <a href="https://investigacion.unas.edu.pe" target="_blank" rel="noopener noreferrer">
-                    Vicerrectorado de Investigación
+                    {t('footer.vicerrectoradoInvestigacion')}
                   </a>
                 </li>
                 <li>
                   <a href="https://biblioteca.unas.edu.pe" target="_blank" rel="noopener noreferrer">
-                    Biblioteca Central
+                    {t('footer.bibliotecaCentral')}
                   </a>
                 </li>
                 <li>
                   <a href="https://repositorio.unas.edu.pe" target="_blank" rel="noopener noreferrer">
-                    Repositorio Institucional
+                    {t('footer.repositorioInstitucional')}
                   </a>
                 </li>
               </ul>
             </div>
 
             <div className="footer-column">
-              <h4>Contacto</h4>
+              <h4>{t('footer.contactTitle')}</h4>
               <ul>
                 <li>
                   <a href="https://www.sistemasunas.edu.pe/contact" target="_blank" rel="noopener noreferrer">
-                    Soporte Técnico
+                    {t('footer.soporteTecnico')}
                   </a>
                 </li>
                 <li>
                   <a href="https://mesadepartes.unas.edu.pe" target="_blank" rel="noopener noreferrer">
-                    Mesa de Partes Virtual UNAS
+                    {t('footer.mesaPartesVirtual')}
                   </a>
                 </li>
                 <li>
                   <a href="https://maps.google.com/?q=Universidad+Nacional+Agraria+de+la+Selva" target="_blank" rel="noopener noreferrer">
-                    Ubicación
+                    {t('footer.ubicacion')}
                   </a>
                 </li>
                 <li>
                   <a href="https://www.unas.edu.pe" target="_blank" rel="noopener noreferrer">
-                    Directorio Telefónico
+                    {t('footer.directorioTelefonico')}
                   </a>
                 </li>
               </ul>
             </div>
 
             <div className="footer-column">
-              <h4>Normativas</h4>
+              <h4>{t('footer.normativasTitle')}</h4>
               <ul>
                 <li>
                   <a href="#" onClick={(e) => e.preventDefault()}>
-                    Manual de Usuario
+                    {t('footer.userManual')}
                   </a>
                 </li>
                 <li>
-                  <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
-                    Política de Privacidad
+                <li>
+                  <a href="#" onClick={(e) => e.preventDefault()}>
+                    {t('footer.politicaPrivacidad')}
                   </a>
                 </li>
                 <li>
-                  <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
-                    Términos de Uso
+                  <a href="#" onClick={(e) => e.preventDefault()}>
+                    {t('footer.terminosUso')}
                   </a>
                 </li>
                 <li>
                   <a href="https://investigacion.unas.edu.pe/documentos-normativos" target="_blank" rel="noopener noreferrer">
-                    Reglamento de Investigación
+                    {t('footer.reglamentoInvestigacion')}
                   </a>
                 </li>
               </ul>
@@ -937,8 +911,8 @@ export const WelcomePage: React.FC = () => {
 
           {/* Columna derecha con Yape QR */}
           <div className="footer-yape-column">
-            <h4>Dona a SGI</h4>
-            <p>Escanea el código QR con tu celular Yape para colaborar con el mantenimiento de la plataforma</p>
+            <h4>{t('footer.donaASgi')}</h4>
+            <p>{t('footer.donaASgiDesc')}</p>
             <div className="yape-qr-box">
               <div className="yape-qr-wrapper">
                 <svg className="yape-qr-svg" viewBox="0 0 100 100">
@@ -975,13 +949,13 @@ export const WelcomePage: React.FC = () => {
               </div>
             </div>
             <div className="yape-badge-tag">
-              <span>¡DONA A SGI!</span>
+              <span>{t('footer.donaASgiBadge')}</span>
             </div>
           </div>
         </div>
 
         <div className="footer-bottom-copyright">
-          <p>© 2026 SGI - Facultad de Ingeniería en Informática y Sistemas - UNAS. Todos los derechos reservados.</p>
+          <p>{t('footer.copyrightFull')}</p>
         </div>
       </footer>
     </div>

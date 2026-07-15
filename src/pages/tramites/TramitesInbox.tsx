@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -31,6 +32,7 @@ const formatFecha = (iso: string): string =>
   new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
 
 export const TramitesInbox: React.FC = () => {
+  const { t } = useTranslation('tramites');
   const { currentRole } = useContext(AuthContext);
   const [tramites, setTramites] = useState<Tramite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,47 +51,47 @@ export const TramitesInbox: React.FC = () => {
 
     fetchTramites
       .then((data) => setTramites(data))
-      .catch((err: Error) => setError(err.message || 'Error al cargar los trámites'))
+      .catch((err: Error) => setError(err.message || t('tramites:error.loadingError')))
       .finally(() => setLoading(false));
-  }, [currentRole, isRevisor]);
+  }, [currentRole, isRevisor, t]);
 
   const tramitesFiltrados = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
-    return tramites.filter((t) => {
-      if (filtroEstado && t.estadoActual !== filtroEstado) return false;
-      if (filtroTipo && t.tipoTramite !== filtroTipo) return false;
-      if (texto && !t.codigoTramite.toLowerCase().includes(texto) && !t.tituloReferencia.toLowerCase().includes(texto)) return false;
+    return tramites.filter((tramite) => {
+      if (filtroEstado && tramite.estadoActual !== filtroEstado) return false;
+      if (filtroTipo && tramite.tipoTramite !== filtroTipo) return false;
+      if (texto && !tramite.codigoTramite.toLowerCase().includes(texto) && !tramite.tituloReferencia.toLowerCase().includes(texto)) return false;
       return true;
     });
   }, [tramites, filtroEstado, filtroTipo, busqueda]);
 
   const resumen = useMemo(() => ({
     total: tramites.length,
-    pendientes: tramites.filter((t) =>
-      isRevisor ? t.estadoActual === pendingState : t.estadoActual.startsWith('PENDIENTE'),
+    pendientes: tramites.filter((tramite) =>
+      isRevisor ? tramite.estadoActual === pendingState : tramite.estadoActual.startsWith('PENDIENTE'),
     ).length,
-    observados: tramites.filter((t) => t.estadoActual === 'OBSERVADO').length,
-    finalizados: tramites.filter((t) =>
-      t.estadoActual === 'FINALIZADO' || t.estadoActual === 'APROBADO_CON_RESOLUCION' || t.estadoActual === 'RECHAZADO'
+    observados: tramites.filter((tramite) => tramite.estadoActual === 'OBSERVADO').length,
+    finalizados: tramites.filter((tramite) =>
+      tramite.estadoActual === 'FINALIZADO' || tramite.estadoActual === 'APROBADO_CON_RESOLUCION' || tramite.estadoActual === 'RECHAZADO'
     ).length,
   }), [tramites, isRevisor, pendingState]);
 
   const contadores = [
-    { label: 'Total de trámites', value: resumen.total, color: 'var(--primary)' },
-    { label: isRevisor ? 'Pendientes de mi revisión' : 'En revisión', value: resumen.pendientes, color: 'var(--primary)' },
-    { label: 'Observados', value: resumen.observados, color: 'var(--error)' },
-    { label: 'Finalizados', value: resumen.finalizados, color: 'var(--on-surface)' },
+    { label: t('tramites:inboxPage.counters.total'), value: resumen.total, color: 'var(--primary)' },
+    { label: isRevisor ? t('tramites:inboxPage.counters.pendingReview') : t('tramites:inboxPage.counters.inReview'), value: resumen.pendientes, color: 'var(--primary)' },
+    { label: t('tramites:inboxPage.counters.observed'), value: resumen.observados, color: 'var(--error)' },
+    { label: t('tramites:inboxPage.counters.completed'), value: resumen.finalizados, color: 'var(--on-surface)' },
   ];
 
   return (
     <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
-          <h1 className="text-headline-lg">Bandeja de Trámites</h1>
+          <h1 className="text-headline-lg">{t('tramites:inboxPage.title')}</h1>
           <p className="text-body-md" style={{ color: 'var(--on-surface-variant)' }}>
             {isRevisor
-              ? 'Trámites pendientes de tu revisión según tu rol institucional.'
-              : 'Seguimiento de tus trámites de investigación y sus subsanaciones.'}
+              ? t('tramites:inboxPage.subtitleRevisor')
+              : t('tramites:inboxPage.subtitleDefault')}
           </p>
         </div>
       </div>
@@ -118,7 +120,7 @@ export const TramitesInbox: React.FC = () => {
               <Search size={18} style={{ position: 'absolute', left: '12px', top: '10px', color: 'var(--on-surface-variant)' }} />
               <input
                 type="text"
-                placeholder="Buscar por código o título de referencia..."
+                placeholder={t('tramites:inboxPage.searchPlaceholder')}
                 className="input"
                 style={{ paddingLeft: '36px' }}
                 value={busqueda}
@@ -127,23 +129,23 @@ export const TramitesInbox: React.FC = () => {
             </div>
             <div style={{ flex: 1, minWidth: '180px' }}>
               <Select
-                aria-label="Filtrar por estado"
+                aria-label={t('tramites:inboxPage.filterByStatus')}
                 value={filtroEstado}
                 onChange={(e) => setFiltroEstado(e.target.value)}
                 options={[
-                  { value: '', label: 'Todos los estados' },
-                  ...ESTADOS.map((estado) => ({ value: estado, label: getEstadoTramiteLabel(estado) })),
+                  { value: '', label: t('tramites:inboxPage.allStatuses') },
+                   ...ESTADOS.map((estado) => ({ value: estado, label: getEstadoTramiteLabel(estado, t) })),
                 ]}
               />
             </div>
             <div style={{ flex: 1, minWidth: '180px' }}>
               <Select
-                aria-label="Filtrar por tipo"
+                aria-label={t('tramites:inboxPage.filterByType')}
                 value={filtroTipo}
                 onChange={(e) => setFiltroTipo(e.target.value)}
                 options={[
-                  { value: '', label: 'Todos los tipos' },
-                  ...TIPOS.map((tipo) => ({ value: tipo, label: getTipoTramiteLabel(tipo) })),
+                  { value: '', label: t('tramites:inboxPage.allTypes') },
+                   ...TIPOS.map((tipo) => ({ value: tipo, label: getTipoTramiteLabel(tipo, t) })),
                 ]}
               />
             </div>
@@ -154,13 +156,13 @@ export const TramitesInbox: React.FC = () => {
           <TableContainer>
             <TableHead>
               <TableRow>
-                <TableHeader>Código</TableHeader>
-                <TableHeader>Tipo</TableHeader>
-                <TableHeader>Referencia</TableHeader>
-                <TableHeader>Estado</TableHeader>
-                <TableHeader>Etapa / Revisor actual</TableHeader>
-                <TableHeader>Última actualización</TableHeader>
-                <TableHeader style={{ textAlign: 'right' }}>Acciones</TableHeader>
+                <TableHeader>{t('tramites:inboxPage.tableHeaders.code')}</TableHeader>
+                <TableHeader>{t('tramites:inboxPage.tableHeaders.type')}</TableHeader>
+                <TableHeader>{t('tramites:inboxPage.tableHeaders.reference')}</TableHeader>
+                <TableHeader>{t('tramites:inboxPage.tableHeaders.status')}</TableHeader>
+                <TableHeader>{t('tramites:inboxPage.tableHeaders.stageReviewer')}</TableHeader>
+                <TableHeader>{t('tramites:inboxPage.tableHeaders.lastUpdate')}</TableHeader>
+                <TableHeader style={{ textAlign: 'right' }}>{t('tramites:inboxPage.tableHeaders.actions')}</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -174,7 +176,7 @@ export const TramitesInbox: React.FC = () => {
                 <TableRow>
                   <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: 'var(--on-surface-variant)' }}>
                     <Inbox size={32} style={{ marginBottom: '8px' }} />
-                    <div className="text-body-md">No se encontraron trámites con los filtros actuales.</div>
+                    <div className="text-body-md">{t('tramites:inboxPage.emptyState')}</div>
                   </td>
                 </TableRow>
               ) : (
@@ -184,7 +186,7 @@ export const TramitesInbox: React.FC = () => {
                     <TableRow key={tramite.id}>
                       <TableCell style={{ fontWeight: 600 }}>{tramite.codigoTramite}</TableCell>
                       <TableCell>
-                        <Badge variant="info">{getTipoTramiteLabel(tramite.tipoTramite)}</Badge>
+                        <Badge variant="info">{getTipoTramiteLabel(tramite.tipoTramite, t)}</Badge>
                       </TableCell>
                       <TableCell style={{ maxWidth: '320px', fontWeight: 500 }}>{tramite.tituloReferencia}</TableCell>
                       <TableCell>
@@ -192,9 +194,9 @@ export const TramitesInbox: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         {pendienteDeMi ? (
-                          <Badge variant="warning">Pendiente de tu revisión</Badge>
+                          <Badge variant="warning">{t('tramites:inboxPage.pendingYourReview')}</Badge>
                         ) : (
-                          getRolLabel(tramite.rolRevisorActual)
+                           getRolLabel(tramite.rolRevisorActual, t)
                         )}
                       </TableCell>
                       <TableCell>{formatFecha(tramite.fechaActualizacion)}</TableCell>
@@ -202,13 +204,13 @@ export const TramitesInbox: React.FC = () => {
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                           <Link to={`/tramites/${tramite.id}`}>
                             <Button variant="secondary" style={{ padding: '4px 12px' }} icon={<Eye size={16} />}>
-                              Ver detalle
+                              {t('tramites:inboxPage.actions.verDetalle')}
                             </Button>
                           </Link>
                           {!isRevisor && tramite.estadoActual === 'OBSERVADO' && (
                             <Link to={`/observations/subsanacion?tramiteId=${tramite.id}`}>
                               <Button variant="primary" style={{ padding: '4px 12px' }} icon={<PenLine size={16} />}>
-                                Subsanar
+                                {t('tramites:inboxPage.actions.subsanar')}
                               </Button>
                             </Link>
                           )}

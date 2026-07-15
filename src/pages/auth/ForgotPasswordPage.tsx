@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authService } from '../../services/authService';
 import './LoginPage.css'; // Reutilizamos los estilos premium del login
 import frontisBg from '../../assets/images/frontis_fiis.png';
 import userSesionIcon from '../../assets/images/user-sesion.jpg';
 
 export const ForgotPasswordPage: React.FC = () => {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
 
   const [step, setStep] = useState<1 | 2>(1);
@@ -27,32 +29,32 @@ export const ForgotPasswordPage: React.FC = () => {
     setSuccessMsg(null);
 
     if (!email) {
-      setErrorMsg('El correo institucional es obligatorio.');
+      setErrorMsg(t('auth:forgotPassword.validation.emailRequired'));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setErrorMsg('Por favor, ingrese un correo válido.');
+      setErrorMsg(t('auth:forgotPassword.validation.emailInvalid'));
       return;
     }
 
     if (!email.toLowerCase().endsWith('.edu.pe')) {
-      setErrorMsg('El correo debe pertenecer al dominio institucional (.edu.pe).');
+      setErrorMsg(t('auth:forgotPassword.validation.emailDomain'));
       return;
     }
 
     setIsSubmitting(true);
     try {
       const response = await authService.forgotPassword(email);
-      setSuccessMsg(response.message || 'Código enviado con éxito a su correo.');
+      setSuccessMsg(response.message || t('auth:forgotPassword.success.codeSent'));
       setTimeout(() => {
         setStep(2);
         setSuccessMsg(null);
       }, 1500);
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || 'Error al enviar el código. Verifique su correo.');
+      setErrorMsg(err.message || t('auth:forgotPassword.error.sendFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -64,42 +66,42 @@ export const ForgotPasswordPage: React.FC = () => {
     setSuccessMsg(null);
 
     if (!code || !newPassword || !confirmPassword) {
-      setErrorMsg('Todos los campos son obligatorios.');
+      setErrorMsg(t('auth:forgotPassword.validation.allFieldsRequired'));
       return;
     }
 
     if (code.length !== 6) {
-      setErrorMsg('El código de verificación debe tener 6 dígitos.');
+      setErrorMsg(t('auth:forgotPassword.validation.codeLength'));
       return;
     }
 
     if (newPassword.length < 6 || newPassword.length > 12) {
-      setErrorMsg('La contraseña debe tener entre 6 y 12 caracteres.');
+      setErrorMsg(t('auth:forgotPassword.validation.passwordLength'));
       return;
     }
 
     if (!/[A-Z]/.test(newPassword)) {
-      setErrorMsg('La contraseña debe contener al menos una letra mayúscula.');
+      setErrorMsg(t('auth:forgotPassword.validation.passwordUppercase'));
       return;
     }
 
     if (!/[a-z]/.test(newPassword)) {
-      setErrorMsg('La contraseña debe contener al menos una letra minúscula.');
+      setErrorMsg(t('auth:forgotPassword.validation.passwordLowercase'));
       return;
     }
 
     if (!/\d/.test(newPassword)) {
-      setErrorMsg('La contraseña debe contener al menos un número.');
+      setErrorMsg(t('auth:forgotPassword.validation.passwordNumber'));
       return;
     }
 
     if (!/[^A-Za-z0-9]/.test(newPassword)) {
-      setErrorMsg('La contraseña debe contener al menos un símbolo (ej. !, @, #, $, %, etc.).');
+      setErrorMsg(t('auth:forgotPassword.validation.passwordSymbol'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorMsg('La nueva contraseña y la confirmación no coinciden.');
+      setErrorMsg(t('auth:forgotPassword.validation.passwordMismatch'));
       return;
     }
 
@@ -112,13 +114,13 @@ export const ForgotPasswordPage: React.FC = () => {
         confirmPassword
       });
 
-      setSuccessMsg(response.message || 'Contraseña restablecida con éxito. Redirigiendo al login...');
+      setSuccessMsg(response.message || t('auth:forgotPassword.success.passwordReset'));
       setTimeout(() => {
         navigate('/login');
       }, 2000);
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || 'Código incorrecto, expirado o error al restablecer.');
+      setErrorMsg(err.message || t('auth:forgotPassword.error.resetFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -140,7 +142,7 @@ export const ForgotPasswordPage: React.FC = () => {
             type="button"
             className="login-back-btn"
             onClick={() => step === 1 ? navigate('/login') : setStep(1)}
-            title="Regresar"
+            title={t('auth:forgotPassword.backToLogin')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -150,12 +152,12 @@ export const ForgotPasswordPage: React.FC = () => {
           <div className="login-card-header">
             <img src={userSesionIcon} alt="Logo" className="login-logo-img" />
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a365d', marginTop: '0.5rem' }}>
-              Restablecer contraseña
+              {t('auth:forgotPassword.title')}
             </h2>
             <p className="login-logo-subtitle" style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
               {step === 1
-                ? 'Ingrese su correo institucional para recibir un código de verificación de 6 dígitos.'
-                : `Ingrese el código enviado a ${email} y su nueva contraseña.`
+                ? t('auth:forgotPassword.subtitleStep1')
+                : t('auth:forgotPassword.subtitleStep2', { email })
               }
             </p>
           </div>
@@ -178,7 +180,7 @@ export const ForgotPasswordPage: React.FC = () => {
             <form onSubmit={handleSendCode} className="login-form">
               {/* Input Correo */}
               <div className="form-group">
-                <label htmlFor="email" className="form-label">Correo institucional</label>
+                <label htmlFor="email" className="form-label">{t('auth:forgotPassword.emailLabel')}</label>
                 <div className="input-group-custom">
                   <span className="input-icon-left">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -189,7 +191,7 @@ export const ForgotPasswordPage: React.FC = () => {
                     type="email"
                     id="email"
                     className="form-input-custom"
-                    placeholder="ejemplo@unas.edu.pe"
+                    placeholder={t('auth:forgotPassword.emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isSubmitting}
@@ -205,7 +207,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 {isSubmitting ? (
                   <span className="btn-spinner"></span>
                 ) : (
-                  <span>Enviar Código</span>
+                  <span>{t('auth:forgotPassword.sendButton')}</span>
                 )}
               </button>
             </form>
@@ -213,7 +215,7 @@ export const ForgotPasswordPage: React.FC = () => {
             <form onSubmit={handleResetPassword} className="login-form">
               {/* Input Código */}
               <div className="form-group">
-                <label htmlFor="code" className="form-label">Código de verificación</label>
+                <label htmlFor="code" className="form-label">{t('auth:forgotPassword.codeLabel')}</label>
                 <div className="input-group-custom">
                   <span className="input-icon-left">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -225,7 +227,7 @@ export const ForgotPasswordPage: React.FC = () => {
                     id="code"
                     maxLength={6}
                     className="form-input-custom"
-                    placeholder="Código de 6 dígitos"
+                    placeholder={t('auth:forgotPassword.codePlaceholder')}
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} // Solo números
                     disabled={isSubmitting}
@@ -235,7 +237,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
               {/* Input Nueva Contraseña */}
               <div className="form-group">
-                <label htmlFor="newPassword" className="form-label">Nueva contraseña</label>
+                <label htmlFor="newPassword" className="form-label">{t('auth:forgotPassword.newPasswordLabel')}</label>
                 <div className="input-group-custom">
                   <span className="input-icon-left">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -246,7 +248,7 @@ export const ForgotPasswordPage: React.FC = () => {
                     type={showNewPassword ? 'text' : 'password'}
                     id="newPassword"
                     className="form-input-custom"
-                    placeholder="De 6 a 12 caracteres"
+                    placeholder={t('auth:forgotPassword.newPasswordPlaceholder')}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     disabled={isSubmitting}
@@ -273,7 +275,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
               {/* Input Confirmar Contraseña */}
               <div className="form-group">
-                <label htmlFor="confirmPassword" className="form-label">Confirmar nueva contraseña</label>
+                <label htmlFor="confirmPassword" className="form-label">{t('auth:forgotPassword.confirmPasswordLabel')}</label>
                 <div className="input-group-custom">
                   <span className="input-icon-left">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -284,7 +286,7 @@ export const ForgotPasswordPage: React.FC = () => {
                     type={showConfirmPassword ? 'text' : 'password'}
                     id="confirmPassword"
                     className="form-input-custom"
-                    placeholder="Repita su nueva contraseña"
+                    placeholder={t('auth:forgotPassword.confirmPasswordPlaceholder')}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     disabled={isSubmitting}
@@ -317,7 +319,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 {isSubmitting ? (
                   <span className="btn-spinner"></span>
                 ) : (
-                  <span>Restablecer Contraseña</span>
+                  <span>{t('auth:forgotPassword.resetButton')}</span>
                 )}
               </button>
             </form>
@@ -325,7 +327,7 @@ export const ForgotPasswordPage: React.FC = () => {
         </div>
 
         <div className="login-card-footer">
-          <p>© 2026 SGI - Universidad Nacional Agraria de la Selva</p>
+          <p>{t('auth:forgotPassword.footer')}</p>
         </div>
       </div>
     </div>

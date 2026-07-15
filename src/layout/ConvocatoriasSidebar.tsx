@@ -1,11 +1,13 @@
 import { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Megaphone, X, Calendar, FileText } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../context/AuthContext';
 import { callService, type CallResponse } from '../services/callService';
 
 export function ConvocatoriasSidebar() {
   const { currentRole } = useContext(AuthContext);
+  const { t } = useTranslation('navigation');
   const [isOpen, setIsOpen] = useState(false);
   const [calls, setCalls] = useState<CallResponse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +35,7 @@ export function ConvocatoriasSidebar() {
           onClick={handleOpen}
         >
           <Megaphone size={18} />
-          <span>Convocatorias Vigentes</span>
+          <span>{t('navigation:convocatoriasVigentes')}</span>
         </button>
       </div>
 
@@ -43,13 +45,13 @@ export function ConvocatoriasSidebar() {
             <div className="convocatorias-modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Megaphone size={22} style={{ color: 'var(--primary)' }} />
-                <h2>Convocatorias Vigentes</h2>
+                <h2>{t('navigation:convocatoriasVigentes')}</h2>
               </div>
               <button
                 type="button"
                 className="convocatorias-modal-close"
                 onClick={() => setIsOpen(false)}
-                aria-label="Cerrar"
+                aria-label={t('navigation:convocatoriaCerrar')}
               >
                 <X size={20} />
               </button>
@@ -58,12 +60,12 @@ export function ConvocatoriasSidebar() {
             <div className="convocatorias-modal-body">
               {loading ? (
                 <div className="convocatorias-empty">
-                  <p>Cargando convocatorias...</p>
+                  <p>{t('navigation:convocatoriasLoading')}</p>
                 </div>
               ) : calls.length === 0 ? (
                 <div className="convocatorias-empty">
                   <Calendar size={40} style={{ opacity: 0.35, marginBottom: '8px' }} />
-                  <p>No hay convocatorias abiertas actualmente.</p>
+                  <p>{t('navigation:convocatoriasNoOpen')}</p>
                 </div>
               ) : (
                 <div className="convocatorias-grid">
@@ -80,11 +82,11 @@ export function ConvocatoriasSidebar() {
                       <div>
                         <div className="convocatoria-dates">
                           <div>
-                            <span>Inicio: </span>
+                            <span>{t('navigation:convocatoriaInicio')}</span>
                             <strong>{call.startDate}</strong>
                           </div>
                           <div>
-                            <span>Cierre: </span>
+                            <span>{t('navigation:convocatoriaCierre')}</span>
                             <strong>{call.endDate}</strong>
                           </div>
                         </div>
@@ -94,7 +96,7 @@ export function ConvocatoriasSidebar() {
                           className="convocatoria-postular-btn"
                         >
                           <FileText size={16} />
-                          Postular Proyecto
+                          {t('navigation:convocatoriaPostular')}
                         </Link>
                       </div>
                     </div>

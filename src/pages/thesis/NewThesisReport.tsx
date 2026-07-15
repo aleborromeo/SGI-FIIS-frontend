@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Save, X, FileText, Upload, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { thesisService } from '../../services/thesisService';
@@ -11,6 +12,7 @@ export const NewThesisReport: React.FC = () => {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useTranslation('thesis');
 
   const [loadingPlan, setLoadingPlan] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -36,14 +38,14 @@ export const NewThesisReport: React.FC = () => {
         const pTitle = data.title || '';
         setTituloFinal(pTitle);
       } catch (err: any) {
-        toast.error(err.message || 'Error al cargar los datos del plan de tesis.');
-        setErrorMsg('No se pudo encontrar el plan de tesis especificado.');
+        toast.error(err.message || t('thesis:reportForm.errors.loadPlan'));
+        setErrorMsg(t('thesis:reportForm.planNotFound'));
       } finally {
         setLoadingPlan(false);
       }
     }
     fetchPlan();
-  }, [planId, toast]);
+  }, [planId, toast, t]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -51,7 +53,7 @@ export const NewThesisReport: React.FC = () => {
 
     const extension = file.name.split('.').pop()?.toUpperCase();
     if (extension !== 'PDF' && extension !== 'DOC' && extension !== 'DOCX') {
-      toast.error('Solo se permiten archivos en formato PDF, DOC o DOCX.');
+      toast.error(t('thesis:reportForm.errors.invalidFormat'));
       return;
     }
 
@@ -60,9 +62,9 @@ export const NewThesisReport: React.FC = () => {
       const res = await documentService.upload(file);
       setIdDocumentoTesis(res.id);
       setFileName(file.name);
-      toast.success('Archivo de tesis cargado exitosamente.');
+      toast.success(t('thesis:reportForm.errors.uploadSuccess'));
     } catch (err: any) {
-      toast.error(err.message || 'Error al cargar el archivo.');
+      toast.error(err.message || t('thesis:reportForm.errors.uploadError'));
     } finally {
       setUploadingFile(false);
     }
@@ -74,11 +76,11 @@ export const NewThesisReport: React.FC = () => {
 
     if (!planId) return;
     if (!tituloFinal.trim()) {
-      toast.error('Debe ingresar el título final de la tesis.');
+      toast.error(t('thesis:reportForm.errors.titleRequired'));
       return;
     }
     if (idDocumentoTesis === null) {
-      toast.error('Es obligatorio cargar el documento final de la tesis.');
+      toast.error(t('thesis:reportForm.errors.documentRequired'));
       return;
     }
 
@@ -90,11 +92,11 @@ export const NewThesisReport: React.FC = () => {
         idDocumentoTesis: idDocumentoTesis,
       } as any);
 
-      toast.success('Informe de tesis final registrado y enviado para revisión.');
+      toast.success(t('thesis:reportForm.errors.submitSuccess'));
       navigate(`/thesis/plan/${planId}`);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Ocurrió un error al registrar el informe.');
-      toast.error(err.message || 'Error al guardar el informe de tesis.');
+      setErrorMsg(err.message || t('thesis:reportForm.errors.submitError'));
+      toast.error(err.message || t('thesis:reportForm.errors.saveError'));
     } finally {
       setSubmitting(false);
     }
@@ -104,7 +106,7 @@ export const NewThesisReport: React.FC = () => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '16px' }}>
         <Spinner size="large" />
-        <p style={{ color: 'var(--on-surface-variant)', fontSize: '14px' }}>Cargando datos del plan de tesis...</p>
+        <p style={{ color: 'var(--on-surface-variant)', fontSize: '14px' }}>{t('thesis:reportForm.loadingPlan')}</p>
       </div>
     );
   }
@@ -113,9 +115,9 @@ export const NewThesisReport: React.FC = () => {
     return (
       <div style={{ padding: '28px', maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ padding: '16px', backgroundColor: 'var(--error-container)', color: 'var(--on-error-container)', borderRadius: 'var(--radius-md)', marginBottom: '24px' }}>
-          <strong>Error:</strong> {errorMsg || 'No se encontró el plan de tesis especificado.'}
+          <strong>{t('thesis:reportForm.errorPrefix')}</strong> {errorMsg || t('thesis:reportForm.planNotFound')}
         </div>
-        <Button onClick={() => navigate('/thesis/plans')}>Volver a Planes de Tesis</Button>
+        <Button onClick={() => navigate('/thesis/plans')}>{t('thesis:reportForm.backToPlans')}</Button>
       </div>
     );
   }
@@ -138,7 +140,7 @@ export const NewThesisReport: React.FC = () => {
         }}
       >
         <ArrowLeft size={18} />
-        Volver a Trazabilidad de Tesis
+        {t('thesis:reportForm.backToTraceability')}
       </button>
 
       <div
@@ -167,10 +169,10 @@ export const NewThesisReport: React.FC = () => {
           </div>
           <div>
             <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-              Registrar Informe de Tesis Final
+              {t('thesis:reportForm.title')}
             </h1>
             <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', margin: 0, marginTop: '2px' }}>
-              Suba y envíe el borrador final de su tesis una vez aprobado el plan correspondiente.
+              {t('thesis:reportForm.subtitle')}
             </p>
           </div>
         </div>
@@ -192,7 +194,7 @@ export const NewThesisReport: React.FC = () => {
           >
             <AlertCircle size={20} />
             <div>
-              <strong>Error:</strong> {errorMsg}
+              <strong>{t('thesis:reportForm.errorPrefix')}</strong> {errorMsg}
             </div>
           </div>
         )}
@@ -201,7 +203,7 @@ export const NewThesisReport: React.FC = () => {
           {/* Fila 1: Título Final de la Tesis */}
           <div>
             <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--on-surface)' }}>
-              Título Final de la Tesis *
+              {t('thesis:reportForm.finalTitle')}
             </label>
             <input
               type="text"
@@ -209,7 +211,7 @@ export const NewThesisReport: React.FC = () => {
               value={tituloFinal}
               onChange={e => setTituloFinal(e.target.value)}
               required
-              placeholder="Ingrese el título definitivo de su investigación"
+              placeholder={t('thesis:reportForm.finalTitlePlaceholder')}
               style={{
                 width: '100%',
                 padding: '12px 14px',
@@ -222,14 +224,14 @@ export const NewThesisReport: React.FC = () => {
               }}
             />
             <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)', display: 'block', marginTop: '4px' }}>
-              Puede modificar el título original del plan si hubo variaciones en la tesis final.
+              {t('thesis:reportForm.finalTitleHint')}
             </span>
           </div>
 
           {/* Fila 2: Carga del Archivo de Tesis */}
           <div>
             <label className="text-label-md" style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--on-surface)' }}>
-              Subir Archivo de la Tesis Completa *
+              {t('thesis:reportForm.uploadFile')}
             </label>
             <div
               style={{
@@ -273,10 +275,10 @@ export const NewThesisReport: React.FC = () => {
                     textDecoration: 'underline',
                   }}
                 >
-                  {uploadingFile ? 'Cargando archivo...' : 'Seleccione el archivo de tesis'}
+                  {uploadingFile ? t('thesis:reportForm.uploadingFile') : t('thesis:reportForm.selectFile')}
                 </label>
                 <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>
-                  Formatos permitidos: PDF, DOC, DOCX (Máx. 10MB)
+                  {t('thesis:reportForm.allowedFormats')}
                 </span>
 
                 {fileName && (
@@ -321,7 +323,7 @@ export const NewThesisReport: React.FC = () => {
               onClick={() => navigate(`/thesis/plan/${planId}`)}
               disabled={submitting}
             >
-              Cancelar
+              {t('thesis:reportForm.cancel')}
             </Button>
             <Button
               type="submit"
@@ -329,7 +331,7 @@ export const NewThesisReport: React.FC = () => {
               icon={<Save size={16} />}
               disabled={submitting || uploadingFile}
             >
-              {submitting ? 'Enviando...' : 'Enviar Tesis'}
+              {submitting ? t('thesis:reportForm.sending') : t('thesis:reportForm.submit')}
             </Button>
           </div>
         </form>

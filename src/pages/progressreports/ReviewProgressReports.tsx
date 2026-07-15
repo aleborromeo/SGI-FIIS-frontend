@@ -17,15 +17,16 @@ import { AuthContext } from '../../context/AuthContext';
 import { progressReportService, type ProgressReport } from '../../services/progressReportService';
 import { documentService } from '../../services/documentService';
 import { useToast } from '../../context/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 // Helper formatting functions
-function getStatusLabel(status: string): string {
+function getStatusLabel(status: string, t: (key: string) => string): string {
   const labels: Record<string, string> = {
-    PENDIENTE: 'Pendiente',
-    EN_REVISION: 'En revisión',
-    OBSERVADO: 'Observado',
-    APROBADO: 'Aprobado',
-    RECHAZADO: 'Rechazado',
+    PENDIENTE: t('status.pending'),
+    EN_REVISION: t('status.inReview'),
+    OBSERVADO: t('status.observed'),
+    APROBADO: t('status.approved'),
+    RECHAZADO: t('status.rejected'),
   };
   return labels[status.toUpperCase()] ?? status;
 }
@@ -53,6 +54,7 @@ function formatDate(value?: string): string {
 }
 
 export const ReviewProgressReports: React.FC = () => {
+  const { t } = useTranslation('progressreports');
   const { currentRole } = useContext(AuthContext);
   const rawToast = useToast();
   const toast = useMemo(() => ({
@@ -75,7 +77,7 @@ export const ReviewProgressReports: React.FC = () => {
       const data = await progressReportService.getPendingReports(filterStatus || undefined);
       setReports(data);
     } catch (err: any) {
-      toast.showError(err.message || 'Error al obtener los informes de avance.');
+      toast.showError(err.message || t('review.fetchError'));
     } finally {
       setLoading(false);
     }
@@ -94,15 +96,15 @@ export const ReviewProgressReports: React.FC = () => {
   const handleAction = async (id: number, action: 'approve' | 'observe' | 'reject') => {
     let comment = '';
     if (action === 'observe') {
-      const promptText = window.prompt('Escriba el detalle de la observación para el docente:');
+      const promptText = window.prompt(t('review.prompt.observeDetail'));
       if (promptText === null) return;
       if (!promptText.trim()) {
-        toast.showError('Debe ingresar un comentario para registrar la observación.');
+        toast.showError(t('review.prompt.commentRequired'));
         return;
       }
       comment = promptText.trim();
     } else if (action === 'reject') {
-      if (!window.confirm('¿Está seguro de que desea rechazar definitivamente este informe? Esta acción no se puede deshacer.')) {
+      if (!window.confirm(t('review.prompt.rejectConfirm'))) {
         return;
       }
     }
@@ -113,22 +115,22 @@ export const ReviewProgressReports: React.FC = () => {
         if (currentRole === 'COORDINADOR_GRUPO') {
           // Coordinador deriva al Director
           await progressReportService.forwardReport(id);
-          toast.showSuccess('Informe de avance derivado exitosamente al Director de Investigación.');
+          toast.showSuccess(t('review.toast.forwarded'));
         } else {
           // Director aprueba definitivamente
           await progressReportService.approveReport(id);
-          toast.showSuccess('Informe de avance aprobado exitosamente.');
+          toast.showSuccess(t('review.toast.approved'));
         }
       } else if (action === 'observe') {
         await progressReportService.observeReport(id, comment);
-        toast.showSuccess('Informe de avance devuelto con observaciones.');
+        toast.showSuccess(t('review.toast.observed'));
       } else if (action === 'reject') {
         await progressReportService.rejectReport(id);
-        toast.showSuccess('Informe de avance rechazado.');
+        toast.showSuccess(t('review.toast.rejected'));
       }
       fetchReports();
     } catch (err: any) {
-      toast.showError(err.message || 'Error al procesar la acción sobre el informe.');
+      toast.showError(err.message || t('review.toast.actionError'));
       setLoading(false);
     }
   };
@@ -140,7 +142,7 @@ export const ReviewProgressReports: React.FC = () => {
       const res = await progressReportService.getDetail(id);
       setReportDetail(res);
     } catch (err: any) {
-      toast.showError(err.message || 'Error al cargar los detalles del informe.');
+      toast.showError(err.message || t('review.toast.detailError'));
       setSelectedReportId(null);
     } finally {
       setLoadingDetail(false);
@@ -149,7 +151,7 @@ export const ReviewProgressReports: React.FC = () => {
 
   const handleDownload = (docId?: number) => {
     if (!docId) {
-      toast.showError('Este informe no cuenta con un documento físico adjunto.');
+      toast.showError(t('review.toast.noDocument'));
       return;
     }
     const url = documentService.download(docId);
@@ -178,10 +180,10 @@ export const ReviewProgressReports: React.FC = () => {
         >
           <FileText size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
           <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)' }}>
-            No se encontraron informes de avance
+            {t('review.emptyState.title')}
           </p>
           <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', margin: 0 }}>
-            No hay reportes de avance registrados bajo los filtros seleccionados.
+            {t('review.emptyState.subtitle')}
           </p>
         </div>
       );
@@ -232,11 +234,11 @@ export const ReviewProgressReports: React.FC = () => {
                     }}
                   >
                     <span style={{ color: 'var(--on-surface-variant)' }}>
-                      <strong>Responsable:</strong> {report.responsibleName}
+                      <strong>{t('review.card.responsible')}:</strong> {report.responsibleName}
                     </span>
 
                     <span style={{ color: 'var(--on-surface-variant)' }}>
-                      <strong>Avance:</strong> {report.physicalProgress}%
+                      <strong>{t('review.card.progress')}:</strong> {report.physicalProgress}%
                     </span>
 
                     <span
@@ -248,7 +250,7 @@ export const ReviewProgressReports: React.FC = () => {
                       }}
                     >
                       <Clock size={13} />
-                      <strong>Fecha Envío:</strong> {formatDate(report.reportDate)}
+                      <strong>{t('review.card.sendDate')}:</strong> {formatDate(report.reportDate)}
                     </span>
                   </div>
                 </div>
@@ -263,14 +265,14 @@ export const ReviewProgressReports: React.FC = () => {
                 }}
               >
                 <Badge variant={getBadgeVariant(report.status)}>
-                  {getStatusLabel(report.status)}
+                  {getStatusLabel(report.status, t)}
                 </Badge>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <Button
                     variant="secondary"
                     style={{ padding: '8px' }}
-                    title="Ver detalle del informe"
+                    title={t('review.card.viewDetail')}
                     icon={<Eye size={18} />}
                     onClick={() => handleViewDetail(report.id)}
                   />
@@ -279,7 +281,7 @@ export const ReviewProgressReports: React.FC = () => {
                     <Button
                       variant="secondary"
                       style={{ padding: '8px' }}
-                      title="Descargar informe adjunto"
+                      title={t('review.card.downloadDoc')}
                       icon={<Download size={18} />}
                       onClick={() => handleDownload(report.attachedDocumentId)}
                     />
@@ -298,7 +300,7 @@ export const ReviewProgressReports: React.FC = () => {
                         icon={<Check size={18} />}
                         onClick={() => handleAction(report.id, 'approve')}
                       >
-                        {currentRole === 'COORDINADOR_GRUPO' ? 'Derivar' : 'Aprobar'}
+                        {currentRole === 'COORDINADOR_GRUPO' ? t('review.action.forward') : t('review.action.approve')}
                       </Button>
 
                       <Button
@@ -311,7 +313,7 @@ export const ReviewProgressReports: React.FC = () => {
                         icon={<X size={18} />}
                         onClick={() => handleAction(report.id, 'observe')}
                       >
-                        Observar
+                        {t('review.action.observe')}
                       </Button>
                     </>
                   )}
@@ -338,7 +340,7 @@ export const ReviewProgressReports: React.FC = () => {
       >
         <div>
           <h1 className="text-headline-lg" style={{ fontWeight: 700 }}>
-            Revisión de Informes de Avance
+            {t('review.title')}
           </h1>
           <p
             className="text-body-md"
@@ -348,13 +350,13 @@ export const ReviewProgressReports: React.FC = () => {
               maxWidth: '760px',
             }}
           >
-            Aprobación, derivación y seguimiento de los informes parciales y finales de investigación.
+            {t('review.subtitle')}
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)' }}>
-            Filtrar por Estado:
+            {t('review.filterByStatus')}
           </span>
           <select
             id="filter-report-status"
@@ -370,12 +372,12 @@ export const ReviewProgressReports: React.FC = () => {
               outline: 'none',
             }}
           >
-            <option value="PENDIENTE">Pendientes de Coordinación</option>
-            <option value="EN_REVISION">En revisión (Dirección)</option>
-            <option value="APROBADO">Aprobados</option>
-            <option value="OBSERVADO">Observados</option>
-            <option value="RECHAZADO">Rechazados</option>
-            <option value="">Todos los informes</option>
+            <option value="PENDIENTE">{t('review.filterOptions.pendingCoordination')}</option>
+            <option value="EN_REVISION">{t('review.filterOptions.inReviewDirection')}</option>
+            <option value="APROBADO">{t('review.filterOptions.approved')}</option>
+            <option value="OBSERVADO">{t('review.filterOptions.observed')}</option>
+            <option value="RECHAZADO">{t('review.filterOptions.rejected')}</option>
+            <option value="">{t('review.filterOptions.all')}</option>
           </select>
           <Button variant="secondary" icon={<RefreshCcw size={16} />} onClick={fetchReports} />
         </div>
@@ -391,10 +393,10 @@ export const ReviewProgressReports: React.FC = () => {
         }}
       >
         {[
-          { label: 'Total en Bandeja', value: reports.length, color: 'var(--primary)' },
-          { label: 'Pendientes', value: pendingCount, color: 'var(--warning)' },
-          { label: 'Aprobados', value: approvedCount, color: 'var(--success)' },
-          { label: 'Observados', value: observedCount, color: 'var(--info)' },
+          { label: t('review.stats.totalInTray'), value: reports.length, color: 'var(--primary)' },
+          { label: t('review.stats.pending'), value: pendingCount, color: 'var(--warning)' },
+          { label: t('review.stats.approved'), value: approvedCount, color: 'var(--success)' },
+          { label: t('review.stats.observed'), value: observedCount, color: 'var(--info)' },
         ].map(stat => (
           <Card key={stat.label}>
             <CardContent style={{ padding: '16px 20px' }}>
@@ -442,10 +444,10 @@ export const ReviewProgressReports: React.FC = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
               <div>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>
-                  Informe de Avance #{reportDetail.id}
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>
+                    {t('review.detail.reportLabel', { id: reportDetail.id })}
                 </span>
-                <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, marginTop: '4px' }}>Detalles del Reporte</h2>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, marginTop: '4px' }}>{t('review.detail.title')}</h2>
               </div>
               <button
                 type="button"
@@ -458,43 +460,43 @@ export const ReviewProgressReports: React.FC = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '14px' }}>
               <div>
-                <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>Proyecto:</strong>
+                <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>{t('review.detail.project')}:</strong>
                 <span>{reportDetail.projectTitle}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>Período:</strong>
+                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>{t('review.detail.period')}:</strong>
                   <span>{reportDetail.period}</span>
                 </div>
                 <div>
-                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>Avance:</strong>
+                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px' }}>{t('review.detail.progress')}:</strong>
                   <span>{reportDetail.physicalProgress}%</span>
                 </div>
               </div>
 
               <div>
-                <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px', marginBottom: '4px' }}>Logros:</strong>
+                <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px', marginBottom: '4px' }}>{t('review.detail.achievements')}:</strong>
                 <p style={{ margin: 0, padding: '12px', backgroundColor: 'var(--surface-container-low)', borderRadius: 'var(--radius-md)', lineHeight: 1.5 }}>
-                  {reportDetail.observations?.split('\n')?.[0]?.replace('Logros: ', '') || 'Sin registros'}
+                  {reportDetail.observations?.split('\n')?.[0]?.replace('Logros: ', '') || t('review.detail.noRecords')}
                 </p>
               </div>
 
               <div>
-                <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px', marginBottom: '4px' }}>Dificultades:</strong>
+                <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px', marginBottom: '4px' }}>{t('review.detail.difficulties')}:</strong>
                 <p style={{ margin: 0, padding: '12px', backgroundColor: 'var(--surface-container-low)', borderRadius: 'var(--radius-md)', lineHeight: 1.5 }}>
-                  {reportDetail.observations?.split('\n')?.[1]?.replace('Dificultades: ', '') || 'Sin registros'}
+                  {reportDetail.observations?.split('\n')?.[1]?.replace('Dificultades: ', '') || t('review.detail.noRecords')}
                 </p>
               </div>
 
               {reportDetail.attachments && reportDetail.attachments.length > 0 && (
                 <div>
-                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px', marginBottom: '6px' }}>Documento adjunto:</strong>
+                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px', marginBottom: '6px' }}>{t('review.detail.attachedDoc')}:</strong>
                   <Button
                     variant="secondary"
                     icon={<Download size={15} />}
                     onClick={() => handleDownload(reportDetail.attachments[0].id)}
                   >
-                    Descargar {reportDetail.attachments[0].fileName}
+                    {t('review.detail.download')} {reportDetail.attachments[0].fileName}
                   </Button>
                 </div>
               )}

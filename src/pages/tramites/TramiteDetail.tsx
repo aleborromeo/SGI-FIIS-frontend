@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -22,23 +23,6 @@ import { AuthContext } from '../../context/AuthContext';
 import { tramiteService, PENDING_STATE_BY_ROLE } from '../../services/tramiteService';
 import type { EstadoTramite, MovimientoTramite, ObservacionTramite, Tramite } from '../../types/tramites';
 
-const ACCION_LABEL: Record<string, string> = {
-  PRESENTADO_POR_SOLICITANTE: 'Presentado por el solicitante',
-  APROBADO_POR_COORDINADOR: 'Aprobado por el Coordinador',
-  APROBADO_POR_DIRECTOR: 'Aprobado por el Director',
-  OBSERVADO_POR_COORDINADOR: 'Observado por el Coordinador',
-  OBSERVADO_POR_DIRECTOR: 'Observado por el Director',
-  OBSERVADO_POR_DECANO: 'Observado por el Decano',
-  OBSERVADO_POR_REVISOR: 'Observado por el revisor',
-  SUBSANADO_POR_SOLICITANTE: 'Subsanado por el solicitante',
-  REENVIADO_A_COORDINADOR: 'Reenviado al Coordinador',
-  RECHAZADO_POR_COORDINADOR: 'Rechazado por el Coordinador',
-  RECHAZADO_POR_DIRECTOR: 'Rechazado por el Director',
-  RECHAZADO_POR_REVISOR: 'Rechazado por el revisor',
-  RESOLUCION_REGISTRADA: 'Resolución registrada',
-  TRAMITE_FINALIZADO: 'Trámite finalizado',
-};
-
 const formatFechaHora = (iso: string): string =>
   new Date(iso).toLocaleString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
@@ -51,8 +35,13 @@ const STAGE_BY_ESTADO: Partial<Record<EstadoTramite, number>> = {
   APROBADO_CON_RESOLUCION: 3,
 };
 
-const buildSteps = (tramite: Tramite, movimientos: MovimientoTramite[]) => {
-  const labels = ['Coordinador', 'Dirección', 'Decanato', 'Resolución'];
+const buildSteps = (tramite: Tramite, movimientos: MovimientoTramite[], t: (key: string) => string) => {
+  const labels = [
+    t('tramites:detailPage.workflowLabels.coordinator'),
+    t('tramites:detailPage.workflowLabels.direction'),
+    t('tramites:detailPage.workflowLabels.deanOffice'),
+    t('tramites:detailPage.workflowLabels.resolution'),
+  ];
   const estado = tramite.estadoActual;
 
   let currentStage: number;
@@ -64,30 +53,29 @@ const buildSteps = (tramite: Tramite, movimientos: MovimientoTramite[]) => {
       id: String(i + 1),
       label,
       status: 'listo' as StepStatus,
-      sublabel: i === 3 ? 'Finalizado' : 'Aprobado',
+      sublabel: i === 3 ? t('tramites:detailPage.workflowLabels.finalized') : t('tramites:detailPage.workflowLabels.approved'),
     }));
   }
 
   if (estado === 'OBSERVADO' || estado === 'RECHAZADO') {
-    // La etapa donde se detuvo el flujo sale del último movimiento hacia ese estado
     const movimiento = [...movimientos].reverse().find((m) => m.estadoNuevo === estado);
     currentStage = (movimiento && STAGE_BY_ESTADO[movimiento.estadoAnterior]) ?? 0;
     currentStatus = 'observado';
-    currentSublabel = estado === 'OBSERVADO' ? 'Observado' : 'Rechazado';
+    currentSublabel = estado === 'OBSERVADO' ? t('tramites:detailPage.workflowLabels.observed') : t('tramites:detailPage.workflowLabels.rejected');
   } else {
     currentStage = STAGE_BY_ESTADO[estado] ?? -1;
     currentStatus = 'actual';
-    currentSublabel = estado === 'SUBSANADO' ? 'Subsanado' : 'En revisión';
+    currentSublabel = estado === 'SUBSANADO' ? t('tramites:detailPage.workflowLabels.subsanado') : t('tramites:detailPage.workflowLabels.inReview');
   }
 
   return labels.map((label, i) => {
     if (i < currentStage) {
-      return { id: String(i + 1), label, status: 'aprobado' as StepStatus, sublabel: 'Aprobado' };
+      return { id: String(i + 1), label, status: 'aprobado' as StepStatus, sublabel: t('tramites:detailPage.workflowLabels.approved') };
     }
     if (i === currentStage) {
       return { id: String(i + 1), label, status: currentStatus, sublabel: currentSublabel };
     }
-    return { id: String(i + 1), label, status: 'pendiente' as StepStatus, sublabel: 'Pendiente' };
+    return { id: String(i + 1), label, status: 'pendiente' as StepStatus, sublabel: t('tramites:detailPage.workflowLabels.pending') };
   });
 };
 
@@ -98,6 +86,7 @@ const getTimelineStatus = (movimiento: MovimientoTramite, isLast: boolean) => {
 };
 
 export const TramiteDetail: React.FC = () => {
+  const { t } = useTranslation('tramites');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentRole } = useContext(AuthContext);
@@ -115,6 +104,12 @@ export const TramiteDetail: React.FC = () => {
 
   const tramiteId = Number(id);
 
+  const getAccionLabel = useCallback((accion: string): string => {
+    const key = `tramites:detailPage.actionLabels.${accion}`;
+    const translated = t(key);
+    return translated === key ? accion.replaceAll('_', ' ') : translated;
+  }, [t]);
+
   const cargarDatos = useCallback(() => {
     return Promise.all([
       tramiteService.getById(tramiteId),
@@ -126,17 +121,17 @@ export const TramiteDetail: React.FC = () => {
         setMovimientos(dataMovimientos);
         setObservaciones(dataObservaciones);
       })
-      .catch((err: Error) => setError(err.message || 'Error al cargar el trámite'));
-  }, [tramiteId]);
+      .catch((err: Error) => setError(err.message || t('tramites:detailPage.errors.loadingTramite')));
+  }, [tramiteId, t]);
 
   useEffect(() => {
     if (!Number.isFinite(tramiteId)) {
-      setError('Identificador de trámite inválido.');
+      setError(t('tramites:detailPage.invalidId'));
       setLoading(false);
       return;
     }
     cargarDatos().finally(() => setLoading(false));
-  }, [tramiteId, cargarDatos]);
+  }, [tramiteId, cargarDatos, t]);
 
   const ejecutarAccion = (accion: () => Promise<unknown>, mensaje: string) => {
     setSubmitting(true);
@@ -149,18 +144,18 @@ export const TramiteDetail: React.FC = () => {
         setTextoObservacion('');
         setObservacionError(undefined);
       })
-      .catch((err: Error) => setError(err.message || 'Error al ejecutar la acción'))
+      .catch((err: Error) => setError(err.message || t('tramites:detailPage.errors.executingAction')))
       .finally(() => setSubmitting(false));
   };
 
   const handleObservar = () => {
     if (!textoObservacion.trim()) {
-      setObservacionError('El texto de la observación es obligatorio.');
+      setObservacionError(t('tramites:detailPage.observationForm.requiredError'));
       return;
     }
     ejecutarAccion(
       () => tramiteService.flag(tramiteId, textoObservacion.trim()),
-      'El trámite fue observado y devuelto al solicitante.',
+      t('tramites:detailPage.feedback.observed'),
     );
   };
 
@@ -175,9 +170,9 @@ export const TramiteDetail: React.FC = () => {
   if (error || !tramite) {
     return (
       <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
-        <div style={{ color: 'var(--error)', marginBottom: '16px' }}>{error || 'Trámite no encontrado.'}</div>
+        <div style={{ color: 'var(--error)', marginBottom: '16px' }}>{error || t('tramites:detailPage.tramiteNotFound')}</div>
         <Link to="/tramites">
-          <Button variant="secondary" icon={<ArrowLeft size={16} />}>Volver a la bandeja</Button>
+          <Button variant="secondary" icon={<ArrowLeft size={16} />}>{t('tramites:detailPage.backToInbox')}</Button>
         </Link>
       </div>
     );
@@ -198,13 +193,13 @@ export const TramiteDetail: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', gap: '16px', flexWrap: 'wrap' }}>
         <div>
           <Link to="/tramites" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, marginBottom: '8px' }} className="text-label-md">
-            <ArrowLeft size={16} /> Volver a la bandeja
+            <ArrowLeft size={16} /> {t('tramites:detailPage.backToInbox')}
           </Link>
           <h1 className="text-headline-lg">{tramite.codigoTramite}</h1>
           <p className="text-body-md" style={{ color: 'var(--on-surface-variant)' }}>{tramite.tituloReferencia}</p>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <Badge variant="info">{getTipoTramiteLabel(tramite.tipoTramite)}</Badge>
+          <Badge variant="info">{getTipoTramiteLabel(tramite.tipoTramite, t)}</Badge>
           <TramiteStatusBadge estado={estado} />
         </div>
       </div>
@@ -220,16 +215,16 @@ export const TramiteDetail: React.FC = () => {
       <Card style={{ marginBottom: '24px' }}>
         <CardContent>
           <div style={{ borderBottom: '1px solid var(--outline-variant)', paddingBottom: '16px', marginBottom: '16px' }}>
-            <h3 className="text-title-lg">Flujo de Aprobación</h3>
+            <h3 className="text-title-lg">{t('tramites:detailPage.approvalFlow')}</h3>
           </div>
-          <Stepper steps={buildSteps(tramite, movimientos)} />
+          <Stepper steps={buildSteps(tramite, movimientos, t)} />
         </CardContent>
       </Card>
 
       {/* Observación vigente */}
       {estado === 'OBSERVADO' && tramite.observacionActual && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert variant="warning" title="Observación vigente">
+          <Alert variant="warning" title={t('tramites:detailPage.currentObservation')}>
             {tramite.observacionActual}
           </Alert>
         </div>
@@ -239,14 +234,14 @@ export const TramiteDetail: React.FC = () => {
         {/* Datos generales */}
         <Card>
           <CardContent>
-            <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>Datos Generales</h3>
+            <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>{t('tramites:detailPage.generalData')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
-                { label: 'Solicitante', value: tramite.nombreSolicitante },
-                { label: 'Tipo de trámite', value: getTipoTramiteLabel(tramite.tipoTramite) },
-                { label: 'Revisor actual', value: getRolLabel(tramite.rolRevisorActual) },
-                { label: 'Fecha de presentación', value: formatFechaHora(tramite.fechaCreacion) },
-                { label: 'Última actualización', value: formatFechaHora(tramite.fechaActualizacion) },
+                { label: t('tramites:detailPage.fields.applicant'), value: tramite.nombreSolicitante },
+                { label: t('tramites:detailPage.fields.tramiteType'), value: getTipoTramiteLabel(tramite.tipoTramite, t) },
+                { label: t('tramites:detailPage.fields.currentReviewer'), value: getRolLabel(tramite.rolRevisorActual, t) },
+                { label: t('tramites:detailPage.fields.submissionDate'), value: formatFechaHora(tramite.fechaCreacion) },
+                { label: t('tramites:detailPage.fields.lastUpdate'), value: formatFechaHora(tramite.fechaActualizacion) },
               ].map((item) => (
                 <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
                   <span className="text-body-md" style={{ color: 'var(--on-surface-variant)' }}>{item.label}</span>
@@ -261,7 +256,7 @@ export const TramiteDetail: React.FC = () => {
         {(puedeRevisar || puedeSubsanar) && (
           <Card>
             <CardContent>
-              <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>Acciones</h3>
+              <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>{t('tramites:detailPage.actionsSection')}</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {puedeAprobar && (
                   <Button
@@ -269,10 +264,10 @@ export const TramiteDetail: React.FC = () => {
                     disabled={submitting}
                     onClick={() => ejecutarAccion(
                       () => tramiteService.approve(tramiteId),
-                      'El trámite fue aprobado y avanzó a la siguiente etapa.',
+                      t('tramites:detailPage.feedback.approved'),
                     )}
                   >
-                    Aprobar trámite
+                    {t('tramites:detailPage.buttons.approve')}
                   </Button>
                 )}
                 {puedeResolucion && (
@@ -281,10 +276,10 @@ export const TramiteDetail: React.FC = () => {
                     disabled={submitting}
                     onClick={() => ejecutarAccion(
                       () => tramiteService.registerResolution(tramiteId),
-                      'Se registró la resolución y el trámite quedó finalizado.',
+                      t('tramites:detailPage.feedback.resolutionRegistered'),
                     )}
                   >
-                    Registrar resolución
+                    {t('tramites:detailPage.buttons.registerResolution')}
                   </Button>
                 )}
                 {puedeRevisar && (
@@ -294,24 +289,24 @@ export const TramiteDetail: React.FC = () => {
                     disabled={submitting}
                     onClick={() => setShowObservarForm((prev) => !prev)}
                   >
-                    Observar trámite
+                    {t('tramites:detailPage.buttons.observe')}
                   </Button>
                 )}
                 {showObservarForm && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <Textarea
-                      label="Texto de la observación"
+                      label={t('tramites:detailPage.observationForm.label')}
                       rows={3}
                       value={textoObservacion}
                       error={observacionError}
-                      placeholder="Describe qué debe corregir el solicitante..."
+                      placeholder={t('tramites:detailPage.observationForm.placeholder')}
                       onChange={(e) => {
                         setTextoObservacion(e.target.value);
                         setObservacionError(undefined);
                       }}
                     />
                     <Button variant="secondary" disabled={submitting} onClick={handleObservar}>
-                      Confirmar observación
+                      {t('tramites:detailPage.buttons.confirmObservation')}
                     </Button>
                   </div>
                 )}
@@ -322,10 +317,10 @@ export const TramiteDetail: React.FC = () => {
                     disabled={submitting}
                     onClick={() => ejecutarAccion(
                       () => tramiteService.reject(tramiteId),
-                      'El trámite fue rechazado de forma definitiva.',
+                      t('tramites:detailPage.feedback.rejected'),
                     )}
                   >
-                    Rechazar trámite
+                    {t('tramites:detailPage.buttons.reject')}
                   </Button>
                 )}
                 {puedeSubsanar && (
@@ -333,7 +328,7 @@ export const TramiteDetail: React.FC = () => {
                     icon={<PenLine size={16} />}
                     onClick={() => navigate(`/observations/subsanacion?tramiteId=${tramite.id}`)}
                   >
-                    Subsanar observaciones
+                    {t('tramites:detailPage.buttons.subsanar')}
                   </Button>
                 )}
               </div>
@@ -346,31 +341,31 @@ export const TramiteDetail: React.FC = () => {
       {observaciones.length > 0 && (
         <Card style={{ marginBottom: '24px' }}>
           <CardContent>
-            <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>Observaciones y Subsanaciones</h3>
+            <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>{t('tramites:detailPage.observationsSection')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {observaciones.map((obs) => (
                 <div key={obs.id} style={{ border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', padding: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <Badge variant="neutral">{getTipoObservacionLabel(obs.tipoObservacion)}</Badge>
+                      <Badge variant="neutral">{getTipoObservacionLabel(obs.tipoObservacion, t)}</Badge>
                       <Badge variant={getEstadoObservacionVariant(obs.estadoObservacion)}>
-                        {getEstadoObservacionLabel(obs.estadoObservacion)}
+                        {getEstadoObservacionLabel(obs.estadoObservacion, t)}
                       </Badge>
                     </div>
                     <span className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>
-                      {getRolLabel(obs.rolRevisor)} · {formatFechaHora(obs.fechaRegistro)}
+                      {getRolLabel(obs.rolRevisor, t)} · {formatFechaHora(obs.fechaRegistro)}
                     </span>
                   </div>
                   <p className="text-body-md" style={{ marginBottom: obs.subsanaciones.length > 0 ? '12px' : 0 }}>{obs.descripcion}</p>
                   {obs.subsanaciones.map((sub) => (
                     <div key={sub.id} style={{ backgroundColor: 'var(--surface-container-low)', borderRadius: 'var(--radius-md)', padding: '12px', marginTop: '8px' }}>
                       <div className="text-caption" style={{ color: 'var(--on-surface-variant)', marginBottom: '4px' }}>
-                        Subsanación · {formatFechaHora(sub.fechaRegistro)}
+                        {t('tramites:detailPage.subsancionPrefix')} {formatFechaHora(sub.fechaRegistro)}
                       </div>
                       <p className="text-body-md" style={{ margin: 0 }}>{sub.descripcion}</p>
                       {sub.nombreDocumentoAdjunto && (
                         <div className="text-caption" style={{ color: 'var(--primary)', fontWeight: 600, marginTop: '4px' }}>
-                          Adjunto: {sub.nombreDocumentoAdjunto}
+                          {t('tramites:detailPage.attachmentPrefix')} {sub.nombreDocumentoAdjunto}
                         </div>
                       )}
                     </div>
@@ -385,10 +380,10 @@ export const TramiteDetail: React.FC = () => {
       {/* Trazabilidad */}
       <Card>
         <CardContent>
-          <h3 className="text-title-lg" style={{ marginBottom: '24px' }}>Trazabilidad del Trámite</h3>
+          <h3 className="text-title-lg" style={{ marginBottom: '24px' }}>{t('tramites:detailPage.traceabilitySection')}</h3>
           {movimientos.length === 0 ? (
             <p className="text-body-md" style={{ color: 'var(--on-surface-variant)' }}>
-              Aún no hay movimientos registrados para este trámite.
+              {t('tramites:detailPage.noMovements')}
             </p>
           ) : (
             <Timeline>
@@ -398,16 +393,16 @@ export const TramiteDetail: React.FC = () => {
                   <TimelineItem
                     key={mov.id}
                     id={String(mov.id)}
-                    title={ACCION_LABEL[mov.accion] ?? mov.accion.replaceAll('_', ' ')}
+                    title={getAccionLabel(mov.accion)}
                     time={formatFechaHora(mov.fechaMovimiento)}
                     status={getTimelineStatus(mov, isLast)}
                     isLast={isLast}
                   >
                     <div className="text-body-md" style={{ color: 'var(--on-surface-variant)' }}>
-                      {mov.nombreUsuarioAccion} · {getEstadoTramiteLabel(mov.estadoAnterior)} → {getEstadoTramiteLabel(mov.estadoNuevo)}
+                      {mov.nombreUsuarioAccion} · {getEstadoTramiteLabel(mov.estadoAnterior, t)} → {getEstadoTramiteLabel(mov.estadoNuevo, t)}
                     </div>
                     {mov.observacion && (
-                      <p className="text-body-md" style={{ fontStyle: 'italic', marginTop: '4px' }}>“{mov.observacion}”</p>
+                      <p className="text-body-md" style={{ fontStyle: 'italic', marginTop: '4px' }}>"{mov.observacion}"</p>
                     )}
                   </TimelineItem>
                 );

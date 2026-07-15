@@ -14,8 +14,10 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { useToast } from '../../context/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 export const NewResolutionForm: React.FC = () => {
+  const { t } = useTranslation('resolutions');
   const navigate = useNavigate();
   const toast = useToast();
   const [searchParams] = useSearchParams();
@@ -66,7 +68,7 @@ export const NewResolutionForm: React.FC = () => {
 
     setTimeout(() => {
       setSubmitting(false);
-      toast.success('Resolución registrada y cronograma de informes trimestrales generado con éxito.');
+      toast.success(t('new.toast.success'));
       navigate('/projects');
     }, 1000);
   };
@@ -78,7 +80,7 @@ export const NewResolutionForm: React.FC = () => {
         onClick={() => navigate('/decano/review')}
         style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', fontWeight: 600, marginBottom: '20px' }}
       >
-        <ArrowLeft size={16} /> Volver a Consola de Decanato
+        <ArrowLeft size={16} /> {t('new.backToDecanoReview')}
       </button>
 
       {/* Header */}
@@ -87,15 +89,15 @@ export const NewResolutionForm: React.FC = () => {
           <span style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             <FileText size={22} style={{ color: 'white' }} />
           </span>
-          Registro de Resolución y Ejecución
+          {t('new.header.title')}
         </h1>
         <p style={{ fontSize: '15px', color: 'var(--on-surface-variant)', marginLeft: '54px' }}>
-          Ingrese los datos oficiales para activar el proyecto e iniciar el cronograma de informes trimestrales.
+          {t('new.header.subtitle')}
         </p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px 20px', background: '#eef5ff', borderRadius: '12px', borderLeft: '4px solid var(--primary)', marginBottom: '24px' }}>
-        <strong style={{ color: '#1e3a8a', fontSize: '14px' }}>Proyecto de Referencia:</strong>
+        <strong style={{ color: '#1e3a8a', fontSize: '14px' }}>{t('new.referenceProject')}</strong>
         <span style={{ fontSize: '14px', color: '#1e40af' }}>{projectTitle} (ID: EXP-{projectId})</span>
       </div>
 
@@ -106,7 +108,7 @@ export const NewResolutionForm: React.FC = () => {
           <Card>
             <CardHeader>
               <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--primary)' }}>
-                1. Datos de la Resolución Decanal
+                1. {t('new.section1.title')}
               </h3>
             </CardHeader>
             <CardContent style={{ padding: '20px' }}>
@@ -114,11 +116,11 @@ export const NewResolutionForm: React.FC = () => {
                 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    Número de Resolución *
+                    {t('new.form.resolutionNumber')} *
                   </label>
                   <Input
                     required
-                    placeholder="Ej. R.D. N.° 045-2026-FIIS"
+                    placeholder={t('new.form.resolutionNumberPlaceholder')}
                     value={resNumber}
                     onChange={(e) => setResNumber(e.target.value)}
                   />
@@ -126,7 +128,7 @@ export const NewResolutionForm: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    Fecha de Emisión *
+                    {t('new.form.emissionDate')} *
                   </label>
                   <Input
                     required
@@ -138,11 +140,11 @@ export const NewResolutionForm: React.FC = () => {
 
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    Título / Asunto de la Resolución *
+                    {t('new.form.resolutionTitle')} *
                   </label>
                   <Input
                     required
-                    placeholder="Ej. Aprobar la postulación del proyecto..."
+                    placeholder={t('new.form.resolutionTitlePlaceholder')}
                     value={resTitle}
                     onChange={(e) => setResTitle(e.target.value)}
                   />
@@ -150,7 +152,7 @@ export const NewResolutionForm: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    Órgano Emisor
+                    {t('new.form.issuingBody')}
                   </label>
                   <Input
                     value={issuer}
@@ -160,7 +162,7 @@ export const NewResolutionForm: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    Adjuntar Resolución PDF
+                    {t('new.form.attachPdf')}
                   </label>
                   <input
                     type="file"
@@ -178,7 +180,7 @@ export const NewResolutionForm: React.FC = () => {
           <Card>
             <CardHeader>
               <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--primary)' }}>
-                2. Parámetros de Ejecución del Proyecto
+                2. {t('new.section2.title')}
               </h3>
             </CardHeader>
             <CardContent style={{ padding: '20px' }}>
@@ -186,7 +188,7 @@ export const NewResolutionForm: React.FC = () => {
                 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    Inicio de Ejecución *
+                    {t('new.form.executionStart')} *
                   </label>
                   <Input
                     required
@@ -198,7 +200,7 @@ export const NewResolutionForm: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    Fin de Ejecución *
+                    {t('new.form.executionEnd')} *
                   </label>
                   <Input
                     required
@@ -210,7 +212,7 @@ export const NewResolutionForm: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    Duración Estimada (Meses)
+                    {t('new.form.estimatedDuration')}
                   </label>
                   <Input
                     disabled
@@ -221,44 +223,44 @@ export const NewResolutionForm: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    ¿Recibe Financiamiento FIF? *
+                    {t('new.form.receivesFif')} *
                   </label>
                   <Select
                     value={receivesFif}
                     onChange={(e) => setReceivesFif(e.target.value)}
                     options={[
-                      { value: 'SI', label: 'Sí' },
-                      { value: 'NO', label: 'No' }
+                      { value: 'SI', label: t('new.form.yes') },
+                      { value: 'NO', label: t('new.form.no') }
                     ]}
                   />
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    Estado Inicial Financiamiento FIF
+                    {t('new.form.fifStatus')}
                   </label>
                   <Select
                     value={fifStatus}
                     onChange={(e) => setFifStatus(e.target.value)}
                     disabled={receivesFif === 'NO'}
                     options={[
-                      { value: 'ACTIVO', label: 'Activo / Aprobado' },
-                      { value: 'SUSPENDIDO', label: 'Suspendido' },
-                      { value: 'NO_APLICA', label: 'No aplica' }
+                      { value: 'ACTIVO', label: t('new.form.fifActive') },
+                      { value: 'SUSPENDIDO', label: t('new.form.fifSuspended') },
+                      { value: 'NO_APLICA', label: t('new.form.fifNotApplicable') }
                     ]}
                   />
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                    ¿Requiere Artículo Final? *
+                    {t('new.form.requiresArticle')} *
                   </label>
                   <Select
                     value={requiresArticle}
                     onChange={(e) => setRequiresArticle(e.target.value)}
                     options={[
-                      { value: 'SI', label: 'Sí (Obligatorio FIF)' },
-                      { value: 'NO', label: 'No' }
+                      { value: 'SI', label: t('new.form.yesFifRequired') },
+                      { value: 'NO', label: t('new.form.no') }
                     ]}
                   />
                 </div>
@@ -274,7 +276,7 @@ export const NewResolutionForm: React.FC = () => {
               variant="secondary"
               onClick={() => navigate('/decano/review')}
             >
-              Cancelar
+              {t('new.form.cancel')}
             </Button>
             <Button
               type="submit"
@@ -282,7 +284,7 @@ export const NewResolutionForm: React.FC = () => {
               disabled={submitting}
               icon={<Save size={16} />}
             >
-              {submitting ? 'Guardando...' : 'Aprobar Proyecto y Generar Cronograma'}
+              {submitting ? t('new.form.saving') : t('new.form.submit')}
             </Button>
           </div>
 

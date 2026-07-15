@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   FileText,
   Download,
@@ -39,6 +40,7 @@ function formatFileSize(bytes?: number): string {
 }
 
 export const DocumentRepository: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export const DocumentRepository: React.FC = () => {
       setDocuments(data);
     } catch (err: any) {
       console.error('Error al cargar documentos:', err);
-      setError('No se pudo cargar el repositorio documental.');
+      setError(t('documents.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -78,22 +80,22 @@ export const DocumentRepository: React.FC = () => {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
     if (!allowedTypes.includes(file.type)) {
-      toast.error('Solo se permiten archivos PDF, DOC y DOCX.');
+      toast.error(t('documents.errorFileType'));
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('El archivo no debe superar los 10 MB.');
+      toast.error(t('documents.errorFileSize'));
       return;
     }
 
     try {
       setUploading(true);
       await documentService.upload(file);
-      toast.success(`Archivo "${file.name}" subido exitosamente.`);
+      toast.success(t('documents.uploadSuccess', { name: file.name }));
       loadDocuments();
     } catch (err: any) {
-      toast.error(err?.message || 'Error al subir el archivo.');
+      toast.error(err?.message || t('documents.uploadError'));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -102,9 +104,9 @@ export const DocumentRepository: React.FC = () => {
 
   const handleDeactivate = async (doc: Document) => {
     const accepted = await confirm.confirmDialog({
-      title: 'Eliminar Documento',
-      message: `¿Desea eliminar "${doc.fileName}"? Esta accion es irreversible.`,
-      confirmText: 'Eliminar',
+      title: t('documents.confirm.deleteTitle'),
+      message: t('documents.confirm.deleteMessage', { name: doc.fileName }),
+      confirmText: t('documents.confirm.deleteConfirm'),
       danger: true,
     });
 
@@ -113,10 +115,10 @@ export const DocumentRepository: React.FC = () => {
     try {
       setProcessingId(doc.id);
       await documentService.deactivate(doc.id);
-      toast.success('Documento eliminado.');
+      toast.success(t('documents.toast.deleted'));
       setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
     } catch (err) {
-      toast.error('Error al eliminar el documento.');
+      toast.error(t('documents.toast.errorDelete'));
     } finally {
       setProcessingId(null);
     }
@@ -154,13 +156,13 @@ export const DocumentRepository: React.FC = () => {
             >
               <FileText size={24} />
             </div>
-            <h1 className="text-headline-lg">Repositorio Documental</h1>
+            <h1 className="text-headline-lg">{t('documents.pageTitle')}</h1>
           </div>
           <p
             className="text-body-md"
             style={{ color: 'var(--on-surface-variant)', marginTop: '8px' }}
           >
-            Panel seguro de previsualizacion y descarga de documentos. La acceso esta restringido por linea de trazabilidad.
+            {t('documents.pageSubtitle')}
           </p>
         </div>
 
@@ -178,7 +180,7 @@ export const DocumentRepository: React.FC = () => {
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
           >
-            {uploading ? 'Subiendo...' : 'Subir Documento'}
+            {uploading ? t('documents.uploading') : t('documents.btnUpload')}
           </Button>
         </div>
       </div>
@@ -199,7 +201,7 @@ export const DocumentRepository: React.FC = () => {
                 <strong style={{ display: 'block', fontSize: '24px' }}>
                   {documents.length}
                 </strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>Documentos</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('documents.stats.documents')}</span>
               </div>
             </div>
           </CardContent>
@@ -212,7 +214,7 @@ export const DocumentRepository: React.FC = () => {
                 <strong style={{ display: 'block', fontSize: '24px' }}>
                   {documents.filter((d) => d.fileType?.includes('pdf')).length}
                 </strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>PDFs</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('documents.stats.pdfs')}</span>
               </div>
             </div>
           </CardContent>
@@ -225,7 +227,7 @@ export const DocumentRepository: React.FC = () => {
                 <strong style={{ display: 'block', fontSize: '24px' }}>
                   {documents.filter((d) => d.fileType?.includes('word') || d.fileType?.includes('doc')).length}
                 </strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>Word</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('documents.stats.word')}</span>
               </div>
             </div>
           </CardContent>
@@ -234,7 +236,7 @@ export const DocumentRepository: React.FC = () => {
 
       {error && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert title="Error de conexion">
+          <Alert title={t('documents.errorTitle')}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <AlertCircle size={18} />
               <span>{error}</span>
@@ -246,24 +248,24 @@ export const DocumentRepository: React.FC = () => {
       <TableContainer>
         <TableHead>
           <TableRow>
-            <TableHeader>Archivo</TableHeader>
-            <TableHeader>Tipo</TableHeader>
-            <TableHeader>Tamano</TableHeader>
-            <TableHeader style={{ textAlign: 'right' }}>Acciones</TableHeader>
+            <TableHeader>{t('documents.table.file')}</TableHeader>
+            <TableHeader>{t('documents.table.type')}</TableHeader>
+            <TableHeader>{t('documents.table.size')}</TableHeader>
+            <TableHeader style={{ textAlign: 'right' }}>{t('documents.table.actions')}</TableHeader>
           </TableRow>
         </TableHead>
         <TableBody>
           {loading ? (
             <TableRow>
               <td colSpan={4} style={{ textAlign: 'center', padding: '32px', color: 'var(--on-surface-variant)' }}>
-                Cargando documentos...
+                {t('documents.loading')}
               </td>
             </TableRow>
           ) : documents.length === 0 ? (
             <TableRow>
               <td colSpan={4} style={{ textAlign: 'center', padding: '48px', color: 'var(--on-surface-variant)' }}>
                 <FileText size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
-                No hay documentos en el repositorio.
+                {t('documents.empty')}
               </td>
             </TableRow>
           ) : (
@@ -281,7 +283,7 @@ export const DocumentRepository: React.FC = () => {
                       ? 'PDF'
                       : doc.fileType?.includes('word') || doc.fileType?.includes('doc')
                       ? 'Word'
-                      : doc.fileType || 'Desconocido'}
+                      : doc.fileType || t('documents.table.unknown')}
                   </Badge>
                 </TableCell>
                 <TableCell>{formatFileSize(doc.fileSize)}</TableCell>
@@ -292,7 +294,7 @@ export const DocumentRepository: React.FC = () => {
                       icon={<Eye size={14} />}
                       onClick={() => openPreview(doc)}
                     >
-                      Ver
+                      {t('documents.btnView')}
                     </Button>
                     <Button
                       variant="secondary"
@@ -305,7 +307,7 @@ export const DocumentRepository: React.FC = () => {
                         link.click();
                       }}
                     >
-                      Descargar
+                      {t('documents.btnDownload')}
                     </Button>
                     <Button
                       variant="secondary"
@@ -314,7 +316,7 @@ export const DocumentRepository: React.FC = () => {
                       disabled={processingId === doc.id}
                       style={{ color: '#ba1a1a', borderColor: '#ba1a1a' }}
                     >
-                      Eliminar
+                      {t('documents.btnDelete')}
                     </Button>
                   </div>
                 </TableCell>
@@ -390,7 +392,7 @@ export const DocumentRepository: React.FC = () => {
                   }}
                 >
                   <FileText size={64} style={{ opacity: 0.3 }} />
-                  <p>Vista previa no disponible para archivos Word.</p>
+                  <p>{t('documents.preview.noWordPreview')}</p>
                   <Button
                     variant="primary"
                     icon={<Download size={16} />}
@@ -402,7 +404,7 @@ export const DocumentRepository: React.FC = () => {
                       link.click();
                     }}
                   >
-                    Descargar para ver
+                    {t('documents.preview.downloadToView')}
                   </Button>
                 </div>
               )}

@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Bell,
@@ -26,33 +27,33 @@ import { useToast } from '../../context/ToastContext';
 import { AuthContext } from '../../context/AuthContext';
 import { documentService } from '../../services/documentService';
 
-function getStatusLabel(status?: string): string {
-  if (!status) return 'Sin estado';
+function getStatusLabel(t: any, status?: string): string {
+  if (!status) return t('thesis:statusLabels.noStatus');
 
   const normalized = status.toUpperCase();
 
   const dictionary: Record<string, string> = {
-    REGISTERED: 'Registrado',
-    REGISTRADO: 'Registrado',
-    PENDING: 'Pendiente',
-    PENDIENTE: 'Pendiente',
-    UNDER_REVIEW: 'En revisión',
-    EN_REVISION: 'En revisión',
-    EN_REVISIÓN: 'En revisión',
-    OBSERVED: 'Observado',
-    OBSERVADO: 'Observado',
-    APPROVED: 'Aprobado',
-    APROBADO: 'Aprobado',
-    REJECTED: 'Rechazado',
-    RECHAZADO: 'Rechazado',
-    RECTIFIED: 'Subsanado',
-    SUBSANADO: 'Subsanado',
-    POSTULADO: 'Postulado',
-    PENDIENTE_COORDINADOR: 'Pendiente de coordinador',
-    PENDIENTE_DIRECCION: 'Pendiente de dirección',
-    PENDIENTE_DECANATO: 'Pendiente de decanato',
-    APROBADO_CON_RESOLUCION: 'Aprobado con resolución',
-    FINALIZADO: 'Finalizado',
+    REGISTERED: t('thesis:statusLabels.registered'),
+    REGISTRADO: t('thesis:statusLabels.registered'),
+    PENDING: t('thesis:statusLabels.pending'),
+    PENDIENTE: t('thesis:statusLabels.pending'),
+    UNDER_REVIEW: t('thesis:statusLabels.underReview'),
+    EN_REVISION: t('thesis:statusLabels.underReview'),
+    EN_REVISIÓN: t('thesis:statusLabels.underReview'),
+    OBSERVED: t('thesis:statusLabels.observed'),
+    OBSERVADO: t('thesis:statusLabels.observed'),
+    APPROVED: t('thesis:statusLabels.approved'),
+    APROBADO: t('thesis:statusLabels.approved'),
+    REJECTED: t('thesis:statusLabels.rejected'),
+    RECHAZADO: t('thesis:statusLabels.rejected'),
+    RECTIFIED: t('thesis:statusLabels.rectified'),
+    SUBSANADO: t('thesis:statusLabels.rectified'),
+    POSTULADO: t('thesis:statusLabels.postulado'),
+    PENDIENTE_COORDINADOR: t('thesis:statusLabels.pendingCoordinator'),
+    PENDIENTE_DIRECCION: t('thesis:statusLabels.pendingDirection'),
+    PENDIENTE_DECANATO: t('thesis:statusLabels.pendingDean'),
+    APROBADO_CON_RESOLUCION: t('thesis:statusLabels.approvedWithResolution'),
+    FINALIZADO: t('thesis:statusLabels.finalized'),
   };
 
   return dictionary[normalized] ?? status;
@@ -114,6 +115,7 @@ function readValue(plan: ThesisPlan | null, keys: string[], fallback = 'No regis
 export const ThesisTraceability: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { currentRole } = useContext(AuthContext);
+  const { t } = useTranslation('thesis');
   const rawToast = useToast();
   const toast = useMemo(() => ({
     ...rawToast,
@@ -134,30 +136,30 @@ export const ThesisTraceability: React.FC = () => {
     return [
       {
         id: '1',
-        label: 'Estudiante',
+        label: t('thesis:traceability.timeline.planRegistration'),
         status: studentStatus,
-        sublabel: 'Registro',
+        sublabel: t('thesis:traceability.timeline.initialStage'),
       },
       {
         id: '2',
-        label: 'Coord. de grupo',
+        label: t('thesis:traceability.timeline.academicReview'),
         status: coordinatorStatus,
-        sublabel: 'Validación',
+        sublabel: t('thesis:traceability.timeline.currentStage'),
       },
       {
         id: '3',
-        label: 'Director Inv.',
+        label: t('thesis:traceability.timeline.academicReview'),
         status: directorStatus,
-        sublabel: 'Revisión',
+        sublabel: t('thesis:traceability.timeline.processResult'),
       },
       {
         id: '4',
-        label: 'Cierre',
+        label: t('thesis:traceability.processResult'),
         status: currentStatus,
-        sublabel: 'Resultado',
+        sublabel: t('thesis:traceability.timeline.processResult'),
       },
     ];
-  }, [plan?.status, (plan as any)?.estadoPlan]);
+  }, [plan?.status, (plan as any)?.estadoPlan, t]);
 
   useEffect(() => {
     let mounted = true;
@@ -190,7 +192,7 @@ export const ThesisTraceability: React.FC = () => {
           setError(
             err instanceof Error
               ? err.message
-              : 'No se pudo cargar la trazabilidad del plan.'
+              : t('thesis:traceability.errorTitle')
           );
         }
       } finally {
@@ -205,7 +207,7 @@ export const ThesisTraceability: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, [id]);
+  }, [id, t]);
 
   function getReportBadgeVariant(status: string): 'success' | 'warning' | 'info' | 'neutral' | 'error' {
     const norm = String(status || '').toUpperCase();
@@ -221,10 +223,10 @@ export const ThesisTraceability: React.FC = () => {
     try {
       setLoading(true);
       await thesisService.approveReport(report.idInformeTesis);
-      toast.showSuccess("Informe de tesis final aprobado exitosamente.");
+      toast.showSuccess(t('thesis:traceability.actions.approveReportSuccess'));
       window.location.reload();
     } catch (err: any) {
-      toast.showError(err.message || "Error al aprobar informe de tesis.");
+      toast.showError(err.message || t('thesis:traceability.actions.approveReportError'));
     } finally {
       setLoading(false);
     }
@@ -232,19 +234,19 @@ export const ThesisTraceability: React.FC = () => {
 
   async function handleObserveReport() {
     if (!report) return;
-    const obs = window.prompt("Ingrese el detalle de la observación para el informe de tesis:");
+    const obs = window.prompt(t('thesis:traceability.actions.observeReportPrompt'));
     if (obs === null) return;
     if (!obs.trim()) {
-      toast.showError("Debe ingresar una observación.");
+      toast.showError(t('thesis:traceability.actions.observeReportRequired'));
       return;
     }
     try {
       setLoading(true);
       await thesisService.observeReport(report.idInformeTesis, obs.trim());
-      toast.showSuccess("Informe de tesis devuelto con observaciones.");
+      toast.showSuccess(t('thesis:traceability.actions.observeReportSuccess'));
       window.location.reload();
     } catch (err: any) {
-      toast.showError(err.message || "Error al observar informe de tesis.");
+      toast.showError(err.message || t('thesis:traceability.actions.observeReportError'));
     } finally {
       setLoading(false);
     }
@@ -252,10 +254,10 @@ export const ThesisTraceability: React.FC = () => {
 
   async function handleObserve() {
     if (!plan || !id) return;
-    const notes = window.prompt("Ingrese las observaciones académicas o motivos de observación:");
+    const notes = window.prompt(t('thesis:traceability.actions.observePrompt'));
     if (notes === null) return;
     if (!notes.trim()) {
-      toast.error("Debe ingresar las observaciones a registrar.");
+      toast.error(t('thesis:traceability.actions.observeRequired'));
       return;
     }
 
@@ -266,13 +268,13 @@ export const ThesisTraceability: React.FC = () => {
       } else if (currentRole === 'DIRECTOR_INVESTIGACION') {
         await thesisService.observeDirector(id, notes);
       } else {
-        toast.error("Tu rol actual no permite realizar observaciones.");
+        toast.error(t('thesis:traceability.actions.observeRoleError'));
         return;
       }
-      toast.success("Observación registrada con éxito.");
+      toast.success(t('thesis:traceability.actions.observeSuccess'));
       window.location.reload();
     } catch (err: any) {
-      toast.error(err.message || "Error al registrar la observación.");
+      toast.error(err.message || t('thesis:traceability.actions.observeError'));
     } finally {
       setLoading(false);
     }
@@ -280,7 +282,7 @@ export const ThesisTraceability: React.FC = () => {
 
   async function handleApprove() {
     if (!plan || !id) return;
-    if (!window.confirm("¿Está seguro de que desea aprobar este plan de tesis?")) return;
+    if (!window.confirm(t('thesis:traceability.actions.approveConfirm'))) return;
 
     try {
       setLoading(true);
@@ -289,10 +291,10 @@ export const ThesisTraceability: React.FC = () => {
       } else if (currentRole === 'DIRECTOR_INVESTIGACION') {
         await thesisService.approveDirector(id);
       } else if (currentRole === 'DECANO') {
-        const resolutionNum = window.prompt("Ingrese el número de la Resolución Decanal para emisión final:");
+        const resolutionNum = window.prompt(t('thesis:traceability.actions.resolutionPrompt'));
         if (resolutionNum === null) return;
         if (!resolutionNum.trim()) {
-          toast.error("Debe ingresar un número de resolución válido.");
+          toast.error(t('thesis:traceability.actions.resolutionRequired'));
           return;
         }
         await thesisService.issueDeanResolution(id, {
@@ -302,13 +304,13 @@ export const ThesisTraceability: React.FC = () => {
           idDocumentoAdjunto: null
         });
       } else {
-        toast.error("Tu rol actual no permite aprobar planes de tesis.");
+        toast.error(t('thesis:traceability.actions.approveRoleError'));
         return;
       }
-      toast.success("Plan de tesis aprobado correctamente.");
+      toast.success(t('thesis:traceability.actions.approveSuccess'));
       window.location.reload();
     } catch (err: any) {
-      toast.error(err.message || "Error al aprobar el plan de tesis.");
+      toast.error(err.message || t('thesis:traceability.actions.approveError'));
     } finally {
       setLoading(false);
     }
@@ -316,10 +318,10 @@ export const ThesisTraceability: React.FC = () => {
 
   async function handleReturnForCorrection() {
     if (!plan || !id) return;
-    const comment = window.prompt("Describa las subsanaciones realizadas en el plan de tesis:");
+    const comment = window.prompt(t('thesis:traceability.actions.rectifyPrompt'));
     if (comment === null) return;
     if (!comment.trim()) {
-      toast.error("Debe describir las correcciones para poder subsanar.");
+      toast.error(t('thesis:traceability.actions.rectifyRequired'));
       return;
     }
 
@@ -330,10 +332,10 @@ export const ThesisTraceability: React.FC = () => {
         comentarioSubsanacion: comment,
         idDocumentoActual: plan.idDocumentoActual
       });
-      toast.success("Subsanación enviada exitosamente.");
+      toast.success(t('thesis:traceability.actions.rectifySuccess'));
       window.location.reload();
     } catch (err: any) {
-      toast.error(err.message || "Error al enviar subsanación.");
+      toast.error(err.message || t('thesis:traceability.actions.rectifyError'));
     } finally {
       setLoading(false);
     }
@@ -344,7 +346,7 @@ export const ThesisTraceability: React.FC = () => {
   if (loading) {
     return (
       <div style={{ padding: '32px', color: 'var(--on-surface-variant)' }}>
-        Cargando trazabilidad del plan...
+        {t('thesis:traceability.loading')}
       </div>
     );
   }
@@ -364,11 +366,11 @@ export const ThesisTraceability: React.FC = () => {
           }}
         >
           <ArrowLeft size={16} />
-          Volver a planes de tesis
+          {t('thesis:traceability.backToPlans')}
         </Link>
 
-        <Alert title="No se pudo cargar la trazabilidad">
-          El backend respondió: {error}. Verifica el endpoint GET /api/v1/thesis/plans/{id}.
+        <Alert title={t('thesis:traceability.errorTitle')}>
+          {error}
         </Alert>
       </div>
     );
@@ -377,20 +379,20 @@ export const ThesisTraceability: React.FC = () => {
   if (!plan) {
     return (
       <div style={{ padding: '32px', color: 'var(--on-surface-variant)' }}>
-        Plan de tesis no encontrado.
+        {t('thesis:traceability.notFound')}
       </div>
     );
   }
 
-  const title = readValue(plan, ['tituloTesis', 'titulo', 'title'], 'Plan de tesis sin título');
-  const statusLabel = getStatusLabel((plan as any).estadoPlan || plan.status);
+  const title = readValue(plan, ['tituloTesis', 'titulo', 'title'], t('thesis:traceability.untitledPlan'));
+  const statusLabel = getStatusLabel(t, (plan as any).estadoPlan || plan.status);
   const studentName = readValue(plan, ['nombreEstudiante', 'studentName', 'estudiante'], '');
   const studentLast = readValue(plan, ['apellidoEstudiante', 'studentLastName'], '');
-  const student = studentName || studentLast ? `${studentName} ${studentLast}`.trim() : 'No registrado';
-  const group = readValue(plan, ['nombreGrupo', 'groupCode', 'grupo'], 'No registrado');
+  const student = studentName || studentLast ? `${studentName} ${studentLast}`.trim() : t('thesis:traceability.notRegistered');
+  const group = readValue(plan, ['nombreGrupo', 'groupCode', 'grupo'], t('thesis:traceability.notRegistered'));
   const groupCode = readValue(plan, ['codigoGrupo', 'groupCode'], '');
-  const researchLine = readValue(plan, ['nombreLinea', 'lineaInvestigacion', 'line'], 'No registrada');
-  const advisor = readValue(plan, ['advisorName', 'asesor', 'advisor'], 'No registrado');
+  const researchLine = readValue(plan, ['nombreLinea', 'lineaInvestigacion', 'line'], t('thesis:traceability.notRegisteredLine'));
+  const advisor = readValue(plan, ['advisorName', 'asesor', 'advisor'], t('thesis:traceability.notRegistered'));
 
   const revisor = plan.revisorActual || '';
 
@@ -416,12 +418,12 @@ export const ThesisTraceability: React.FC = () => {
         }}
       >
         <div>
-          <h2 className="text-title-lg">Gestión y revisión de plan de tesis</h2>
+          <h2 className="text-title-lg">{t('thesis:traceability.pageTitle')}</h2>
           <p
             className="text-body-md"
             style={{ color: 'var(--on-surface-variant)', marginTop: '4px' }}
           >
-            Consulta el estado, observaciones y avance institucional del plan.
+            {t('thesis:traceability.pageSubtitle')}
           </p>
         </div>
 
@@ -443,12 +445,12 @@ export const ThesisTraceability: React.FC = () => {
         }}
       >
         <ArrowLeft size={16} />
-        Volver a planes de tesis
+        {t('thesis:traceability.backToPlans')}
       </Link>
 
       {actionMessage && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert title="Acción registrada en la vista">
+          <Alert title={t('thesis:traceability.quickActions')}>
             {actionMessage}
           </Alert>
         </div>
@@ -465,7 +467,7 @@ export const ThesisTraceability: React.FC = () => {
       >
         <div>
           <Badge variant="info" style={{ marginBottom: '12px' }}>
-            PLAN ID: {plan.idPlanTesis || id}
+            {t('thesis:traceability.planId')} {plan.idPlanTesis || id}
           </Badge>
 
           <h1
@@ -488,12 +490,12 @@ export const ThesisTraceability: React.FC = () => {
             }}
           >
             <span className="text-body-md">
-              <strong style={{ color: 'var(--on-surface)' }}>Estado:</strong>{' '}
+              <strong style={{ color: 'var(--on-surface)' }}>{t('thesis:traceability.statusLabel')}</strong>{' '}
               <Badge variant="neutral">{statusLabel}</Badge>
             </span>
 
             <span className="text-body-md">
-              <strong style={{ color: 'var(--on-surface)' }}>Estudiante:</strong>{' '}
+              <strong style={{ color: 'var(--on-surface)' }}>{t('thesis:traceability.studentLabel')}</strong>{' '}
               {student}
             </span>
           </div>
@@ -510,16 +512,16 @@ export const ThesisTraceability: React.FC = () => {
                 fontWeight: 700,
               }}
             >
-              Acciones rápidas de revisión
+              {t('thesis:traceability.quickActions')}
             </div>
 
             <div style={{ display: 'flex', gap: '8px' }}>
               <Button variant="secondary" onClick={handleObserve}>
-                Observar
+                {t('thesis:traceability.observe')}
               </Button>
 
               <Button variant="primary" onClick={handleApprove}>
-                {currentRole === 'DECANO' ? 'Emitir Resolución' : 'Aprobar'}
+                {currentRole === 'DECANO' ? t('thesis:traceability.issueResolution') : t('thesis:traceability.approve')}
               </Button>
             </div>
           </div>
@@ -538,7 +540,7 @@ export const ThesisTraceability: React.FC = () => {
               marginBottom: '16px',
             }}
           >
-            <h3 className="text-title-lg">Trazabilidad del proceso</h3>
+            <h3 className="text-title-lg">{t('thesis:traceability.processTraceability')}</h3>
             <Badge variant="error">{statusLabel}</Badge>
           </div>
 
@@ -554,7 +556,7 @@ export const ThesisTraceability: React.FC = () => {
               <CardHeader>
                 <h3 className="text-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <FileText size={20} />
-                  Informe de Tesis Final
+                  {t('thesis:traceability.finalReport')}
                 </h3>
               </CardHeader>
               <CardContent>
@@ -562,17 +564,17 @@ export const ThesisTraceability: React.FC = () => {
                   currentRole === 'ESTUDIANTE' ? (
                     <div style={{ textAlign: 'center', padding: '16px' }}>
                       <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', marginBottom: '16px' }}>
-                        Su plan de tesis está aprobado. Ya puede registrar el informe de tesis final.
+                        {t('thesis:traceability.planApprovedMessage')}
                       </p>
                       <Link to={`/thesis/report/new/${id}`}>
                         <Button variant="primary" icon={<Upload size={16} />}>
-                          Registrar Informe de Tesis Final
+                          {t('thesis:traceability.registerReport')}
                         </Button>
                       </Link>
                     </div>
                   ) : (
                     <div style={{ fontSize: '14px', color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>
-                      Esperando que el estudiante registre el informe de tesis final.
+                      {t('thesis:traceability.waitingForStudent')}
                     </div>
                   )
                 ) : (
@@ -581,11 +583,11 @@ export const ThesisTraceability: React.FC = () => {
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '15px' }}>{report.tituloFinal}</div>
                         <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>
-                          Enviado el {formatDate(report.fechaPresentacion)}
+                          {t('thesis:traceability.sentOn')} {formatDate(report.fechaPresentacion)}
                         </span>
                       </div>
                       <Badge variant={getReportBadgeVariant(report.estadoInforme || 'PENDIENTE')}>
-                        {getStatusLabel(report.estadoInforme || 'PENDIENTE')}
+                        {getStatusLabel(t, report.estadoInforme || 'PENDIENTE')}
                       </Badge>
                     </div>
 
@@ -598,7 +600,7 @@ export const ThesisTraceability: React.FC = () => {
                           window.open(url, '_blank');
                         }}
                       >
-                        Descargar Tesis
+                        {t('thesis:traceability.downloadThesis')}
                       </Button>
 
                       {report.estadoInforme === 'EN_REVISION' && 
@@ -610,7 +612,7 @@ export const ThesisTraceability: React.FC = () => {
                             style={{ backgroundColor: '#059669' }}
                             onClick={handleApproveReport}
                           >
-                            Aprobar Informe
+                            {t('thesis:traceability.approveReport')}
                           </Button>
                           <Button
                             variant="secondary"
@@ -618,7 +620,7 @@ export const ThesisTraceability: React.FC = () => {
                             style={{ color: 'var(--error)', borderColor: 'var(--error)' }}
                             onClick={handleObserveReport}
                           >
-                            Observar Informe
+                            {t('thesis:traceability.observeReport')}
                           </Button>
                         </>
                       )}
@@ -642,7 +644,7 @@ export const ThesisTraceability: React.FC = () => {
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 <FileText size={20} />
-                Documento actual
+                {t('thesis:traceability.currentDocument')}
               </h3>
 
               <Button variant="secondary" style={{ padding: '4px 8px', fontSize: '12px' }}
@@ -652,7 +654,7 @@ export const ThesisTraceability: React.FC = () => {
                   }
                 }}
               >
-                Historial
+                {t('thesis:traceability.history')}
               </Button>
             </CardHeader>
 
@@ -681,14 +683,14 @@ export const ThesisTraceability: React.FC = () => {
 
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '16px' }}>
-                      Documento del plan
+                      {t('thesis:traceability.planDocument')}
                     </div>
 
                     <div
                       className="text-caption"
                       style={{ color: 'var(--on-surface-variant)' }}
                     >
-                      {readValue(plan, ['nombreDocumento', 'documentName', 'fileName'], 'Archivo pendiente de integración')}
+                      {readValue(plan, ['nombreDocumento', 'documentName', 'fileName'], t('thesis:traceability.pendingIntegration'))}
                     </div>
                   </div>
                 </div>
@@ -712,7 +714,7 @@ export const ThesisTraceability: React.FC = () => {
           <Card>
             <CardContent>
               <h3 className="text-title-lg" style={{ marginBottom: '24px' }}>
-                Clasificación de investigación
+                {t('thesis:traceability.researchClassification')}
               </h3>
 
               <div
@@ -732,7 +734,7 @@ export const ThesisTraceability: React.FC = () => {
                     fontWeight: 700,
                   }}
                 >
-                  Línea del proyecto
+                  {t('thesis:traceability.projectLine')}
                 </div>
 
                 <div style={{ fontWeight: 700 }}>{researchLine}</div>
@@ -755,7 +757,7 @@ export const ThesisTraceability: React.FC = () => {
                     fontWeight: 700,
                   }}
                 >
-                  Grupo de investigación
+                  {t('thesis:traceability.researchGroup')}
                 </div>
 
                 <div style={{ fontWeight: 700 }}>{group}</div>
@@ -771,7 +773,7 @@ export const ThesisTraceability: React.FC = () => {
                     fontWeight: 700,
                   }}
                 >
-                  Asesor
+                  {t('thesis:traceability.advisor')}
                 </div>
 
                 <Badge variant="info">{advisor}</Badge>
@@ -795,7 +797,7 @@ export const ThesisTraceability: React.FC = () => {
               style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               <ShieldAlert size={20} />
-              Flujo de observación institucional
+              {t('thesis:traceability.institutionalObservationFlow')}
             </h3>
 
             <span
@@ -807,7 +809,7 @@ export const ThesisTraceability: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              Trazabilidad
+              {t('thesis:traceability.traceabilityBadge')}
             </span>
           </CardHeader>
 
@@ -815,8 +817,8 @@ export const ThesisTraceability: React.FC = () => {
             <Timeline>
               <TimelineItem
                 id="registro"
-                title="Registro del plan"
-                time="Etapa inicial"
+                title={t('thesis:traceability.timeline.planRegistration')}
+                time={t('thesis:traceability.timeline.initialStage')}
                 status="success"
               >
                 <div
@@ -829,20 +831,20 @@ export const ThesisTraceability: React.FC = () => {
                   }}
                 >
                   <p style={{ marginBottom: '12px' }}>
-                    El plan fue registrado para iniciar el flujo de revisión académica.
+                    {t('thesis:traceability.timeline.planRegistered')}
                   </p>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <CheckCircle size={18} />
-                    Registro validado por el sistema.
+                    {t('thesis:traceability.timeline.registrationValidated')}
                   </div>
                 </div>
               </TimelineItem>
 
               <TimelineItem
                 id="revision"
-                title="Revisión académica"
-                time="Etapa actual"
+                title={t('thesis:traceability.timeline.academicReview')}
+                time={t('thesis:traceability.timeline.currentStage')}
                 status="active"
               >
                 <div
@@ -855,8 +857,7 @@ export const ThesisTraceability: React.FC = () => {
                   }}
                 >
                   <p style={{ marginBottom: '16px' }}>
-                    El plan se encuentra disponible para revisión, aprobación u observación
-                    según el rol institucional correspondiente.
+                    {t('thesis:traceability.timeline.planAvailable')}
                   </p>
 
                   <textarea
@@ -869,14 +870,14 @@ export const ThesisTraceability: React.FC = () => {
                       fontFamily: 'inherit',
                       resize: 'vertical',
                     }}
-                    defaultValue="Registrar guía u observación para el estudiante."
+                    defaultValue={t('thesis:traceability.timeline.registerGuide')}
                   />
                 </div>
               </TimelineItem>
 
               <TimelineItem
                 id="resultado"
-                title="Resultado del proceso"
+                title={t('thesis:traceability.timeline.processResult')}
                 status="pending"
                 isLast
               >
@@ -888,7 +889,7 @@ export const ThesisTraceability: React.FC = () => {
                     border: '1px solid var(--outline-variant)',
                   }}
                 >
-                  Estado actual del plan: <strong>{statusLabel}</strong>
+                  {t('thesis:traceability.timeline.currentPlanStatus')} <strong>{statusLabel}</strong>
                 </div>
               </TimelineItem>
             </Timeline>
@@ -913,7 +914,7 @@ export const ThesisTraceability: React.FC = () => {
             style={{ width: '100%', maxWidth: '300px' }}
             onClick={handleReturnForCorrection}
           >
-            Registrar Subsanación
+            {t('thesis:traceability.registerRectification')}
           </Button>
         </div>
       )}
