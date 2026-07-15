@@ -69,7 +69,9 @@ export const TramitesInbox: React.FC = () => {
       isRevisor ? t.estadoActual === pendingState : t.estadoActual.startsWith('PENDIENTE'),
     ).length,
     observados: tramites.filter((t) => t.estadoActual === 'OBSERVADO').length,
-    finalizados: tramites.filter((t) => t.estadoActual === 'FINALIZADO').length,
+    finalizados: tramites.filter((t) =>
+      t.estadoActual === 'FINALIZADO' || t.estadoActual === 'APROBADO_CON_RESOLUCION' || t.estadoActual === 'RECHAZADO'
+    ).length,
   }), [tramites, isRevisor, pendingState]);
 
   const contadores = [
@@ -86,7 +88,7 @@ export const TramitesInbox: React.FC = () => {
           <h1 className="text-headline-lg">Bandeja de Trámites</h1>
           <p className="text-body-md" style={{ color: 'var(--on-surface-variant)' }}>
             {isRevisor
-              ? 'Trámites pendientes de tu revisión y los que ya atendiste.'
+              ? 'Trámites pendientes de tu revisión según tu rol institucional.'
               : 'Seguimiento de tus trámites de investigación y sus subsanaciones.'}
           </p>
         </div>

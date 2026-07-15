@@ -6,7 +6,7 @@
  */
 import React, { useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import {
-  ClipboardCheck, RefreshCcw, Clock, CheckCircle, XCircle,
+  ClipboardCheck, RefreshCcw, Clock, CheckCircle,
   ChevronRight, AlertTriangle, Search, X, Send, Calculator,
   FileText, ChevronLeft,
 } from 'lucide-react';
@@ -29,14 +29,14 @@ import {
 function formatDate(v?: string): string {
   if (!v) return '—';
   const d = new Date(v);
-  if (isNaN(d.getTime())) return v;
+  if (Number.isNaN(d.getTime())) return v;
   return new Intl.DateTimeFormat('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
 }
 
 function getDaysLeft(deadline?: string): number | null {
   if (!deadline) return null;
   const d = new Date(deadline);
-  if (isNaN(d.getTime())) return null;
+  if (Number.isNaN(d.getTime())) return null;
   return Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 }
 
@@ -44,7 +44,12 @@ function readValue(item: EvaluationItem, keys: string[], fallback = '—'): stri
   const r = item as Record<string, unknown>;
   for (const k of keys) {
     const v = r[k];
-    if (v !== null && v !== undefined && String(v).trim()) return String(v);
+    if (v !== null && v !== undefined && typeof v !== 'object') {
+      const s = typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
+        ? String(v).trim()
+        : '';
+      if (s) return s;
+    }
   }
   return fallback;
 }
@@ -176,10 +181,16 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
   ];
 
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', overflowY: 'auto' }} onClick={onClose}>
-      <div
-        style={{ backgroundColor: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '860px', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', marginTop: '20px', marginBottom: '40px' }}
-        onClick={e => e.stopPropagation()}
+    <button
+      type="button"
+      aria-label="Cerrar modal"
+      style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', overflowY: 'auto', border: 'none', cursor: 'default', width: '100%', height: '100%', boxSizing: 'border-box' }}
+      onClick={e => { if (e.target === e.currentTarget) { onClose(); } }}
+      onKeyDown={e => { if (e.key === 'Escape') { onClose(); } }}
+    >
+      <dialog
+        open
+        style={{ backgroundColor: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '860px', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', marginTop: '20px', marginBottom: '40px', cursor: 'default', textAlign: 'left', border: 'none', padding: 0, color: 'inherit' }}
       >
         {/* Header del panel */}
         <div style={{ padding: '28px 32px', borderBottom: '1px solid var(--outline-variant)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -269,40 +280,51 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '28px' }}>
-              {criteria.map(criterion => (
-                <div
-                  key={criterion.id}
-                  style={{ border: `1px solid ${errors[`score_${criterion.id}`] ? 'var(--error)' : 'var(--outline-variant)'}`, borderRadius: 'var(--radius-lg)', padding: '20px', backgroundColor: 'var(--surface)' }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--on-surface)', marginBottom: '4px' }}>{criterion.name}</div>
-                      {criterion.description && (
-                        <div style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>{criterion.description}</div>
-                      )}
+              {criteria.map(criterion => {
+                const hasError = !!errors[`score_${criterion.id}`];
+                const hasScore = scores[criterion.id] !== undefined;
+                
+                let borderInputColor = 'var(--outline-variant)';
+                if (hasError) {
+                  borderInputColor = 'var(--error)';
+                } else if (hasScore) {
+                  borderInputColor = 'var(--primary)';
+                }
+
+                return (
+                  <div
+                    key={criterion.id}
+                    style={{ border: `1px solid ${hasError ? 'var(--error)' : 'var(--outline-variant)'}`, borderRadius: 'var(--radius-lg)', padding: '20px', backgroundColor: 'var(--surface)' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--on-surface)', marginBottom: '4px' }}>{criterion.name}</div>
+                        {criterion.description && (
+                          <div style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>{criterion.description}</div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>Puntaje (máx. {criterion.maxScore}):</span>
+                        <input
+                          id={`score-criterion-${criterion.id}`}
+                          type="number"
+                          min={0}
+                          max={criterion.maxScore}
+                          value={scores[criterion.id] ?? ''}
+                          onChange={e => {
+                            const v = Number(e.target.value);
+                            setScores(prev => ({ ...prev, [criterion.id]: Math.min(criterion.maxScore, Math.max(0, v)) }));
+                            setErrors(prev => { const next = { ...prev }; delete next[`score_${criterion.id}`]; return next; });
+                          }}
+                          style={{
+                            width: '80px', padding: '8px 10px', textAlign: 'center', fontWeight: 700, fontSize: '16px',
+                            border: `2px solid ${borderInputColor}`,
+                            borderRadius: 'var(--radius-md)', outline: 'none', backgroundColor: 'var(--surface)',
+                            color: 'var(--on-surface)',
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>Puntaje (máx. {criterion.maxScore}):</span>
-                      <input
-                        id={`score-criterion-${criterion.id}`}
-                        type="number"
-                        min={0}
-                        max={criterion.maxScore}
-                        value={scores[criterion.id] ?? ''}
-                        onChange={e => {
-                          const v = Number(e.target.value);
-                          setScores(prev => ({ ...prev, [criterion.id]: Math.min(criterion.maxScore, Math.max(0, v)) }));
-                          setErrors(prev => { const next = { ...prev }; delete next[`score_${criterion.id}`]; return next; });
-                        }}
-                        style={{
-                          width: '80px', padding: '8px 10px', textAlign: 'center', fontWeight: 700, fontSize: '16px',
-                          border: `2px solid ${errors[`score_${criterion.id}`] ? 'var(--error)' : scores[criterion.id] !== undefined ? 'var(--primary)' : 'var(--outline-variant)'}`,
-                          borderRadius: 'var(--radius-md)', outline: 'none', backgroundColor: 'var(--surface)',
-                          color: 'var(--on-surface)',
-                        }}
-                      />
-                    </div>
-                  </div>
                   {errors[`score_${criterion.id}`] && (
                     <p style={{ fontSize: '12px', color: 'var(--error)', marginBottom: '8px' }}>
                       {errors[`score_${criterion.id}`] === 'Requerido' ? 'Este criterio es obligatorio' : `El puntaje debe estar entre 0 y ${criterion.maxScore}`}
@@ -319,12 +341,13 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
                     onBlur={e => (e.target.style.borderColor = 'var(--outline-variant)')}
                   />
                 </div>
-              ))}
+              );
+            })}
             </div>
 
             {/* Observaciones generales */}
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
+              <label htmlFor="eval-observations" style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
                 Observaciones Generales
               </label>
               <textarea
@@ -341,7 +364,7 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
 
             {/* Recomendaciones */}
             <div style={{ marginBottom: '28px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
+              <label htmlFor="eval-recommendations" style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
                 Recomendaciones
               </label>
               <textarea
@@ -358,9 +381,9 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
 
             {/* Dictamen final */}
             <div style={{ marginBottom: '32px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '12px' }}>
+              <div style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '12px' }}>
                 Dictamen Final <span style={{ color: 'var(--error)' }}>*</span>
-              </label>
+              </div>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 {dictamenOptions.map(opt => (
                   <button
@@ -397,8 +420,8 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </dialog>
+    </button>
   );
 };
 
@@ -406,7 +429,6 @@ const EvaluationPanel: React.FC<EvaluationPanelProps> = ({ evalItem, onClose, on
 
 export const MyEvaluations: React.FC = () => {
   const { user } = useContext(AuthContext);
-  const toast = useToast();
 
   const [items, setItems] = useState<EvaluationItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -458,6 +480,144 @@ export const MyEvaluations: React.FC = () => {
   // Estilos
   const thS: React.CSSProperties = { padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--on-surface-variant)', backgroundColor: 'var(--surface-container-low)', borderBottom: '1px solid var(--outline-variant)', whiteSpace: 'nowrap' };
   const tdS: React.CSSProperties = { padding: '14px 20px', fontSize: '14px', color: 'var(--on-surface)', borderBottom: '1px solid var(--surface-container-high)', verticalAlign: 'middle' };
+
+  const renderMainContent = () => {
+    if (loading) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '64px' }}>
+          <Spinner size="large" />
+        </div>
+      );
+    }
+
+    if (filtered.length === 0) {
+      return (
+        <div style={{ textAlign: 'center', padding: '64px 24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--outline)' }}>
+          <ClipboardCheck size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
+          <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)', marginBottom: '8px' }}>
+            {search || filterStatus ? 'No se encontraron evaluaciones con esos filtros' : 'No tienes evaluaciones asignadas'}
+          </p>
+          <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>
+            {search || filterStatus ? 'Intenta con otros criterios de búsqueda.' : 'Cuando se te asignen expedientes, aparecerán aquí.'}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', backgroundColor: 'var(--surface-container-lowest)' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={thS}>Código Expediente</th>
+                <th style={thS}>Convocatoria</th>
+                <th style={thS}>Estado</th>
+                <th style={thS}>Fecha Asignación</th>
+                <th style={thS}>Fecha Límite</th>
+                <th style={{ ...thS, textAlign: 'center' }}>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map((item, idx) => {
+                const status = getStatus(item);
+                const daysLeft = getDaysLeft(readValue(item, ['deadline', 'fechaLimite', 'dueDate'], ''));
+                const isOverdue = daysLeft !== null && daysLeft < 0;
+                const isUrgent = daysLeft !== null && daysLeft >= 0 && daysLeft <= 3;
+                const isPending = status.toUpperCase() === 'PENDIENTE';
+
+                let daysColor = 'var(--on-surface-variant)';
+                let daysText = '';
+                if (isOverdue) {
+                  daysColor = 'var(--error)';
+                } else if (isUrgent) {
+                  daysColor = '#92400e';
+                }
+
+                if (daysLeft !== null) {
+                  if (isOverdue) {
+                    daysText = `Vencido hace ${Math.abs(daysLeft)}d`;
+                  } else {
+                    const suffix = daysLeft !== 1 ? 's' : '';
+                    daysText = `${daysLeft}d restante${suffix}`;
+                  }
+                }
+
+                return (
+                  <tr
+                    key={`tr-eval-${getEvalId(item)}-${idx}`}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--surface)')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    style={{ transition: 'background-color 0.15s' }}
+                  >
+                    <td style={{ ...tdS, fontWeight: 700, fontFamily: 'monospace', fontSize: '15px' }}>
+                      {readValue(item, ['expedienteCode', 'id', 'evaluationId', 'idEvaluacion'])}
+                    </td>
+                    <td style={tdS}>{readValue(item, ['convocatoria', 'convocatoriaName'])}</td>
+                    <td style={tdS}>
+                      <Badge variant={getStatusBadge(status)}>{getStatusLabel(status)}</Badge>
+                    </td>
+                    <td style={{ ...tdS, color: 'var(--on-surface-variant)', fontSize: '13px' }}>
+                      {formatDate(readValue(item, ['dateAssigned', 'fechaAsignacion', 'assignedAt'], ''))}
+                    </td>
+                    <td style={tdS}>
+                      <div>
+                        <div style={{ fontSize: '13px', color: daysColor }}>
+                          {formatDate(readValue(item, ['deadline', 'fechaLimite', 'dueDate'], ''))}
+                        </div>
+                        {daysLeft !== null && (
+                          <div style={{ fontSize: '11px', fontWeight: 600, color: daysColor }}>
+                            {daysText}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ ...tdS, textAlign: 'center' }}>
+                      {isPending ? (
+                        <button
+                          id={`btn-evaluar-${getEvalId(item)}`}
+                          type="button"
+                          onClick={() => setEvaluatingItem(item)}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 18px', borderRadius: 'var(--radius-md)', border: 'none', backgroundColor: 'var(--primary)', color: 'var(--on-primary)', cursor: 'pointer', fontWeight: 700, fontSize: '13px', transition: 'all 0.15s' }}
+                        >
+                          <ClipboardCheck size={15} /> Evaluar <ChevronRight size={14} />
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '5px', justifyContent: 'center' }}>
+                          <CheckCircle size={15} style={{ color: '#065f46' }} /> Completado
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface-container-low)', flexWrap: 'wrap', gap: '12px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>
+              {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+            </span>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button type="button" disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface)', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1 }}>
+                <ChevronLeft size={16} />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                <button key={p} type="button" onClick={() => setPage(p)} style={{ padding: '6px 12px', borderRadius: 'var(--radius-md)', border: `1px solid ${page === p ? 'var(--primary)' : 'var(--outline-variant)'}`, backgroundColor: page === p ? 'var(--primary)' : 'var(--surface)', color: page === p ? 'var(--on-primary)' : 'var(--on-surface)', fontWeight: page === p ? 700 : 400, cursor: 'pointer', fontSize: '13px' }}>
+                  {p}
+                </button>
+              ))}
+              <button type="button" disabled={page === totalPages} onClick={() => setPage(p => p + 1)} style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface)', cursor: page === totalPages ? 'not-allowed' : 'pointer', opacity: page === totalPages ? 0.4 : 1 }}>
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="animate-fade-in" style={{ padding: '28px' }}>
@@ -537,116 +697,7 @@ export const MyEvaluations: React.FC = () => {
         </select>
       </div>
 
-      {/* Tabla */}
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '64px' }}><Spinner size="large" /></div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '64px 24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--outline)' }}>
-          <ClipboardCheck size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
-          <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)', marginBottom: '8px' }}>
-            {search || filterStatus ? 'No se encontraron evaluaciones con esos filtros' : 'No tienes evaluaciones asignadas'}
-          </p>
-          <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>
-            {search || filterStatus ? 'Intenta con otros criterios de búsqueda.' : 'Cuando se te asignen expedientes, aparecerán aquí.'}
-          </p>
-        </div>
-      ) : (
-        <div style={{ border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', backgroundColor: 'var(--surface-container-lowest)' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={thS}>Código Expediente</th>
-                  <th style={thS}>Convocatoria</th>
-                  <th style={thS}>Estado</th>
-                  <th style={thS}>Fecha Asignación</th>
-                  <th style={thS}>Fecha Límite</th>
-                  <th style={{ ...thS, textAlign: 'center' }}>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginated.map((item, idx) => {
-                  const status = getStatus(item);
-                  const daysLeft = getDaysLeft(readValue(item, ['deadline', 'fechaLimite', 'dueDate'], ''));
-                  const isOverdue = daysLeft !== null && daysLeft < 0;
-                  const isUrgent = daysLeft !== null && daysLeft >= 0 && daysLeft <= 3;
-                  const isPending = status.toUpperCase() === 'PENDIENTE';
-
-                  return (
-                    <tr
-                      key={`eval-${getEvalId(item)}-${idx}`}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--surface)')}
-                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-                      style={{ transition: 'background-color 0.15s' }}
-                    >
-                      <td style={{ ...tdS, fontWeight: 700, fontFamily: 'monospace', fontSize: '15px' }}>
-                        {readValue(item, ['expedienteCode', 'id', 'evaluationId', 'idEvaluacion'])}
-                      </td>
-                      <td style={tdS}>{readValue(item, ['convocatoria', 'convocatoriaName'])}</td>
-                      <td style={tdS}>
-                        <Badge variant={getStatusBadge(status)}>{getStatusLabel(status)}</Badge>
-                      </td>
-                      <td style={{ ...tdS, color: 'var(--on-surface-variant)', fontSize: '13px' }}>
-                        {formatDate(readValue(item, ['dateAssigned', 'fechaAsignacion', 'assignedAt'], ''))}
-                      </td>
-                      <td style={tdS}>
-                        <div>
-                          <div style={{ fontSize: '13px', color: isOverdue ? 'var(--error)' : isUrgent ? '#92400e' : 'var(--on-surface-variant)' }}>
-                            {formatDate(readValue(item, ['deadline', 'fechaLimite', 'dueDate'], ''))}
-                          </div>
-                          {daysLeft !== null && (
-                            <div style={{ fontSize: '11px', fontWeight: 600, color: isOverdue ? 'var(--error)' : isUrgent ? '#92400e' : 'var(--on-surface-variant)' }}>
-                              {isOverdue ? `Vencido hace ${Math.abs(daysLeft)}d` : `${daysLeft}d restante${daysLeft !== 1 ? 's' : ''}`}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td style={{ ...tdS, textAlign: 'center' }}>
-                        {isPending ? (
-                          <button
-                            id={`btn-evaluar-${getEvalId(item)}`}
-                            type="button"
-                            onClick={() => setEvaluatingItem(item)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 18px', borderRadius: 'var(--radius-md)', border: 'none', backgroundColor: 'var(--primary)', color: 'var(--on-primary)', cursor: 'pointer', fontWeight: 700, fontSize: '13px', transition: 'all 0.15s' }}
-                          >
-                            <ClipboardCheck size={15} /> Evaluar <ChevronRight size={14} />
-                          </button>
-                        ) : (
-                          <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '5px', justifyContent: 'center' }}>
-                            <CheckCircle size={15} style={{ color: '#065f46' }} /> Completado
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Paginación */}
-          {totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface-container-low)', flexWrap: 'wrap', gap: '12px' }}>
-              <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>
-                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
-              </span>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button type="button" disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface)', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1 }}>
-                  <ChevronLeft size={16} />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                  <button key={p} type="button" onClick={() => setPage(p)} style={{ padding: '6px 12px', borderRadius: 'var(--radius-md)', border: `1px solid ${page === p ? 'var(--primary)' : 'var(--outline-variant)'}`, backgroundColor: page === p ? 'var(--primary)' : 'var(--surface)', color: page === p ? 'var(--on-primary)' : 'var(--on-surface)', fontWeight: page === p ? 700 : 400, cursor: 'pointer', fontSize: '13px' }}>
-                    {p}
-                  </button>
-                ))}
-                <button type="button" disabled={page === totalPages} onClick={() => setPage(p => p + 1)} style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface)', cursor: page === totalPages ? 'not-allowed' : 'pointer', opacity: page === totalPages ? 0.4 : 1 }}>
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      {renderMainContent()}
     </div>
   );
 };

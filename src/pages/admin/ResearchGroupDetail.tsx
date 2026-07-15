@@ -374,7 +374,7 @@ export const ResearchGroupDetail: React.FC = () => {
                   onBlur={e => (e.target.style.borderColor = 'var(--outline)')}
                 >
                   <option value="">— Seleccione un usuario —</option>
-                  {members.filter(m => m.active).map(m => (
+                  {members.filter(m => m.active && m.userRoleCode === 'COORDINADOR_GRUPO').map(m => (
                     <option key={m.userId} value={m.userId}>
                       {m.userFirstNames} {m.userLastNames}
                     </option>
@@ -389,7 +389,7 @@ export const ResearchGroupDetail: React.FC = () => {
                 </Button>
               </div>
               <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', marginTop: '8px' }}>
-                Solo se pueden seleccionar miembros activos del grupo como coordinador.
+                Solo se muestran miembros activos con rol de Coordinador de Grupo.
               </p>
             </div>
           </div>

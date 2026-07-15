@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ShieldCheck, UserCheck, UserX, AlertCircle, RefreshCcw } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -21,15 +21,22 @@ export const ActivateUsers: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<'PENDING' | 'ACTIVE' | 'REJECTED'>('PENDING');
-  const toast = useToast();
+  const [activeTab, setActiveTab] = useState<'PENDING' | 'ACTIVE'>('PENDING');
+  
+  const rawToast = useToast();
+  const toast = useMemo(() => ({
+    ...rawToast,
+    showError: rawToast.error,
+    showSuccess: rawToast.success,
+  }), [rawToast]);
+
   const confirm = useConfirm();
 
   const loadUsers = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await userService.getAdministrationUsers();
+      const data = await userService.getAll();
       setUsers(data);
     } catch (err: any) {
       console.error('Error al cargar usuarios:', err);
@@ -55,25 +62,22 @@ export const ActivateUsers: React.FC = () => {
 
     try {
       setProcessingId(user.id);
-      await userService.activateUser(user.id);
-      toast.success(`Usuario ${user.firstNames} activado exitosamente`);
-      setUsers((prev) => prev.map(u => u.id === user.id ? { ...u, status: 'ACTIVE' } : u));
+      await userService.toggleStatus(user.id, true);
+      toast.showSuccess(`Usuario ${user.firstNames} activado exitosamente`);
+      setUsers((prev) => prev.map(u => u.id === user.id ? { ...u, active: true } : u));
     } catch (err) {
       console.error(err);
-      toast.error('Ocurrió un error al intentar activar al usuario.');
+      toast.showError('Ocurrió un error al intentar activar al usuario.');
     } finally {
       setProcessingId(null);
     }
   };
 
-  const handleReject = async (user: User) => {
-    const isDeactivating = (user.status || 'ACTIVE') === 'ACTIVE';
-    const actionName = isDeactivating ? 'desactivar' : 'rechazar la solicitud de';
-    
+  const handleDeactivate = async (user: User) => {
     const accepted = await confirm.confirmDialog({
-      title: isDeactivating ? 'Desactivar Usuario' : 'Rechazar Solicitud',
-      message: `¿Estás seguro de que deseas ${actionName} a ${user.firstNames} ${user.lastNames}?`,
-      confirmText: isDeactivating ? 'Desactivar' : 'Rechazar',
+      title: 'Desactivar Usuario',
+      message: `¿Estás seguro de que deseas desactivar al usuario ${user.firstNames} ${user.lastNames}?`,
+      confirmText: 'Desactivar',
       danger: true,
     });
 
@@ -81,12 +85,12 @@ export const ActivateUsers: React.FC = () => {
 
     try {
       setProcessingId(user.id);
-      await userService.rejectUser(user.id);
-      toast.success(isDeactivating ? `Usuario ${user.firstNames} desactivado` : `Solicitud de ${user.firstNames} rechazada`);
-      setUsers((prev) => prev.map(u => u.id === user.id ? { ...u, status: 'REJECTED' } : u));
+      await userService.toggleStatus(user.id, false);
+      toast.showSuccess(`Usuario ${user.firstNames} desactivado exitosamente`);
+      setUsers((prev) => prev.map(u => u.id === user.id ? { ...u, active: false } : u));
     } catch (err) {
       console.error(err);
-      toast.error(`Ocurrió un error al intentar ${isDeactivating ? 'desactivar' : 'rechazar'} al usuario.`);
+      toast.showError('Ocurrió un error al intentar desactivar al usuario.');
     } finally {
       setProcessingId(null);
     }
@@ -98,17 +102,107 @@ export const ActivateUsers: React.FC = () => {
         return <Badge variant="info">Estudiante</Badge>;
       case 'DOCENTE_INVESTIGADOR':
         return <Badge variant="success">Docente Inv.</Badge>;
+      case 'COORDINADOR_GRUPO':
+        return <Badge variant="warning">Coord. Grupo</Badge>;
+      case 'DIRECTOR_INVESTIGACION':
+        return <Badge variant="info">Director Inv.</Badge>;
+      case 'ADMIN':
+        return <Badge variant="neutral">Admin</Badge>;
       default:
         return <Badge variant="neutral">{roleCode}</Badge>;
     }
   };
 
-  const filteredUsers = users.filter((u) => {
-    // Si el backend aún no envía el campo status, asumimos que son PENDING o ACTIVE.
-    // Por ahora, para que puedas verlos, si no tienen status los pondremos en ACTIVE.
-    const userStatus = u.status || 'ACTIVE';
-    return userStatus === activeTab;
-  });
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const isPending = !u.active;
+      if (activeTab === 'PENDING') return isPending;
+      return !isPending;
+    });
+  }, [users, activeTab]);
+
+  const renderTableBody = () => {
+    if (loading) {
+      return (
+        <TableRow>
+          <td
+            colSpan={6}
+            style={{
+              textAlign: 'center',
+              padding: '32px',
+              color: 'var(--on-surface-variant)',
+            }}
+          >
+            Cargando usuarios...
+          </td>
+        </TableRow>
+      );
+    }
+
+    if (filteredUsers.length === 0) {
+      return (
+        <TableRow>
+          <td
+            colSpan={6}
+            style={{
+              textAlign: 'center',
+              padding: '48px',
+              color: 'var(--on-surface-variant)',
+            }}
+          >
+            <ShieldCheck size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
+            No hay usuarios en esta categoría.
+          </td>
+        </TableRow>
+      );
+    }
+
+    return filteredUsers.map((user) => (
+      <TableRow key={user.id}>
+        <TableCell style={{ fontWeight: 700 }}>{user.dni}</TableCell>
+        <TableCell>
+          <div style={{ fontWeight: 600 }}>{user.firstNames} {user.lastNames}</div>
+        </TableCell>
+        <TableCell>{user.institutionalEmail}</TableCell>
+        <TableCell>{getRoleBadge(user.roleCode)}</TableCell>
+        <TableCell>
+          {user.createdAt
+            ? new Date(user.createdAt).toLocaleDateString('es-PE', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })
+            : 'Desconocida'}
+        </TableCell>
+        <TableCell style={{ textAlign: 'right' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            {!user.active && (
+              <Button
+                variant="primary"
+                icon={<UserCheck size={16} />}
+                onClick={() => handleActivate(user)}
+                disabled={processingId === user.id}
+                style={{ padding: '6px 12px', fontSize: '13px', backgroundColor: '#15803d', color: '#fff', borderColor: '#15803d' }}
+              >
+                Activar
+              </Button>
+            )}
+            {user.active && (
+              <Button
+                variant="danger"
+                icon={<UserX size={16} />}
+                onClick={() => handleDeactivate(user)}
+                disabled={processingId === user.id}
+                style={{ padding: '6px 12px', fontSize: '13px' }}
+              >
+                Desactivar
+              </Button>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
+    ));
+  };
 
   return (
     <div className="animate-fade-in" style={{ padding: '24px' }}>
@@ -135,7 +229,7 @@ export const ActivateUsers: React.FC = () => {
             }}>
               <ShieldCheck size={24} />
             </div>
-            <h1 className="text-headline-lg">Administrar Usuarios</h1>
+            <h1 className="text-headline-lg" style={{ fontWeight: 700 }}>Administrar Usuarios</h1>
           </div>
 
           <p
@@ -159,7 +253,7 @@ export const ActivateUsers: React.FC = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(2, minmax(200px, 1fr))',
           gap: '16px',
           marginBottom: '24px',
         }}
@@ -167,43 +261,49 @@ export const ActivateUsers: React.FC = () => {
         <Card>
           <CardContent>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <UserCheck size={24} color="#f59e0b" />
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <UserX size={22} color="#f59e0b" />
+              </div>
               <div>
-                <strong style={{ display: 'block', fontSize: '24px' }}>
-                  {users.filter(u => (u.status || 'ACTIVE') === 'PENDING').length}
+                <strong style={{ display: 'block', fontSize: '24px', fontWeight: 800 }}>
+                  {users.filter(u => !u.active).length}
                 </strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>
-                  Pendientes
+                <span style={{ color: 'var(--on-surface-variant)', fontSize: '13px', fontWeight: 500 }}>
+                  Pendientes de Activación
                 </span>
               </div>
             </div>
           </CardContent>
         </Card>
+        
         <Card>
           <CardContent>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <UserCheck size={24} color="#15803d" />
-              <div>
-                <strong style={{ display: 'block', fontSize: '24px' }}>
-                  {users.filter(u => (u.status || 'ACTIVE') === 'ACTIVE').length}
-                </strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>
-                  Activos
-                </span>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(21, 128, 61, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <UserCheck size={22} color="#15803d" />
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <UserX size={24} color="#ba1a1a" />
               <div>
-                <strong style={{ display: 'block', fontSize: '24px' }}>
-                  {users.filter(u => (u.status || 'ACTIVE') === 'REJECTED').length}
+                <strong style={{ display: 'block', fontSize: '24px', fontWeight: 800 }}>
+                  {users.filter(u => u.active).length}
                 </strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>
-                  Rechazados
+                <span style={{ color: 'var(--on-surface-variant)', fontSize: '13px', fontWeight: 500 }}>
+                  Usuarios Activos
                 </span>
               </div>
             </div>
@@ -214,8 +314,7 @@ export const ActivateUsers: React.FC = () => {
       <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', borderBottom: '1px solid var(--outline-variant)' }}>
         {[
           { id: 'PENDING', label: 'Pendientes de Activación' },
-          { id: 'ACTIVE', label: 'Usuarios Activos' },
-          { id: 'REJECTED', label: 'Usuarios Rechazados' }
+          { id: 'ACTIVE', label: 'Usuarios Activos' }
         ].map((tab) => (
           <button
             key={tab.id}
@@ -253,89 +352,14 @@ export const ActivateUsers: React.FC = () => {
             <TableHeader>DNI</TableHeader>
             <TableHeader>Nombres y Apellidos</TableHeader>
             <TableHeader>Correo Institucional</TableHeader>
-            <TableHeader>Rol Solicitado</TableHeader>
-            <TableHeader>Fecha</TableHeader>
+            <TableHeader>Rol Solicitado / Asignado</TableHeader>
+            <TableHeader>Fecha Registro</TableHeader>
             <TableHeader style={{ textAlign: 'right' }}>Acciones</TableHeader>
           </TableRow>
         </TableHead>
 
         <TableBody>
-          {loading ? (
-            <TableRow>
-              <td
-                colSpan={6}
-                style={{
-                  textAlign: 'center',
-                  padding: '32px',
-                  color: 'var(--on-surface-variant)',
-                }}
-              >
-                Cargando...
-              </td>
-            </TableRow>
-          ) : filteredUsers.length === 0 ? (
-            <TableRow>
-              <td
-                colSpan={6}
-                style={{
-                  textAlign: 'center',
-                  padding: '48px',
-                  color: 'var(--on-surface-variant)',
-                }}
-              >
-                <ShieldCheck size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
-                No hay usuarios en esta categoría.
-              </td>
-            </TableRow>
-          ) : (
-            filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell style={{ fontWeight: 700 }}>{user.dni}</TableCell>
-                <TableCell>
-                  <div style={{ fontWeight: 600 }}>{user.firstNames} {user.lastNames}</div>
-                </TableCell>
-                <TableCell>{user.institutionalEmail}</TableCell>
-                <TableCell>{getRoleBadge(user.roleCode)}</TableCell>
-                <TableCell>
-                  {user.createdAt
-                    ? new Date(user.createdAt).toLocaleDateString('es-PE', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })
-                    : 'Desconocida'}
-                </TableCell>
-                <TableCell style={{ textAlign: 'right' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                    {((user.status || 'ACTIVE') === 'PENDING' || (user.status || 'ACTIVE') === 'REJECTED') && (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        icon={<UserCheck size={16} />}
-                        onClick={() => handleActivate(user)}
-                        disabled={processingId === user.id}
-                        style={{ backgroundColor: '#15803d', color: '#fff', borderColor: '#15803d' }}
-                      >
-                        Activar
-                      </Button>
-                    )}
-                    {((user.status || 'ACTIVE') === 'PENDING' || (user.status || 'ACTIVE') === 'ACTIVE') && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        icon={<UserX size={16} />}
-                        onClick={() => handleReject(user)}
-                        disabled={processingId === user.id}
-                        style={{ color: '#ba1a1a', borderColor: '#ba1a1a' }}
-                      >
-                        { (user.status || 'ACTIVE') === 'ACTIVE' ? 'Desactivar' : 'Rechazar' }
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
+          {renderTableBody()}
         </TableBody>
       </TableContainer>
     </div>

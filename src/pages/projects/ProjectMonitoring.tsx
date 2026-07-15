@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import React, { useEffect, useMemo, useState, useContext } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   CalendarDays,
@@ -21,6 +21,9 @@ import { TableContainer, TableHead, TableBody, TableRow, TableHeader, TableCell 
 import { projectService } from '../../services/projectService';
 import type { Project } from '../../services/projectService';
 import { useToast } from '../../context/ToastContext';
+import { documentService } from '../../services/documentService';
+import { AuthContext } from '../../context/AuthContext';
+import { progressReportService } from '../../services/progressReportService';
 
 function getStatusLabel(status?: string): string {
   if (!status) return 'Sin estado';
@@ -115,10 +118,18 @@ function getDurationLabel(startDate?: string, endDate?: string): string {
 
 export const ProjectMonitoring: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { currentRole } = useContext(AuthContext);
 
   const [project, setProject] = useState<Project | null>(null);
+  const [progressReports, setProgressReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
+  const rawToast = useToast();
+  const toast = useMemo(() => ({
+    ...rawToast,
+    showError: rawToast.error,
+    showSuccess: rawToast.success,
+  }), [rawToast]);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -139,6 +150,15 @@ export const ProjectMonitoring: React.FC = () => {
 
         if (mounted) {
           setProject(response);
+        }
+
+        try {
+          const reports = await progressReportService.getByProject(Number(id));
+          if (mounted) {
+            setProgressReports(reports);
+          }
+        } catch (err) {
+          // Ignore
         }
       } catch (err) {
         console.error('Error al cargar el proyecto:', err);
@@ -283,6 +303,7 @@ export const ProjectMonitoring: React.FC = () => {
       <Card style={{ marginBottom: '24px' }}>
         <CardContent>
           <div
+            className="responsive-grid-4"
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
@@ -353,6 +374,7 @@ export const ProjectMonitoring: React.FC = () => {
       </Card>
 
       <div
+        className="responsive-grid-split"
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 360px',
@@ -397,6 +419,7 @@ export const ProjectMonitoring: React.FC = () => {
               </div>
 
               <div
+                className="responsive-grid-5"
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
@@ -472,38 +495,88 @@ export const ProjectMonitoring: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  <TableRow>
-                    <TableCell>Trimestre 1</TableCell>
-                    <TableCell>30/09/2026</TableCell>
-                    <TableCell><span style={{ color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }}>avance_t1.pdf</span></TableCell>
-                    <TableCell><Badge variant="success">Aprobado</Badge></TableCell>
-                    <TableCell>Conforme</TableCell>
-                    <TableCell style={{ textAlign: 'right' }}><Button variant="secondary">Ver</Button></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Trimestre 2</TableCell>
-                    <TableCell>31/12/2026</TableCell>
-                    <TableCell>—</TableCell>
-                    <TableCell><Badge variant="warning">Pendiente</Badge></TableCell>
-                    <TableCell style={{ color: 'var(--error)' }}>Faltan firmas del coinvestigador</TableCell>
-                    <TableCell style={{ textAlign: 'right' }}><Button variant="primary">Subir Informe</Button></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Trimestre 3</TableCell>
-                    <TableCell>31/03/2027</TableCell>
-                    <TableCell>—</TableCell>
-                    <TableCell><Badge variant="neutral">Programado</Badge></TableCell>
-                    <TableCell>—</TableCell>
-                    <TableCell style={{ textAlign: 'right' }}><Button variant="secondary" disabled>Ver</Button></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Informe Final</TableCell>
-                    <TableCell>30/06/2027</TableCell>
-                    <TableCell>—</TableCell>
-                    <TableCell><Badge variant="neutral" style={{ color: '#4527a0', backgroundColor: '#ede7f6' }}>Artículo Requerido</Badge></TableCell>
-                    <TableCell>Debe adjuntar artículo o constancia de envío</TableCell>
-                    <TableCell style={{ textAlign: 'right' }}><Button variant="secondary" disabled>Subir</Button></TableCell>
-                  </TableRow>
+                  {[
+                    { name: 'Trimestre 1', deadline: '30/09/2026' },
+                    { name: 'Trimestre 2', deadline: '31/12/2026' },
+                    { name: 'Trimestre 3', deadline: '31/03/2027' },
+                    { name: 'Informe Final', deadline: '30/06/2027' },
+                  ].map(period => {
+                    const r = progressReports.find(x => x.period === period.name);
+                    const getReportBadgeVariant = (status: string): 'success' | 'warning' | 'info' | 'neutral' | 'error' => {
+                      const norm = String(status || '').toUpperCase();
+                      if (['APROBADO', 'APPROVED'].includes(norm)) return 'success';
+                      if (['OBSERVADO', 'OBSERVED'].includes(norm)) return 'warning';
+                      if (['RECHAZADO', 'REJECTED'].includes(norm)) return 'error';
+                      if (['EN_REVISION', 'PENDIENTE', 'UNDER_REVIEW'].includes(norm)) return 'info';
+                      return 'neutral';
+                    };
+                    return (
+                      <TableRow key={period.name}>
+                        <TableCell>{period.name}</TableCell>
+                        <TableCell>{period.deadline}</TableCell>
+                        <TableCell>
+                          {r?.attachedDocumentId ? (
+                            <span 
+                              style={{ color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+                              onClick={() => window.open(documentService.download(r.attachedDocumentId), '_blank')}
+                            >
+                              {r.fileName || `informe_${period.name.replace(' ', '_').toLowerCase()}.pdf`}
+                            </span>
+                          ) : (
+                            <span>—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {r ? (
+                            <Badge variant={getReportBadgeVariant(r.status)}>
+                              {getStatusLabel(r.status)}
+                            </Badge>
+                          ) : (
+                            <Badge variant="neutral">Programado</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {r?.comments?.[0]?.content || r?.observations || (r ? 'Enviado para revisión' : '—')}
+                        </TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>
+                          {r ? (
+                            r.status === 'OBSERVADO' && currentRole === 'DOCENTE_INVESTIGADOR' ? (
+                              <Button 
+                                variant="primary"
+                                onClick={() => navigate(`/progressreports/amend/${r.id}`)}
+                              >
+                                Subsanar
+                              </Button>
+                            ) : (
+                              <Button 
+                                variant="secondary"
+                                onClick={() => {
+                                  if (r.attachedDocumentId) {
+                                    window.open(documentService.download(r.attachedDocumentId), '_blank');
+                                  }
+                                }}
+                              >
+                                Ver
+                              </Button>
+                            )
+                          ) : (
+                            currentRole === 'DOCENTE_INVESTIGADOR' ? (
+                              <Button 
+                                variant="primary"
+                                onClick={() => navigate(`/progressreports/new?projectId=${id}&period=${period.name}`)}
+                              >
+                                Subir
+                              </Button>
+                            ) : (
+                              <Button variant="secondary" disabled>
+                                Ver
+                              </Button>
+                            )
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </TableContainer>
               <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -536,21 +609,40 @@ export const ProjectMonitoring: React.FC = () => {
                       <TableRow>
                         <TableCell><strong>Proyecto_inicial.pdf</strong></TableCell>
                         <TableCell>Investigador</TableCell>
-                        <TableCell>08/06/2026</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}><Button variant="secondary">Descargar</Button></TableCell>
+                        <TableCell>{formatDate(project.startDate)}</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>
+                          <Button 
+                            variant="secondary"
+                            onClick={() => {
+                              if (project.documentId) {
+                                window.open(documentService.download(project.documentId), '_blank');
+                              } else {
+                                toast.showError("No hay archivo registrado para la propuesta inicial.");
+                              }
+                            }}
+                          >
+                            Descargar
+                          </Button>
+                        </TableCell>
                       </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Resolución_R.D._045.pdf</strong></TableCell>
-                        <TableCell>Decanato</TableCell>
-                        <TableCell>20/06/2026</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}><Button variant="secondary">Descargar</Button></TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Informe_T1.pdf</strong></TableCell>
-                        <TableCell>Investigador</TableCell>
-                        <TableCell>30/09/2026</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}><Button variant="secondary">Descargar</Button></TableCell>
-                      </TableRow>
+                      {['APPROVED', 'EN_EJECUCION', 'EN_EJECUCIÓN', 'FINALIZADO', 'COMPLETED'].includes(String(project.status).toUpperCase()) && (
+                        <TableRow>
+                          <TableCell><strong>Resolución_R.D._045.pdf</strong></TableCell>
+                          <TableCell>Decanato</TableCell>
+                          <TableCell>{formatDate(project.startDate)}</TableCell>
+                          <TableCell style={{ textAlign: 'right' }}>
+                            <Button 
+                              variant="secondary"
+                              onClick={() => {
+                                toast.showSuccess("Descargando resolución del proyecto...");
+                                window.open(documentService.download(project.documentId || 1), '_blank');
+                              }}
+                            >
+                              Descargar
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </TableContainer>
                 </div>
@@ -558,7 +650,7 @@ export const ProjectMonitoring: React.FC = () => {
                 {/* Trazabilidad lineal */}
                 <div>
                   <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Trazabilidad de Firmas y Cambios</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderLeft: '2px solid var(--outline-variant)', paddingLeft: '16px', marginLeft: '6px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderLeft: '2px solid var(--outline-variant)', paddingLeft: '16px', marginLeft: '6px', overflowX: 'hidden' }}>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
                       <strong style={{ fontSize: '13px' }}>Postulación Enviada</strong>

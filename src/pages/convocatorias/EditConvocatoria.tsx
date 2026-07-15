@@ -1,23 +1,21 @@
 /**
- * NewConvocatoria.tsx
- * Formulario de creación de convocatoria (DIRECTOR_INVESTIGACION / ADMIN).
- * Diseño premium con pasos visuales, validación en tiempo real, selector de líneas interactivo.
+ * EditConvocatoria.tsx
+ * Formulario de edicion de convocatoria (DIRECTOR_INVESTIGACION / ADMIN).
+ * Solo permite editar convocatorias en estado ABIERTA.
  */
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Save, ArrowLeft, AlertCircle, Calendar, BookOpen,
-  Megaphone, FileText, ChevronRight,
-  Check, Loader,
+  Megaphone, FileText, ChevronRight, Check, Loader, Lock,
 } from 'lucide-react';
 
+import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/common/Spinner';
 import { useToast } from '../../context/ToastContext';
 import { callService } from '../../services/callService';
 import { researchService } from '../../services/researchService';
 import type { ResearchLine } from '../../services/researchService';
-
-// ── Tipos ─────────────────────────────────────────────────────────────────────
 
 interface FormErrors {
   title?: string;
@@ -26,8 +24,6 @@ interface FormErrors {
   endDate?: string;
   lines?: string;
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -42,9 +38,8 @@ const inputStyle: React.CSSProperties = {
   fontFamily: 'inherit',
 };
 
-// ── Componente principal ──────────────────────────────────────────────────────
-
-export const NewConvocatoria: React.FC = () => {
+export const EditConvocatoria: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -57,28 +52,48 @@ export const NewConvocatoria: React.FC = () => {
   const [selectedLineIds, setSelectedLineIds] = useState<number[]>([]);
   const [lines, setLines] = useState<ResearchLine[]>([]);
   const [loadingLines, setLoadingLines] = useState(true);
+  const [loadingCall, setLoadingCall] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [callNotFound, setCallNotFound] = useState(false);
+  const [callStatus, setCallStatus] = useState('');
 
-  // Cargar líneas activas
   useEffect(() => {
-    researchService.getLines(true)
-      .then(data => setLines(data || []))
-      .catch(() => toast.error('No se pudieron cargar las líneas de investigación.'))
-      .finally(() => setLoadingLines(false));
-  }, []);
+    if (!id) return;
+    const callId = parseInt(id, 10);
+    if (isNaN(callId)) { setCallNotFound(true); setLoadingCall(false); return; }
 
-  // Validación de campo individual
+    Promise.all([
+      callService.getById(callId),
+      researchService.getLines(true),
+    ])
+      .then(([call, allLines]) => {
+        if (!call || !call.id) { setCallNotFound(true); return; }
+        setCallStatus(call.status);
+        if (call.status !== 'ABIERTA') return;
+        setFormData({
+          title: call.title || '',
+          description: call.description || '',
+          startDate: call.startDate || '',
+          endDate: call.endDate || '',
+        });
+        setSelectedLineIds(call.researchLineIds || []);
+        setLines(allLines || []);
+      })
+      .catch(() => setCallNotFound(true))
+      .finally(() => { setLoadingCall(false); setLoadingLines(false); });
+  }, [id]);
+
   const validateField = (field: string, value: string): string | undefined => {
     switch (field) {
       case 'title':
-        if (!value.trim()) return 'El título es obligatorio';
-        if (value.trim().length < 5) return 'Mínimo 5 caracteres';
+        if (!value.trim()) return 'El titulo es obligatorio';
+        if (value.trim().length < 5) return 'Minimo 5 caracteres';
         return undefined;
       case 'description':
-        if (!value.trim()) return 'La descripción es obligatoria';
-        if (value.trim().length < 20) return 'Mínimo 20 caracteres';
+        if (!value.trim()) return 'La descripcion es obligatoria';
+        if (value.trim().length < 20) return 'Minimo 20 caracteres';
         return undefined;
       case 'startDate':
         if (!value) return 'La fecha de inicio es obligatoria';
@@ -106,9 +121,9 @@ export const NewConvocatoria: React.FC = () => {
     setErrors(prev => ({ ...prev, [field]: err }));
   };
 
-  const toggleLine = (id: number) => {
+  const toggleLine = (lineId: number) => {
     setSelectedLineIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+      prev.includes(lineId) ? prev.filter(x => x !== lineId) : [...prev, lineId]
     );
     setErrors(prev => ({ ...prev, lines: undefined }));
   };
@@ -123,30 +138,30 @@ export const NewConvocatoria: React.FC = () => {
     if (descErr) e.description = descErr;
     if (startErr) e.startDate = startErr;
     if (endErr) e.endDate = endErr;
-    if (selectedLineIds.length === 0) e.lines = 'Selecciona al menos una línea de investigación';
+    if (selectedLineIds.length === 0) e.lines = 'Selecciona al menos una linea de investigacion';
     setErrors(e);
     setTouched({ title: true, description: true, startDate: true, endDate: true });
     return Object.keys(e).length === 0;
   };
 
   const handleSubmit = async () => {
-    if (!validate()) {
+    if (!validate() || !id) {
       toast.error('Completa todos los campos requeridos correctamente.');
       return;
     }
     setLoading(true);
     try {
-      await callService.create({
+      await callService.update(parseInt(id, 10), {
         title: formData.title.trim(),
         description: formData.description.trim(),
         startDate: formData.startDate,
         endDate: formData.endDate,
         researchLineIds: selectedLineIds,
       });
-      toast.success('Convocatoria creada y publicada exitosamente en estado Abierta.');
+      toast.success('Convocatoria actualizada exitosamente.');
       navigate('/convocatorias');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al crear la convocatoria.');
+      toast.error(err instanceof Error ? err.message : 'Error al actualizar la convocatoria.');
     } finally {
       setLoading(false);
     }
@@ -161,9 +176,45 @@ export const NewConvocatoria: React.FC = () => {
     selectedLineIds.length > 0,
   ].filter(Boolean).length;
 
+  if (loadingCall) {
+    return (
+      <div className="animate-fade-in" style={{ padding: '28px', display: 'flex', justifyContent: 'center', paddingTop: '80px' }}>
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
+  if (callNotFound) {
+    return (
+      <div className="animate-fade-in" style={{ padding: '28px', textAlign: 'center', paddingTop: '80px' }}>
+        <AlertCircle size={48} style={{ color: 'var(--error)', opacity: 0.5, margin: '0 auto 16px' }} />
+        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Convocatoria no encontrada</h2>
+        <p style={{ color: 'var(--on-surface-variant)', marginBottom: '24px' }}>La convocatoria solicitada no existe o fue eliminada.</p>
+        <Button variant="primary" icon={<ArrowLeft size={16} />} onClick={() => navigate('/convocatorias')}>
+          Volver
+        </Button>
+      </div>
+    );
+  }
+
+  if (callStatus !== 'ABIERTA') {
+    return (
+      <div className="animate-fade-in" style={{ padding: '28px', textAlign: 'center', paddingTop: '80px' }}>
+        <Lock size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.3, margin: '0 auto 16px' }} />
+        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Convocatoria no editable</h2>
+        <p style={{ color: 'var(--on-surface-variant)', marginBottom: '24px' }}>
+          Solo se pueden editar convocatorias en estado <strong>Abierta</strong>. Esta convocatoria esta en estado <strong>{callStatus}</strong>.
+        </p>
+        <Button variant="primary" icon={<ArrowLeft size={16} />} onClick={() => navigate('/convocatorias')}>
+          Volver
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="animate-fade-in" style={{ padding: '28px', maxWidth: '860px' }}>
-      {/* Breadcrumb / Volver */}
+      {/* Breadcrumb */}
       <button
         type="button"
         onClick={() => navigate('/convocatorias')}
@@ -179,14 +230,13 @@ export const NewConvocatoria: React.FC = () => {
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--on-surface)', marginBottom: '6px' }}>
-            Nueva Convocatoria
+            Editar Convocatoria
           </h1>
           <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>
-            Se registrará y publicará de inmediato en estado <strong>Abierta</strong>.
+            Modifica los datos de la convocatoria. Los cambios se aplicaran inmediatamente.
           </p>
         </div>
 
-        {/* Barra de completitud */}
         <div style={{ backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', padding: '12px 16px', textAlign: 'center', minWidth: '110px' }}>
           <div style={{ fontSize: '22px', fontWeight: 900, color: completionScore === 5 ? '#059669' : 'var(--primary)', lineHeight: 1 }}>
             {completionScore}/5
@@ -198,7 +248,7 @@ export const NewConvocatoria: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Sección 1: Datos generales ── */}
+      {/* Seccion 1: Datos generales */}
       <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-xl)', padding: '28px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
           <span style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: 'var(--primary-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -209,10 +259,9 @@ export const NewConvocatoria: React.FC = () => {
           </h2>
         </div>
 
-        {/* Título */}
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-            Título <span style={{ color: 'var(--error)' }}>*</span>
+            Titulo <span style={{ color: 'var(--error)' }}>*</span>
           </label>
           <input
             id="conv-title"
@@ -228,12 +277,11 @@ export const NewConvocatoria: React.FC = () => {
           {errors.title && <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '4px' }}><AlertCircle size={12} /> {errors.title}</p>}
         </div>
 
-        {/* Descripción */}
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-            <span>Descripción <span style={{ color: 'var(--error)' }}>*</span></span>
+            <span>Descripcion <span style={{ color: 'var(--error)' }}>*</span></span>
             <span style={{ fontWeight: 400, color: charCount < 20 ? 'var(--error)' : 'var(--on-surface-variant)' }}>
-              {charCount} / mín. 20 caracteres
+              {charCount} / min. 20 caracteres
             </span>
           </label>
           <textarea
@@ -250,7 +298,6 @@ export const NewConvocatoria: React.FC = () => {
           {errors.description && <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '4px' }}><AlertCircle size={12} /> {errors.description}</p>}
         </div>
 
-        {/* Fechas */}
         <div className="form-row" style={{ gap: '20px' }}>
           <div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
@@ -290,7 +337,7 @@ export const NewConvocatoria: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Sección 2: Líneas de investigación ── */}
+      {/* Seccion 2: Lineas de investigacion */}
       <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: `1px solid ${errors.lines ? 'var(--error)' : 'var(--outline-variant)'}`, borderRadius: 'var(--radius-xl)', padding: '28px', marginBottom: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -299,16 +346,16 @@ export const NewConvocatoria: React.FC = () => {
             </span>
             <div>
               <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-                Líneas de Investigación <span style={{ color: 'var(--error)' }}>*</span>
+                Lineas de Investigacion <span style={{ color: 'var(--error)' }}>*</span>
               </h2>
               <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0 }}>
-                Solo se listan líneas activas. Selecciona las que aplican a esta convocatoria.
+                Solo se listan lineas activas. Selecciona las que aplican a esta convocatoria.
               </p>
             </div>
           </div>
           {selectedLineIds.length > 0 && (
             <span style={{ padding: '5px 14px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--primary-container)', color: 'var(--on-primary-container)', fontSize: '13px', fontWeight: 700 }}>
-              ✓ {selectedLineIds.length} seleccionada{selectedLineIds.length !== 1 ? 's' : ''}
+              {selectedLineIds.length} seleccionada{selectedLineIds.length !== 1 ? 's' : ''}
             </span>
           )}
         </div>
@@ -317,7 +364,7 @@ export const NewConvocatoria: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}><Spinner size="medium" /></div>
         ) : lines.length === 0 ? (
           <div style={{ padding: '24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '14px' }}>
-            No hay líneas de investigación activas registradas.
+            No hay lineas de investigacion activas registradas.
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
@@ -356,7 +403,7 @@ export const NewConvocatoria: React.FC = () => {
         )}
       </div>
 
-      {/* ── Footer de acciones ── */}
+      {/* Footer de acciones */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px', flexWrap: 'wrap', gap: '12px' }}>
         <button
           type="button"
@@ -366,7 +413,7 @@ export const NewConvocatoria: React.FC = () => {
           <ArrowLeft size={15} /> Cancelar
         </button>
         <button
-          id="btn-create-convocatoria"
+          id="btn-update-convocatoria"
           type="button"
           onClick={handleSubmit}
           disabled={loading}
@@ -379,8 +426,8 @@ export const NewConvocatoria: React.FC = () => {
           }}
         >
           {loading
-            ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Creando convocatoria...</>
-            : <><Save size={16} /> Crear Convocatoria <ChevronRight size={15} /></>
+            ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Guardando cambios...</>
+            : <><Save size={16} /> Guardar Cambios <ChevronRight size={15} /></>
           }
         </button>
       </div>
@@ -388,4 +435,4 @@ export const NewConvocatoria: React.FC = () => {
   );
 };
 
-export default NewConvocatoria;
+export default EditConvocatoria;

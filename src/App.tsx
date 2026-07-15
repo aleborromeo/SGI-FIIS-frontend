@@ -29,8 +29,13 @@ import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
 import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
 import { ProgressReportHistory } from './pages/progressreports/ProgressReportHistory.tsx';
+import { NewProgressReport } from './pages/progressreports/NewProgressReport.tsx';
+import { AmendProgressReport } from './pages/progressreports/AmendProgressReport.tsx';
+import { NewThesisReport } from './pages/thesis/NewThesisReport.tsx';
+import { DirectorEvaluations } from './pages/evaluations/DirectorEvaluations.tsx';
 import { ConvocatoriasList } from './pages/convocatorias/ConvocatoriasList.tsx';
 import { NewConvocatoria } from './pages/convocatorias/NewConvocatoria.tsx';
+import { EditConvocatoria } from './pages/convocatorias/EditConvocatoria.tsx';
 
 import { ConvocatoriasDashboard } from './modules/convocatorias/pages/ConvocatoriasDashboard.tsx';
 import { NewProposalForm } from './modules/convocatorias/pages/NewProposalForm.tsx';
@@ -46,12 +51,17 @@ import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
 // Admin Views
 import { CreateUser } from './pages/users/CreateUser';
 import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
+import { UserManagement } from './pages/admin/UserManagement.tsx';
+import { DocumentRepository } from './pages/admin/DocumentRepository.tsx';
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
 import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
 import { ResearchLineDetail } from './pages/admin/ResearchLineDetail.tsx';
 import { ResearchGroups } from './pages/admin/ResearchGroups.tsx';
 import { NewResearchGroup } from './pages/admin/NewResearchGroup.tsx';
 import { ResearchGroupDetail } from './pages/admin/ResearchGroupDetail.tsx';
+
+// Auditoría
+import { AuditTrail } from './pages/audit/AuditTrail.tsx';
 
 const queryClient = new QueryClient();
 
@@ -155,6 +165,7 @@ function App() {
                   <Route path="/thesis/plans" element={<ThesisPlansList />} />
                   <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
                   <Route path="/thesis/new" element={<NewThesisPlan />} />
+                  <Route path="/thesis/report/new/:planId" element={<NewThesisReport />} />
 
                   {/* Proyectos */}
                   <Route path="/projects" element={<ProjectsList />} />
@@ -168,12 +179,16 @@ function App() {
                   <Route path="/convocatorias" element={<ConvocatoriasList />} />
                   <Route path="/convocatorias/activas" element={<ConvocatoriasDashboard />} />
                   <Route path="/convocatorias/new" element={<NewConvocatoria />} />
+                  <Route path="/convocatorias/:id/edit" element={<EditConvocatoria />} />
 
                   {/* Evaluaciones y observaciones */}
                   <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
+                  <Route path="/evaluations/director" element={<DirectorEvaluations />} />
                   <Route path="/observations/panel" element={<ObservationsPanel />} />
                   <Route path="/progressreports/review" element={<ReviewProgressReports />} />
                   <Route path="/progressreports/history" element={<ProgressReportHistory />} />
+                  <Route path="/progressreports/new" element={<NewProgressReport />} />
+                  <Route path="/progressreports/amend/:id" element={<AmendProgressReport />} />
 
                   {/* Trámites y Resoluciones Decanato */}
                   <Route path="/tramites" element={<TramitesInbox />} />
@@ -186,6 +201,9 @@ function App() {
                   {/* Administración */}
                   <Route path="/users/create" element={<CreateUser />} />
                   <Route path="/admin/activate" element={<ActivateUsers />} />
+                  <Route path="/users" element={<UserManagement />} />
+                  <Route path="/documents" element={<DocumentRepository />} />
+                  <Route path="/audit" element={<AuditTrail />} />
                   <Route path="/lines" element={<ResearchLines />} />
                   <Route path="/lines/new" element={<NewResearchLine />} />
                   <Route path="/lines/:id" element={<ResearchLineDetail />} />

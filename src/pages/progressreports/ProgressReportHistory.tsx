@@ -115,8 +115,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
     return () => { cancelled = true; };
   }, [report.id]);
 
-  const statusStyle = getStatusColor(report.status);
-
   const sections = [
     { id: 'activities' as const, label: 'Actividades', icon: <Activity size={15} />, count: detail?.executedActivities.length },
     { id: 'evidences' as const, label: 'Evidencias', icon: <Eye size={15} />, count: detail?.evidences.length },
@@ -127,6 +125,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ report, onClose }) => {
   return (
     <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end', padding: 0 }} onClick={onClose}>
       <div
+<<<<<<< HEAD
         style={{ backgroundColor: 'var(--surface-container-lowest)', width: '100%', maxWidth: '600px', height: '100dvh', overflowY: 'auto', boxShadow: '-8px 0 40px rgba(0,0,0,0.2)' }}
         onClick={e => e.stopPropagation()}
       >

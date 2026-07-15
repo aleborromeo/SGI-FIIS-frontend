@@ -77,6 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('sgi_token', response.token);
       
       const userData = {
+        id: response.id,
         email: response.email,
         firstNames: response.firstNames,
         lastNames: response.lastNames,
@@ -103,6 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const completeRegistration = (response: LoginResponse) => {
     localStorage.setItem('sgi_token', response.token);
     const userData = {
+      id: response.id,
       email: response.email,
       firstNames: response.firstNames,
       lastNames: response.lastNames,

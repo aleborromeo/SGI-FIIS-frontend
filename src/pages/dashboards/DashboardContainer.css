@@ -54,8 +54,8 @@ body,
   flex-direction: column;
   height: 100vh;
   min-height: 0;
-  flex: 1 1 auto;
-  width: calc(100vw - 280px);
+  flex: 1 1 0;
+  min-width: 0;
   overflow: hidden;
   position: relative;
   background: #f8fafc;
@@ -76,12 +76,13 @@ body,
 .sgi-main-content {
   flex-grow: 1;
   padding: 2.5rem 3rem;
-  max-width: 95%;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 70px);
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .sgi-content-card {
@@ -605,7 +606,8 @@ body,
   .sgi-dashboard-wrapper {
     height: auto;
     min-height: 100vh;
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   /* ── Sidebar becomes a fixed drawer ────────────────────────────────────── */
@@ -671,7 +673,8 @@ body,
     width: 100%;
     height: auto;
     min-height: 100vh;
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .sgi-mobile-topbar {
@@ -679,7 +682,8 @@ body,
   }
 
   .sgi-content-scroll {
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .sgi-main-content {

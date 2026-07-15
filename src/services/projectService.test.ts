@@ -102,11 +102,11 @@ describe('projectService', () => {
       expect(mockFetchApi).toHaveBeenCalledTimes(1);
       const [endpoint, options] = mockFetchApi.mock.calls[0];
       expect(endpoint).toBe('/api/documents/upload');
-      if (!options) throw new Error('options is undefined');
-      expect(options.method).toBe('POST');
-      expect(options.body).toBeInstanceOf(FormData);
+      expect(options).toBeDefined();
+      expect(options?.method).toBe('POST');
+      expect(options?.body).toBeInstanceOf(FormData);
 
-      const formData = options.body as FormData;
+      const formData = options?.body as FormData;
       expect(formData.get('file')).toBe(file);
       expect(result).toEqual(mockResponse);
     });

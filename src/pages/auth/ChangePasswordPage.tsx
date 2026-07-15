@@ -7,7 +7,7 @@ import frontisBg from '../../assets/images/frontis_fiis.png';
 import userSesionIcon from '../../assets/images/user-sesion.jpg';
 
 export const ChangePasswordPage: React.FC = () => {
-  const { user, logout, completeRegistration } = useContext(AuthContext);
+  const { logout, completeRegistration } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [currentPassword, setCurrentPassword] = useState('');

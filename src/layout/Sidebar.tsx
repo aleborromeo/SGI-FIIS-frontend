@@ -15,6 +15,7 @@ import {
   LogOut,
   Megaphone,
   Scale,
+  ShieldCheck,
   History,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
@@ -77,23 +78,10 @@ const navGroups: NavGroup[] = [
         path: '/tramites',
       },
       {
-        id: 'traceability',
-        label: 'Trazabilidad',
-        icon: <History size={20} />,
-        path: '/thesis/plan/1',
-      },
-      {
         id: 'observations',
         label: 'Mis Observaciones',
         icon: <AlertCircle size={20} />,
         path: '/observations/panel',
-      },
-      {
-        id: 'tramites',
-        label: 'Mis Trámites',
-        icon: <FileText size={20} />,
-        path: '/tramites',
-        roles: ['DOCENTE_INVESTIGADOR', 'ESTUDIANTE', 'COORDINADOR_GRUPO'],
       },
       {
         id: 'decano-review',
@@ -126,6 +114,20 @@ const navGroups: NavGroup[] = [
         icon: <FileSearch size={20} />,
         path: '/progressreports/review',
       },
+      {
+        id: 'director-evaluations',
+        label: 'Monitoreo Evaluaciones',
+        icon: <ClipboardCheck size={20} />,
+        path: '/evaluations/director',
+        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
+      },
+      {
+        id: 'audit',
+        label: 'Trazabilidad',
+        icon: <ShieldCheck size={20} />,
+        path: '/audit',
+        roles: ['ADMIN', 'DIRECTOR_INVESTIGACION'],
+      },
     ],
   },
   {
@@ -134,7 +136,8 @@ const navGroups: NavGroup[] = [
     items: [
       { id: 'create-user', label: 'Agregar Usuarios', icon: <Users size={20} />, path: '/users/create' },
       { id: 'activate', label: 'Activar Usuarios', icon: <Users size={20} />, path: '/admin/activate' },
-      { id: 'users', label: 'Directorio', icon: <Users size={20} />, path: '/users' },
+      { id: 'users', label: 'Gestionar Usuarios', icon: <Users size={20} />, path: '/users' },
+      { id: 'documents', label: 'Repositorio Docs', icon: <FileText size={20} />, path: '/documents' },
       { id: 'groups', label: 'Grupos Inv.', icon: <Users size={20} />, path: '/groups' },
       { id: 'lines', label: 'Líneas Inv.', icon: <BookOpen size={20} />, path: '/lines' },
     ],

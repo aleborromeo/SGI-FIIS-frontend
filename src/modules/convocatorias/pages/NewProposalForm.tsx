@@ -26,7 +26,11 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Save, ArrowRight, ArrowLeft, Send, Info, AlertTriangle, FileText } from 'lucide-react';
+import {
+  Save, ArrowRight, ArrowLeft, Send, Info, AlertTriangle, FileText,
+  Lock, CheckCircle, XCircle, Users, Calendar, DollarSign, MapPin,
+  Paperclip, UserPlus, File,
+} from 'lucide-react';
 
 import { AuthContext } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
@@ -43,11 +47,6 @@ import { PROJECT_TYPES, PROPOSAL_FIELD_LABELS } from '../validators/proposal.sch
 import type { ProposalFormData } from '../types/convocatoria.types';
 
 const GINSOFT_CODE = 'GINSOFT';
-const GINSOFT_ALLOWED_LINES = ['computación', 'ingeniería de software'];
-
-function isGinsoftLine(lineName: string): boolean {
-  return GINSOFT_ALLOWED_LINES.some((kw) => lineName.toLowerCase().includes(kw));
-}
 
 function buildSummary(data: ProposalFormData): string {
   const parts: string[] = [];
@@ -63,6 +62,64 @@ function buildSummary(data: ProposalFormData): string {
   return parts.join('\n\n');
 }
 
+interface ParsedSummary {
+  abstract: string;
+  specificObjectives: string;
+  methodology: string;
+  expectedResults: string;
+  recibeApoyoFif: string;
+  projectType: string;
+}
+
+function parseSummary(raw: string): ParsedSummary {
+  const result: ParsedSummary = {
+    abstract: '',
+    specificObjectives: '',
+    methodology: '',
+    expectedResults: '',
+    recibeApoyoFif: '',
+    projectType: '',
+  };
+
+  if (!raw) return result;
+
+  const fifMatch = raw.match(/\[FIF:\s*(S[IÍ]|NO)\]/i);
+  if (fifMatch) {
+    result.recibeApoyoFif = fifMatch[1].toUpperCase().includes('S') ? 'SI' : 'NO';
+  }
+
+  const sectionRegex = /^(RESUMEN|OBJETIVOS?\s+ESPEC[IÍ]FICOS?|METODOLOG[IÍ]A|RESULTADOS?\s+ESPERADOS?|TIPO\s+DE\s+PROYECTO)\s*:\s*/gim;
+  const sections: { key: string; start: number; labelEnd: number }[] = [];
+
+  let match: RegExpExecArray | null;
+  while ((match = sectionRegex.exec(raw)) !== null) {
+    const label = match[1].toUpperCase();
+    let key = '';
+    if (label.startsWith('RESUMEN')) key = 'abstract';
+    else if (label.includes('ESPEC')) key = 'specificObjectives';
+    else if (label.startsWith('METODOLOG')) key = 'methodology';
+    else if (label.includes('RESULTADOS')) key = 'expectedResults';
+    else if (label.includes('TIPO')) key = 'projectType';
+
+    sections.push({ key, start: match.index, labelEnd: match.index + match[0].length });
+  }
+
+  for (let i = 0; i < sections.length; i++) {
+    const sec = sections[i];
+    const valueStart = sec.labelEnd;
+    const valueEnd = i < sections.length - 1 ? sections[i + 1].start : raw.length;
+    const chunk = raw.slice(valueStart, valueEnd).trim();
+
+    if (sec.key === 'projectType') {
+      result.projectType = PROJECT_TYPES.find((t) => t.label.toLowerCase() === chunk.toLowerCase())?.value || chunk;
+    } else {
+      (result as any)[sec.key] = chunk;
+    }
+  }
+
+  return result;
+}
+
 const STEPS = ['Datos Generales', 'Detalles de Investigación', 'Equipo', 'Documento', 'Revisión'];
 
 interface ProposalMember {
@@ -71,6 +128,22 @@ interface ProposalMember {
   userLastNames: string;
   userEmail: string;
   role: string;
+}
+
+function EmptyField() {
+  return (
+    <Typography
+      variant="body2"
+      component="span"
+      sx={{
+        color: 'text.disabled',
+        fontStyle: 'italic',
+        fontSize: '0.85rem',
+      }}
+    >
+      Sin datos
+    </Typography>
+  );
 }
 
 export function NewProposalForm() {
@@ -85,6 +158,7 @@ function NewProposalFormInner() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlCallId = searchParams.get('callId');
+  const editDraftId = searchParams.get('editDraft');
   const { user } = useContext(AuthContext);
   const toast = useToast();
   const confirm = useConfirm();
@@ -97,6 +171,7 @@ function NewProposalFormInner() {
   const [filteredLines, setFilteredLines] = useState<ResearchLine[]>([]);
   const [groups, setGroups] = useState<ResearchGroup[]>([]);
   const [loadingCatalogs, setLoadingCatalogs] = useState(true);
+  const [loadingDraft, setLoadingDraft] = useState(!!editDraftId);
   const [submitting, setSubmitting] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
@@ -163,14 +238,17 @@ function NewProposalFormInner() {
       return;
     }
     const selectedGroup = groups.find((g) => String(g.id) === watchedGroupId);
-    if (selectedGroup?.groupCode === GINSOFT_CODE) {
-      setIsGinsoft(true);
-      const restricted = lines.filter((l) => isGinsoftLine(l.lineName));
-      setFilteredLines(restricted);
-    } else {
-      setIsGinsoft(false);
-      setFilteredLines(lines);
-    }
+    setIsGinsoft(selectedGroup?.groupCode === GINSOFT_CODE);
+
+    let cancelled = false;
+    researchService.getGroupLines(Number(watchedGroupId)).then((groupLines) => {
+      if (!cancelled) {
+        setFilteredLines(groupLines && groupLines.length > 0 ? groupLines : lines);
+      }
+    }).catch(() => {
+      if (!cancelled) setFilteredLines(lines);
+    });
+    return () => { cancelled = true; };
   }, [watchedGroupId, groups, lines]);
 
   useEffect(() => {
@@ -182,6 +260,69 @@ function NewProposalFormInner() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty, members.length, documentId]);
+
+  useEffect(() => {
+    if (!editDraftId || loadingCatalogs || loadingCalls) return;
+
+    let cancelled = false;
+
+    const loadDraft = async () => {
+      try {
+        setLoadingDraft(true);
+        const draft = await projectService.getById(editDraftId);
+        if (cancelled) return;
+
+        setValue('title', draft.title || '');
+        setValue('generalObjective', draft.generalObjective || '');
+
+        const parsed = parseSummary(draft.abstract || draft.summary || '');
+        setValue('abstract', draft.abstract || parsed.abstract);
+        setValue('specificObjectives', draft.specificObjectives || parsed.specificObjectives);
+        setValue('methodology', draft.methodology || parsed.methodology);
+        setValue('expectedResults', draft.expectedResults || parsed.expectedResults);
+        setValue('projectType', draft.projectType || parsed.projectType);
+        setValue('recibeApoyoFif', draft.recibeApoyoFif || parsed.recibeApoyoFif);
+        setValue('budget', draft.budget != null ? String(draft.budget) : '');
+        setValue('startDate', draft.startDate || '');
+        setValue('endDate', draft.endDate || '');
+        setValue('executionPlace', draft.executionPlace || '');
+
+        if (draft.researchGroupId) {
+          setValue('researchGroupId', String(draft.researchGroupId));
+        }
+        if (draft.researchLineId) {
+          setValue('researchLineId', String(draft.researchLineId));
+        }
+        if (draft.callId) {
+          setValue('convocatoriaId', String(draft.callId));
+        }
+
+        if (draft.documentId) {
+          setDocumentId(draft.documentId);
+          setDocumentName(draft.documentName || 'Documento cargado');
+        }
+
+        if (draft.members && draft.members.length > 0) {
+          setMembers(
+            draft.members.map((m) => ({
+              userId: m.userId,
+              role: m.role,
+              userFirstNames: (m as any).userFirstNames || '',
+              userLastNames: (m as any).userLastNames || '',
+              userEmail: (m as any).userEmail || '',
+            }))
+          );
+        }
+      } catch {
+        toast.error('No se pudo cargar el borrador. Verifica que aún exista.');
+      } finally {
+        setLoadingDraft(false);
+      }
+    };
+
+    loadDraft();
+    return () => { cancelled = true; };
+  }, [editDraftId, loadingCatalogs, loadingCalls, setValue, toast]);
 
   const activeConvocatorias = convocatorias.filter((c) => {
     const today = new Date().toISOString().split('T')[0];
@@ -196,9 +337,9 @@ function NewProposalFormInner() {
   const validateStep = async (step: number): Promise<boolean> => {
     switch (step) {
       case 0:
-        return await trigger(['convocatoriaId', 'researchGroupId', 'researchLineId', 'title', 'executionPlace', 'recibeApoyoFif']);
+        return await trigger(['convocatoriaId', 'researchGroupId', 'researchLineId', 'title', 'projectType', 'executionPlace', 'recibeApoyoFif']);
       case 1:
-        return await trigger(['abstract', 'generalObjective', 'budget', 'startDate', 'endDate']);
+        return await trigger(['abstract', 'generalObjective', 'specificObjectives', 'methodology', 'expectedResults', 'budget', 'startDate', 'endDate']);
       case 2:
         if (members.length === 0) {
           toast.warning('Debes agregar al menos un miembro al equipo de investigación.');
@@ -233,18 +374,20 @@ function NewProposalFormInner() {
       const formData = watch();
       const researchLineId = Number(formData.researchLineId) || undefined;
       const researchGroupId = Number(formData.researchGroupId) || undefined;
-      const budget = Number(formData.budget) || undefined;
+      const budget = Number(formData.budget) || 0;
+      const today = new Date().toISOString().split('T')[0];
       await projectService.create({
         title: formData.title || 'Borrador sin título',
         summary: buildSummary(formData),
         generalObjective: formData.generalObjective || '',
         ...(researchLineId ? { researchLineId } : {}),
-        ...(budget ? { budget } : {}),
-        startDate: formData.startDate || undefined,
-        endDate: formData.endDate || undefined,
+        budget,
+        startDate: formData.startDate || today,
+        endDate: formData.endDate || today,
         executionPlace: formData.executionPlace || '',
         ...(researchGroupId ? { researchGroupId } : {}),
         callId: formData.convocatoriaId ? Number(formData.convocatoriaId) : undefined,
+        documentId: documentId || undefined,
         members: members.length > 0 ? members.map((m) => ({ userId: m.userId, role: m.role })) : undefined,
         draft: true,
       });
@@ -295,11 +438,11 @@ function NewProposalFormInner() {
 
   if (noConvocatorias) {
     return (
-      <Box sx={{ p: 3, maxWidth: 900, mx: 'auto' }}>
+      <Box sx={{ p: 3, width: '100%', maxWidth: 900, mx: 'auto', boxSizing: 'border-box' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700 }} gutterBottom>
-              Postular Proyecto de Investigación
+            <Typography variant="h4" fontWeight={700} gutterBottom>
+              {editDraftId ? 'Editar Borrador' : 'Postular Proyecto de Investigación'}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 560 }}>
               Registra la información de tu propuesta de investigación para iniciar el flujo de revisión institucional.
@@ -317,26 +460,28 @@ function NewProposalFormInner() {
     );
   }
 
-  if (loadingCatalogs || loadingCalls) {
+  if (loadingCatalogs || loadingCalls || loadingDraft) {
     return (
       <Box sx={{ textAlign: 'center', py: 8 }}>
         <CircularProgress />
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-          Cargando datos del formulario...
+          {loadingDraft ? 'Cargando borrador...' : 'Cargando datos del formulario...'}
         </Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ p: { xs: 1.5, sm: 3 }, maxWidth: 960, mx: 'auto' }}>
+    <Box sx={{ p: { xs: 1.5, sm: 3 }, width: '100%', maxWidth: 960, mx: 'auto', boxSizing: 'border-box' }}>
       <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-start', gap: 2, mb: 3 }}>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 700 }} gutterBottom>
-            Postular Proyecto de Investigación
-          </Typography>
+          <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700} gutterBottom>
+            {editDraftId ? 'Editar Borrador' : 'Postular Proyecto de Investigación'}
+                    </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: { xs: '100%', sm: 560 } }}>
-            Completa los pasos a continuación para registrar tu propuesta de investigación.
+            {editDraftId
+              ? 'Completa los pasos para finalizar y enviar tu propuesta de investigación.'
+              : 'Completa los pasos a continuación para registrar tu propuesta de investigación.'}
           </Typography>
         </Box>
         <Link to="/projects" style={{ textDecoration: 'none' }} onClick={async (e) => {
@@ -430,8 +575,8 @@ function NewProposalFormInner() {
                     rules={{ required: 'Selecciona una línea de investigación' }}
                     render={({ field, fieldState }) => (
                       <FormControl fullWidth error={!!fieldState.error}>
-                        <InputLabel>{isGinsoft ? 'Línea (restringida GINSOFT) *' : 'Línea de Investigación *'}</InputLabel>
-                        <Select label={isGinsoft ? 'Línea (restringida GINSOFT) *' : 'Línea de Investigación *'} {...field}>
+                        <InputLabel>Línea de Investigación *</InputLabel>
+                        <Select label="Línea de Investigación *" {...field}>
                           <MenuItem value=""><em>Selecciona una línea...</em></MenuItem>
                           {filteredLines.map((l) => (
                             <MenuItem key={l.id} value={String(l.id)}>{l.lineName}</MenuItem>
@@ -741,129 +886,603 @@ function NewProposalFormInner() {
 
         {/* STEP 4: Revisión */}
         {activeStep === 4 && (
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, mb: 3 }}>
-            <CardHeader
-              title={<Typography variant="h6" sx={{ fontWeight: 700 }}>Revisión de la Propuesta</Typography>}
-              subheader="Verifica la información antes de enviar al Coordinador de grupo"
-              sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}
-            />
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <FileText size={18} color="var(--primary)" />
-                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Resumen de la Propuesta</Typography>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+
+            {/* Page Header */}
+            <Box sx={{ mb: 1 }}>
+              <Typography variant="h5" fontWeight={700} gutterBottom>
+                Revisión de la Propuesta
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                Verifica la información antes de enviar al Coordinador de grupo
+              </Typography>
+            </Box>
+
+            {/* ── SECCIÓN 1: Datos Generales ── */}
+            <Card
+              elevation={0}
+              sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+            >
+              <Box
+                sx={{
+                  px: 3, py: 2,
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 36, height: 36, borderRadius: 1.5,
+                    bgcolor: 'primary.main', color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <Info size={18} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={700}>Datos Generales</Typography>
+                  <Typography variant="caption" color="text.secondary">Identificación y clasificación del proyecto</Typography>
+                </Box>
               </Box>
 
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Código</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>Se generará automáticamente (PRJ-YYYY-XXXX)</Typography>
+              <CardContent sx={{ p: 3 }}>
+                {/* Row: Status + Code */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 2,
+                    mb: 3,
+                  }}
+                >
+                  {/* Status Badge */}
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      px: 2,
+                      py: 1,
+                      borderRadius: 1.5,
+                      bgcolor: 'rgba(245, 158, 11, 0.08)',
+                      border: '1px solid rgba(245, 158, 11, 0.25)',
+                    }}
+                  >
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#f59e0b' }} />
+                    <Typography variant="body2" fontWeight={600} color="#b45309">
+                      Pendiente de Coordinador
+                    </Typography>
+                  </Box>
+
+                  {/* Auto-generated Code */}
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      px: 2,
+                      py: 1,
+                      borderRadius: 1.5,
+                      bgcolor: 'grey.50',
+                      border: '1px dashed',
+                      borderColor: 'grey.300',
+                    }}
+                  >
+                    <Lock size={14} color="var(--on-surface-variant, #666)" />
+                    <Typography variant="body2" color="text.secondary">
+                      PRJ-YYYY-XXXX
+                    </Typography>
+                    <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>
+                      (autogenerado)
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Grid: metadata fields */}
+                <Grid container spacing={2.5}>
+                  {[
+                    {
+                      label: 'Convocatoria',
+                      value: activeConvocatorias.find((c) => String(c.id) === watchedValues.convocatoriaId)?.title,
+                    },
+                    {
+                      label: 'Grupo de Investigación',
+                      value: groups.find((g) => String(g.id) === watchedValues.researchGroupId)?.groupName,
+                    },
+                    {
+                      label: 'Línea de Investigación',
+                      value: filteredLines.find((l) => String(l.id) === watchedValues.researchLineId)?.lineName,
+                    },
+                    {
+                      label: 'Tipo de Proyecto',
+                      value: PROJECT_TYPES.find((t) => t.value === watchedValues.projectType)?.label,
+                    },
+                  ].map((item) => (
+                    <Grid size={{ xs: 12, sm: 6 }} key={item.label}>
+                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                        {item.label}
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600} sx={{ mt: 0.25, lineHeight: 1.6, wordBreak: 'break-word' }}>
+                        {item.value || <EmptyField />}
+                      </Typography>
+                    </Grid>
+                  ))}
+
+                  {/* FIF - special display */}
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                      Recibe Apoyo FIF
+                    </Typography>
+                    <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      {watchedValues.recibeApoyoFif === 'SI' ? (
+                        <>
+                          <CheckCircle size={16} color="#16a34a" />
+                          <Typography variant="body2" fontWeight={600} color="#16a34a">Sí, recibe apoyo</Typography>
+                        </>
+                      ) : watchedValues.recibeApoyoFif === 'NO' ? (
+                        <>
+                          <XCircle size={16} color="#dc2626" />
+                          <Typography variant="body2" fontWeight={600} color="#dc2626">No recibe apoyo</Typography>
+                        </>
+                      ) : (
+                        <EmptyField />
+                      )}
+                    </Box>
+                  </Grid>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Estado</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    <Chip label="Pendiente de Coordinador" size="small" color="warning" sx={{ fontWeight: 600 }} />
+              </CardContent>
+            </Card>
+
+            {/* ── SECCIÓN 2: Detalles del Proyecto ── */}
+            <Card
+              elevation={0}
+              sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+            >
+              <Box
+                sx={{
+                  px: 3, py: 2,
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 36, height: 36, borderRadius: 1.5,
+                    bgcolor: 'info.main', color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <FileText size={18} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={700}>Detalles del Proyecto</Typography>
+                  <Typography variant="caption" color="text.secondary">Contenido técnico y académico de la propuesta</Typography>
+                </Box>
+              </Box>
+
+              <CardContent sx={{ p: 3 }}>
+                {/* Title */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                    Título del Proyecto
                   </Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Convocatoria</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {activeConvocatorias.find((c) => String(c.id) === watchedValues.convocatoriaId)?.title || '—'}
+                  <Typography variant="body1" fontWeight={600} sx={{ mt: 0.5, lineHeight: 1.6, wordBreak: 'break-word' }}>
+                    {watchedValues.title || <EmptyField />}
                   </Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Grupo de Investigación</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {groups.find((g) => String(g.id) === watchedValues.researchGroupId)?.groupName || '—'}
+                </Box>
+
+                <Divider sx={{ mb: 3 }} />
+
+                {/* Abstract */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                    Resumen Ejecutivo
                   </Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Línea de Investigación</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {filteredLines.find((l) => String(l.id) === watchedValues.researchLineId)?.lineName || '—'}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mt: 0.75,
+                      lineHeight: 1.8,
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
+                      color: 'text.primary',
+                      p: 2,
+                      borderRadius: 1.5,
+                      bgcolor: 'grey.50',
+                      border: '1px solid',
+                      borderColor: 'grey.200',
+                    }}
+                  >
+                    {watchedValues.abstract || <EmptyField />}
+
                   </Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Tipo de Proyecto</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {PROJECT_TYPES.find((t) => t.value === watchedValues.projectType)?.label || '—'}
-                  </Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Recibe Apoyo FIF</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {watchedValues.recibeApoyoFif === 'SI' ? 'Sí' : watchedValues.recibeApoyoFif === 'NO' ? 'No' : '—'}
-                  </Typography>
+                </Box>
+
+                {/* Objectives - side by side on desktop */}
+                <Grid container spacing={2.5} sx={{ mb: 3 }}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                      Objetivo General
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ mt: 0.75, lineHeight: 1.8, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                    >
+                      {watchedValues.generalObjective || <EmptyField />}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                      Objetivos Específicos
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ mt: 0.75, lineHeight: 1.8, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                    >
+                      {watchedValues.specificObjectives || <EmptyField />}
+                    </Typography>
+                  </Grid>
                 </Grid>
 
-                <Grid size={{ xs: 12 }}>
-                  <Divider sx={{ my: 1 }} />
-                </Grid>
+                <Divider sx={{ mb: 3 }} />
 
-                <Grid size={{ xs: 12 }}>
-                  <Typography variant="caption" color="text.secondary">Título</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{watchedValues.title || '—'}</Typography>
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <Typography variant="caption" color="text.secondary">Resumen Ejecutivo</Typography>
-                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{watchedValues.abstract || '—'}</Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Objetivo General</Typography>
-                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{watchedValues.generalObjective || '—'}</Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Objetivos Específicos</Typography>
-                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{watchedValues.specificObjectives || '—'}</Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Metodología</Typography>
-                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{watchedValues.methodology || '—'}</Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Resultados Esperados</Typography>
-                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{watchedValues.expectedResults || '—'}</Typography>
-                </Grid>
 
-                <Grid size={{ xs: 12 }}>
-                  <Divider sx={{ my: 1 }} />
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Presupuesto</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>S/ {watchedValues.budget || '0.00'}</Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Lugar de Ejecución</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{watchedValues.executionPlace || '—'}</Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Fecha de Inicio</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{watchedValues.startDate || '—'}</Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Fecha de Fin</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{watchedValues.endDate || '—'}</Typography>
-                </Grid>
-
-                <Grid size={{ xs: 12 }}>
-                  <Divider sx={{ my: 1 }} />
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Equipo de Investigación</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {members.length > 0 ? `${members.length} miembro(s)` : 'Sin miembros adicionales'}
+                {/* Methodology - separate section below */}
+                <Box sx={{ mb: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Box
+                      sx={{
+                        width: 6, height: 6, borderRadius: '50%',
+                        bgcolor: 'primary.main',
+                      }}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                      Metodología
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      lineHeight: 1.8,
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
+                      p: 2,
+                      borderRadius: 1.5,
+                      bgcolor: 'rgba(25, 118, 210, 0.03)',
+                      border: '1px solid',
+                      borderColor: 'rgba(25, 118, 210, 0.12)',
+                    }}
+                  >
+                    {watchedValues.methodology || <EmptyField />}
                   </Typography>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Documento Adjunto</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {documentName || (documentId ? 'Documento cargado' : 'Sin documento')}
+                </Box>
+
+                {/* Expected Results */}
+                <Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                    Resultados Esperados
+
                   </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mt: 0.75,
+                      lineHeight: 1.8,
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
+                      p: 2,
+                      borderRadius: 1.5,
+                      bgcolor: 'grey.50',
+                      border: '1px solid',
+                      borderColor: 'grey.200',
+                    }}
+                  >
+                    {watchedValues.expectedResults || <EmptyField />}
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            {/* ── SECCIÓN 3: Finanzas y Cronograma ── */}
+            <Card
+              elevation={0}
+              sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+            >
+              <Box
+                sx={{
+                  px: 3, py: 2,
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 36, height: 36, borderRadius: 1.5,
+                    bgcolor: 'success.main', color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <DollarSign size={18} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={700}>Finanzas y Cronograma</Typography>
+                  <Typography variant="caption" color="text.secondary">Presupuesto, lugar y fechas de ejecución</Typography>
+                </Box>
+              </Box>
+
+              <CardContent sx={{ p: 3 }}>
+                {/* Budget - highlighted card */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    p: 2.5,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(22, 163, 74, 0.04)',
+                    border: '1px solid',
+                    borderColor: 'rgba(22, 163, 74, 0.2)',
+                    mb: 3,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 48, height: 48, borderRadius: 2,
+                      bgcolor: 'rgba(22, 163, 74, 0.1)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    <DollarSign size={24} color="#16a34a" />
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                      Presupuesto Total
+                    </Typography>
+                    <Typography variant="h5" fontWeight={700} color="#16a34a" sx={{ lineHeight: 1.2 }}>
+                      S/ {Number(watchedValues.budget || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Place + Dates grid */}
+                <Grid container spacing={2.5}>
+                  <Grid size={{ xs: 12 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                      <MapPin size={13} color="var(--on-surface-variant, #666)" />
+                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                        Lugar de Ejecución
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.6, wordBreak: 'break-word' }}>
+                      {watchedValues.executionPlace || <EmptyField />}
+                    </Typography>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                      <Calendar size={13} color="var(--on-surface-variant, #666)" />
+                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                        Fecha de Inicio
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.6 }}>
+                      {watchedValues.startDate
+                        ? new Date(watchedValues.startDate + 'T00:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
+                        : <EmptyField />}
+                    </Typography>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                      <Calendar size={13} color="var(--on-surface-variant, #666)" />
+                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                        Fecha de Fin
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.6 }}>
+                      {watchedValues.endDate
+                        ? new Date(watchedValues.endDate + 'T00:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
+                        : <EmptyField />}
+                    </Typography>
+                  </Grid>
                 </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* ── SECCIÓN 4: Equipo y Archivos ── */}
+            <Card
+              elevation={0}
+              sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+            >
+              <Box
+                sx={{
+                  px: 3, py: 2,
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 36, height: 36, borderRadius: 1.5,
+                    bgcolor: '#7c3aed', color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <Users size={18} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={700}>Equipo y Archivos</Typography>
+                  <Typography variant="caption" color="text.secondary">Miembros del equipo y documento adjunto</Typography>
+                </Box>
+              </Box>
+
+              <CardContent sx={{ p: 3 }}>
+                {/* Team Members */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                    Equipo de Investigación
+                  </Typography>
+
+                  {members.length > 0 ? (
+                    <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {members.map((member, idx) => (
+                        <Box
+                          key={idx}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.5,
+                            borderRadius: 1.5,
+                            bgcolor: 'grey.50',
+                            border: '1px solid',
+                            borderColor: 'grey.200',
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 32, height: 32, borderRadius: '50%',
+                              bgcolor: 'primary.main', color: '#fff',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '0.75rem', fontWeight: 700,
+                            }}
+                          >
+                            {member.userFirstNames?.[0]}{member.userLastNames?.[0]}
+                          </Box>
+                          <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                            <Typography variant="body2" fontWeight={600} sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {member.userFirstNames} {member.userLastNames}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                              {member.userEmail}
+                            </Typography>
+                          </Box>
+                          <Chip
+                            label={member.role}
+                            size="small"
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: '0.7rem',
+                              bgcolor: 'rgba(124, 58, 237, 0.08)',
+                              color: '#7c3aed',
+                              border: '1px solid rgba(124, 58, 237, 0.2)',
+                            }}
+                          />
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Sin miembros adicionales
+                    </Typography>
+                  )}
+
+                  <Button
+                    variant="text"
+                    size="small"
+                    startIcon={<UserPlus size={15} />}
+                    disabled
+                    sx={{
+                      mt: 1.5,
+                      textTransform: 'none',
+                      color: 'primary.main',
+                      fontWeight: 600,
+                      '&.Mui-disabled': { color: 'text.disabled' },
+                    }}
+                  >
+                    Añadir otro miembro
+                  </Button>
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                {/* Attached Document */}
+                <Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                    Documento Adjunto
+                  </Typography>
+
+                  {documentName || documentId ? (
+                    <Box
+                      sx={{
+                        mt: 1.5,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        p: 2,
+                        borderRadius: 1.5,
+                        bgcolor: 'grey.50',
+                        border: '1px solid',
+                        borderColor: 'grey.200',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 40, height: 40, borderRadius: 1.5,
+                          bgcolor: 'rgba(220, 38, 38, 0.08)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        <File size={20} color="#dc2626" />
+                      </Box>
+                      <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {documentName || 'Documento cargado'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Anteproyecto · PDF
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        <Chip
+                          label="Cargado"
+                          size="small"
+                          color="success"
+                          sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                        />
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Box
+                      sx={{
+                        mt: 1.5,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        p: 2,
+                        borderRadius: 1.5,
+                        border: '1px dashed',
+                        borderColor: 'grey.300',
+                        bgcolor: 'grey.50',
+                      }}
+                    >
+                      <Paperclip size={16} color="var(--on-surface-variant, #999)" />
+                      <Typography variant="body2" color="text.secondary" fontStyle="italic">
+                        Sin documento adjunto
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+
+          </Box>
         )}
 
         {/* Navigation buttons */}
@@ -920,3 +1539,5 @@ function NewProposalFormInner() {
     </Box>
   );
 }
+
+

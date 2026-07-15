@@ -1,49 +1,13 @@
-import axios from 'axios';
+import { api } from '../../../services/api';
 import type { Convocatoria, EligibilityResponse } from '../types/convocatoria.types';
 
-function getToken(): string | null {
-  const token =
-    localStorage.getItem('sgi_token') ??
-    localStorage.getItem('token') ??
-    localStorage.getItem('access_token');
-  return token ? token.replace(/^Bearer\s+/i, '') : null;
-}
-
-const httpClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? '',
-  headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-});
-
-httpClient.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-httpClient.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('sgi_token');
-      localStorage.removeItem('sgi_user');
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(err);
-  },
-);
-
-function normalizeStatus(status?: string): 'ABIERTA' | 'CERRADA' | 'FINALIZADA' | 'BORRADOR' {
+function normalizeStatus(status?: string): 'ABIERTA' | 'CERRADA' | 'FINALIZADA' {
   if (!status) return 'ABIERTA';
   const s = status.toUpperCase();
   if (s === 'OPEN' || s === 'ABIERTA') return 'ABIERTA';
   if (s === 'CLOSED' || s === 'CERRADA') return 'CERRADA';
   if (s === 'FINISHED' || s === 'FINALIZADA') return 'FINALIZADA';
-  if (s === 'DRAFT' || s === 'BORRADOR') return 'BORRADOR';
-  return s as any;
+  return 'ABIERTA';
 }
 
 export function normalizeConvocatoria(data: any): Convocatoria {
@@ -60,16 +24,13 @@ export function normalizeConvocatoria(data: any): Convocatoria {
   };
 }
 
-const API_PREFIX = '/api/v1';
-
 export const convocatoriaService = {
   getActivas: async (): Promise<Convocatoria[]> => {
-    const { data } = await httpClient.get<any[]>(`${API_PREFIX}/calls/vigent`);
-    return Array.isArray(data) ? data.map(normalizeConvocatoria) : [];
+    const res = await api.get<any[]>('/api/v1/calls/vigent');
+    return Array.isArray(res) ? res.map(normalizeConvocatoria) : [];
   },
 
   checkEligibility: async (): Promise<EligibilityResponse> => {
-    const { data } = await httpClient.get<EligibilityResponse>(`${API_PREFIX}/calls/prerequisitos`);
-    return data;
+    return api.get<EligibilityResponse>('/api/v1/calls/prerequisitos');
   },
 };

@@ -100,7 +100,9 @@ export interface EvaluationItem {
   score?: number;
   puntaje?: number;
   tipo?: string;
+  tipoExpediente?: string;
   assignDate?: string;
+  [key: string]: any;
 }
 
 // ── Servicio ──────────────────────────────────────────────────────────────────
@@ -183,5 +185,9 @@ export const evaluacionService = {
     evaluacionId: string | number
   ): Promise<EvaluationItem> => {
     return fetchApi<EvaluationItem>(`/evaluaciones/${evaluacionId}`);
+  },
+
+  listAll: async (): Promise<EvaluationItem[]> => {
+    return fetchApi<EvaluationItem[]>('/evaluaciones');
   },
 };

@@ -179,6 +179,7 @@ export const AssignReviewers: React.FC = () => {
       )}
 
       <div
+        className="responsive-grid-split"
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 380px',

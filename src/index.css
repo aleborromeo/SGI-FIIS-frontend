@@ -78,6 +78,7 @@ body {
   color: var(--on-surface);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 /* Typography Utilities */
@@ -213,6 +214,28 @@ body.confirm-modal-open .welcome-page-container {
   .section-grid-side-panel {
     grid-template-columns: 1fr;
   }
+
+  .responsive-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .responsive-grid-5 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .responsive-grid-split {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .responsive-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .responsive-grid-5 {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 768px) {
@@ -259,7 +282,20 @@ img {
   height: auto;
 }
 
-/* Ensure all tables don't overflow their containers */
+/* Tables: constrain to parent, allow horizontal scroll on wrapper */
 table {
   max-width: 100%;
+  border-collapse: collapse;
+}
+
+.table-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent long strings from breaking layout */
+p, span, div, td, th, label, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }

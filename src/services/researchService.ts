@@ -64,6 +64,8 @@ export interface GroupMember {
   userFirstNames: string;
   userLastNames: string;
   userEmail: string;
+  /** Código del rol del usuario (ej: COORDINADOR_GRUPO, DOCENTE_INVESTIGADOR) */
+  userRoleCode?: string;
   /** Rol dentro del grupo */
   memberRole?: MemberRole;
   /** Estado de la membresía (true = activa) */

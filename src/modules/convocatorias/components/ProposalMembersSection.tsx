@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Typography,
   Button,
@@ -22,8 +22,12 @@ import {
   CardContent,
   Stack,
   Divider,
+  Autocomplete,
+  TextField,
+  Chip,
+  Fade,
 } from '@mui/material';
-import { Plus, Trash2, Users } from 'lucide-react';
+import { Trash2, Users, Search, UserPlus } from 'lucide-react';
 import { researchService, type GroupMember } from '../../../services/researchService';
 import { useConfirm } from '../../../context/ConfirmContext';
 
@@ -51,8 +55,9 @@ const ROLE_OPTIONS = [
 export function ProposalMembersSection({ groupId, members, onChange }: ProposalMembersSectionProps) {
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
-  const [addingUserId, setAddingUserId] = useState('');
+  const [addingUserId, setAddingUserId] = useState<number | null>(null);
   const [addingRole, setAddingRole] = useState('COINVESTIGADOR');
+  const [searchValue, setSearchValue] = useState('');
   const [error, setError] = useState('');
   const confirm = useConfirm();
   const theme = useTheme();
@@ -70,16 +75,22 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
       .finally(() => setLoadingMembers(false));
   }, [groupId]);
 
-  const availableMembers = groupMembers.filter(
-    (gm) => !members.some((m) => m.userId === gm.userId)
+  const availableMembers = useMemo(
+    () => groupMembers.filter((gm) => !members.some((m) => m.userId === gm.userId)),
+    [groupMembers, members],
+  );
+
+  const selectedMember = useMemo(
+    () => availableMembers.find((gm) => gm.userId === addingUserId) || null,
+    [availableMembers, addingUserId],
   );
 
   const handleAdd = useCallback(() => {
-    if (!addingUserId) {
+    if (addingUserId === null) {
       setError('Selecciona un miembro del grupo.');
       return;
     }
-    const member = groupMembers.find((gm) => String(gm.userId) === addingUserId);
+    const member = groupMembers.find((gm) => gm.userId === addingUserId);
     if (!member) return;
 
     if (members.some((m) => m.userId === member.userId)) {
@@ -97,8 +108,9 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
         role: addingRole,
       },
     ]);
-    setAddingUserId('');
+    setAddingUserId(null);
     setAddingRole('COINVESTIGADOR');
+    setSearchValue('');
     setError('');
   }, [addingUserId, addingRole, groupMembers, members, onChange]);
 
@@ -130,49 +142,59 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
         <Users size={20} color="var(--primary)" aria-hidden="true" />
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        <Typography variant="h6" fontWeight={700}>
           Equipo de Investigación
         </Typography>
+        {members.length > 0 && (
+          <Chip
+            label={`${members.length} miembro(s)`}
+            size="small"
+            color="primary"
+            sx={{ fontWeight: 600, ml: 1 }}
+          />
+        )}
       </Box>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Agrega los integrantes del grupo que participarán en este proyecto.
+        Busca y agrega los integrantes del grupo que participarán en este proyecto.
       </Typography>
 
       {members.length > 0 && (
         isMobile ? (
           <Stack spacing={1.5} sx={{ mb: 2 }}>
             {members.map((m) => (
-              <Card key={m.userId} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {m.userFirstNames} {m.userLastNames}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {m.userEmail}
-                      </Typography>
+              <Fade in key={m.userId}>
+                <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                  <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography variant="body2" fontWeight={600}>
+                          {m.userFirstNames} {m.userLastNames}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
+                          {m.userEmail}
+                        </Typography>
+                      </Box>
+                      <IconButton size="small" color="error" onClick={() => handleRemove(m.userId)} aria-label={`Eliminar a ${m.userFirstNames}`}>
+                        <Trash2 size={16} />
+                      </IconButton>
                     </Box>
-                    <IconButton size="small" color="error" onClick={() => handleRemove(m.userId)} aria-label={`Eliminar a ${m.userFirstNames}`}>
-                      <Trash2 size={16} />
-                    </IconButton>
-                  </Box>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Rol</InputLabel>
-                    <Select
-                      label="Rol"
-                      value={m.role}
-                      onChange={(e) => handleRoleChange(m.userId, e.target.value)}
-                    >
-                      {ROLE_OPTIONS.map((r) => (
-                        <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </CardContent>
-              </Card>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Rol</InputLabel>
+                      <Select
+                        label="Rol"
+                        value={m.role}
+                        onChange={(e) => handleRoleChange(m.userId, e.target.value)}
+                      >
+                        {ROLE_OPTIONS.map((r) => (
+                          <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </CardContent>
+                </Card>
+              </Fade>
             ))}
           </Stack>
         ) : (
@@ -188,9 +210,17 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
               </TableHead>
               <TableBody>
                 {members.map((m) => (
-                  <TableRow key={m.userId}>
-                    <TableCell>{m.userFirstNames} {m.userLastNames}</TableCell>
-                    <TableCell>{m.userEmail}</TableCell>
+                  <TableRow key={m.userId} hover>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={600}>
+                        {m.userFirstNames} {m.userLastNames}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {m.userEmail}
+                      </Typography>
+                    </TableCell>
                     <TableCell>
                       <FormControl fullWidth size="small">
                         <InputLabel>Rol</InputLabel>
@@ -218,25 +248,52 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
         )
       )}
 
+      {members.length > 0 && <Divider sx={{ my: 2 }} />}
+
       {availableMembers.length > 0 ? (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-          <FormControl sx={{ minWidth: isMobile ? '100%' : 250 }} size="small">
-            <InputLabel>Agregar miembro del grupo</InputLabel>
-            <Select
-              label="Agregar miembro del grupo"
-              value={addingUserId}
-              onChange={(e) => { setAddingUserId(e.target.value); setError(''); }}
-            >
-              <MenuItem value="">
-                <em>Selecciona un miembro...</em>
-              </MenuItem>
-              {availableMembers.map((gm) => (
-                <MenuItem key={gm.userId} value={String(gm.userId)}>
-                  {gm.userFirstNames} {gm.userLastNames} — {gm.userEmail}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            fullWidth
+            size="small"
+            options={availableMembers}
+            getOptionLabel={(option) => `${option.userFirstNames} ${option.userLastNames} — ${option.userEmail}`}
+            isOptionEqualToValue={(option, value) => option.userId === value.userId}
+            value={selectedMember}
+            onChange={(_, newValue) => {
+              setAddingUserId(newValue?.userId ?? null);
+              setError('');
+            }}
+            inputValue={searchValue}
+            onInputChange={(_, newInputValue) => setSearchValue(newInputValue)}
+            loading={loadingMembers}
+            noOptionsText="No se encontraron miembros"
+            renderOption={(props, option) => (
+              <Box component="li" {...props} key={option.userId}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                  <Typography variant="body2" fontWeight={600}>
+                    {option.userFirstNames} {option.userLastNames}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {option.userEmail}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Buscar miembro por nombre o correo"
+                placeholder="Escribe para buscar..."
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <Search size={18} sx={{ mr: 0.5, color: 'text.disabled' }} />
+                  ),
+                }}
+              />
+            )}
+            sx={{ minWidth: isMobile ? '100%' : 320 }}
+          />
           <FormControl sx={{ minWidth: isMobile ? '100%' : 180 }} size="small">
             <InputLabel>Rol</InputLabel>
             <Select
@@ -250,11 +307,11 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
             </Select>
           </FormControl>
           <Button
-            variant="outlined"
-            startIcon={<Plus size={16} />}
+            variant="contained"
+            startIcon={<UserPlus size={16} />}
             onClick={handleAdd}
-            disabled={!addingUserId}
-            sx={{ textTransform: 'none', height: 40, width: isMobile ? '100%' : 'auto' }}
+            disabled={addingUserId === null}
+            sx={{ textTransform: 'none', height: 40, width: isMobile ? '100%' : 'auto', fontWeight: 600 }}
           >
             Agregar
           </Button>
@@ -265,6 +322,12 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
             No hay miembros disponibles en este grupo para agregar al proyecto.
           </Alert>
         )
+      )}
+
+      {availableMembers.length === 0 && members.length > 0 && (
+        <Alert severity="success" sx={{ mt: 2, borderRadius: 2 }}>
+          Todos los miembros activos del grupo ya han sido agregados al equipo.
+        </Alert>
       )}
 
       {error && (

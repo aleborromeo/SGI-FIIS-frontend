@@ -91,5 +91,18 @@ export const callService = {
     });
     return normalizeCall(res);
   },
+
+  update: async (id: number, data: CreateCallPayload): Promise<CallResponse> => {
+    const payload = {
+      title: data.title,
+      description: data.description,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      researchLineIds: data.researchLineIds,
+      documentId: data.documentId,
+    };
+    const res = await api.put<any>(`/api/v1/calls/${id}`, payload);
+    return normalizeCall(res);
+  },
 };
 
