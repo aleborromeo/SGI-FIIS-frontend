@@ -50,7 +50,6 @@ import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
 
 // Admin Views
 import { CreateUser } from './pages/users/CreateUser';
-import { ActivateUsers } from './pages/admin/ActivateUsers.tsx';
 import { UserManagement } from './pages/admin/UserManagement.tsx';
 import { DocumentRepository } from './pages/admin/DocumentRepository.tsx';
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
@@ -200,7 +199,6 @@ function App() {
 
                   {/* Administración */}
                   <Route path="/users/create" element={<CreateUser />} />
-                  <Route path="/admin/activate" element={<ActivateUsers />} />
                   <Route path="/users" element={<UserManagement />} />
                   <Route path="/documents" element={<DocumentRepository />} />
                   <Route path="/audit" element={<AuditTrail />} />

@@ -16,7 +16,6 @@ import {
   Megaphone,
   Scale,
   ShieldCheck,
-  History,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 
@@ -135,7 +134,6 @@ const navGroups: NavGroup[] = [
     roles: ['ADMIN'],
     items: [
       { id: 'create-user', label: 'Agregar Usuarios', icon: <Users size={20} />, path: '/users/create' },
-      { id: 'activate', label: 'Activar Usuarios', icon: <Users size={20} />, path: '/admin/activate' },
       { id: 'users', label: 'Gestionar Usuarios', icon: <Users size={20} />, path: '/users' },
       { id: 'documents', label: 'Repositorio Docs', icon: <FileText size={20} />, path: '/documents' },
       { id: 'groups', label: 'Grupos Inv.', icon: <Users size={20} />, path: '/groups' },
@@ -349,16 +347,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
       </aside>
 
       {showLogoutConfirm && (
-        <div
-          role="dialog"
-          aria-modal="true"
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
+        <dialog
+          open
           className="sgi-logout-overlay"
-          onClick={() => setShowLogoutConfirm(false)}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowLogoutConfirm(false);
+          }}
+          onClose={() => setShowLogoutConfirm(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            width: '100vw',
+            height: '100vh',
+            maxWidth: 'none',
+            maxHeight: 'none',
+            margin: 0,
+            padding: 0,
+            border: 'none',
+            background: 'rgba(15, 23, 42, 0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'inherit',
+          }}
         >
-          <div
-            className="sgi-logout-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
+          <div className="sgi-logout-modal">
             <div className="sgi-logout-icon">
               <LogOut size={26} />
             </div>
@@ -389,7 +403,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               </button>
             </div>
           </div>
-        </div>
+        </dialog>
       )}
     </>
   );

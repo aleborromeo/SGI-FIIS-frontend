@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useContext } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import {
@@ -38,12 +38,11 @@ import { useConfirm } from '../../../context/ConfirmContext';
 import { projectService } from '../../../services/projectService';
 import { researchService, type ResearchLine, type ResearchGroup } from '../../../services/researchService';
 import { useConvocatorias } from '../hooks/useConvocatorias';
-import { useEligibility } from '../hooks/useEligibility';
 import { ConvocatoriaSelect } from '../components/ConvocatoriaSelect';
 import { EligibilityGate } from '../components/EligibilityGate';
 import { ProposalMembersSection } from '../components/ProposalMembersSection';
 import { FileUploadSection } from '../components/FileUploadSection';
-import { PROJECT_TYPES, PROPOSAL_FIELD_LABELS } from '../validators/proposal.schema';
+import { PROJECT_TYPES } from '../validators/proposal.schema';
 import type { ProposalFormData } from '../types/convocatoria.types';
 
 const GINSOFT_CODE = 'GINSOFT';
@@ -159,7 +158,6 @@ function NewProposalFormInner() {
   const [searchParams] = useSearchParams();
   const urlCallId = searchParams.get('callId');
   const editDraftId = searchParams.get('editDraft');
-  const { user } = useContext(AuthContext);
   const toast = useToast();
   const confirm = useConfirm();
   const theme = useTheme();
@@ -441,7 +439,7 @@ function NewProposalFormInner() {
       <Box sx={{ p: 3, width: '100%', maxWidth: 900, mx: 'auto', boxSizing: 'border-box' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
           <Box>
-            <Typography variant="h4" fontWeight={700} gutterBottom>
+            <Typography variant="h4" sx={{ fontWeight: 700 }} gutterBottom>
               {editDraftId ? 'Editar Borrador' : 'Postular Proyecto de Investigación'}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 560 }}>
@@ -475,7 +473,7 @@ function NewProposalFormInner() {
     <Box sx={{ p: { xs: 1.5, sm: 3 }, width: '100%', maxWidth: 960, mx: 'auto', boxSizing: 'border-box' }}>
       <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-start', gap: 2, mb: 3 }}>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700} gutterBottom>
+          <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 700 }} gutterBottom>
             {editDraftId ? 'Editar Borrador' : 'Postular Proyecto de Investigación'}
                     </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: { xs: '100%', sm: 560 } }}>
@@ -506,9 +504,9 @@ function NewProposalFormInner() {
             Paso {activeStep + 1} de {STEPS.length}
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center', mt: 1 }}>
-            {STEPS.map((_, i) => (
+            {STEPS.map((stepName, i) => (
               <Box
-                key={i}
+                key={stepName}
                 sx={{
                   width: 8,
                   height: 8,
@@ -891,7 +889,7 @@ function NewProposalFormInner() {
 
             {/* Page Header */}
             <Box sx={{ mb: 1 }}>
-              <Typography variant="h5" fontWeight={700} gutterBottom>
+              <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>
                 Revisión de la Propuesta
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
@@ -924,7 +922,7 @@ function NewProposalFormInner() {
                   <Info size={18} />
                 </Box>
                 <Box>
-                  <Typography variant="subtitle1" fontWeight={700}>Datos Generales</Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Datos Generales</Typography>
                   <Typography variant="caption" color="text.secondary">Identificación y clasificación del proyecto</Typography>
                 </Box>
               </Box>
@@ -953,7 +951,7 @@ function NewProposalFormInner() {
                     }}
                   >
                     <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#f59e0b' }} />
-                    <Typography variant="body2" fontWeight={600} color="#b45309">
+                    <Typography variant="body2" color="#b45309" sx={{ fontWeight: 600 }}>
                       Pendiente de Coordinador
                     </Typography>
                   </Box>
@@ -1006,7 +1004,7 @@ function NewProposalFormInner() {
                       <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
                         {item.label}
                       </Typography>
-                      <Typography variant="body2" fontWeight={600} sx={{ mt: 0.25, lineHeight: 1.6, wordBreak: 'break-word' }}>
+                      <Typography variant="body2" sx={{ mt: 0.25, lineHeight: 1.6, wordBreak: 'break-word', fontWeight: 600 }}>
                         {item.value || <EmptyField />}
                       </Typography>
                     </Grid>
@@ -1021,12 +1019,12 @@ function NewProposalFormInner() {
                       {watchedValues.recibeApoyoFif === 'SI' ? (
                         <>
                           <CheckCircle size={16} color="#16a34a" />
-                          <Typography variant="body2" fontWeight={600} color="#16a34a">Sí, recibe apoyo</Typography>
+                          <Typography variant="body2" color="#16a34a" sx={{ fontWeight: 600 }}>Sí, recibe apoyo</Typography>
                         </>
                       ) : watchedValues.recibeApoyoFif === 'NO' ? (
                         <>
                           <XCircle size={16} color="#dc2626" />
-                          <Typography variant="body2" fontWeight={600} color="#dc2626">No recibe apoyo</Typography>
+                          <Typography variant="body2" color="#dc2626" sx={{ fontWeight: 600 }}>No recibe apoyo</Typography>
                         </>
                       ) : (
                         <EmptyField />
@@ -1062,7 +1060,7 @@ function NewProposalFormInner() {
                   <FileText size={18} />
                 </Box>
                 <Box>
-                  <Typography variant="subtitle1" fontWeight={700}>Detalles del Proyecto</Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Detalles del Proyecto</Typography>
                   <Typography variant="caption" color="text.secondary">Contenido técnico y académico de la propuesta</Typography>
                 </Box>
               </Box>
@@ -1073,7 +1071,7 @@ function NewProposalFormInner() {
                   <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
                     Título del Proyecto
                   </Typography>
-                  <Typography variant="body1" fontWeight={600} sx={{ mt: 0.5, lineHeight: 1.6, wordBreak: 'break-word' }}>
+                  <Typography variant="body1" sx={{ mt: 0.5, lineHeight: 1.6, wordBreak: 'break-word', fontWeight: 600 }}>
                     {watchedValues.title || <EmptyField />}
                   </Typography>
                 </Box>
@@ -1218,7 +1216,7 @@ function NewProposalFormInner() {
                   <DollarSign size={18} />
                 </Box>
                 <Box>
-                  <Typography variant="subtitle1" fontWeight={700}>Finanzas y Cronograma</Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Finanzas y Cronograma</Typography>
                   <Typography variant="caption" color="text.secondary">Presupuesto, lugar y fechas de ejecución</Typography>
                 </Box>
               </Box>
@@ -1251,7 +1249,7 @@ function NewProposalFormInner() {
                     <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
                       Presupuesto Total
                     </Typography>
-                    <Typography variant="h5" fontWeight={700} color="#16a34a" sx={{ lineHeight: 1.2 }}>
+                    <Typography variant="h5" color="#16a34a" sx={{ lineHeight: 1.2, fontWeight: 700 }}>
                       S/ {Number(watchedValues.budget || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </Typography>
                   </Box>
@@ -1266,7 +1264,7 @@ function NewProposalFormInner() {
                         Lugar de Ejecución
                       </Typography>
                     </Box>
-                    <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.6, wordBreak: 'break-word' }}>
+                    <Typography variant="body2" sx={{ lineHeight: 1.6, wordBreak: 'break-word', fontWeight: 600 }}>
                       {watchedValues.executionPlace || <EmptyField />}
                     </Typography>
                   </Grid>
@@ -1278,7 +1276,7 @@ function NewProposalFormInner() {
                         Fecha de Inicio
                       </Typography>
                     </Box>
-                    <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.6 }}>
+                    <Typography variant="body2" sx={{ lineHeight: 1.6, fontWeight: 600 }}>
                       {watchedValues.startDate
                         ? new Date(watchedValues.startDate + 'T00:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
                         : <EmptyField />}
@@ -1292,7 +1290,7 @@ function NewProposalFormInner() {
                         Fecha de Fin
                       </Typography>
                     </Box>
-                    <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.6 }}>
+                    <Typography variant="body2" sx={{ lineHeight: 1.6, fontWeight: 600 }}>
                       {watchedValues.endDate
                         ? new Date(watchedValues.endDate + 'T00:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
                         : <EmptyField />}
@@ -1327,7 +1325,7 @@ function NewProposalFormInner() {
                   <Users size={18} />
                 </Box>
                 <Box>
-                  <Typography variant="subtitle1" fontWeight={700}>Equipo y Archivos</Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Equipo y Archivos</Typography>
                   <Typography variant="caption" color="text.secondary">Miembros del equipo y documento adjunto</Typography>
                 </Box>
               </Box>
@@ -1341,9 +1339,9 @@ function NewProposalFormInner() {
 
                   {members.length > 0 ? (
                     <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      {members.map((member, idx) => (
+                      {members.map((member) => (
                         <Box
-                          key={idx}
+                          key={member.userId}
                           sx={{
                             display: 'flex',
                             alignItems: 'center',
@@ -1366,7 +1364,7 @@ function NewProposalFormInner() {
                             {member.userFirstNames?.[0]}{member.userLastNames?.[0]}
                           </Box>
                           <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                            <Typography variant="body2" fontWeight={600} sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
                               {member.userFirstNames} {member.userLastNames}
                             </Typography>
                             <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
@@ -1442,7 +1440,7 @@ function NewProposalFormInner() {
                         <File size={20} color="#dc2626" />
                       </Box>
                       <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                        <Typography variant="body2" fontWeight={600} sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
                           {documentName || 'Documento cargado'}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -1473,7 +1471,7 @@ function NewProposalFormInner() {
                       }}
                     >
                       <Paperclip size={16} color="var(--on-surface-variant, #999)" />
-                      <Typography variant="body2" color="text.secondary" fontStyle="italic">
+                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
                         Sin documento adjunto
                       </Typography>
                     </Box>
