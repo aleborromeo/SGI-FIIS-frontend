@@ -27,8 +27,9 @@ export function EligibilityGate({ children }: EligibilityGateProps) {
 
   const hasActiveGroup = eligibility?.hasActiveGroup ?? false;
   const hasVigentCalls = (convocatorias?.length ?? 0) > 0;
+  const isDocente = eligibility?.docente ?? false;
 
-  if (!hasActiveGroup || !hasVigentCalls) {
+  if (!hasActiveGroup || !hasVigentCalls || !isDocente) {
     return (
       <Box
         sx={{
@@ -51,6 +52,11 @@ export function EligibilityGate({ children }: EligibilityGateProps) {
           No cumple con los requisitos necesarios para registrar un proyecto de investigación.
         </Typography>
         <Box component="ul" sx={{ textAlign: 'left', maxWidth: 400, mx: 'auto', mt: 2, pl: 2 }}>
+          {!isDocente && (
+            <Typography component="li" variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              Solo los docentes investigadores pueden registrar proyectos.
+            </Typography>
+          )}
           {!hasActiveGroup && (
             <Typography component="li" variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
               No pertenece a un grupo de investigación activo.
