@@ -71,25 +71,23 @@ export const NewConvocatoria: React.FC = () => {
 
   // Validación de campo individual
   const validateField = (field: string, value: string): string | undefined => {
-    switch (field) {
-      case 'title':
-        if (!value.trim()) return 'El título es obligatorio';
-        if (value.trim().length < 5) return 'Mínimo 5 caracteres';
-        return undefined;
-      case 'description':
-        if (!value.trim()) return 'La descripción es obligatoria';
-        if (value.trim().length < 20) return 'Mínimo 20 caracteres';
-        return undefined;
-      case 'startDate':
-        if (!value) return 'La fecha de inicio es obligatoria';
-        return undefined;
-      case 'endDate':
-        if (!value) return 'La fecha de fin es obligatoria';
-        if (formData.startDate && value < formData.startDate) return 'Debe ser posterior a la fecha de inicio';
-        return undefined;
-      default:
-        return undefined;
+    const trimmed = value.trim();
+    if (field === 'title') {
+      if (!trimmed) return 'El título es obligatorio';
+      if (trimmed.length < 5) return 'Mínimo 5 caracteres';
     }
+    if (field === 'description') {
+      if (!trimmed) return 'La descripción es obligatoria';
+      if (trimmed.length < 20) return 'Mínimo 20 caracteres';
+    }
+    if (field === 'startDate' && !value) {
+      return 'La fecha de inicio es obligatoria';
+    }
+    if (field === 'endDate') {
+      if (!value) return 'La fecha de fin es obligatoria';
+      if (formData.startDate && value < formData.startDate) return 'Debe ser posterior a la fecha de inicio';
+    }
+    return undefined;
   };
 
   const handleChange = (field: string, value: string) => {

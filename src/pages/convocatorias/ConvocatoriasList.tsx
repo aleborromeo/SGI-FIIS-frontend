@@ -90,9 +90,22 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
   const daysLeft = call.status === 'ABIERTA' ? getDaysLeft(call.endDate) : null;
   const isOverdue = daysLeft !== null && daysLeft < 0;
 
-  const daysLeftBg = isOverdue ? '#fee2e2' : daysLeft <= 5 ? '#fef3c7' : '#d1fae5';
-  const daysLeftColor = isOverdue ? '#991b1b' : daysLeft <= 5 ? '#92400e' : '#065f46';
-  const daysLeftText = isOverdue ? `Venció hace ${Math.abs(daysLeft)}d` : `${daysLeft}d restante${daysLeft !== 1 ? 's' : ''}`;
+  let daysLeftBg = '#d1fae5';
+  let daysLeftColor = '#065f46';
+  if (isOverdue) {
+    daysLeftBg = '#fee2e2';
+    daysLeftColor = '#991b1b';
+  } else if (daysLeft !== null && daysLeft <= 5) {
+    daysLeftBg = '#fef3c7';
+    daysLeftColor = '#92400e';
+  }
+
+  let daysLeftText = '';
+  if (daysLeft !== null) {
+    daysLeftText = isOverdue
+      ? `Venció hace ${Math.abs(daysLeft)}d`
+      : `${daysLeft}d restante${daysLeft !== 1 ? 's' : ''}`;
+  }
 
   return (
     <div style={{

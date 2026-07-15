@@ -66,7 +66,7 @@ export const ReviewProgressReports: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('PENDIENTE');
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
   const [reportDetail, setReportDetail] = useState<any>(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [, setLoadingDetail] = useState(false);
 
   const fetchReports = async () => {
     try {
