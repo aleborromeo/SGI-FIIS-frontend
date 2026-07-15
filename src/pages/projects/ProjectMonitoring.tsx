@@ -24,6 +24,7 @@ import { useToast } from '../../context/ToastContext';
 import { documentService } from '../../services/documentService';
 import { AuthContext } from '../../context/AuthContext';
 import { progressReportService } from '../../services/progressReportService';
+import { userService } from '../../services/userService';
 
 function getStatusLabel(status?: string): string {
   if (!status) return 'Sin estado';
@@ -132,8 +133,58 @@ export const ProjectMonitoring: React.FC = () => {
   }), [rawToast]);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const progress = useMemo(() => getStatusProgress(project?.status), [project?.status]);
+
+  const parsedSummary = useMemo(() => {
+    if (!project?.summary) return null;
+    const summaryText = project.summary;
+    
+    const headers = [
+      { key: 'fif', pattern: /\[FIF:\s*(SI|NO|SÍ)\]/i },
+      { key: 'resumen', label: 'Resumen', pattern: /RESUMEN:/ },
+      { key: 'objetivos', label: 'Objetivos específicos', pattern: /OBJETIVOS ESPECÍFICOS:/ },
+      { key: 'metodologia', label: 'Metodología', pattern: /METODOLOGÍA:/ },
+      { key: 'resultados', label: 'Resultados esperados', pattern: /RESULTADOS ESPERADOS:/ },
+      { key: 'tipo', label: 'Tipo de proyecto', pattern: /TIPO DE PROYECTO:/ }
+    ];
+
+    const matches: { key: string; label?: string; index: number; length: number }[] = [];
+    
+    const fifMatch = summaryText.match(/\[FIF:\s*([^\]]+)\]/i);
+    let fifVal = '';
+    if (fifMatch) {
+      fifVal = fifMatch[1].toUpperCase() === 'SI' || fifMatch[1].toUpperCase() === 'SÍ' ? 'Sí' : 'No';
+    }
+
+    headers.forEach(h => {
+      if (h.key === 'fif') return;
+      const match = summaryText.match(h.pattern);
+      if (match && match.index !== undefined) {
+        matches.push({ key: h.key, label: h.label, index: match.index, length: match[0].length });
+      }
+    });
+
+    matches.sort((a, b) => a.index - b.index);
+
+    const sections: { label: string; content: string }[] = [];
+    
+    if (matches.length === 0) {
+      sections.push({ label: 'Resumen', content: summaryText });
+    } else {
+      for (let i = 0; i < matches.length; i++) {
+        const current = matches[i];
+        const next = matches[i + 1];
+        const start = current.index + current.length;
+        const end = next ? next.index : summaryText.length;
+        const content = summaryText.substring(start, end).trim();
+        if (content) {
+          sections.push({ label: current.label!, content });
+        }
+      }
+    }
+
+    return { fifVal, sections };
+  }, [project?.summary]);
 
   useEffect(() => {
     let mounted = true;
@@ -183,6 +234,36 @@ export const ProjectMonitoring: React.FC = () => {
       mounted = false;
     };
   }, [id]);
+
+  const [responsibleName, setResponsibleName] = useState<string>('Cargando...');
+  const [documentName, setDocumentName] = useState<string>('Cargando...');
+
+  useEffect(() => {
+    if (!project) return;
+
+    if (project.responsibleId) {
+      userService.getById(project.responsibleId)
+        .then(u => setResponsibleName(`${u.firstNames} ${u.lastNames}`))
+        .catch(() => setResponsibleName(`Usuario #${project.responsibleId}`));
+    } else {
+      setResponsibleName('No registrado');
+    }
+
+    if (project.documentId) {
+      documentService.list()
+        .then(docs => {
+          const doc = docs.find(d => d.id === project.documentId);
+          if (doc) {
+            setDocumentName(doc.fileName);
+          } else {
+            setDocumentName(`Documento #${project.documentId}`);
+          }
+        })
+        .catch(() => setDocumentName(`Documento #${project.documentId}`));
+    } else {
+      setDocumentName('No registrado');
+    }
+  }, [project?.responsibleId, project?.documentId]);
 
   async function handleMoveToExecution() {
     if (!id) return;
@@ -241,7 +322,7 @@ export const ProjectMonitoring: React.FC = () => {
   }
 
   return (
-    <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
+    <div style={{ padding: '24px 32px 64px', maxWidth: '1440px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
       <Link
         to="/projects"
         style={{
@@ -260,12 +341,13 @@ export const ProjectMonitoring: React.FC = () => {
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          gap: '24px',
-          marginBottom: '24px',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '20px',
+          marginBottom: '28px',
         }}
       >
-        <div>
+        <div style={{ flex: '1', minWidth: '280px' }}>
           <Badge variant="info">{project.code || `PRY-${project.id}`}</Badge>
 
           <h1
@@ -274,20 +356,11 @@ export const ProjectMonitoring: React.FC = () => {
               marginTop: '12px',
               marginBottom: '8px',
               color: 'var(--primary)',
+              fontWeight: 800,
             }}
           >
             {project.title || 'Proyecto sin título'}
           </h1>
-
-          <p
-            className="text-body-md"
-            style={{
-              color: 'var(--on-surface-variant)',
-              maxWidth: '820px',
-            }}
-          >
-            {project.summary || 'Este proyecto no tiene resumen registrado.'}
-          </p>
         </div>
 
         <Button
@@ -295,28 +368,66 @@ export const ProjectMonitoring: React.FC = () => {
           icon={<RefreshCcw size={16} />}
           onClick={handleMoveToExecution}
           disabled={updatingStatus}
+          style={{ height: 'fit-content' }}
         >
           {updatingStatus ? 'Actualizando...' : 'Pasar a ejecución'}
         </Button>
       </div>
 
-      <Card style={{ marginBottom: '24px' }}>
-        <CardContent>
+      <Card style={{ marginBottom: '32px', border: '1px solid var(--outline-variant)' }}>
+        <CardHeader style={{ borderBottom: '1px solid var(--outline-variant)', padding: '18px 24px' }}>
+          <h3 className="text-title-lg" style={{ margin: 0, fontWeight: 700 }}>Resumen y Detalles de la Propuesta</h3>
+        </CardHeader>
+        <CardContent style={{ padding: '24px' }}>
+          {parsedSummary ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {parsedSummary.fifVal && (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Badge variant={parsedSummary.fifVal === 'Sí' ? 'success' : 'error'}>
+                    Apoyo de Financiamiento FIF: {parsedSummary.fifVal}
+                  </Badge>
+                </div>
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                {parsedSummary.sections.map(s => (
+                  <div key={s.label} style={{ backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: '12px', padding: '20px', boxShadow: 'var(--shadow-sm)' }}>
+                    <h4 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 0, marginBottom: '10px', borderBottom: '1px solid var(--outline-variant)', paddingBottom: '6px' }}>
+                      {s.label}
+                    </h4>
+                    <p style={{ fontSize: '13.5px', color: 'var(--on-surface-variant)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-line' }}>
+                      {s.content}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
+              Este proyecto no tiene resumen registrado.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card style={{ marginBottom: '24px', border: '1px solid var(--outline-variant)' }}>
+        <CardContent style={{ padding: '24px' }}>
           <div
-            className="responsive-grid-4"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-              gap: '20px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '24px',
             }}
           >
-            <div>
+            <div style={{ backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: '12px', border: '1px solid var(--outline-variant)' }}>
               <div
                 className="text-caption"
                 style={{
                   color: 'var(--on-surface-variant)',
                   textTransform: 'uppercase',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                  letterSpacing: '0.05em',
+                  marginBottom: '8px',
                 }}
               >
                 Estado
@@ -324,50 +435,61 @@ export const ProjectMonitoring: React.FC = () => {
               <Badge variant="neutral">{getStatusLabel(project.status)}</Badge>
             </div>
 
-            <div>
+            <div style={{ backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: '12px', border: '1px solid var(--outline-variant)' }}>
               <div
                 className="text-caption"
                 style={{
                   color: 'var(--on-surface-variant)',
                   textTransform: 'uppercase',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                  letterSpacing: '0.05em',
+                  marginBottom: '8px',
                 }}
               >
                 Línea de investigación
               </div>
-              <div className="text-body-md">
+              <div className="text-body-md" style={{ fontWeight: 600 }}>
                 {project.researchLineName || 'Sin línea registrada'}
               </div>
             </div>
 
-            <div>
+            <div style={{ backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: '12px', border: '1px solid var(--outline-variant)' }}>
               <div
                 className="text-caption"
                 style={{
                   color: 'var(--on-surface-variant)',
                   textTransform: 'uppercase',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                  letterSpacing: '0.05em',
+                  marginBottom: '8px',
                 }}
               >
                 Grupo
               </div>
-              <div className="text-body-md">
+              <div className="text-body-md" style={{ fontWeight: 600 }}>
                 {project.researchGroupCode || 'Sin grupo registrado'}
               </div>
             </div>
 
-            <div>
+            <div style={{ backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: '12px', border: '1px solid var(--outline-variant)' }}>
               <div
                 className="text-caption"
                 style={{
                   color: 'var(--on-surface-variant)',
                   textTransform: 'uppercase',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                  letterSpacing: '0.05em',
+                  marginBottom: '8px',
                 }}
               >
                 Presupuesto
               </div>
-              <div className="text-body-md">{formatMoney(project.budget)}</div>
+              <div className="text-body-md" style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                {formatMoney(project.budget)}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -376,12 +498,13 @@ export const ProjectMonitoring: React.FC = () => {
       <div
         className="responsive-grid-split"
         style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 360px',
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
           gap: '32px',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ flex: '2 1 600px', display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
           <Card>
             <CardHeader>
               <h3 className="text-title-lg">Progreso general del proyecto</h3>
@@ -607,7 +730,7 @@ export const ProjectMonitoring: React.FC = () => {
                     </TableHead>
                     <TableBody>
                       <TableRow>
-                        <TableCell><strong>Proyecto_inicial.pdf</strong></TableCell>
+                        <TableCell><strong>{project.documentId ? documentName : 'Proyecto_inicial.pdf'}</strong></TableCell>
                         <TableCell>Investigador</TableCell>
                         <TableCell>{formatDate(project.startDate)}</TableCell>
                         <TableCell style={{ textAlign: 'right' }}>
@@ -679,7 +802,7 @@ export const ProjectMonitoring: React.FC = () => {
           </Card>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <Card>
             <CardHeader>
               <h3 className="text-title-lg">Detalles administrativos</h3>
@@ -732,7 +855,7 @@ export const ProjectMonitoring: React.FC = () => {
                   <div>
                     <strong>Responsable</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
-                      ID de usuario: {project.responsibleId ?? 'No registrado'}
+                      {responsibleName}
                     </div>
                   </div>
                 </div>
@@ -742,7 +865,16 @@ export const ProjectMonitoring: React.FC = () => {
                   <div>
                     <strong>Documento asociado</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
-                      {project.documentId ? `Documento #${project.documentId}` : 'No registrado'}
+                      {project.documentId ? (
+                        <span
+                          style={{ color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+                          onClick={() => window.open(documentService.download(project.documentId!), '_blank')}
+                        >
+                          {documentName}
+                        </span>
+                      ) : (
+                        'No registrado'
+                      )}
                     </div>
                   </div>
                 </div>
