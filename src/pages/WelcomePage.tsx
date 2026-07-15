@@ -917,12 +917,12 @@ export const WelcomePage: React.FC = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" onClick={(e) => e.preventDefault()}>
+                  <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
                     Política de Privacidad
                   </a>
                 </li>
                 <li>
-                  <a href="#" onClick={(e) => e.preventDefault()}>
+                  <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
                     Términos de Uso
                   </a>
                 </li>

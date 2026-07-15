@@ -1,0 +1,261 @@
+/* PrivacyPolicyPage.css - Réplica del diseño formal de Frontiers */
+
+.privacy-page-wrapper {
+  background-color: #ffffff;
+  color: #2d3748;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header formal y minimalista */
+.privacy-header {
+  height: 70px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.privacy-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.privacy-logo-img {
+  height: 36px;
+  width: auto;
+}
+
+.privacy-logo-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a365d;
+  letter-spacing: -0.5px;
+}
+
+/* Layout de dos columnas */
+.privacy-main-layout {
+  display: flex;
+  flex: 1;
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 20px;
+  gap: 40px;
+}
+
+/* Sidebar estática a la izquierda */
+.privacy-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 110px;
+  height: calc(100vh - 150px);
+  overflow-y: auto;
+  padding-right: 20px;
+  border-right: 1px solid #edf2f7;
+}
+
+.privacy-sidebar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.privacy-sidebar-item {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 9999px; /* Formato de píldora/cápsula */
+  font-size: 0.95rem;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+}
+
+.privacy-sidebar-item:hover {
+  color: #1a202c;
+  background-color: #f7fafc;
+}
+
+.privacy-sidebar-item.active {
+  background-color: #edf2f7; /* Fondo plomo suave */
+  color: #1a202c;
+  font-weight: 600;
+}
+
+/* Contenedor de contenido scrollable a la derecha */
+.privacy-content-area {
+  flex: 1;
+  padding-left: 20px;
+  padding-bottom: 80px;
+}
+
+.privacy-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.privacy-subtitle {
+  font-size: 0.95rem;
+  color: #718096;
+  margin-bottom: 40px;
+}
+
+.privacy-intro-text {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 40px;
+}
+
+/* Secciones de contenido */
+.privacy-section {
+  margin-bottom: 48px;
+}
+
+.privacy-section-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+/* Estilo formal de párrafos con letras */
+.privacy-paragraph-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.privacy-paragraph-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  line-height: 1.8;
+  font-size: 0.98rem;
+  color: #2d3748;
+}
+
+.privacy-paragraph-letter {
+  font-weight: 600;
+  color: #4a5568;
+  flex-shrink: 0;
+  width: 24px;
+}
+
+.privacy-paragraph-body {
+  margin: 0;
+}
+
+.privacy-paragraph-body strong {
+  color: #1a202c;
+  font-weight: 600;
+}
+
+/* Tarjeta de contacto formal */
+.privacy-contact-card {
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-top: 20px;
+}
+
+.privacy-contact-card p {
+  margin: 0 0 12px 0;
+  font-size: 0.95rem;
+  color: #4a5568;
+}
+
+.privacy-contact-card p:last-child {
+  margin-bottom: 0;
+}
+
+.privacy-contact-link {
+  color: #2b6cb0;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+/* Footer formal */
+.privacy-footer {
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 30px 40px;
+  font-size: 0.88rem;
+  color: #718096;
+}
+
+.privacy-footer-content {
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.privacy-footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.privacy-footer-link {
+  color: #2b6cb0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .privacy-main-layout {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .privacy-sidebar {
+    width: 100%;
+    position: relative;
+    top: 0;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #edf2f7;
+    padding-bottom: 20px;
+    padding-right: 0;
+  }
+
+  .privacy-sidebar-list {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+
+  .privacy-sidebar-item {
+    white-space: nowrap;
+    width: auto;
+  }
+
+  .privacy-content-area {
+    padding-left: 0;
+  }
+}
