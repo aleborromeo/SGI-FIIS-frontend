@@ -17,7 +17,7 @@ export const NovedadesPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation('public');
-  const { language, toggleLanguage } = useLanguage();
+  useLanguage();
   const [activeSection, setActiveSection] = useState('novedades-convocatorias');
   const [calls, setCalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

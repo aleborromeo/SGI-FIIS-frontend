@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../hooks/useLanguage';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import './WelcomePage.css';
-import frontisImage from '../assets/images/frontis_fiis.png';
 import universityIcon from '../assets/images/icon-sgi-fiis.png';
 import whatsappGif from '../assets/images/icons8-whatsapp.gif';
 import { User, ChevronDown } from 'lucide-react';
@@ -15,7 +14,7 @@ export const ContactoPage: React.FC = () => {
   const location = useLocation();
   const toast = useToast();
   const { t } = useTranslation('public');
-  const { language, toggleLanguage } = useLanguage();
+  useLanguage();
   const [activeSection, setActiveSection] = useState('contacto-form-section');
 
   const [contactForm, setContactForm] = useState({

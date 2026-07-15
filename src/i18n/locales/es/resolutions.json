@@ -1,0 +1,411 @@
+{
+  "title": "Resoluciones",
+  "subtitle": "Gestiona las resoluciones académicas",
+  "list": {
+    "title": "Lista de Resoluciones",
+    "noResolutions": "No hay resoluciones registradas",
+    "createFirst": "Crea una nueva resolución",
+    "filters": {
+      "status": "Estado",
+      "type": "Tipo",
+      "year": "Año",
+      "dateRange": "Rango de Fechas",
+      "search": "Buscar..."
+    },
+    "columns": {
+      "number": "Número",
+      "title": "Título",
+      "type": "Tipo",
+      "status": "Estado",
+      "issueDate": "Fecha de Emisión",
+      "effectiveDate": "Fecha de Vigencia",
+      "issuedBy": "Emitida Por",
+      "actions": "Acciones"
+    },
+    "pagination": {
+      "showing": "Mostrando {{start}}-{{end}} de {{total}}",
+      "page": "Página {{page}} de {{pages}}",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    }
+  },
+  "types": {
+    "investigacion": "Investigación",
+    "academica": "Académica",
+    "administrativa": "Administrativa",
+    "nombramiento": "Nombramiento",
+    "授权": "Autorización",
+    "reglamento": "Reglamento",
+    "otro": "Otro"
+  },
+  "status": {
+    "draft": "Borrador",
+    "pending": "Pendiente",
+    "inReview": "En Revisión",
+    "approved": "Aprobada",
+    "rejected": "Rechazada",
+    "published": "Publicada",
+    "effective": "Vigente",
+    "expired": "Vencida",
+    "revoked": "Revocada"
+  },
+  "detail": {
+    "title": "Detalle de la Resolución",
+    "number": "Número",
+    "title_": "Título",
+    "description": "Descripción",
+    "type": "Tipo",
+    "status": "Estado",
+    "issueDate": "Fecha de Emisión",
+    "effectiveDate": "Fecha de Vigencia",
+    "expirationDate": "Fecha de Vencimiento",
+    "issuedBy": "Emitida Por",
+    "approvedBy": "Aprobada Por",
+    "signedBy": "Firmada Por",
+    "whereas": "Considerandos",
+    "operative": "Parte Dispositiva",
+    "annexes": "Anexos",
+    "observations": "Observaciones",
+    "documents": "Documentos",
+    "history": "Historial",
+    "comments": "Comentarios",
+    "relatedProjects": "Proyectos Relacionados",
+    "relatedThesis": "Tesis Relacionadas"
+  },
+  "new": {
+    "title": "Nueva Resolución",
+    "subtitle": "Crea una nueva resolución",
+    "form": {
+      "number": "Número de Resolución",
+      "numberPlaceholder": "Ingrese el número de resolución",
+      "title": "Título",
+      "titlePlaceholder": "Ingrese el título de la resolución",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Ingrese la descripción",
+      "type": "Tipo de Resolución",
+      "typePlaceholder": "Seleccione el tipo",
+      "issueDate": "Fecha de Emisión",
+      "effectiveDate": "Fecha de Vigencia",
+      "expirationDate": "Fecha de Vencimiento",
+      "issuedBy": "Emitida Por",
+      "issuedByPlaceholder": "Seleccione quién emite",
+      "whereas": "Considerandos",
+      "whereasPlaceholder": "Ingrese los considerandos",
+      "operative": "Parte Dispositiva",
+      "operativePlaceholder": "Ingrese la parte dispositiva",
+      "attachments": "Documentos Adjuntos",
+      "submitButton": "Enviar Resolución",
+      "saveDraft": "Guardar Borrador",
+      "cancel": "Cancelar"
+    },
+    "steps": {
+      "step1": "Información General",
+      "step2": "Contenido",
+      "step3": "Documentos",
+      "step4": "Revisión"
+    },
+    "error": {
+      "numberRequired": "El número de resolución es requerido",
+      "titleRequired": "El título es requerido",
+      "descriptionRequired": "La descripción es requerida",
+      "typeRequired": "El tipo de resolución es requerido",
+      "issueDateRequired": "La fecha de emisión es requerida",
+      "effectiveDateRequired": "La fecha de vigencia es requerida",
+      "invalidDates": "La fecha de vigencia debe ser posterior a la fecha de emisión",
+      "whereasRequired": "Los considerandos son requeridos",
+      "operativeRequired": "La parte dispositiva es requerida",
+      "uploadFailed": "Error al subir el archivo",
+      "saveFailed": "Error al guardar la resolución"
+    },
+    "success": {
+      "created": "Resolución creada exitosamente",
+      "draftSaved": "Borrador guardado"
+    }
+  },
+  "edit": {
+    "title": "Editar Resolución",
+    "subtitle": "Modifica la información de la resolución",
+    "form": {
+      "submitButton": "Guardar Cambios",
+      "cancel": "Cancelar"
+    },
+    "error": {
+      "updateFailed": "Error al actualizar la resolución",
+      "notFound": "Resolución no encontrada",
+      "unauthorized": "No tiene permisos para editar esta resolución"
+    },
+    "success": {
+      "updated": "Resolución actualizada exitosamente"
+    }
+  },
+  "decanoReview": {
+    "title": "Revisión del Decano",
+    "subtitle": "Revisión y aprobación de resoluciones por el Decano",
+    "pendingReviews": "Resoluciones Pendientes de Revisión",
+    "noPendingReviews": "No hay resoluciones pendientes de revisión",
+    "reviewForm": {
+      "comments": "Comentarios del Decano",
+      "commentsPlaceholder": "Ingrese sus comentarios",
+      "recommendation": "Recomendación",
+      "recommendationPlaceholder": "Ingrese su recomendación",
+      "approveButton": "Aprobar Resolución",
+      "rejectButton": "Rechazar Resolución",
+      "requestChangesButton": "Solicitar Cambios",
+      "cancel": "Cancelar"
+    },
+    "reviewSteps": {
+      "step1": "Revisión del Documento",
+      "step2": "Evaluación",
+      "step3": "Decisión"
+    },
+    "error": {
+      "commentsRequired": "Los comentarios son requeridos",
+      "recommendationRequired": "La recomendación es requerida",
+      "saveFailed": "Error al guardar la revisión"
+    },
+    "success": {
+      "approved": "Resolución aprobada exitosamente",
+      "rejected": "Resolución rechazada exitosamente",
+      "changesRequested": "Cambios solicitados exitosamente"
+    }
+  },
+  "actions": {
+    "create": "Crear Resolución",
+    "edit": "Editar Resolución",
+    "delete": "Eliminar Resolución",
+    "submit": "Enviar Resolución",
+    "approve": "Aprobar Resolución",
+    "reject": "Rechazar Resolución",
+    "publish": "Publicar Resolución",
+    "unpublish": "Despublicar Resolución",
+    "revoke": "Revocar Resolución",
+    "sign": "Firmar Resolución",
+    "addComment": "Agregar Comentario",
+    "addDocument": "Agregar Documento",
+    "downloadDocument": "Descargar Documento",
+    "viewHistory": "Ver Historial",
+    "export": "Exportar Resolución",
+    "print": "Imprimir Resolución",
+    "share": "Compartir Resolución",
+    "sendForReview": "Enviar para Revisión",
+    "sendForSignature": "Enviar para Firma"
+  },
+  "documents": {
+    "title": "Documentos Adjuntos",
+    "noDocuments": "No hay documentos adjuntos",
+    "uploadDocument": "Subir Documento",
+    "uploadHint": "Arrastre y suelte archivos aquí o haga clic para seleccionar",
+    "allowedTypes": "Tipos permitidos: PDF, DOC, DOCX",
+    "maxSize": "Tamaño máximo: 20 MB",
+    "uploading": "Subiendo...",
+    "uploadSuccess": "Documento subido exitosamente",
+    "uploadError": "Error al subir el documento",
+    "deleteDocument": "Eliminar Documento",
+    "deleteConfirm": "¿Está seguro de eliminar este documento?",
+    "downloadDocument": "Descargar Documento",
+    "viewDocument": "Ver Documento",
+    "categories": {
+      "resolution": "Resolución",
+      "annex": "Anexo",
+      "support": "Documento de Soporte",
+      "signature": "Documento de Firma",
+      "other": "Otro"
+    }
+  },
+  "comments": {
+    "title": "Comentarios",
+    "noComments": "No hay comentarios",
+    "addComment": "Agregar Comentario",
+    "commentPlaceholder": "Escriba su comentario...",
+    "submitButton": "Enviar Comentario",
+    "editComment": "Editar Comentario",
+    "deleteComment": "Eliminar Comentario",
+    "reply": "Responder",
+    "commentBy": "Comentario por {{name}}",
+    "onDate": "el {{date}}"
+  },
+  "history": {
+    "title": "Historial",
+    "noHistory": "No hay historial disponible",
+    "event": "Evento",
+    "date": "Fecha",
+    "user": "Usuario",
+    "details": "Detalles",
+    "eventTypes": {
+      "created": "Resolución creada",
+      "submitted": "Resolución enviada",
+      "approved": "Resolución aprobada",
+      "rejected": "Resolución rechazada",
+      "published": "Resolución publicada",
+      "effective": "Resolución vigente",
+      "expired": "Resolución vencida",
+      "revoked": "Resolución revocada",
+      "signed": "Resolución firmada",
+      "documentUploaded": "Documento subido",
+      "commentAdded": "Comentario agregado",
+      "statusChanged": "Estado cambiado",
+      "sentForReview": "Enviada para revisión",
+      "sentForSignature": "Enviada para firma"
+    }
+  },
+  "notifications": {
+    "newResolution": "Nueva resolución: {{number}}",
+    "resolutionUpdate": "Actualización en resolución: {{number}}",
+    "resolutionApproved": "Resolución aprobada: {{number}}",
+    "resolutionRejected": "Resolución rechazada: {{number}}",
+    "resolutionPublished": "Resolución publicada: {{number}}",
+    "resolutionEffective": "Resolución vigente: {{number}}",
+    "resolutionExpired": "Resolución vencida: {{number}}",
+    "commentAdded": "Comentario agregado en resolución: {{number}}",
+    "signatureRequired": "Firma requerida para resolución: {{number}}"
+  },
+  "stats": {
+    "title": "Estadísticas de Resoluciones",
+    "total": "Total de Resoluciones",
+    "pending": "Pendientes",
+    "approved": "Aprobadas",
+    "published": "Publicadas",
+    "effective": "Vigentes",
+    "expired": "Vencidas",
+    "byType": "Por Tipo",
+    "byStatus": "Por Estado",
+    "byYear": "Por Año",
+    "byMonth": "Por Mes",
+    "byIssuer": "Por Emisor"
+  },
+  "error": {
+    "notFound": "Resolución no encontrada",
+    "unauthorized": "No tiene permisos para realizar esta acción",
+    "forbidden": "Acceso denegado",
+    "serverError": "Error del servidor",
+    "networkError": "Error de conexión",
+    "loadingError": "Error al cargar los datos",
+    "savingError": "Error al guardar",
+    "deletingError": "Error al eliminar",
+    "updatingError": "Error al actualizar",
+    "creatingError": "Error al crear"
+  },
+  "success": {
+    "created": "Resolución creada exitosamente",
+    "updated": "Resolución actualizada exitosamente",
+    "deleted": "Resolución eliminada exitosamente",
+    "submitted": "Resolución enviada exitosamente",
+    "approved": "Resolución aprobada exitosamente",
+    "rejected": "Resolución rechazada exitosamente",
+    "published": "Resolución publicada exitosamente",
+    "revoked": "Resolución revocada exitosamente",
+    "signed": "Resolución firmada exitosamente",
+    "documentUploaded": "Documento subido exitosamente",
+    "commentAdded": "Comentario agregado exitosamente"
+  },
+  "decanoReview": {
+    "header": {
+      "title": "Consola de Decanato",
+      "subtitle": "Revisión final de expedientes de investigación y firmas autorizadas de resoluciones."
+    },
+    "retry": "Reintentar",
+    "table": {
+      "title": "Expedientes Pendientes de Firma Decanal ({{count}})",
+      "headers": {
+        "code": "Código",
+        "type": "Tipo",
+        "reference": "Referencia",
+        "status": "Estado",
+        "lastUpdate": "Última actualización",
+        "action": "Acción"
+      },
+      "emptyState": "No hay expedientes pendientes de aprobación final."
+    },
+    "status": {
+      "pendingDecanato": "Pendiente de Decanato"
+    },
+    "actions": {
+      "sign": "Firmar",
+      "observe": "Observar",
+      "reject": "Rechazar"
+    },
+    "prompt": {
+      "resolutionNumber": "Ingrese el número de la Resolución Decanal:",
+      "resolutionNumberRequired": "Debe ingresar un número de resolución válido.",
+      "resolutionSubject": "Ingrese el asunto de la resolución:",
+      "observerDetail": "Ingrese la observación para devolver al Director de Investigación:",
+      "observationRequired": "Debe ingresar una observación.",
+      "rejectConfirm": "¿Está seguro de RECHAZAR el trámite {{code}}? Esta acción es definitiva."
+    },
+    "toast": {
+      "loadError": "Error al cargar expedientes pendientes.",
+      "approved": "Trámite {{code}} aprobado con resolución {{resolution}}.",
+      "approveError": "Error al aprobar el trámite.",
+      "observed": "Trámite {{code}} observado y devuelto.",
+      "observeError": "Error al observar el trámite.",
+      "rejected": "Trámite {{code}} rechazado.",
+      "rejectError": "Error al rechazar el trámite."
+    }
+  },
+  "new": {
+    "title": "Nueva Resolución",
+    "subtitle": "Crea una nueva resolución",
+    "backToDecanoReview": "Volver a Consola de Decanato",
+    "header": {
+      "title": "Registro de Resolución y Ejecución",
+      "subtitle": "Ingrese los datos oficiales para activar el proyecto e iniciar el cronograma de informes trimestrales."
+    },
+    "referenceProject": "Proyecto de Referencia:",
+    "section1": {
+      "title": "Datos de la Resolución Decanal"
+    },
+    "section2": {
+      "title": "Parámetros de Ejecución del Proyecto"
+    },
+    "form": {
+      "resolutionNumber": "Número de Resolución",
+      "resolutionNumberPlaceholder": "Ej. R.D. N.° 045-2026-FIIS",
+      "emissionDate": "Fecha de Emisión",
+      "resolutionTitle": "Título / Asunto de la Resolución",
+      "resolutionTitlePlaceholder": "Ej. Aprobar la postulación del proyecto...",
+      "issuingBody": "Órgano Emisor",
+      "attachPdf": "Adjuntar Resolución PDF",
+      "executionStart": "Inicio de Ejecución",
+      "executionEnd": "Fin de Ejecución",
+      "estimatedDuration": "Duración Estimada (Meses)",
+      "receivesFif": "¿Recibe Financiamiento FIF?",
+      "fifStatus": "Estado Inicial Financiamiento FIF",
+      "fifActive": "Activo / Aprobado",
+      "fifSuspended": "Suspendido",
+      "fifNotApplicable": "No aplica",
+      "requiresArticle": "¿Requiere Artículo Final?",
+      "yes": "Sí",
+      "no": "No",
+      "yesFifRequired": "Sí (Obligatorio FIF)",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "submit": "Aprobar Proyecto y Generar Cronograma"
+    },
+    "toast": {
+      "success": "Resolución registrada y cronograma de informes trimestrales generado con éxito."
+    },
+    "steps": {
+      "step1": "Información General",
+      "step2": "Contenido",
+      "step3": "Documentos",
+      "step4": "Revisión"
+    },
+    "error": {
+      "numberRequired": "El número de resolución es requerido",
+      "titleRequired": "El título es requerido",
+      "descriptionRequired": "La descripción es requerida",
+      "typeRequired": "El tipo de resolución es requerido",
+      "issueDateRequired": "La fecha de emisión es requerida",
+      "effectiveDateRequired": "La fecha de vigencia es requerida",
+      "invalidDates": "La fecha de vigencia debe ser posterior a la fecha de emisión",
+      "whereasRequired": "Los considerandos son requeridos",
+      "operativeRequired": "La parte dispositiva es requerida",
+      "uploadFailed": "Error al subir el archivo",
+      "saveFailed": "Error al guardar la resolución"
+    },
+    "success": {
+      "created": "Resolución creada exitosamente",
+      "draftSaved": "Borrador guardado"
+    }
+  }
+}

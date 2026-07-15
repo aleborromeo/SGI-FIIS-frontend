@@ -1,0 +1,488 @@
+{
+  "title": "Gestión de Trámites",
+  "subtitle": "Administra tus trámites académicos y administrativos",
+  "listPage": {
+    "title": "Mis Trámites",
+    "subtitle": "Seguimiento del flujo de aprobación de proyectos, informes y resoluciones.",
+    "workflowTitle": "Flujo General de Firma y Trámite Institucional",
+    "workflowSteps": {
+      "step1": "1. Investigador (Creación)",
+      "step2": "2. Coordinador de Grupo (Filtro)",
+      "step3": "3. Dirección de Inv. (Revisión)",
+      "step4": "4. Decanato (Aprobación)",
+      "step5": "5. Resolución Decanal (Activar)"
+    },
+    "searchPlaceholder": "Buscar trámite o proyecto...",
+    "allStatuses": "Todos los estados",
+    "statusFilters": {
+      "PENDIENTE_COORDINADOR": "Pendiente Coordinador",
+      "PENDIENTE_DIRECTOR": "Pendiente Director",
+      "PENDIENTE_DECANO": "Pendiente Decano",
+      "APROBADO": "Aprobado",
+      "OBSERVADO": "Observado"
+    },
+    "resultsCount": "{{count}} trámite(s) encontrado(s)",
+    "emptyState": "No hay trámites que coincidan con la búsqueda.",
+    "tableHeaders": {
+      "tramite": "Trámite",
+      "project": "Proyecto Relacionado",
+      "status": "Estado Actual",
+      "reviewer": "Revisor / Ubicación",
+      "observation": "Última Observación",
+      "actions": "Acciones"
+    },
+    "badges": {
+      "PENDIENTE_COORDINADOR": "PENDIENTE_COORDINADOR",
+      "PENDIENTE_DIRECTOR": "PENDIENTE_DIRECTOR",
+      "PENDIENTE_DECANO": "PENDIENTE_DECANO",
+      "APROBADO": "APROBADO",
+      "OBSERVADO": "OBSERVADO",
+      "unknown": "Desconocido"
+    },
+    "actions": {
+      "subsanar": "Subsanar",
+      "verDetalle": "Ver detalle"
+    }
+  },
+  "inboxPage": {
+    "title": "Bandeja de Trámites",
+    "subtitleRevisor": "Trámites pendientes de tu revisión según tu rol institucional.",
+    "subtitleDefault": "Seguimiento de tus trámites de investigación y sus subsanaciones.",
+    "counters": {
+      "total": "Total de trámites",
+      "pendingReview": "Pendientes de mi revisión",
+      "inReview": "En revisión",
+      "observed": "Observados",
+      "completed": "Finalizados"
+    },
+    "searchPlaceholder": "Buscar por código o título de referencia...",
+    "filterByStatus": "Filtrar por estado",
+    "filterByType": "Filtrar por tipo",
+    "allStatuses": "Todos los estados",
+    "allTypes": "Todos los tipos",
+    "tableHeaders": {
+      "code": "Código",
+      "type": "Tipo",
+      "reference": "Referencia",
+      "status": "Estado",
+      "stageReviewer": "Etapa / Revisor actual",
+      "lastUpdate": "Última actualización",
+      "actions": "Acciones"
+    },
+    "emptyState": "No se encontraron trámites con los filtros actuales.",
+    "pendingYourReview": "Pendiente de tu revisión",
+    "actions": {
+      "verDetalle": "Ver detalle",
+      "subsanar": "Subsanar"
+    }
+  },
+  "detailPage": {
+    "backToInbox": "Volver a la bandeja",
+    "tramiteNotFound": "Trámite no encontrado.",
+    "invalidId": "Identificador de trámite inválido.",
+    "approvalFlow": "Flujo de Aprobación",
+    "currentObservation": "Observación vigente",
+    "generalData": "Datos Generales",
+    "fields": {
+      "applicant": "Solicitante",
+      "tramiteType": "Tipo de trámite",
+      "currentReviewer": "Revisor actual",
+      "submissionDate": "Fecha de presentación",
+      "lastUpdate": "Última actualización"
+    },
+    "actionsSection": "Acciones",
+    "buttons": {
+      "approve": "Aprobar trámite",
+      "registerResolution": "Registrar resolución",
+      "observe": "Observar trámite",
+      "confirmObservation": "Confirmar observación",
+      "reject": "Rechazar trámite",
+      "subsanar": "Subsanar observaciones"
+    },
+    "observationForm": {
+      "label": "Texto de la observación",
+      "placeholder": "Describe qué debe corregir el solicitante...",
+      "requiredError": "El texto de la observación es obligatorio."
+    },
+    "feedback": {
+      "observed": "El trámite fue observado y devuelto al solicitante.",
+      "approved": "El trámite fue aprobado y avanzó a la siguiente etapa.",
+      "resolutionRegistered": "Se registró la resolución y el trámite quedó finalizado.",
+      "rejected": "El trámite fue rechazado de forma definitiva."
+    },
+    "errors": {
+      "loadingTramite": "Error al cargar el trámite",
+      "executingAction": "Error al ejecutar la acción"
+    },
+    "observationsSection": "Observaciones y Subsanaciones",
+    "subsancionPrefix": "Subsanación ·",
+    "attachmentPrefix": "Adjunto:",
+    "traceabilitySection": "Trazabilidad del Trámite",
+    "noMovements": "Aún no hay movimientos registrados para este trámite.",
+    "workflowLabels": {
+      "coordinator": "Coordinador",
+      "direction": "Dirección",
+      "deanOffice": "Decanato",
+      "resolution": "Resolución",
+      "approved": "Aprobado",
+      "finalized": "Finalizado",
+      "observed": "Observado",
+      "rejected": "Rechazado",
+      "subsanado": "Subsanado",
+      "inReview": "En revisión",
+      "pending": "Pendiente"
+    },
+    "actionLabels": {
+      "PRESENTADO_POR_SOLICITANTE": "Presentado por el solicitante",
+      "APROBADO_POR_COORDINADOR": "Aprobado por el Coordinador",
+      "APROBADO_POR_DIRECTOR": "Aprobado por el Director",
+      "OBSERVADO_POR_COORDINADOR": "Observado por el Coordinador",
+      "OBSERVADO_POR_DIRECTOR": "Observado por el Director",
+      "OBSERVADO_POR_DECANO": "Observado por el Decano",
+      "OBSERVADO_POR_REVISOR": "Observado por el revisor",
+      "SUBSANADO_POR_SOLICITANTE": "Subsanado por el solicitante",
+      "REENVIADO_A_COORDINADOR": "Reenviado al Coordinador",
+      "RECHAZADO_POR_COORDINADOR": "Rechazado por el Coordinador",
+      "RECHAZADO_POR_DIRECTOR": "Rechazado por el Director",
+      "RECHAZADO_POR_REVISOR": "Rechazado por el revisor",
+      "RESOLUCION_REGISTRADA": "Resolución registrada",
+      "TRAMITE_FINALIZADO": "Trámite finalizado"
+    }
+  },
+  "list": {
+    "title": "Lista de Trámites",
+    "subtitle": "Todos los trámites registrados",
+    "noTramites": "No hay trámites registrados",
+    "createFirst": "Crea tu primer trámite para comenzar",
+    "filters": {
+      "status": "Estado",
+      "type": "Tipo",
+      "dateRange": "Rango de Fechas",
+      "search": "Buscar..."
+    },
+    "columns": {
+      "code": "Código",
+      "title": "Título",
+      "type": "Tipo",
+      "status": "Estado",
+      "applicant": "Solicitante",
+      "department": "Departamento",
+      "createdDate": "Fecha de Creación",
+      "lastUpdate": "Última Actualización",
+      "actions": "Acciones"
+    },
+    "pagination": {
+      "showing": "Mostrando {{start}}-{{end}} de {{total}}",
+      "page": "Página {{page}} de {{pages}}",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    }
+  },
+  "types": {
+    "constancia": "Constancia",
+    "certificado": "Certificado",
+    "licencia": "Licencia",
+    "permiso": "Permiso",
+    "solicitud": "Solicitud",
+    "recurso": "Recurso",
+    "denuncia": "Denuncia",
+    "otro": "Otro"
+  },
+  "status": {
+    "draft": "Borrador",
+    "submitted": "Enviado",
+    "inReview": "En Revisión",
+    "approved": "Aprobado",
+    "rejected": "Rechazado",
+    "inProgress": "En Progreso",
+    "completed": "Completado",
+    "cancelled": "Cancelado",
+    "pending": "Pendiente",
+    "urgent": "Urgente"
+  },
+  "detail": {
+    "title": "Detalle del Trámite",
+    "code": "Código",
+    "title_": "Título",
+    "description": "Descripción",
+    "type": "Tipo",
+    "status": "Estado",
+    "applicant": "Solicitante",
+    "department": "Departamento",
+    "createdDate": "Fecha de Creación",
+    "lastUpdate": "Última Actualización",
+    "assignedTo": "Asignado A",
+    "priority": "Prioridad",
+    "dueDate": "Fecha Límite",
+    "observations": "Observaciones",
+    "documents": "Documentos Adjuntos",
+    "history": "Historial",
+    "comments": "Comentarios",
+    "nextStep": "Siguiente Paso"
+  },
+  "new": {
+    "title": "Nuevo Trámite",
+    "subtitle": "Crea un nuevo trámite",
+    "form": {
+      "title": "Título del Trámite",
+      "titlePlaceholder": "Ingrese el título del trámite",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Ingrese una descripción detallada",
+      "type": "Tipo de Trámite",
+      "typePlaceholder": "Seleccione el tipo",
+      "priority": "Prioridad",
+      "priorityPlaceholder": "Seleccione la prioridad",
+      "dueDate": "Fecha Límite",
+      "dueDatePlaceholder": "Seleccione la fecha límite",
+      "department": "Departamento",
+      "departmentPlaceholder": "Seleccione el departamento",
+      "attachments": "Documentos Adjuntos",
+      "attachmentsHint": "Puede adjuntar múltiples archivos",
+      "submitButton": "Enviar Trámite",
+      "saveDraft": "Guardar Borrador",
+      "cancel": "Cancelar"
+    },
+    "steps": {
+      "step1": "Información Básica",
+      "step2": "Detalles",
+      "step3": "Documentos",
+      "step4": "Revisión"
+    },
+    "error": {
+      "titleRequired": "El título es requerido",
+      "descriptionRequired": "La descripción es requerida",
+      "typeRequired": "El tipo de trámite es requerido",
+      "invalidDate": "Fecha inválida",
+      "uploadFailed": "Error al subir el archivo",
+      "saveFailed": "Error al guardar el trámite"
+    },
+    "success": {
+      "created": "Trámite creado exitosamente",
+      "draftSaved": "Borrador guardado"
+    }
+  },
+  "edit": {
+    "title": "Editar Trámite",
+    "subtitle": "Modifica la información del trámite",
+    "form": {
+      "submitButton": "Guardar Cambios",
+      "cancel": "Cancelar"
+    },
+    "error": {
+      "updateFailed": "Error al actualizar el trámite",
+      "notFound": "Trámite no encontrado",
+      "unauthorized": "No tiene permisos para editar este trámite"
+    },
+    "success": {
+      "updated": "Trámite actualizado exitosamente"
+    }
+  },
+  "actions": {
+    "submit": "Enviar Trámite",
+    "approve": "Aprobar Trámite",
+    "reject": "Rechazar Trámite",
+    "cancel": "Cancelar Trámite",
+    "complete": "Completar Trámite",
+    "return": "Devolver Trámite",
+    "delegate": "Delegar Trámite",
+    "reassign": "Reasignar Trámite",
+    "escalate": "Escalar Trámite",
+    "addObservation": "Agregar Observación",
+    "addComment": "Agregar Comentario",
+    "uploadDocument": "Subir Documento",
+    "downloadDocument": "Descargar Documento",
+    "viewHistory": "Ver Historial",
+    "print": "Imprimir Trámite",
+    "export": "Exportar Trámite",
+    "share": "Compartir Trámite"
+  },
+  "workflow": {
+    "title": "Flujo de Trabajo",
+    "steps": {
+      "submission": "Envío",
+      "review": "Revisión",
+      "approval": "Aprobación",
+      "processing": "Procesamiento",
+      "completion": "Finalización"
+    },
+    "currentStep": "Paso Actual",
+    "nextStep": "Siguiente Paso",
+    "previousStep": "Paso Anterior",
+    "stepCompleted": "Paso completado",
+    "stepPending": "Paso pendiente",
+    "stepInProgress": "Paso en progreso"
+  },
+  "observations": {
+    "title": "Observaciones",
+    "noObservations": "No hay observaciones",
+    "addObservation": "Agregar Observación",
+    "observationPlaceholder": "Ingrese su observación",
+    "submitButton": "Enviar Observación",
+    "resolve": "Resolver Observación",
+    "reopen": "Reabrir Observación",
+    "observationTypes": {
+      "comment": "Comentario",
+      "request": "Solicitud",
+      "correction": "Corrección",
+      "observation": "Observación",
+      "urgent": "Urgente"
+    }
+  },
+  "documents": {
+    "title": "Documentos Adjuntos",
+    "noDocuments": "No hay documentos adjuntos",
+    "uploadDocument": "Subir Documento",
+    "uploadHint": "Arrastre y suelte archivos aquí o haga clic para seleccionar",
+    "allowedTypes": "Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG",
+    "maxSize": "Tamaño máximo: 10 MB",
+    "uploading": "Subiendo...",
+    "uploadSuccess": "Documento subido exitosamente",
+    "uploadError": "Error al subir el documento",
+    "deleteDocument": "Eliminar Documento",
+    "deleteConfirm": "¿Está seguro de eliminar este documento?",
+    "downloadDocument": "Descargar Documento",
+    "viewDocument": "Ver Documento"
+  },
+  "comments": {
+    "title": "Comentarios",
+    "noComments": "No hay comentarios",
+    "addComment": "Agregar Comentario",
+    "commentPlaceholder": "Escriba su comentario...",
+    "submitButton": "Enviar Comentario",
+    "editComment": "Editar Comentario",
+    "deleteComment": "Eliminar Comentario",
+    "reply": "Responder",
+    "commentBy": "Comentario por {{name}}",
+    "onDate": "el {{date}}"
+  },
+  "history": {
+    "title": "Historial",
+    "noHistory": "No hay historial disponible",
+    "event": "Evento",
+    "date": "Fecha",
+    "user": "Usuario",
+    "details": "Detalles",
+    "eventTypes": {
+      "created": "Trámite creado",
+      "submitted": "Trámite enviado",
+      "approved": "Trámite aprobado",
+      "rejected": "Trámite rechazado",
+      "cancelled": "Trámite cancelado",
+      "completed": "Trámite completado",
+      "returned": "Trámite devuelto",
+      "delegated": "Trámite delegado",
+      "reassigned": "Trámite reasignado",
+      "escalated": "Trámite escalado",
+      "observationAdded": "Observación agregada",
+      "commentAdded": "Comentario agregado",
+      "documentUploaded": "Documento subido",
+      "statusChanged": "Estado cambiado"
+    }
+  },
+  "reports": {
+    "title": "Reportes de Trámites",
+    "generateReport": "Generar Reporte",
+    "reportTypes": {
+      "summary": "Resumen",
+      "detailed": "Detallado",
+      "statistics": "Estadísticas",
+      "byStatus": "Por Estado",
+      "byType": "Por Tipo",
+      "byDepartment": "Por Departamento",
+      "byDate": "Por Fecha"
+    },
+    "filters": {
+      "dateRange": "Rango de Fechas",
+      "status": "Estado",
+      "type": "Tipo",
+      "department": "Departamento"
+    },
+    "export": {
+      "pdf": "Exportar PDF",
+      "excel": "Exportar Excel",
+      "csv": "Exportar CSV",
+      "print": "Imprimir"
+    }
+  },
+  "notifications": {
+    "newTramite": "Nuevo trámite: {{title}}",
+    "tramiteUpdate": "Actualización en trámite: {{title}}",
+    "tramiteApproved": "Trámite aprobado: {{title}}",
+    "tramiteRejected": "Trámite rechazado: {{title}}",
+    "tramiteCompleted": "Trámite completado: {{title}}",
+    "tramiteCancelled": "Trámite cancelado: {{title}}",
+    "observationAdded": "Observación agregada en trámite: {{title}}",
+    "commentAdded": "Comentario agregado en trámite: {{title}}",
+    "documentUploaded": "Documento subido en trámite: {{title}}",
+    "dueDateApproaching": "Fecha límite próxima para trámite: {{title}}",
+    "dueDateOverdue": "Fecha límite vencida para trámite: {{title}}"
+  },
+  "estadosTramite": {
+    "REGISTRADO": "Registrado",
+    "PENDIENTE_COORDINADOR": "Pend. Coordinador",
+    "PENDIENTE_DIRECCION": "Pend. Dirección",
+    "PENDIENTE_DECANATO": "Pend. Decanato",
+    "OBSERVADO": "Observado",
+    "SUBSANADO": "Subsanado",
+    "APROBADO_CON_RESOLUCION": "Aprobado c/ Resolución",
+    "FINALIZADO": "Finalizado",
+    "RECHAZADO": "Rechazado"
+  },
+  "tiposTramite": {
+    "PROYECTO": "Proyecto de Investigación",
+    "PLAN_TESIS": "Plan de Tesis",
+    "INFORME_AVANCE": "Informe de Avance"
+  },
+  "tiposObservacion": {
+    "TECNICA": "Técnica",
+    "DOCUMENTAL": "Documental",
+    "PRESUPUESTAL": "Presupuestal",
+    "FORMATO": "Formato"
+  },
+  "estadosObservacion": {
+    "PENDIENTE": "Pendiente",
+    "SUBSANADA": "Subsanada",
+    "VIGENTE": "Vigente"
+  },
+  "auditTrail": {
+    "title": "Trazabilidad y Auditoría",
+    "subtitle": "Línea de tiempo inalterable de los movimientos de un trámite. Solo lectura para Director de Investigación y Administrador.",
+    "searchTitle": "Buscar Trámite para Auditoría",
+    "searchDescription": "Ingrese el identificador único del trámite para visualizar su historial completo y línea de tiempo de auditoría.",
+    "inputPlaceholder": "Ej: 1, 2, 3...",
+    "searchButton": "Buscar Trazabilidad",
+    "noMovements": "No se encontraron movimientos para el trámite #{{id}}.",
+    "procedureCode": "Código del trámite",
+    "totalMovements": "Movimientos totales",
+    "currentStatus": "Estado actual",
+    "withObservation": "Con observación",
+    "timelineTitle": "Línea de Tiempo de Auditoría",
+    "procedureLabel": "Trámite",
+    "observationLabel": "Observación:"
+  },
+  "error": {
+    "notFound": "Trámite no encontrado",
+    "unauthorized": "No tiene permisos para realizar esta acción",
+    "forbidden": "Acceso denegado",
+    "serverError": "Error del servidor",
+    "networkError": "Error de conexión",
+    "loadingError": "Error al cargar los datos",
+    "savingError": "Error al guardar",
+    "deletingError": "Error al eliminar",
+    "updatingError": "Error al actualizar",
+    "creatingError": "Error al crear"
+  },
+  "success": {
+    "created": "Trámite creado exitosamente",
+    "updated": "Trámite actualizado exitosamente",
+    "deleted": "Trámite eliminado exitosamente",
+    "submitted": "Trámite enviado exitosamente",
+    "approved": "Trámite aprobado exitosamente",
+    "rejected": "Trámite rechazado exitosamente",
+    "completed": "Trámite completado exitosamente",
+    "cancelled": "Trámite cancelado exitosamente",
+    "observationAdded": "Observación agregada exitosamente",
+    "commentAdded": "Comentario agregada exitosamente",
+    "documentUploaded": "Documento subido exitosamente"
+  }
+}

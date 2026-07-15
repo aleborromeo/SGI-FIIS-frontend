@@ -16,7 +16,6 @@ import {
 } from '../../utils/tramiteLabels';
 import { ArrowLeft, CheckCircle, Paperclip, Send } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { tramiteService } from '../../services/tramiteService';
 import type { ObservacionTramite, Tramite } from '../../types/tramites';
 

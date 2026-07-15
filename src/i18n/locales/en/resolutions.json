@@ -1,0 +1,411 @@
+{
+  "title": "Resolutions",
+  "subtitle": "Manage academic resolutions",
+  "list": {
+    "title": "Resolutions List",
+    "noResolutions": "No resolutions registered",
+    "createFirst": "Create a new resolution",
+    "filters": {
+      "status": "Status",
+      "type": "Type",
+      "year": "Year",
+      "dateRange": "Date Range",
+      "search": "Search..."
+    },
+    "columns": {
+      "number": "Number",
+      "title": "Title",
+      "type": "Type",
+      "status": "Status",
+      "issueDate": "Issue Date",
+      "effectiveDate": "Effective Date",
+      "issuedBy": "Issued By",
+      "actions": "Actions"
+    },
+    "pagination": {
+      "showing": "Showing {{start}}-{{end}} of {{total}}",
+      "page": "Page {{page}} of {{pages}}",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "types": {
+    "investigacion": "Research",
+    "academica": "Academic",
+    "administrativa": "Administrative",
+    "nombramiento": "Appointment",
+    "授权": "Authorization",
+    "reglamento": "Regulation",
+    "otro": "Other"
+  },
+  "status": {
+    "draft": "Draft",
+    "pending": "Pending",
+    "inReview": "In Review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "published": "Published",
+    "effective": "Effective",
+    "expired": "Expired",
+    "revoked": "Revoked"
+  },
+  "detail": {
+    "title": "Resolution Details",
+    "number": "Number",
+    "title_": "Title",
+    "description": "Description",
+    "type": "Type",
+    "status": "Status",
+    "issueDate": "Issue Date",
+    "effectiveDate": "Effective Date",
+    "expirationDate": "Expiration Date",
+    "issuedBy": "Issued By",
+    "approvedBy": "Approved By",
+    "signedBy": "Signed By",
+    "whereas": "Whereas",
+    "operative": "Operative Part",
+    "annexes": "Annexes",
+    "observations": "Observations",
+    "documents": "Documents",
+    "history": "History",
+    "comments": "Comments",
+    "relatedProjects": "Related Projects",
+    "relatedThesis": "Related Thesis"
+  },
+  "new": {
+    "title": "New Resolution",
+    "subtitle": "Create a new resolution",
+    "form": {
+      "number": "Resolution Number",
+      "numberPlaceholder": "Enter resolution number",
+      "title": "Title",
+      "titlePlaceholder": "Enter resolution title",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter description",
+      "type": "Resolution Type",
+      "typePlaceholder": "Select type",
+      "issueDate": "Issue Date",
+      "effectiveDate": "Effective Date",
+      "expirationDate": "Expiration Date",
+      "issuedBy": "Issued By",
+      "issuedByPlaceholder": "Select issuer",
+      "whereas": "Whereas",
+      "whereasPlaceholder": "Enter whereas clauses",
+      "operative": "Operative Part",
+      "operativePlaceholder": "Enter operative part",
+      "attachments": "Attached Documents",
+      "submitButton": "Submit Resolution",
+      "saveDraft": "Save Draft",
+      "cancel": "Cancel"
+    },
+    "steps": {
+      "step1": "General Information",
+      "step2": "Content",
+      "step3": "Documents",
+      "step4": "Review"
+    },
+    "error": {
+      "numberRequired": "Resolution number is required",
+      "titleRequired": "Title is required",
+      "descriptionRequired": "Description is required",
+      "typeRequired": "Resolution type is required",
+      "issueDateRequired": "Issue date is required",
+      "effectiveDateRequired": "Effective date is required",
+      "invalidDates": "Effective date must be after issue date",
+      "whereasRequired": "Whereas clauses are required",
+      "operativeRequired": "Operative part is required",
+      "uploadFailed": "Error uploading file",
+      "saveFailed": "Error saving resolution"
+    },
+    "success": {
+      "created": "Resolution created successfully",
+      "draftSaved": "Draft saved"
+    }
+  },
+  "edit": {
+    "title": "Edit Resolution",
+    "subtitle": "Modify resolution information",
+    "form": {
+      "submitButton": "Save Changes",
+      "cancel": "Cancel"
+    },
+    "error": {
+      "updateFailed": "Error updating resolution",
+      "notFound": "Resolution not found",
+      "unauthorized": "You don't have permission to edit this resolution"
+    },
+    "success": {
+      "updated": "Resolution updated successfully"
+    }
+  },
+  "decanoReview": {
+    "title": "Dean Review",
+    "subtitle": "Dean review and approval of resolutions",
+    "pendingReviews": "Resolutions Pending Review",
+    "noPendingReviews": "No resolutions pending review",
+    "reviewForm": {
+      "comments": "Dean Comments",
+      "commentsPlaceholder": "Enter your comments",
+      "recommendation": "Recommendation",
+      "recommendationPlaceholder": "Enter your recommendation",
+      "approveButton": "Approve Resolution",
+      "rejectButton": "Reject Resolution",
+      "requestChangesButton": "Request Changes",
+      "cancel": "Cancel"
+    },
+    "reviewSteps": {
+      "step1": "Document Review",
+      "step2": "Evaluation",
+      "step3": "Decision"
+    },
+    "error": {
+      "commentsRequired": "Comments are required",
+      "recommendationRequired": "Recommendation is required",
+      "saveFailed": "Error saving review"
+    },
+    "success": {
+      "approved": "Resolution approved successfully",
+      "rejected": "Resolution rejected successfully",
+      "changesRequested": "Changes requested successfully"
+    }
+  },
+  "actions": {
+    "create": "Create Resolution",
+    "edit": "Edit Resolution",
+    "delete": "Delete Resolution",
+    "submit": "Submit Resolution",
+    "approve": "Approve Resolution",
+    "reject": "Reject Resolution",
+    "publish": "Publish Resolution",
+    "unpublish": "Unpublish Resolution",
+    "revoke": "Revoke Resolution",
+    "sign": "Sign Resolution",
+    "addComment": "Add Comment",
+    "addDocument": "Add Document",
+    "downloadDocument": "Download Document",
+    "viewHistory": "View History",
+    "export": "Export Resolution",
+    "print": "Print Resolution",
+    "share": "Share Resolution",
+    "sendForReview": "Send for Review",
+    "sendForSignature": "Send for Signature"
+  },
+  "documents": {
+    "title": "Attached Documents",
+    "noDocuments": "No attached documents",
+    "uploadDocument": "Upload Document",
+    "uploadHint": "Drag and drop files here or click to select",
+    "allowedTypes": "Allowed types: PDF, DOC, DOCX",
+    "maxSize": "Maximum size: 20 MB",
+    "uploading": "Uploading...",
+    "uploadSuccess": "Document uploaded successfully",
+    "uploadError": "Error uploading document",
+    "deleteDocument": "Delete Document",
+    "deleteConfirm": "Are you sure you want to delete this document?",
+    "downloadDocument": "Download Document",
+    "viewDocument": "View Document",
+    "categories": {
+      "resolution": "Resolution",
+      "annex": "Annex",
+      "support": "Support Document",
+      "signature": "Signature Document",
+      "other": "Other"
+    }
+  },
+  "comments": {
+    "title": "Comments",
+    "noComments": "No comments",
+    "addComment": "Add Comment",
+    "commentPlaceholder": "Write your comment...",
+    "submitButton": "Submit Comment",
+    "editComment": "Edit Comment",
+    "deleteComment": "Delete Comment",
+    "reply": "Reply",
+    "commentBy": "Comment by {{name}}",
+    "onDate": "on {{date}}"
+  },
+  "history": {
+    "title": "History",
+    "noHistory": "No history available",
+    "event": "Event",
+    "date": "Date",
+    "user": "User",
+    "details": "Details",
+    "eventTypes": {
+      "created": "Resolution created",
+      "submitted": "Resolution submitted",
+      "approved": "Resolution approved",
+      "rejected": "Resolution rejected",
+      "published": "Resolution published",
+      "effective": "Resolution effective",
+      "expired": "Resolution expired",
+      "revoked": "Resolution revoked",
+      "signed": "Resolution signed",
+      "documentUploaded": "Document uploaded",
+      "commentAdded": "Comment added",
+      "statusChanged": "Status changed",
+      "sentForReview": "Sent for review",
+      "sentForSignature": "Sent for signature"
+    }
+  },
+  "notifications": {
+    "newResolution": "New resolution: {{number}}",
+    "resolutionUpdate": "Resolution update: {{number}}",
+    "resolutionApproved": "Resolution approved: {{number}}",
+    "resolutionRejected": "Resolution rejected: {{number}}",
+    "resolutionPublished": "Resolution published: {{number}}",
+    "resolutionEffective": "Resolution effective: {{number}}",
+    "resolutionExpired": "Resolution expired: {{number}}",
+    "commentAdded": "Comment added to resolution: {{number}}",
+    "signatureRequired": "Signature required for resolution: {{number}}"
+  },
+  "stats": {
+    "title": "Resolutions Statistics",
+    "total": "Total Resolutions",
+    "pending": "Pending",
+    "approved": "Approved",
+    "published": "Published",
+    "effective": "Effective",
+    "expired": "Expired",
+    "byType": "By Type",
+    "byStatus": "By Status",
+    "byYear": "By Year",
+    "byMonth": "By Month",
+    "byIssuer": "By Issuer"
+  },
+  "error": {
+    "notFound": "Resolution not found",
+    "unauthorized": "You don't have permission to perform this action",
+    "forbidden": "Access denied",
+    "serverError": "Server error",
+    "networkError": "Connection error",
+    "loadingError": "Error loading data",
+    "savingError": "Error saving",
+    "deletingError": "Error deleting",
+    "updatingError": "Error updating",
+    "creatingError": "Error creating"
+  },
+  "success": {
+    "created": "Resolution created successfully",
+    "updated": "Resolution updated successfully",
+    "deleted": "Resolution deleted successfully",
+    "submitted": "Resolution submitted successfully",
+    "approved": "Resolution approved successfully",
+    "rejected": "Resolution rejected successfully",
+    "published": "Resolution published successfully",
+    "revoked": "Resolution revoked successfully",
+    "signed": "Resolution signed successfully",
+    "documentUploaded": "Document uploaded successfully",
+    "commentAdded": "Comment added successfully"
+  },
+  "decanoReview": {
+    "header": {
+      "title": "Dean Console",
+      "subtitle": "Final review of research files and authorized resolution signatures."
+    },
+    "retry": "Retry",
+    "table": {
+      "title": "Files Pending Dean Signature ({{count}})",
+      "headers": {
+        "code": "Code",
+        "type": "Type",
+        "reference": "Reference",
+        "status": "Status",
+        "lastUpdate": "Last Update",
+        "action": "Action"
+      },
+      "emptyState": "No files pending final approval."
+    },
+    "status": {
+      "pendingDecanato": "Pending Dean Approval"
+    },
+    "actions": {
+      "sign": "Sign",
+      "observe": "Observe",
+      "reject": "Reject"
+    },
+    "prompt": {
+      "resolutionNumber": "Enter the Dean Resolution number:",
+      "resolutionNumberRequired": "You must enter a valid resolution number.",
+      "resolutionSubject": "Enter the resolution subject:",
+      "observerDetail": "Enter the observation to return to the Research Director:",
+      "observationRequired": "You must enter an observation.",
+      "rejectConfirm": "Are you sure you want to REJECT procedure {{code}}? This action is final."
+    },
+    "toast": {
+      "loadError": "Error loading pending files.",
+      "approved": "Procedure {{code}} approved with resolution {{resolution}}.",
+      "approveError": "Error approving the procedure.",
+      "observed": "Procedure {{code}} observed and returned.",
+      "observeError": "Error observing the procedure.",
+      "rejected": "Procedure {{code}} rejected.",
+      "rejectError": "Error rejecting the procedure."
+    }
+  },
+  "new": {
+    "title": "New Resolution",
+    "subtitle": "Create a new resolution",
+    "backToDecanoReview": "Back to Dean Console",
+    "header": {
+      "title": "Resolution Registration and Execution",
+      "subtitle": "Enter the official data to activate the project and start the quarterly report schedule."
+    },
+    "referenceProject": "Reference Project:",
+    "section1": {
+      "title": "Dean Resolution Data"
+    },
+    "section2": {
+      "title": "Project Execution Parameters"
+    },
+    "form": {
+      "resolutionNumber": "Resolution Number",
+      "resolutionNumberPlaceholder": "E.g. R.D. No. 045-2026-FIIS",
+      "emissionDate": "Issue Date",
+      "resolutionTitle": "Title / Subject of the Resolution",
+      "resolutionTitlePlaceholder": "E.g. Approve the project submission...",
+      "issuingBody": "Issuing Body",
+      "attachPdf": "Attach Resolution PDF",
+      "executionStart": "Execution Start",
+      "executionEnd": "Execution End",
+      "estimatedDuration": "Estimated Duration (Months)",
+      "receivesFif": "Receives FIF Funding?",
+      "fifStatus": "Initial FIF Funding Status",
+      "fifActive": "Active / Approved",
+      "fifSuspended": "Suspended",
+      "fifNotApplicable": "Not applicable",
+      "requiresArticle": "Requires Final Article?",
+      "yes": "Yes",
+      "no": "No",
+      "yesFifRequired": "Yes (FIF Required)",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "submit": "Approve Project and Generate Schedule"
+    },
+    "toast": {
+      "success": "Resolution registered and quarterly report schedule generated successfully."
+    },
+    "steps": {
+      "step1": "General Information",
+      "step2": "Content",
+      "step3": "Documents",
+      "step4": "Review"
+    },
+    "error": {
+      "numberRequired": "Resolution number is required",
+      "titleRequired": "Title is required",
+      "descriptionRequired": "Description is required",
+      "typeRequired": "Resolution type is required",
+      "issueDateRequired": "Issue date is required",
+      "effectiveDateRequired": "Effective date is required",
+      "invalidDates": "Effective date must be after issue date",
+      "whereasRequired": "Whereas clauses are required",
+      "operativeRequired": "Operative part is required",
+      "uploadFailed": "Error uploading file",
+      "saveFailed": "Error saving resolution"
+    },
+    "success": {
+      "created": "Resolution created successfully",
+      "draftSaved": "Draft saved"
+    }
+  }
+}

@@ -11,7 +11,7 @@ export const SobreSgiPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation('public');
-  const { language, toggleLanguage } = useLanguage();
+  useLanguage();
   const [activeSection, setActiveSection] = useState('quienes-somos');
 
   const handleScrollToSection = (id: string) => {
@@ -477,7 +477,6 @@ export const SobreSgiPage: React.FC = () => {
                     {t('footer.userManual')}
                   </a>
                 </li>
-                <li>
                 <li>
                   <a href="#" onClick={(e) => e.preventDefault()}>
                     {t('footer.privacyPolicy')}

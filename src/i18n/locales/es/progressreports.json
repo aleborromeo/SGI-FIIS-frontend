@@ -1,0 +1,515 @@
+{
+  "title": "Informes de Avance",
+  "subtitle": "Gestiona los informes de avance de proyectos y tesis",
+  "list": {
+    "title": "Lista de Informes",
+    "noReports": "No hay informes registrados",
+    "createFirst": "Crea tu primer informe de avance",
+    "filters": {
+      "status": "Estado",
+      "type": "Tipo",
+      "project": "Proyecto",
+      "thesis": "Tesis",
+      "dateRange": "Rango de Fechas",
+      "search": "Buscar..."
+    },
+    "columns": {
+      "id": "ID",
+      "title": "Título",
+      "type": "Tipo",
+      "project": "Proyecto",
+      "thesis": "Tesis",
+      "author": "Autor",
+      "period": "Período",
+      "status": "Estado",
+      "submissionDate": "Fecha de Envío",
+      "reviewDate": "Fecha de Revisión",
+      "actions": "Acciones"
+    },
+    "pagination": {
+      "showing": "Mostrando {{start}}-{{end}} de {{total}}",
+      "page": "Página {{page}} de {{pages}}",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "viewModes": {
+      "list": "Vista de Lista",
+      "cards": "Vista de Tarjetas"
+    }
+  },
+  "types": {
+    "monthly": "Informe Mensual",
+    "quarterly": "Informe Trimestral",
+    "semiannual": "Informe Semestral",
+    "annual": "Informe Anual",
+    "final": "Informe Final",
+    "intermediate": "Informe Intermedio",
+    "special": "Informe Especial"
+  },
+  "status": {
+    "draft": "Borrador",
+    "submitted": "Enviado",
+    "inReview": "En Revisión",
+    "approved": "Aprobado",
+    "rejected": "Rechazado",
+    "returned": "Devuelto",
+    "amended": "Corregido",
+    "completed": "Completado"
+  },
+  "detail": {
+    "title": "Detalle del Informe",
+    "basicInfo": "Información Básica",
+    "content": "Contenido",
+    "activities": "Actividades Realizadas",
+    "results": "Resultados Obtenidos",
+    "problems": "Problemas Encontrados",
+    "nextSteps": "Próximos Pasos",
+    "observations": "Observaciones",
+    "documents": "Documentos Adjuntos",
+    "history": "Historial",
+    "comments": "Comentarios",
+    "id": "ID",
+    "title_": "Título",
+    "type": "Tipo",
+    "project": "Proyecto",
+    "thesis": "Tesis",
+    "author": "Autor",
+    "period": "Período",
+    "status": "Estado",
+    "submissionDate": "Fecha de Envío",
+    "reviewDate": "Fecha de Revisión",
+    "reviewer": "Revisor",
+    "grade": "Calificación"
+  },
+  "new": {
+    "title": "Nuevo Informe de Avance",
+    "subtitle": "Crea un nuevo informe de avance",
+    "form": {
+      "title": "Título del Informe",
+      "titlePlaceholder": "Ingrese el título del informe",
+      "type": "Tipo de Informe",
+      "typePlaceholder": "Seleccione el tipo",
+      "project": "Proyecto",
+      "projectPlaceholder": "Seleccione el proyecto",
+      "thesis": "Tesis",
+      "thesisPlaceholder": "Seleccione la tesis",
+      "period": "Período",
+      "periodPlaceholder": "Ingrese el período del informe",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Fin",
+      "activities": "Actividades Realizadas",
+      "activitiesPlaceholder": "Describa las actividades realizadas",
+      "results": "Resultados Obtenidos",
+      "resultsPlaceholder": "Describa los resultados obtenidos",
+      "problems": "Problemas Encontrados",
+      "problemsPlaceholder": "Describa los problemas encontrados",
+      "nextSteps": "Próximos Pasos",
+      "nextStepsPlaceholder": "Describa los próximos pasos",
+      "attachments": "Documentos Adjuntos",
+      "submitButton": "Enviar Informe",
+      "saveDraft": "Guardar Borrador",
+      "cancel": "Cancelar"
+    },
+    "steps": {
+      "step1": "Información General",
+      "step2": "Actividades y Resultados",
+      "step3": "Documentos",
+      "step4": "Revisión"
+    },
+    "error": {
+      "titleRequired": "El título es requerido",
+      "typeRequired": "El tipo de informe es requerido",
+      "projectRequired": "El proyecto es requerido",
+      "thesisRequired": "La tesis es requerida",
+      "periodRequired": "El período es requerido",
+      "startDateRequired": "La fecha de inicio es requerida",
+      "endDateRequired": "La fecha de fin es requerida",
+      "activitiesRequired": "Las actividades son requeridas",
+      "resultsRequired": "Los resultados son requeridos",
+      "invalidDates": "La fecha de fin debe ser posterior a la fecha de inicio",
+      "uploadFailed": "Error al subir el archivo",
+      "saveFailed": "Error al guardar el informe"
+    },
+    "success": {
+      "created": "Informe creado exitosamente",
+      "draftSaved": "Borrador guardado"
+    }
+  },
+  "edit": {
+    "title": "Editar Informe de Avance",
+    "subtitle": "Modifica la información del informe",
+    "form": {
+      "submitButton": "Guardar Cambios",
+      "cancel": "Cancelar"
+    },
+    "error": {
+      "updateFailed": "Error al actualizar el informe",
+      "notFound": "Informe no encontrado",
+      "unauthorized": "No tiene permisos para editar este informe"
+    },
+    "success": {
+      "updated": "Informe actualizado exitosamente"
+    }
+  },
+  "amend": {
+    "title": "Corregir Informe",
+    "subtitle": "Realiza correcciones al informe",
+    "form": {
+      "correctionReason": "Motivo de la Corrección",
+      "correctionReasonPlaceholder": "Ingrese el motivo de la corrección",
+      "corrections": "Correcciones a Realizar",
+      "correctionsPlaceholder": "Describa las correcciones a realizar",
+      "additionalInfo": "Información Adicional",
+      "additionalInfoPlaceholder": "Ingrese información adicional",
+      "attachments": "Documentos de Soporte",
+      "submitButton": "Enviar Correcciones",
+      "cancel": "Cancelar"
+    },
+    "error": {
+      "reasonRequired": "El motivo de la corrección es requerido",
+      "correctionsRequired": "Las correcciones son requeridas",
+      "saveFailed": "Error al enviar las correcciones"
+    },
+    "success": {
+      "amended": "Correcciones enviadas exitosamente"
+    }
+  },
+  "review": {
+    "title": "Revisar Informe",
+    "subtitle": "Revisa y evalúa el informe",
+    "form": {
+      "comments": "Comentarios",
+      "commentsPlaceholder": "Ingrese sus comentarios",
+      "grade": "Calificación",
+      "gradePlaceholder": "Ingrese la calificación",
+      "recommendations": "Recomendaciones",
+      "recommendationsPlaceholder": "Ingrese las recomendaciones",
+      "approveButton": "Aprobar Informe",
+      "rejectButton": "Rechazar Informe",
+      "returnButton": "Devolver para Corrección",
+      "cancel": "Cancelar"
+    },
+    "error": {
+      "commentsRequired": "Los comentarios son requeridos",
+      "gradeRequired": "La calificación es requerida",
+      "invalidGrade": "La calificación debe ser un número entre 0 y 20",
+      "saveFailed": "Error al guardar la revisión"
+    },
+    "success": {
+      "approved": "Informe aprobado exitosamente",
+      "rejected": "Informe rechazado exitosamente",
+      "returned": "Informe devuelto exitosamente"
+    }
+  },
+  "actions": {
+    "create": "Crear Informe",
+    "edit": "Editar Informe",
+    "delete": "Eliminar Informe",
+    "submit": "Enviar Informe",
+    "approve": "Aprobar Informe",
+    "reject": "Rechazar Informe",
+    "return": "Devolver Informe",
+    "amend": "Corregir Informe",
+    "review": "Revisar Informe",
+    "addComment": "Agregar Comentario",
+    "addDocument": "Agregar Documento",
+    "downloadDocument": "Descargar Documento",
+    "viewHistory": "Ver Historial",
+    "export": "Exportar Informe",
+    "print": "Imprimir Informe",
+    "share": "Compartir Informe"
+  },
+  "documents": {
+    "title": "Documentos Adjuntos",
+    "noDocuments": "No hay documentos adjuntos",
+    "uploadDocument": "Subir Documento",
+    "uploadHint": "Arrastre y suelte archivos aquí o haga clic para seleccionar",
+    "allowedTypes": "Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG",
+    "maxSize": "Tamaño máximo: 10 MB",
+    "uploading": "Subiendo...",
+    "uploadSuccess": "Documento subido exitosamente",
+    "uploadError": "Error al subir el documento",
+    "deleteDocument": "Eliminar Documento",
+    "deleteConfirm": "¿Está seguro de eliminar este documento?",
+    "downloadDocument": "Descargar Documento",
+    "viewDocument": "Ver Documento"
+  },
+  "comments": {
+    "title": "Comentarios",
+    "noComments": "No hay comentarios",
+    "addComment": "Agregar Comentario",
+    "commentPlaceholder": "Escriba su comentario...",
+    "submitButton": "Enviar Comentario",
+    "editComment": "Editar Comentario",
+    "deleteComment": "Eliminar Comentario",
+    "reply": "Responder",
+    "commentBy": "Comentario por {{name}}",
+    "onDate": "el {{date}}"
+  },
+  "history": {
+    "title": "Historial",
+    "noHistory": "No hay historial disponible",
+    "event": "Evento",
+    "date": "Fecha",
+    "user": "Usuario",
+    "details": "Detalles",
+    "eventTypes": {
+      "created": "Informe creado",
+      "submitted": "Informe enviado",
+      "approved": "Informe aprobado",
+      "rejected": "Informe rechazado",
+      "returned": "Informe devuelto",
+      "amended": "Informe corregido",
+      "completed": "Informe completado",
+      "documentUploaded": "Documento subido",
+      "commentAdded": "Comentario agregado",
+      "statusChanged": "Estado cambiado"
+    }
+  },
+  "notifications": {
+    "newReport": "Nuevo informe: {{title}}",
+    "reportUpdate": "Actualización en informe: {{title}}",
+    "reportApproved": "Informe aprobado: {{title}}",
+    "reportRejected": "Informe rechazado: {{title}}",
+    "reportReturned": "Informe devuelto: {{title}}",
+    "reportAmended": "Informe corregido: {{title}}",
+    "commentAdded": "Comentario agregado en informe: {{title}}",
+    "deadlineApproaching": "Fecha límite próxima para informe: {{title}}"
+  },
+  "stats": {
+    "title": "Estadísticas de Informes",
+    "total": "Total de Informes",
+    "pending": "Pendientes",
+    "approved": "Aprobados",
+    "rejected": "Rechazados",
+    "byType": "Por Tipo",
+    "byStatus": "Por Estado",
+    "byMonth": "Por Mes",
+    "byProject": "Por Proyecto",
+    "byThesis": "Por Tesis",
+    "averageGrade": "Calificación Promedio",
+    "approvalRate": "Tasa de Aprobación"
+  },
+  "error": {
+    "notFound": "Informe no encontrado",
+    "unauthorized": "No tiene permisos para realizar esta acción",
+    "forbidden": "Acceso denegado",
+    "serverError": "Error del servidor",
+    "networkError": "Error de conexión",
+    "loadingError": "Error al cargar los datos",
+    "savingError": "Error al guardar",
+    "deletingError": "Error al eliminar",
+    "updatingError": "Error al actualizar",
+    "creatingError": "Error al crear"
+  },
+  "success": {
+    "created": "Informe creado exitosamente",
+    "updated": "Informe actualizado exitosamente",
+    "deleted": "Informe eliminado exitosamente",
+    "submitted": "Informe enviado exitosamente",
+    "approved": "Informe aprobado exitosamente",
+    "rejected": "Informe rechazado exitosamente",
+    "returned": "Informe devuelto exitosamente",
+    "amended": "Informe corregido exitosamente",
+    "completed": "Informe completado exitosamente",
+    "documentUploaded": "Documento subido exitosamente",
+    "commentAdded": "Comentario agregado exitosamente"
+  },
+  "status": {
+    "draft": "Borrador",
+    "submitted": "Enviado",
+    "inReview": "En Revisión",
+    "approved": "Aprobado",
+    "rejected": "Rechazado",
+    "returned": "Devuelto",
+    "amended": "Corregido",
+    "completed": "Completado",
+    "pending": "Pendiente",
+    "observed": "Observado"
+  },
+  "review": {
+    "title": "Revisión de Informes de Avance",
+    "subtitle": "Aprobación, derivación y seguimiento de los informes parciales y finales de investigación.",
+    "filterByStatus": "Filtrar por Estado:",
+    "filterOptions": {
+      "pendingCoordination": "Pendientes de Coordinación",
+      "inReviewDirection": "En revisión (Dirección)",
+      "approved": "Aprobados",
+      "observed": "Observados",
+      "rejected": "Rechazados",
+      "all": "Todos los informes"
+    },
+    "fetchError": "Error al obtener los informes de avance.",
+    "emptyState": {
+      "title": "No se encontraron informes de avance",
+      "subtitle": "No hay reportes de avance registrados bajo los filtros seleccionados."
+    },
+    "card": {
+      "responsible": "Responsable",
+      "progress": "Avance",
+      "sendDate": "Fecha Envío",
+      "viewDetail": "Ver detalle del informe",
+      "downloadDoc": "Descargar informe adjunto"
+    },
+    "action": {
+      "forward": "Derivar",
+      "approve": "Aprobar",
+      "observe": "Observar"
+    },
+    "stats": {
+      "totalInTray": "Total en Bandeja",
+      "pending": "Pendientes",
+      "approved": "Aprobados",
+      "observed": "Observados"
+    },
+    "detail": {
+      "reportLabel": "Informe de Avance #{{id}}",
+      "title": "Detalles del Reporte",
+      "project": "Proyecto",
+      "period": "Período",
+      "progress": "Avance",
+      "achievements": "Logros",
+      "difficulties": "Dificultades",
+      "attachedDoc": "Documento adjunto",
+      "download": "Descargar",
+      "noRecords": "Sin registros"
+    },
+    "prompt": {
+      "observeDetail": "Escriba el detalle de la observación para el docente:",
+      "commentRequired": "Debe ingresar un comentario para registrar la observación.",
+      "rejectConfirm": "¿Está seguro de que desea rechazar definitivamente este informe? Esta acción no se puede deshacer."
+    },
+    "toast": {
+      "forwarded": "Informe de avance derivado exitosamente al Director de Investigación.",
+      "approved": "Informe de avance aprobado exitosamente.",
+      "observed": "Informe de avance devuelto con observaciones.",
+      "rejected": "Informe de avance rechazado.",
+      "actionError": "Error al procesar la acción sobre el informe.",
+      "detailError": "Error al cargar los detalles del informe.",
+      "noDocument": "Este informe no cuenta con un documento físico adjunto."
+    }
+  },
+  "history": {
+    "title": "Historial de Informes de Avance",
+    "descriptionDirector": "Seguimiento cronológico del avance de todos los proyectos activos.",
+    "descriptionTeacher": "Evolución cronológica de tus proyectos de investigación.",
+    "update": "Actualizar",
+    "selectProject": "Seleccionar Proyecto",
+    "selectProjectPlaceholder": "— Seleccione un proyecto —",
+    "selectedProject": "Proyecto seleccionado",
+    "selectProjectPrompt": "Selecciona un proyecto para ver su historial",
+    "error": {
+      "loadProjects": "Error al cargar proyectos",
+      "loadReports": "Error al cargar los informes"
+    },
+    "stats": {
+      "totalReports": "Total de Informes",
+      "approvedReports": "Informes Aprobados",
+      "avgPhysicalProgress": "Avance Físico Prom.",
+      "avgFinancialProgress": "Avance Financiero Prom."
+    },
+    "emptyState": {
+      "noReports": "Sin informes de avance",
+      "noReportsDescription": "Aún no se han registrado informes de avance para este proyecto."
+    },
+    "timeline": {
+      "title": "Línea de Tiempo ({{count}} informe{{plural}})",
+      "order": "Del más reciente al más antiguo",
+      "reportNumber": "Informe #{{number}}",
+      "viewDetail": "Ver detalle"
+    },
+    "sections": {
+      "activities": "Actividades",
+      "evidences": "Evidencias",
+      "comments": "Comentarios",
+      "changeHistory": "Historial de Cambios"
+    },
+    "detail": {
+      "reportNumber": "Informe #{{number}}",
+      "title": "Detalle del Informe de Avance",
+      "physicalProgress": "Avance Físico",
+      "financialProgress": "Avance Financiero",
+      "observations": "Observaciones",
+      "noActivities": "Sin actividades registradas.",
+      "completed": "✓ Completada",
+      "inProgress": "En curso",
+      "noEvidences": "Sin evidencias registradas.",
+      "noComments": "Sin comentarios.",
+      "noChangeHistory": "Sin historial de cambios.",
+      "attachedFiles": "Archivos Adjuntos ({{count}})",
+      "loadError": "No se pudo cargar el detalle del informe."
+    }
+  },
+  "new": {
+    "title": "Registrar Nuevo Informe de Avance",
+    "subtitle": "Envíe el reporte físico y financiero correspondiente al período de ejecución.",
+    "backToHistory": "Volver al Historial de Informes",
+    "errorTitle": "Error al registrar",
+    "fetchProjectsError": "Error al cargar los proyectos del docente.",
+    "form": {
+      "project": "Proyecto de Investigación",
+      "loadingProjects": "Cargando proyectos del docente...",
+      "selectProject": "— Seleccione un proyecto en ejecución —",
+      "reportType": "Tipo de Informe",
+      "typePartial": "Parcial",
+      "typeFinal": "Final",
+      "period": "Período Reportado",
+      "periodPlaceholder": "Ej: Primer Trimestre / Semestre I",
+      "progressPercentage": "Porcentaje de Avance General (0 - 100%)",
+      "achievements": "Logros Alcanzados",
+      "achievementsPlaceholder": "Describa los hitos y actividades completadas satisfactoriamente...",
+      "difficulties": "Dificultades Presentadas",
+      "difficultiesPlaceholder": "Describa cualquier contratiempo técnico, administrativo o logístico...",
+      "recommendations": "Medidas Correctivas y Recomendaciones",
+      "recommendationsPlaceholder": "Proponga recomendaciones o soluciones para superar los problemas presentados...",
+      "uploadingFile": "Cargando archivo...",
+      "selectSignedReport": "Seleccione el informe firmado",
+      "allowedFormats": "Formatos permitidos: PDF, DOC, DOCX (Máx. 10MB)",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "submit": "Enviar Informe"
+    },
+    "toast": {
+      "invalidFileFormat": "Solo se permiten archivos en formato PDF, DOC o DOCX.",
+      "fileUploaded": "Archivo cargado exitosamente.",
+      "uploadError": "Error al cargar el archivo.",
+      "projectRequired": "Debe seleccionar un proyecto.",
+      "periodRequired": "Debe ingresar el período.",
+      "fieldsRequired": "Por favor complete todos los campos de texto obligatorios.",
+      "documentRequired": "Es obligatorio adjuntar un archivo con el informe firmado.",
+      "success": "Informe de avance registrado y enviado exitosamente.",
+      "saveError": "Ocurrió un error al registrar el informe."
+    }
+  },
+  "amend": {
+    "title": "Subsanar Informe de Avance #{{id}}",
+    "subtitle": "Suba una nueva versión del informe corrigiendo las observaciones señaladas.",
+    "backToHistory": "Volver al Historial",
+    "observationRegistered": "Observación Registrada",
+    "loadingData": "Cargando datos del informe de avance...",
+    "loadErrorMsg": "No se pudo obtener el informe de avance seleccionado.",
+    "notFound": "No se encontró el informe de avance especificado.",
+    "context": {
+      "project": "Proyecto:",
+      "period": "Período:",
+      "progress": "Porcentaje de Avance Reportado:",
+      "status": "Estado Actual:"
+    },
+    "form": {
+      "uploadLabel": "Subir Documento Corregido (Firmado)",
+      "selectFile": "Seleccione el nuevo informe corregido",
+      "sending": "Enviando...",
+      "submit": "Enviar Correcciones"
+    },
+    "toast": {
+      "loadError": "Error al cargar el detalle del informe.",
+      "invalidFileFormat": "Solo se permiten archivos en formato PDF, DOC o DOCX.",
+      "fileUploaded": "Documento de subsanación cargado exitosamente.",
+      "uploadError": "Error al cargar el archivo.",
+      "documentRequired": "Es obligatorio cargar el documento corregido para enviar la subsanación.",
+      "success": "Subsanación enviada exitosamente.",
+      "saveError": "Ocurrió un error al enviar la subsanación.",
+      "saveErrorDetail": "Error al subsanar el informe."
+    }
+  }
+}

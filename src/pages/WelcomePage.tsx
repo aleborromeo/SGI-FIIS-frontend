@@ -33,7 +33,7 @@ export const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation('public');
-  const { language, toggleLanguage } = useLanguage();
+  useLanguage();
   const [activeIndex, setActiveIndex] = useState(3);
   const [activeLink, setActiveLink] = useState<'inicio' | 'convocatorias'>('inicio');
   const [latestCall, setLatestCall] = useState<any>(null);
@@ -889,7 +889,6 @@ export const WelcomePage: React.FC = () => {
                     {t('footer.userManual')}
                   </a>
                 </li>
-                <li>
                 <li>
                   <a href="#" onClick={(e) => e.preventDefault()}>
                     {t('footer.politicaPrivacidad')}

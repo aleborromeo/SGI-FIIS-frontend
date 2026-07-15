@@ -1,0 +1,953 @@
+{
+  "title": "Administration",
+  "subtitle": "System administration panel",
+  "common": {
+    "error": "Error:",
+    "retry": "Retry",
+    "back": "Back",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "confirm": "Confirm",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "activeF": "Active",
+    "inactiveF": "Inactive",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role"
+  },
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "stats": {
+      "totalUsers": "Total Users",
+      "activeUsers": "Active Users",
+      "totalGroups": "Total Groups",
+      "activeGroups": "Active Groups",
+      "totalLines": "Total Lines",
+      "activeLines": "Active Lines",
+      "documentsUploaded": "Documents Uploaded",
+      "systemHealth": "System Health"
+    },
+    "quickActions": {
+      "newUser": "New User",
+      "newGroup": "New Group",
+      "newLine": "New Line",
+      "uploadDocument": "Upload Document",
+      "viewReports": "View Reports",
+      "systemSettings": "System Settings"
+    }
+  },
+  "users": {
+    "title": "User Management",
+    "subtitle": "Manage system users",
+    "pageTitle": "User Management",
+    "pageSubtitle": "Manage system staff and students. Create, edit, activate or deactivate accounts.",
+    "btnUpdate": "Refresh",
+    "btnNew": "New User",
+    "searchLabel": "Search",
+    "searchPlaceholder": "DNI, name, email or role...",
+    "btnSearch": "Search",
+    "statsTotal": "Total",
+    "statsActive": "Active",
+    "statsInactive": "Inactive",
+    "errorTitle": "Connection Error",
+    "errorLoad": "Could not load the user list.",
+    "table": {
+      "dni": "DNI",
+      "nameAndLastname": "Full Name",
+      "email": "Institutional Email",
+      "phone": "Phone",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions",
+      "loading": "Loading users...",
+      "empty": "No users found.",
+      "noEmail": "No email"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "btnEdit": "Edit",
+    "btnResetPass": "Reset Pass",
+    "btnDeactivate": "Deactivate",
+    "btnActivate": "Activate",
+    "roles": {
+      "ADMIN": "Administrator",
+      "ESTUDIANTE": "Student / Thesis Student",
+      "DOCENTE_INVESTIGADOR": "Research Professor",
+      "COORDINADOR_GRUPO": "Group Coordinator",
+      "DIRECTOR_INVESTIGACION": "Research Director",
+      "DECANO": "Dean",
+      "EVALUADOR": "Evaluator"
+    },
+    "rolesKey": {
+      "admin": "Administrator",
+      "decano": "Dean",
+      "subdecano": "Sub-Dean",
+      "coordinadorInvestigacion": "Research Coordinator",
+      "director": "Director",
+      "asesor": "Advisor",
+      "student": "Student",
+      "secretary": "Secretary"
+    },
+    "form": {
+      "editTitle": "Edit User",
+      "newTitle": "New User",
+      "dniLabel": "DNI",
+      "dniPlaceholder": "8 characters",
+      "namesLabel": "First Names",
+      "namesPlaceholder": "Full first names",
+      "lastNamesLabel": "Last Names",
+      "lastNamesPlaceholder": "Full last names",
+      "emailLabel": "Institutional Email",
+      "emailPlaceholder": "If left empty, auto-generated: lastname.firstname@unas.edu.pe",
+      "emailHelp": "Leave empty to auto-generate with @unas.edu.pe domain",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "Phone (optional)",
+      "roleLabel": "Role",
+      "tempPasswordTitle": "Temporary Password",
+      "tempPasswordMessage": "A temporary password will be sent to the user's email. They must change it on their first login.",
+      "btnCancel": "Cancel",
+      "btnCreate": "Create User",
+      "btnUpdate": "Update",
+      "saving": "Saving..."
+    },
+    "validation": {
+      "dniLength": "DNI must be exactly 8 characters",
+      "namesRequired": "First names are required",
+      "lastNamesRequired": "Last names are required",
+      "roleRequired": "Select a role"
+    },
+    "confirm": {
+      "activateTitle": "Activate User",
+      "deactivateTitle": "Deactivate User",
+      "activateMessage": "Do you want to activate {{name}}?",
+      "deactivateMessage": "Do you want to deactivate {{name}}?",
+      "activateConfirm": "Activate",
+      "deactivateConfirm": "Deactivate",
+      "resetPasswordTitle": "Reset Password",
+      "resetPasswordMessage": "Do you want to reset the password for {{name}}? A temporary password will be sent to their email.",
+      "resetPasswordConfirm": "Reset"
+    },
+    "toast": {
+      "updated": "User updated successfully",
+      "created": "User created successfully. A temporary password will be sent to their email.",
+      "activated": "User activated successfully",
+      "deactivated": "User deactivated successfully",
+      "resetPassword": "Password reset. An email was sent to the user.",
+      "errorSave": "Error saving user",
+      "errorActivate": "Error activating user",
+      "errorDeactivate": "Error deactivating user",
+      "errorResetPassword": "Error resetting password"
+    },
+    "list": {
+      "title": "Users List",
+      "noUsers": "No users registered",
+      "createFirst": "Create the first user to get started",
+      "filters": {
+        "status": "Status",
+        "role": "Role",
+        "department": "Department",
+        "search": "Search..."
+      },
+      "columns": {
+        "avatar": "Photo",
+        "name": "Name",
+        "email": "Email",
+        "code": "Code",
+        "role": "Role",
+        "department": "Department",
+        "group": "Group",
+        "status": "Status",
+        "lastLogin": "Last Login",
+        "actions": "Actions"
+      }
+    },
+    "detail": {
+      "title": "User Details",
+      "personalInfo": "Personal Information",
+      "academicInfo": "Academic Information",
+      "systemInfo": "System Information",
+      "activity": "Activity",
+      "permissions": "Permissions"
+    },
+    "statusKey": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "suspended": "Suspended",
+      "pending": "Pending"
+    }
+  },
+  "createUser": {
+    "title": "Create User",
+    "subtitle": "Register a new system user",
+    "management": {
+      "title": "User Management",
+      "subtitle": "System institutional account management, new member registration and access configuration.",
+      "tabCreate": "Add",
+      "tabList": "View Users",
+      "credentialsTitle": "Temporary Access Credentials",
+      "fullName": "Full name:",
+      "emailUser": "Email / User:",
+      "tempPassword": "Temporary password:",
+      "copyPassword": "Copy password",
+      "credentialsNotice": "These credentials have been securely sent to <strong>{{email}}</strong>. The user must change this password on their first login.",
+      "registerAnother": "Register another user",
+      "passwordDisclaimer": "Automatic Secure Password",
+      "passwordDisclaimerText": "The system will generate a high-security random password (min. 10 characters with uppercase, lowercase, numbers and symbols) and automatically send it to the user by email.",
+      "registering": "Registering user...",
+      "registerUser": "Register User",
+      "searchPlaceholder": "Search users by name, email, DNI, role or status...",
+      "loadingDirectory": "Loading user directory...",
+      "emptyResults": "No matching users found.",
+      "editTitle": "Edit Personal Data",
+      "dniReadonly": "DNI (Not editable)",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes"
+    },
+    "form": {
+      "personalInfo": "Personal Information",
+      "academicInfo": "Academic Information",
+      "systemAccess": "System Access",
+      "name": "Full Name",
+      "namePlaceholder": "Enter full name",
+      "email": "Email",
+      "emailPlaceholder": "Enter email",
+      "code": "University Code",
+      "codePlaceholder": "Enter university code",
+      "phone": "Phone",
+      "phonePlaceholder": "Enter phone",
+      "dni": "ID Number",
+      "dniPlaceholder": "Enter ID number",
+      "birthDate": "Birth Date",
+      "address": "Address",
+      "addressPlaceholder": "Enter address",
+      "department": "Department",
+      "departmentPlaceholder": "Select department",
+      "faculty": "Faculty",
+      "facultyPlaceholder": "Select faculty",
+      "group": "Research Group",
+      "groupPlaceholder": "Select group",
+      "line": "Research Line",
+      "linePlaceholder": "Select line",
+      "role": "Role",
+      "rolePlaceholder": "Select role",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm password",
+      "sendCredentials": "Send credentials by email",
+      "submitButton": "Create User",
+      "cancel": "Cancel"
+    },
+    "validation": {
+      "dniLength": "DNI must be exactly 8 digits.",
+      "namesRequired": "First names and last names are required.",
+      "emailDomain": "Institutional email must belong to the (.edu.pe) domain."
+    },
+    "toast": {
+      "copySuccess": "Password copied to clipboard!",
+      "createSuccess": "User registered successfully!",
+      "createError": "Error registering user",
+      "loadUsersError": "Could not load the user list.",
+      "selfDeactivateError": "You cannot deactivate your own admin account.",
+      "deactivateSuccess": "User deactivated successfully.",
+      "activateSuccess": "User activated successfully.",
+      "toggleStatusError": "Error changing user status.",
+      "resetPasswordSuccess": "Password reset and sent successfully.",
+      "resetPasswordError": "Error resetting password.",
+      "requiredFields": "First names, last names and email are required fields.",
+      "updateSuccess": "User data updated successfully.",
+      "updateError": "Error updating user."
+    },
+    "confirm": {
+      "deactivateTitle": "Deactivate User",
+      "activateTitle": "Activate User",
+      "deactivateMessage": "Are you sure you want to deactivate {{name}}'s account?",
+      "activateMessage": "Are you sure you want to activate {{name}}'s account?",
+      "resetPasswordTitle": "Reset Password",
+      "resetPasswordMessage": "Are you sure you want to reset {{name}}'s password? A new password will be sent to the user's email and they will be asked to change it on their next login.",
+      "resetPasswordConfirm": "Reset"
+    },
+    "steps": {
+      "step1": "Personal Information",
+      "step2": "Academic Information",
+      "step3": "System Access"
+    }
+  },
+  "groups": {
+    "title": "Research Groups",
+    "subtitle": "Manage research groups",
+    "pageTitle": "Research Groups",
+    "pageSubtitle": "Manage the FIIS faculty research groups.",
+    "btnNew": "New Group",
+    "errorLoad": "Error loading research groups",
+    "searchPlaceholder": "Search by name, code or coordinator...",
+    "filterAll": "All statuses",
+    "filterActive": "Active only",
+    "filterInactive": "Inactive only",
+    "btnUpdate": "Refresh",
+    "clearSearch": "× Clear search",
+    "emptyTitle": "No groups found",
+    "emptyWithSearch": "Try different search terms.",
+    "emptyCreate": "Create the first group using the \"New Group\" button.",
+    "table": {
+      "name": "Name",
+      "code": "Code",
+      "coordinator": "Coordinator",
+      "status": "Status",
+      "members": "Members",
+      "created": "Created",
+      "actions": "Actions",
+      "noCoordinator": "No coordinator",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "btnView": "View",
+    "btnMembers": "Members",
+    "btnCoordinator": "Coordinator",
+    "btnDeactivate": "Deactivate",
+    "pagination": {
+      "showing": "Showing {{from}}–{{to}} of {{total}}"
+    },
+    "confirm": {
+      "deactivateTitle": "Deactivate Group",
+      "deactivateMessage": "Are you sure you want to deactivate the group \"{{name}}\"? This action may affect its active members.",
+      "deactivateConfirm": "Deactivate"
+    },
+    "toast": {
+      "deactivated": "Group \"{{name}}\" deactivated",
+      "errorDeactivate": "Error deactivating group"
+    },
+    "list": {
+      "title": "Groups List",
+      "noGroups": "No groups registered",
+      "createFirst": "Create the first group to get started",
+      "filters": {
+        "status": "Status",
+        "faculty": "Faculty",
+        "search": "Search..."
+      },
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "leader": "Leader",
+        "faculty": "Faculty",
+        "department": "Department",
+        "members": "Members",
+        "lines": "Lines",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "detail": {
+      "title": "Group Details",
+      "basicInfo": "Basic Information",
+      "members": "Members",
+      "lines": "Research Lines",
+      "projects": "Projects",
+      "documents": "Documents",
+      "statistics": "Statistics"
+    },
+    "statusKey": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "suspended": "Suspended"
+    }
+  },
+  "createGroup": {
+    "title": "New Research Group",
+    "subtitle": "Register a new research group in the faculty.",
+    "errorCreate": "An error occurred while registering the group.",
+    "backToGroups": "Back to Groups",
+    "form": {
+      "codeLabel": "Group Code",
+      "codePlaceholder": "E.g.: GI-01",
+      "nameLabel": "Group Name",
+      "namePlaceholder": "E.g.: Artificial Intelligence Group",
+      "name": "Group Name",
+      "namePlaceholderGeneric": "Enter group name",
+      "code": "Code",
+      "codePlaceholderGeneric": "Enter group code",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter group description",
+      "leader": "Group Leader",
+      "leaderPlaceholder": "Select leader",
+      "faculty": "Faculty",
+      "facultyPlaceholder": "Select faculty",
+      "department": "Department",
+      "departmentPlaceholder": "Select department",
+      "mission": "Mission",
+      "missionPlaceholder": "Enter group mission",
+      "vision": "Vision",
+      "visionPlaceholder": "Enter group vision",
+      "objectives": "Objectives",
+      "objectivesPlaceholder": "Enter group objectives",
+      "btnCancel": "Cancel",
+      "btnSave": "Save Group",
+      "saving": "Saving...",
+      "submitButton": "Create Group",
+      "cancel": "Cancel"
+    }
+  },
+  "editGroup": {
+    "title": "Edit Research Group",
+    "subtitle": "Modify group information",
+    "form": {
+      "submitButton": "Save Changes",
+      "cancel": "Cancel"
+    }
+  },
+  "groupDetail": {
+    "title": "Research Group Details",
+    "backToGroups": "Back to Groups",
+    "errorNotFound": "Group not found",
+    "membersActive": "active member(s)",
+    "createdLabel": "Created:",
+    "btnDeactivate": "Deactivate Group",
+    "tabs": {
+      "overview": "Overview",
+      "summary": "Coordination",
+      "members": "Members",
+      "lines": "Lines",
+      "projects": "Projects",
+      "documents": "Documents",
+      "statistics": "Statistics"
+    },
+    "overview": {
+      "name": "Name",
+      "code": "Code",
+      "description": "Description",
+      "leader": "Leader",
+      "faculty": "Faculty",
+      "department": "Department",
+      "mission": "Mission",
+      "vision": "Vision",
+      "objectives": "Objectives",
+      "foundedDate": "Founded Date",
+      "status": "Status"
+    },
+    "coordinator": {
+      "title": "Group Coordinator",
+      "currentLabel": "Current coordinator",
+      "noCoordinator": "This group currently has no assigned coordinator.",
+      "changeLabel": "Change Coordinator",
+      "selectUser": "— Select a user —",
+      "btnSave": "Save",
+      "onlyActive": "Only active members with Group Coordinator role are shown.",
+      "toastAssigned": "Coordinator assigned successfully",
+      "toastError": "Error assigning coordinator",
+      "errorLoad": "Error loading group details"
+    },
+    "membersTab": {
+      "addTitle": "Add New Member",
+      "addDescription": "Only teachers <strong>without active membership</strong> in another group are shown (membership uniqueness rule).",
+      "selectTeacher": "— Select a teacher —",
+      "btnAdd": "Add",
+      "listTitle": "Members List",
+      "empty": "No members registered in this group.",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "membershipStatus": "Membership Status",
+        "joinDate": "Join Date",
+        "action": "Action"
+      },
+      "membershipActive": "Active",
+      "membershipInactive": "Inactive",
+      "btnRemove": "Remove",
+      "toastAdded": "Member added successfully",
+      "toastErrorAdd": "Error adding member",
+      "confirmRemove": {
+        "title": "Remove Member",
+        "message": "Remove \"{{name}}\" from the group? This will be a logical deletion.",
+        "confirmText": "Remove"
+      },
+      "toastRemoved": "Member removed successfully",
+      "toastErrorRemove": "Error removing member"
+    },
+    "linesTab": {
+      "addTitle": "Add Research Line",
+      "selectEmpty": "— No lines available —",
+      "selectPlaceholder": "— Select a line —",
+      "btnAdd": "Add",
+      "assignedTitle": "Assigned Lines",
+      "empty": "No research lines assigned to this group.",
+      "table": {
+        "lineName": "Line Name",
+        "status": "Status",
+        "action": "Action"
+      },
+      "lineActive": "Active",
+      "lineInactive": "Inactive",
+      "btnRemove": "Remove",
+      "toastAssigned": "Line assigned successfully",
+      "toastErrorAssign": "Error assigning line",
+      "confirmRemove": {
+        "title": "Remove Line",
+        "message": "Remove this research line from the group?",
+        "confirmText": "Remove"
+      },
+      "toastRemoved": "Line removed successfully",
+      "toastErrorRemove": "Error removing line"
+    },
+    "confirmDeactivate": {
+      "title": "Deactivate Group",
+      "message": "Deactivate group \"{{name}}\"? This action will affect all its active members.",
+      "confirmText": "Deactivate"
+    },
+    "toastDeactivated": "Group deactivated",
+    "toastErrorDeactivate": "Error deactivating group",
+    "members": {
+      "title": "Group Members",
+      "addMember": "Add Member",
+      "removeMember": "Remove Member",
+      "noMembers": "No members in this group",
+      "role": "Role",
+      "memberSince": "Member since",
+      "roles": {
+        "leader": "Leader",
+        "member": "Member",
+        "collaborator": "Collaborator",
+        "INVESTIGADOR_PRINCIPAL": "Principal Investigator",
+        "COINVESTIGADOR": "Co-investigator",
+        "COLABORADOR": "Collaborator",
+        "ASESOR": "Advisor"
+      }
+    },
+    "lines": {
+      "title": "Research Lines",
+      "addLine": "Add Line",
+      "noLines": "No research lines",
+      "viewDetail": "View Details"
+    }
+  },
+  "lines": {
+    "title": "Research Lines",
+    "subtitle": "Manage research lines",
+    "pageTitle": "Research Lines",
+    "pageSubtitle": "Manage the official faculty research lines.",
+    "btnNew": "New Line",
+    "errorLoad": "Error loading research lines",
+    "searchPlaceholder": "Search by name or code...",
+    "filterAll": "All statuses",
+    "filterActive": "Active only",
+    "filterInactive": "Inactive only",
+    "btnUpdate": "Refresh",
+    "emptyTitle": "No lines found",
+    "emptyWithSearch": "Try different search terms.",
+    "emptyCreate": "Create the first line with \"New Line\".",
+    "table": {
+      "name": "Name",
+      "code": "Code",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "btnEdit": "Edit",
+    "btnDeactivate": "Deactivate",
+    "btnActivate": "Activate",
+    "pagination": {
+      "showing": "Showing {{from}}–{{to}} of {{total}}"
+    },
+    "confirm": {
+      "activateTitle": "Activate Line",
+      "deactivateTitle": "Deactivate Line",
+      "activateMessage": "Activate line \"{{name}}\"?",
+      "deactivateMessage": "Deactivate line \"{{name}}\"? Inactive lines will not appear as options in other forms.",
+      "activateConfirm": "Activate",
+      "deactivateConfirm": "Deactivate"
+    },
+    "toast": {
+      "activated": "Line activated",
+      "deactivated": "Line deactivated",
+      "errorToggle": "Error changing status",
+      "updated": "Line updated",
+      "errorSave": "Error saving"
+    },
+    "editModal": {
+      "title": "Edit Research Line",
+      "nameLabel": "Name",
+      "nameRequired": "Name",
+      "nameRequiredAsterisk": " *",
+      "validationNameRequired": "Name is required",
+      "codeLabel": "Code (optional)",
+      "codePlaceholder": "E.g.: LI-001",
+      "descLabel": "Description (optional)",
+      "btnCancel": "Cancel",
+      "btnSave": "Save",
+      "saving": "Saving…"
+    },
+    "list": {
+      "title": "Lines List",
+      "noLines": "No lines registered",
+      "createFirst": "Create the first line to get started",
+      "filters": {
+        "status": "Status",
+        "group": "Group",
+        "search": "Search..."
+      },
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "group": "Group",
+        "leader": "Responsible",
+        "projects": "Projects",
+        "members": "Members",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "detail": {
+      "title": "Line Details",
+      "basicInfo": "Basic Information",
+      "projects": "Projects",
+      "members": "Members",
+      "documents": "Documents",
+      "statistics": "Statistics"
+    },
+    "statusKey": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "suspended": "Suspended"
+    }
+  },
+  "createLine": {
+    "title": "New Research Line",
+    "subtitle": "Complete the form to register a new line.",
+    "errorCreate": "An error occurred while registering the line.",
+    "backToLines": "Back to Lines",
+    "form": {
+      "nameLabel": "Line Name",
+      "namePlaceholder": "E.g.: Artificial Intelligence",
+      "name": "Line Name",
+      "namePlaceholderGeneric": "Enter line name",
+      "code": "Code",
+      "codePlaceholder": "Enter line code",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter line description",
+      "group": "Research Group",
+      "groupPlaceholder": "Select group",
+      "leader": "Responsible",
+      "leaderPlaceholder": "Select responsible",
+      "objectives": "Objectives",
+      "objectivesPlaceholder": "Enter line objectives",
+      "btnCancel": "Cancel",
+      "btnSave": "Save Line",
+      "saving": "Saving...",
+      "submitButton": "Create Line",
+      "cancel": "Cancel"
+    }
+  },
+  "editLine": {
+    "title": "Edit Research Line",
+    "subtitle": "Modify line information",
+    "form": {
+      "submitButton": "Save Changes",
+      "cancel": "Cancel"
+    }
+  },
+  "lineDetail": {
+    "title": "Research Line Details",
+    "backToLines": "Back to Lines",
+    "errorNotFound": "Line not found",
+    "statusActive": "ACTIVE",
+    "statusInactive": "INACTIVE",
+    "typeLabel": "Research Line",
+    "tabGroups": "Associated Groups",
+    "tabUsers": "Linked Users",
+    "groupsTab": {
+      "title": "Groups developing this line",
+      "selectPlaceholder": "Select group to link...",
+      "btnLink": "Link",
+      "empty": "No groups linked to this research line.",
+      "table": {
+        "code": "Code",
+        "name": "Group Name",
+        "coordinator": "Coordinator",
+        "actions": "Actions",
+        "noCoordinator": "Unassigned"
+      },
+      "btnUnlink": "Unlink",
+      "toastLinked": "Group assigned successfully",
+      "toastErrorLink": "Error",
+      "confirmUnlink": {
+        "title": "Unlink Group",
+        "message": "Are you sure you want to unlink this group from the research line?",
+        "confirmText": "Unlink"
+      },
+      "toastUnlinked": "Group unlinked successfully",
+      "toastErrorUnlink": "Error"
+    },
+    "usersTab": {
+      "title": "Linked Researchers",
+      "description": "This list shows all members of the research groups associated with this line.",
+      "empty": "No linked users (associated groups have no members or there are no groups).",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "joinDate": "Join Date",
+        "status": "Status",
+        "noRole": "No role",
+        "active": "Active",
+        "inactive": "Inactive"
+      }
+    },
+    "errorLoad": "Error loading line details",
+    "tabs": {
+      "overview": "Overview",
+      "projects": "Projects",
+      "members": "Members",
+      "documents": "Documents",
+      "statistics": "Statistics"
+    },
+    "overview": {
+      "name": "Name",
+      "code": "Code",
+      "description": "Description",
+      "group": "Group",
+      "leader": "Responsible",
+      "objectives": "Objectives",
+      "status": "Status"
+    }
+  },
+  "documents": {
+    "title": "Document Repository",
+    "subtitle": "Manage system documents",
+    "pageTitle": "Document Repository",
+    "pageSubtitle": "Secure document preview and download panel. Access is restricted by traceability line.",
+    "btnUpload": "Upload Document",
+    "uploading": "Uploading...",
+    "errorLoad": "Could not load the document repository.",
+    "errorFileType": "Only PDF, DOC and DOCX files are allowed.",
+    "errorFileSize": "The file must not exceed 10 MB.",
+    "uploadSuccess": "File \"{{name}}\" uploaded successfully.",
+    "uploadError": "Error uploading file.",
+    "errorTitle": "Connection Error",
+    "stats": {
+      "documents": "Documents",
+      "pdfs": "PDFs",
+      "word": "Word"
+    },
+    "table": {
+      "file": "File",
+      "type": "Type",
+      "size": "Size",
+      "actions": "Actions",
+      "unknown": "Unknown"
+    },
+    "loading": "Loading documents...",
+    "empty": "No documents in the repository.",
+    "btnView": "View",
+    "btnDownload": "Download",
+    "btnDelete": "Delete",
+    "confirm": {
+      "deleteTitle": "Delete Document",
+      "deleteMessage": "Do you want to delete \"{{name}}\"? This action is irreversible.",
+      "deleteConfirm": "Delete"
+    },
+    "toast": {
+      "deleted": "Document deleted.",
+      "errorDelete": "Error deleting document."
+    },
+    "preview": {
+      "noWordPreview": "Preview not available for Word files.",
+      "downloadToView": "Download to view"
+    },
+    "list": {
+      "title": "Documents List",
+      "noDocuments": "No documents",
+      "filters": {
+        "type": "Type",
+        "category": "Category",
+        "dateRange": "Date Range",
+        "search": "Search..."
+      },
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "category": "Category",
+        "size": "Size",
+        "uploadedBy": "Uploaded By",
+        "uploadDate": "Upload Date",
+        "actions": "Actions"
+      }
+    },
+    "upload": {
+      "title": "Upload Document",
+      "dragAndDrop": "Drag and drop files here",
+      "or": "or",
+      "browse": "Select Files",
+      "allowedTypes": "Allowed types: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG",
+      "maxSize": "Maximum size: 50 MB",
+      "uploading": "Uploading...",
+      "uploadSuccess": "Document uploaded successfully",
+      "uploadError": "Error uploading document"
+    },
+    "categories": {
+      "academic": "Academic",
+      "administrative": "Administrative",
+      "research": "Research",
+      "legal": "Legal",
+      "financial": "Financial",
+      "technical": "Technical",
+      "other": "Other"
+    },
+    "actions": {
+      "download": "Download",
+      "preview": "Preview",
+      "share": "Share",
+      "move": "Move",
+      "rename": "Rename",
+      "delete": "Delete",
+      "versions": "Versions"
+    }
+  },
+  "settings": {
+    "title": "System Settings",
+    "general": {
+      "title": "General Settings",
+      "systemName": "System Name",
+      "systemDescription": "System Description",
+      "institutionName": "Institution Name",
+      "contactEmail": "Contact Email",
+      "timezone": "Timezone",
+      "language": "Default Language",
+      "dateFormat": "Date Format",
+      "currency": "Currency"
+    },
+    "security": {
+      "title": "Security Settings",
+      "passwordPolicy": "Password Policy",
+      "minPasswordLength": "Minimum Password Length",
+      "requireUppercase": "Require Uppercase",
+      "requireLowercase": "Require Lowercase",
+      "requireNumbers": "Require Numbers",
+      "requireSpecialChars": "Require Special Characters",
+      "sessionTimeout": "Session Timeout (minutes)",
+      "maxLoginAttempts": "Maximum Login Attempts",
+      "lockoutDuration": "Lockout Duration (minutes)",
+      "twoFactorAuth": "Two-Factor Authentication",
+      "ipWhitelist": "IP Whitelist"
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "emailNotifications": "Email Notifications",
+      "smsNotifications": "SMS Notifications",
+      "pushNotifications": "Push Notifications",
+      "notificationTypes": "Notification Types",
+      "digestFrequency": "Digest Frequency"
+    },
+    "backup": {
+      "title": "Backup Settings",
+      "autoBackup": "Automatic Backup",
+      "backupFrequency": "Backup Frequency",
+      "retentionDays": "Retention Days",
+      "backupLocation": "Backup Location",
+      "lastBackup": "Last Backup",
+      "nextBackup": "Next Backup",
+      "createBackup": "Create Backup Now",
+      "restoreBackup": "Restore Backup"
+    }
+  },
+  "reports": {
+    "title": "System Reports",
+    "users": {
+      "title": "User Report",
+      "byRole": "By Role",
+      "byDepartment": "By Department",
+      "byStatus": "By Status",
+      "activity": "User Activity",
+      "loginHistory": "Login History"
+    },
+    "groups": {
+      "title": "Group Report",
+      "byFaculty": "By Faculty",
+      "byStatus": "By Status",
+      "productivity": "Productivity",
+      "members": "Members"
+    },
+    "lines": {
+      "title": "Line Report",
+      "byGroup": "By Group",
+      "byStatus": "By Status",
+      "projects": "Projects by Line",
+      "output": "Scientific Output"
+    },
+    "documents": {
+      "title": "Document Report",
+      "byType": "By Type",
+      "byCategory": "By Category",
+      "byMonth": "By Month",
+      "storage": "Storage"
+    },
+    "system": {
+      "title": "System Report",
+      "performance": "Performance",
+      "errors": "Errors",
+      "usage": "System Usage",
+      "security": "Security"
+    }
+  },
+  "actions": {
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "duplicate": "Duplicate",
+    "export": "Export",
+    "import": "Import",
+    "print": "Print",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "suspend": "Suspend",
+    "restore": "Restore",
+    "assignRole": "Assign Role",
+    "changeRole": "Change Role",
+    "resetPassword": "Reset Password",
+    "sendCredentials": "Send Credentials"
+  },
+  "error": {
+    "notFound": "Resource not found",
+    "unauthorized": "You don't have permission to perform this action",
+    "forbidden": "Access denied",
+    "serverError": "Server error",
+    "networkError": "Connection error",
+    "loadingError": "Error loading data",
+    "savingError": "Error saving",
+    "deletingError": "Error deleting",
+    "duplicateEmail": "Email is already registered",
+    "duplicateCode": "Code is already registered",
+    "invalidEmail": "Invalid email address",
+    "weakPassword": "Password does not meet requirements",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "success": {
+    "created": "Created successfully",
+    "updated": "Updated successfully",
+    "deleted": "Deleted successfully",
+    "activated": "Activated successfully",
+    "deactivated": "Deactivated successfully",
+    "suspended": "Suspended successfully",
+    "restored": "Restored successfully",
+    "passwordReset": "Password reset successfully",
+    "credentialsSent": "Credentials sent successfully",
+    "roleChanged": "Role changed successfully",
+    "documentUploaded": "Document uploaded successfully",
+    "documentDownloaded": "Document downloaded successfully",
+    "backupCreated": "Backup created successfully",
+    "backupRestored": "Backup restored successfully"
+  }
+}
