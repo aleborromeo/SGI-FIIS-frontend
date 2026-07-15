@@ -161,6 +161,51 @@ export const NewConvocatoria: React.FC = () => {
     selectedLineIds.length > 0,
   ].filter(Boolean).length;
 
+  const renderResearchLines = () => {
+    if (loadingLines) {
+      return <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}><Spinner size="medium" /></div>;
+    }
+
+    if (lines.length === 0) {
+      return (
+        <div style={{ padding: '24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '14px' }}>
+          No hay líneas de investigación activas registradas.
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
+        {lines.map(line => {
+          const selected = selectedLineIds.includes(line.id);
+          return (
+            <button
+              key={line.id}
+              id={`line-${line.id}`}
+              type="button"
+              onClick={() => toggleLine(line.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px', padding: '13px 16px',
+                border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`,
+                borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.18s ease',
+                backgroundColor: selected ? 'var(--primary-container)' : 'var(--surface)',
+                color: selected ? 'var(--on-primary-container)' : 'var(--on-surface)',
+                boxShadow: selected ? '0 0 0 3px var(--primary-fixed)' : 'none',
+              }}
+            >
+              <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', backgroundColor: selected ? 'var(--primary)' : 'transparent', border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`, transition: 'all 0.15s' }}>
+                {selected && <Check size={12} style={{ color: 'white', strokeWidth: 3 }} />}
+              </span>
+              <span style={{ fontSize: '13px', fontWeight: selected ? 700 : 500, lineHeight: 1.3 }}>
+                {line.lineName}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="animate-fade-in" style={{ padding: '28px', maxWidth: '860px' }}>
       {/* Breadcrumb / Volver */}
@@ -211,7 +256,7 @@ export const NewConvocatoria: React.FC = () => {
 
         {/* Título */}
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
+          <label htmlFor="conv-title" style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
             Título <span style={{ color: 'var(--error)' }}>*</span>
           </label>
           <input
@@ -222,7 +267,7 @@ export const NewConvocatoria: React.FC = () => {
             onChange={e => handleChange('title', e.target.value)}
             onBlur={e => handleBlur('title', e.target.value)}
             style={{ ...inputStyle, borderColor: errors.title ? 'var(--error)' : 'var(--outline-variant)' }}
-            onFocus={e => { if (!errors.title) e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px var(--primary-fixed)'; }}
+            onFocus={e => { if (!errors.title) { e.target.style.borderColor = 'var(--primary)'; } e.target.style.boxShadow = '0 0 0 3px var(--primary-fixed)'; }}
             onBlurCapture={e => { e.target.style.borderColor = errors.title ? 'var(--error)' : 'var(--outline-variant)'; e.target.style.boxShadow = 'none'; }}
           />
           {errors.title && <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '4px' }}><AlertCircle size={12} /> {errors.title}</p>}
@@ -230,7 +275,7 @@ export const NewConvocatoria: React.FC = () => {
 
         {/* Descripción */}
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
+          <label htmlFor="conv-description" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
             <span>Descripción <span style={{ color: 'var(--error)' }}>*</span></span>
             <span style={{ fontWeight: 400, color: charCount < 20 ? 'var(--error)' : 'var(--on-surface-variant)' }}>
               {charCount} / mín. 20 caracteres
@@ -244,7 +289,7 @@ export const NewConvocatoria: React.FC = () => {
             onChange={e => handleChange('description', e.target.value)}
             onBlur={e => handleBlur('description', e.target.value)}
             style={{ ...inputStyle, resize: 'vertical', borderColor: errors.description ? 'var(--error)' : 'var(--outline-variant)' }}
-            onFocus={e => { if (!errors.description) e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px var(--primary-fixed)'; }}
+            onFocus={e => { if (!errors.description) { e.target.style.borderColor = 'var(--primary)'; } e.target.style.boxShadow = '0 0 0 3px var(--primary-fixed)'; }}
             onBlurCapture={e => { e.target.style.borderColor = errors.description ? 'var(--error)' : 'var(--outline-variant)'; e.target.style.boxShadow = 'none'; }}
           />
           {errors.description && <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '4px' }}><AlertCircle size={12} /> {errors.description}</p>}
@@ -253,7 +298,7 @@ export const NewConvocatoria: React.FC = () => {
         {/* Fechas */}
         <div className="form-row" style={{ gap: '20px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
+            <label htmlFor="conv-start-date" style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
               <Calendar size={13} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} />
               Fecha de Inicio <span style={{ color: 'var(--error)' }}>*</span>
             </label>
@@ -264,13 +309,13 @@ export const NewConvocatoria: React.FC = () => {
               onChange={e => handleChange('startDate', e.target.value)}
               onBlur={e => handleBlur('startDate', e.target.value)}
               style={{ ...inputStyle, borderColor: errors.startDate ? 'var(--error)' : 'var(--outline-variant)' }}
-              onFocus={e => { if (!errors.startDate) e.target.style.borderColor = 'var(--primary)'; }}
+              onFocus={e => { if (!errors.startDate) { e.target.style.borderColor = 'var(--primary)'; } }}
               onBlurCapture={e => { e.target.style.borderColor = errors.startDate ? 'var(--error)' : 'var(--outline-variant)'; }}
             />
             {errors.startDate && <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '5px' }}><AlertCircle size={12} style={{ display: 'inline' }} /> {errors.startDate}</p>}
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
+            <label htmlFor="conv-end-date" style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
               <Calendar size={13} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} />
               Fecha de Cierre <span style={{ color: 'var(--error)' }}>*</span>
             </label>
@@ -282,7 +327,7 @@ export const NewConvocatoria: React.FC = () => {
               onChange={e => handleChange('endDate', e.target.value)}
               onBlur={e => handleBlur('endDate', e.target.value)}
               style={{ ...inputStyle, borderColor: errors.endDate ? 'var(--error)' : 'var(--outline-variant)' }}
-              onFocus={e => { if (!errors.endDate) e.target.style.borderColor = 'var(--primary)'; }}
+              onFocus={e => { if (!errors.endDate) { e.target.style.borderColor = 'var(--primary)'; } }}
               onBlurCapture={e => { e.target.style.borderColor = errors.endDate ? 'var(--error)' : 'var(--outline-variant)'; }}
             />
             {errors.endDate && <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '5px' }}><AlertCircle size={12} style={{ display: 'inline' }} /> {errors.endDate}</p>}
@@ -313,42 +358,7 @@ export const NewConvocatoria: React.FC = () => {
           )}
         </div>
 
-        {loadingLines ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}><Spinner size="medium" /></div>
-        ) : lines.length === 0 ? (
-          <div style={{ padding: '24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '14px' }}>
-            No hay líneas de investigación activas registradas.
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
-            {lines.map(line => {
-              const selected = selectedLineIds.includes(line.id);
-              return (
-                <button
-                  key={line.id}
-                  id={`line-${line.id}`}
-                  type="button"
-                  onClick={() => toggleLine(line.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px', padding: '13px 16px',
-                    border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`,
-                    borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.18s ease',
-                    backgroundColor: selected ? 'var(--primary-container)' : 'var(--surface)',
-                    color: selected ? 'var(--on-primary-container)' : 'var(--on-surface)',
-                    boxShadow: selected ? '0 0 0 3px var(--primary-fixed)' : 'none',
-                  }}
-                >
-                  <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', backgroundColor: selected ? 'var(--primary)' : 'transparent', border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`, transition: 'all 0.15s' }}>
-                    {selected && <Check size={12} style={{ color: 'white', strokeWidth: 3 }} />}
-                  </span>
-                  <span style={{ fontSize: '13px', fontWeight: selected ? 700 : 500, lineHeight: 1.3 }}>
-                    {line.lineName}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+        {renderResearchLines()}
         {errors.lines && (
           <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <AlertCircle size={13} /> {errors.lines}

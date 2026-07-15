@@ -66,13 +66,13 @@ const TRANSITIONS: Record<string, { next: string; label: string; confirmMsg: str
 function formatDate(v?: string): string {
   if (!v) return '—';
   const d = new Date(v);
-  if (isNaN(d.getTime())) return v;
+  if (Number.isNaN(d.getTime())) return v;
   return new Intl.DateTimeFormat('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
 }
 
 function getDaysLeft(endDate: string): number | null {
   const d = new Date(endDate);
-  if (isNaN(d.getTime())) return null;
+  if (Number.isNaN(d.getTime())) return null;
   return Math.ceil((d.getTime() - Date.now()) / 86_400_000);
 }
 
@@ -89,6 +89,10 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
   const transition = TRANSITIONS[call.status];
   const daysLeft = call.status === 'ABIERTA' ? getDaysLeft(call.endDate) : null;
   const isOverdue = daysLeft !== null && daysLeft < 0;
+
+  const daysLeftBg = isOverdue ? '#fee2e2' : daysLeft <= 5 ? '#fef3c7' : '#d1fae5';
+  const daysLeftColor = isOverdue ? '#991b1b' : daysLeft <= 5 ? '#92400e' : '#065f46';
+  const daysLeftText = isOverdue ? `Venció hace ${Math.abs(daysLeft)}d` : `${daysLeft}d restante${daysLeft !== 1 ? 's' : ''}`;
 
   return (
     <div style={{
@@ -157,11 +161,11 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
             <div style={{
               display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700,
               padding: '3px 10px', borderRadius: 'var(--radius-full)',
-              backgroundColor: isOverdue ? '#fee2e2' : daysLeft <= 5 ? '#fef3c7' : '#d1fae5',
-              color: isOverdue ? '#991b1b' : daysLeft <= 5 ? '#92400e' : '#065f46',
+              backgroundColor: daysLeftBg,
+              color: daysLeftColor,
             }}>
               <Clock size={12} />
-              {isOverdue ? `Venció hace ${Math.abs(daysLeft)}d` : `${daysLeft}d restante${daysLeft !== 1 ? 's' : ''}`}
+              {daysLeftText}
             </div>
           )}
         </div>
@@ -277,6 +281,52 @@ export const ConvocatoriasList: React.FC = () => {
     count: calls.filter(c => c.status === s).length,
   }));
 
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '80px' }}>
+          <Spinner size="large" />
+        </div>
+      );
+    }
+
+    if (filtered.length === 0) {
+      return (
+        <div style={{ textAlign: 'center', padding: '80px 24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-xl)', border: '1px dashed var(--outline)' }}>
+          <div style={{ width: '72px', height: '72px', borderRadius: '24px', backgroundColor: 'var(--primary-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <Megaphone size={32} style={{ color: 'var(--primary)', opacity: 0.7 }} />
+          </div>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '8px' }}>
+            {search || filterStatus ? 'Sin resultados' : 'No hay convocatorias'}
+          </h3>
+          <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', marginBottom: '24px' }}>
+            {search || filterStatus
+              ? 'Intenta con otros términos o limpia los filtros.'
+              : 'Crea la primera convocatoria institucional de investigación.'}
+          </p>
+          {!search && !filterStatus && (
+            <Link to="/convocatorias/new">
+              <Button variant="primary" icon={<Plus size={16} />}>Nueva Convocatoria</Button>
+            </Link>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(420px, 100%), 1fr))', gap: '20px' }}>
+        {filtered.map(call => (
+          <CallCard
+            key={call.id}
+            call={call}
+            updating={updatingId === call.id}
+            onStatusChange={handleStatusChange}
+          />
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="animate-fade-in" style={{ padding: '28px' }}>
       {/* ── Encabezado ── */}
@@ -285,8 +335,7 @@ export const ConvocatoriasList: React.FC = () => {
           <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--on-surface)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
               <Megaphone size={22} style={{ color: 'var(--on-primary)' }} />
-            </span>
-            Convocatorias de Investigación
+            </span>Convocatorias de Investigación
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--on-surface-variant)', marginLeft: '54px' }}>
             Gestión de periodos de postulación científica institucional.
@@ -379,41 +428,7 @@ export const ConvocatoriasList: React.FC = () => {
       </div>
 
       {/* ── Contenido ── */}
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '80px' }}>
-          <Spinner size="large" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-xl)', border: '1px dashed var(--outline)' }}>
-          <div style={{ width: '72px', height: '72px', borderRadius: '24px', backgroundColor: 'var(--primary-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <Megaphone size={32} style={{ color: 'var(--primary)', opacity: 0.7 }} />
-          </div>
-          <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '8px' }}>
-            {search || filterStatus ? 'Sin resultados' : 'No hay convocatorias'}
-          </h3>
-          <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', marginBottom: '24px' }}>
-            {search || filterStatus
-              ? 'Intenta con otros términos o limpia los filtros.'
-              : 'Crea la primera convocatoria institucional de investigación.'}
-          </p>
-          {!search && !filterStatus && (
-            <Link to="/convocatorias/new">
-              <Button variant="primary" icon={<Plus size={16} />}>Nueva Convocatoria</Button>
-            </Link>
-          )}
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(420px, 100%), 1fr))', gap: '20px' }}>
-          {filtered.map(call => (
-            <CallCard
-              key={call.id}
-              call={call}
-              updating={updatingId === call.id}
-              onStatusChange={handleStatusChange}
-            />
-          ))}
-        </div>
-      )}
+      {renderContent()}
     </div>
   );
 };
