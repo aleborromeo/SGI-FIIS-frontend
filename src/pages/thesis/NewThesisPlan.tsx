@@ -19,6 +19,7 @@ import { Alert } from '../../components/ui/Alert';
 
 import { api } from '../../services/api';
 import { researchService } from '../../services/researchService';
+import { AuthContext } from '../../context/AuthContext';
 import type { ResearchLine, ResearchGroup } from '../../services/researchService';
 
 interface Docente {
@@ -38,6 +39,7 @@ interface CreateThesisPlanPayload {
 
 export const NewThesisPlan: React.FC = () => {
   const navigate = useNavigate();
+  const { currentRole } = React.useContext(AuthContext);
 
   const [formData, setFormData] = useState({
     tituloTesis: '',
@@ -58,21 +60,27 @@ export const NewThesisPlan: React.FC = () => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [linesData, groupsData, usersData] = await Promise.all([
+        const [linesData, groupsData] = await Promise.all([
           researchService.getLines(true),
           researchService.getGroups(),
-          api.get<any[]>('/users?role=DOCENTE_INVESTIGADOR'),
         ]);
         setLines(linesData || []);
         setGroups(groupsData || []);
-        // usersData may be array or paginated object
-        const arr = Array.isArray(usersData) ? usersData : (usersData as any)?.content ?? [];
-        setDocentes(arr);
       } catch (err) {
         console.error('Error cargando catálogos de tesis', err);
-      } finally {
-        setLoadingCatalogs(false);
       }
+
+      if (currentRole !== 'ESTUDIANTE') {
+        try {
+          const usersData = await api.get<any[]>('/users?role=DOCENTE_INVESTIGADOR');
+          const arr = Array.isArray(usersData) ? usersData : (usersData as any)?.content ?? [];
+          setDocentes(arr);
+        } catch {
+          setDocentes([]);
+        }
+      }
+
+      setLoadingCatalogs(false);
     };
     fetchAll();
   }, []);
