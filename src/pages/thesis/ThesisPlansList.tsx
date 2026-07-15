@@ -272,7 +272,7 @@ export const ThesisPlansList: React.FC = () => {
                 <div>
                   <p style={{ fontWeight: 600, fontSize: '16px', marginBottom: '8px' }}>No tienes ningún plan de tesis registrado</p>
                   <p style={{ fontSize: '14px', marginBottom: '20px' }}>Registra una propuesta de tesis para iniciar el proceso de revisión y aprobación.</p>
-                  <Link to="/projects/new">
+                  <Link to="/thesis/new">
                     <Button icon={<Plus size={18} />}>Registrar mi Plan de Tesis</Button>
                   </Link>
                 </div>
