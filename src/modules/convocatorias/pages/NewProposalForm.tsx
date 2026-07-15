@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import {
@@ -31,8 +31,6 @@ import {
   Lock, CheckCircle, XCircle, Users, Calendar, DollarSign, MapPin,
   Paperclip, UserPlus, File,
 } from 'lucide-react';
-
-import { AuthContext } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { useConfirm } from '../../../context/ConfirmContext';
 import { projectService } from '../../../services/projectService';
@@ -468,6 +466,26 @@ function NewProposalFormInner() {
       </Box>
     );
   }
+
+  const recibeApoyoContent = (() => {
+    if (watchedValues.recibeApoyoFif === 'SI') {
+      return (
+        <>
+          <CheckCircle size={16} color="#16a34a" />
+          <Typography variant="body2" color="#16a34a" sx={{ fontWeight: 600 }}>Sí, recibe apoyo</Typography>
+        </>
+      );
+    }
+    if (watchedValues.recibeApoyoFif === 'NO') {
+      return (
+        <>
+          <XCircle size={16} color="#dc2626" />
+          <Typography variant="body2" color="#dc2626" sx={{ fontWeight: 600 }}>No recibe apoyo</Typography>
+        </>
+      );
+    }
+    return <EmptyField />;
+  })();
 
   return (
     <Box sx={{ p: { xs: 1.5, sm: 3 }, width: '100%', maxWidth: 960, mx: 'auto', boxSizing: 'border-box' }}>
@@ -1016,19 +1034,7 @@ function NewProposalFormInner() {
                       Recibe Apoyo FIF
                     </Typography>
                     <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      {watchedValues.recibeApoyoFif === 'SI' ? (
-                        <>
-                          <CheckCircle size={16} color="#16a34a" />
-                          <Typography variant="body2" color="#16a34a" sx={{ fontWeight: 600 }}>Sí, recibe apoyo</Typography>
-                        </>
-                      ) : watchedValues.recibeApoyoFif === 'NO' ? (
-                        <>
-                          <XCircle size={16} color="#dc2626" />
-                          <Typography variant="body2" color="#dc2626" sx={{ fontWeight: 600 }}>No recibe apoyo</Typography>
-                        </>
-                      ) : (
-                        <EmptyField />
-                      )}
+                      {recibeApoyoContent}
                     </Box>
                   </Grid>
                 </Grid>

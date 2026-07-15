@@ -90,8 +90,8 @@ export const AuditTrail: React.FC = () => {
   const toast = useToast();
 
   const handleSearch = async () => {
-    const id = parseInt(procedureId, 10);
-    if (isNaN(id) || id <= 0) {
+    const id = Number.parseInt(procedureId, 10);
+    if (Number.isNaN(id) || id <= 0) {
       toast.error('Ingrese un ID de tramite valido (numero entero positivo).');
       return;
     }
@@ -268,7 +268,7 @@ export const AuditTrail: React.FC = () => {
                   <CheckCircle size={24} color="#15803d" />
                   <div>
                     <strong style={{ display: 'block', fontSize: '20px' }}>
-                      {STATUS_LABELS[movements[movements.length - 1]?.newStatus] || '-'}
+                      {STATUS_LABELS[movements.at(-1)?.newStatus || ''] || '-'}
                     </strong>
                     <span style={{ color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
                       Estado actual
@@ -388,7 +388,7 @@ export const AuditTrail: React.FC = () => {
                         >
                           {getActionIcon(m.action)}
                           <strong style={{ color: 'white', fontSize: '0.95rem' }}>
-                            {m.action.replace(/_/g, ' ')}
+                            {m.action.replaceAll('_', ' ')}
                           </strong>
                         </div>
                         <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
