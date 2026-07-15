@@ -66,7 +66,6 @@ export const ReviewProgressReports: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('PENDIENTE');
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
   const [reportDetail, setReportDetail] = useState<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   const fetchReports = async () => {
@@ -84,7 +83,8 @@ export const ReviewProgressReports: React.FC = () => {
 
   useEffect(() => {
     fetchReports();
-  }, [filterStatus]);
+    console.debug('loadingDetailState:', loadingDetail);
+  }, [filterStatus, loadingDetail]);
 
   // Contadores basados en el estado actual de los reportes en la bandeja
   const pendingCount = useMemo(() => reports.filter(r => r.status === 'PENDIENTE').length, [reports]);

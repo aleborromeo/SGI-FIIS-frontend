@@ -78,6 +78,36 @@ function getDaysLeft(endDate: string): number | null {
 
 // ── Componente tarjeta de convocatoria ────────────────────────────────────────
 
+interface DaysLeftStyle {
+  bg: string;
+  color: string;
+  text: string;
+}
+
+function getDaysLeftStyle(daysLeft: number | null, isOverdue: boolean): DaysLeftStyle {
+  let bg = '#d1fae5';
+  let color = '#065f46';
+  if (isOverdue) {
+    bg = '#fee2e2';
+    color = '#991b1b';
+  } else if (daysLeft !== null && daysLeft <= 5) {
+    bg = '#fef3c7';
+    color = '#92400e';
+  }
+
+  let text = '';
+  if (daysLeft !== null) {
+    if (isOverdue) {
+      text = `Venció hace ${Math.abs(daysLeft)}d`;
+    } else {
+      const suffix = daysLeft !== 1 ? 's' : '';
+      text = `${daysLeft}d restante${suffix}`;
+    }
+  }
+
+  return { bg, color, text };
+}
+
 interface CallCardProps {
   call: CallResponse;
   updating: boolean;
@@ -90,25 +120,7 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
   const daysLeft = call.status === 'ABIERTA' ? getDaysLeft(call.endDate) : null;
   const isOverdue = daysLeft !== null && daysLeft < 0;
 
-  let daysLeftBg = '#d1fae5';
-  let daysLeftColor = '#065f46';
-  if (isOverdue) {
-    daysLeftBg = '#fee2e2';
-    daysLeftColor = '#991b1b';
-  } else if (daysLeft !== null && daysLeft <= 5) {
-    daysLeftBg = '#fef3c7';
-    daysLeftColor = '#92400e';
-  }
-
-  let daysLeftText = '';
-  if (daysLeft !== null) {
-    if (isOverdue) {
-      daysLeftText = `Venció hace ${Math.abs(daysLeft)}d`;
-    } else {
-      const suffix = daysLeft !== 1 ? 's' : '';
-      daysLeftText = `${daysLeft}d restante${suffix}`;
-    }
-  }
+  const { bg: daysLeftBg, color: daysLeftColor, text: daysLeftText } = getDaysLeftStyle(daysLeft, isOverdue);
 
   return (
     <div style={{
