@@ -86,8 +86,27 @@ export const NewThesisPlan: React.FC = () => {
   }, []);
 
   function handleChange(field: string, value: string) {
-    setFormData(prev => ({ ...prev, [field]: value }));
     if (errorMsg) setErrorMsg('');
+
+    if (field === 'idGrupo') {
+      setFormData(prev => ({ ...prev, idGrupo: value, idLinea: '' }));
+      if (value) {
+        researchService.getGroupLines(Number(value)).then(fetched => {
+          setLines(fetched || []);
+        }).catch(() => {
+          setLines([]);
+        });
+      } else {
+        researchService.getLines(true).then(fetched => {
+          setLines(fetched || []);
+        }).catch(() => {
+          setLines([]);
+        });
+      }
+      return;
+    }
+
+    setFormData(prev => ({ ...prev, [field]: value }));
   }
 
   function validate(): boolean {
