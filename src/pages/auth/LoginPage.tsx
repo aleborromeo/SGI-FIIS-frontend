@@ -374,7 +374,7 @@ export const LoginPage: React.FC = () => {
                   }}
                   disabled={isSubmitting}
                 />
-                <span>Aceptar políticas y privacidad</span>
+                <span>Aceptar <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: '#0b5ed7', textDecoration: 'underline', fontWeight: 500 }}>políticas y privacidad</a></span>
               </label>
               <div className="forgot-password-container">
                 <button 

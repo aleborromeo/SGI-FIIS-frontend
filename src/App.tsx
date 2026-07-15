@@ -12,6 +12,7 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage.tsx';
 import { SobreSgiPage } from './pages/SobreSgiPage.tsx';
 import { ContactoPage } from './pages/ContactoPage.tsx';
 import { NovedadesPage } from './pages/NovedadesPage.tsx';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
@@ -137,6 +138,7 @@ function App() {
                 <Route path="/sobre-sgi" element={<SobreSgiPage />} />
                 <Route path="/contacto" element={<ContactoPage />} />
                 <Route path="/novedades" element={<NovedadesPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                 <Route
                   path="/change-password"
                   element={
