@@ -358,7 +358,7 @@ function QuickActionsSection() {
   );
 }
 
-function MetricCard({ icon: Icon, value, label, sublabel, tone }: MetricCardProps) {
+function MetricCard({ icon: Icon, value, label, sublabel, tone }: Readonly<MetricCardProps>) {
   return (
     <div className={`metric-card bg-${tone}`}>
       <span className="metric-icon">
@@ -374,7 +374,7 @@ function MetricCard({ icon: Icon, value, label, sublabel, tone }: MetricCardProp
   );
 }
 
-function ProgressBars({ items }: { items: ProgressItem[] }) {
+function ProgressBars({ items }: Readonly<{ items: readonly ProgressItem[] }>) {
   return (
     <div className="chart-bars-container">
       {items.map((item) => (
@@ -396,7 +396,7 @@ function ProgressBars({ items }: { items: ProgressItem[] }) {
   );
 }
 
-function AlertsList({ alerts }: { alerts?: AlertItem[] }) {
+function AlertsList({ alerts }: Readonly<{ alerts?: readonly AlertItem[] }>) {
   if (!alerts || alerts.length === 0) {
     return (
       <div className="empty-alerts">
@@ -433,7 +433,7 @@ function DashboardLayout({
   alertsTitle,
   alerts,
   extraContent,
-}: DashboardLayoutProps) {
+}: Readonly<DashboardLayoutProps>) {
   return (
     <div className={`dashboard-view ${viewClassName}`}>
       <div className="view-header">

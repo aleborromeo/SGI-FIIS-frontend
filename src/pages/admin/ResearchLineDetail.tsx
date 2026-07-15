@@ -302,6 +302,8 @@ export const ResearchLineDetail: React.FC = () => {
                     <tr>
                       <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Nombre</th>
                       <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Email</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Rol</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Fecha Ingreso</th>
                       <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Estado</th>
                     </tr>
                   </thead>
@@ -313,6 +315,14 @@ export const ResearchLineDetail: React.FC = () => {
                         </td>
                         <td style={{ padding: '16px', color: 'var(--on-surface-variant)' }}>
                           {member.userEmail}
+                        </td>
+                        <td style={{ padding: '16px', fontSize: '13px' }}>
+                          <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, backgroundColor: 'var(--secondary-container)', color: 'var(--on-secondary-container)' }}>
+                            {member.userRoleCode?.replace(/_/g, ' ') || 'Sin rol'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '16px', fontSize: '13px', color: 'var(--on-surface-variant)' }}>
+                          {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                         </td>
                         <td style={{ padding: '16px' }}>
                           <span style={{ 
