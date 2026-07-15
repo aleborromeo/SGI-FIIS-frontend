@@ -65,8 +65,8 @@ export const ReviewProgressReports: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('PENDIENTE');
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
-  const [reportDetail, setReportDetail] = useState<any | null>(null);
-  const [_loadingDetail, setLoadingDetail] = useState(false);
+  const [reportDetail, setReportDetail] = useState<any>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   const fetchReports = async () => {
     try {
@@ -155,6 +155,174 @@ export const ReviewProgressReports: React.FC = () => {
     window.open(url, '_blank');
   };
 
+  const renderReportsContent = () => {
+    if (loading) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '64px' }}>
+          <Spinner size="large" />
+        </div>
+      );
+    }
+
+    if (reports.length === 0) {
+      return (
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '64px 24px',
+            backgroundColor: 'var(--surface-container-low)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px dashed var(--outline)',
+          }}
+        >
+          <FileText size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
+          <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)' }}>
+            No se encontraron informes de avance
+          </p>
+          <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', margin: 0 }}>
+            No hay reportes de avance registrados bajo los filtros seleccionados.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: 'grid', gap: '16px' }}>
+        {reports.map(report => (
+          <Card key={report.id}>
+            <CardContent
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '24px',
+                padding: '20px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <div
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    backgroundColor: 'rgba(26, 54, 93, 0.08)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <FileText size={22} color="var(--primary)" />
+                </div>
+
+                <div>
+                  <h3 className="text-title-md" style={{ marginBottom: '6px', fontWeight: 700 }}>
+                    {report.projectTitle}
+                  </h3>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '16px',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      fontSize: '13px',
+                    }}
+                  >
+                    <span style={{ color: 'var(--on-surface-variant)' }}>
+                      <strong>Responsable:</strong> {report.responsibleName}
+                    </span>
+
+                    <span style={{ color: 'var(--on-surface-variant)' }}>
+                      <strong>Avance:</strong> {report.physicalProgress}%
+                    </span>
+
+                    <span
+                      style={{
+                        color: 'var(--on-surface-variant)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      <Clock size={13} />
+                      <strong>Fecha Envío:</strong> {formatDate(report.reportDate)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  flexShrink: 0,
+                }}
+              >
+                <Badge variant={getBadgeVariant(report.status)}>
+                  {getStatusLabel(report.status)}
+                </Badge>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Button
+                    variant="secondary"
+                    style={{ padding: '8px' }}
+                    title="Ver detalle del informe"
+                    icon={<Eye size={18} />}
+                    onClick={() => handleViewDetail(report.id)}
+                  />
+
+                  {report.attachedDocumentId && (
+                    <Button
+                      variant="secondary"
+                      style={{ padding: '8px' }}
+                      title="Descargar informe adjunto"
+                      icon={<Download size={18} />}
+                      onClick={() => handleDownload(report.attachedDocumentId)}
+                    />
+                  )}
+
+                  {/* Mostrar acciones de aprobación sólo si está PENDIENTE en Coordinación o EN_REVISION en Dirección */}
+                  {((currentRole === 'COORDINADOR_GRUPO' && report.status === 'PENDIENTE') ||
+                    (currentRole === 'DIRECTOR_INVESTIGACION' && report.status === 'EN_REVISION')) && (
+                    <>
+                      <Button
+                        variant="primary"
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: '#059669',
+                        }}
+                        icon={<Check size={18} />}
+                        onClick={() => handleAction(report.id, 'approve')}
+                      >
+                        {currentRole === 'COORDINADOR_GRUPO' ? 'Derivar' : 'Aprobar'}
+                      </Button>
+
+                      <Button
+                        variant="secondary"
+                        style={{
+                          padding: '8px 16px',
+                          color: 'var(--error)',
+                          borderColor: 'var(--error)',
+                        }}
+                        icon={<X size={18} />}
+                        onClick={() => handleAction(report.id, 'observe')}
+                      >
+                        Observar
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
       <div
@@ -241,166 +409,11 @@ export const ReviewProgressReports: React.FC = () => {
       </div>
 
       {/* Cuerpo principal de informes */}
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '64px' }}>
-          <Spinner size="large" />
-        </div>
-      ) : reports.length === 0 ? (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '64px 24px',
-            backgroundColor: 'var(--surface-container-low)',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px dashed var(--outline)',
-          }}
-        >
-          <FileText size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
-          <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)' }}>
-            No se encontraron informes de avance
-          </p>
-          <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', margin: 0 }}>
-            No hay reportes de avance registrados bajo los filtros seleccionados.
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gap: '16px' }}>
-          {reports.map(report => (
-            <Card key={report.id}>
-              <CardContent
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '24px',
-                  padding: '20px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                  <div
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      backgroundColor: 'rgba(26, 54, 93, 0.08)',
-                      borderRadius: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <FileText size={22} color="var(--primary)" />
-                  </div>
-
-                  <div>
-                    <h3 className="text-title-md" style={{ marginBottom: '6px', fontWeight: 700 }}>
-                      {report.projectTitle}
-                    </h3>
-
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: '16px',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        fontSize: '13px',
-                      }}
-                    >
-                      <span style={{ color: 'var(--on-surface-variant)' }}>
-                        <strong>Responsable:</strong> {report.responsibleName}
-                      </span>
-
-                      <span style={{ color: 'var(--on-surface-variant)' }}>
-                        <strong>Avance:</strong> {report.physicalProgress}%
-                      </span>
-
-                      <span
-                        style={{
-                          color: 'var(--on-surface-variant)',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                        }}
-                      >
-                        <Clock size={13} />
-                        <strong>Fecha Envío:</strong> {formatDate(report.reportDate)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '16px',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Badge variant={getBadgeVariant(report.status)}>
-                    {getStatusLabel(report.status)}
-                  </Badge>
-
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <Button
-                      variant="secondary"
-                      style={{ padding: '8px' }}
-                      title="Ver detalle del informe"
-                      icon={<Eye size={18} />}
-                      onClick={() => handleViewDetail(report.id)}
-                    />
-
-                    {report.attachedDocumentId && (
-                      <Button
-                        variant="secondary"
-                        style={{ padding: '8px' }}
-                        title="Descargar informe adjunto"
-                        icon={<Download size={18} />}
-                        onClick={() => handleDownload(report.attachedDocumentId)}
-                      />
-                    )}
-
-                    {/* Mostrar acciones de aprobación sólo si está PENDIENTE en Coordinación o EN_REVISION en Dirección */}
-                    {((currentRole === 'COORDINADOR_GRUPO' && report.status === 'PENDIENTE') ||
-                      (currentRole === 'DIRECTOR_INVESTIGACION' && report.status === 'EN_REVISION')) && (
-                      <>
-                        <Button
-                          variant="primary"
-                          style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#059669',
-                          }}
-                          icon={<Check size={18} />}
-                          onClick={() => handleAction(report.id, 'approve')}
-                        >
-                          {currentRole === 'COORDINADOR_GRUPO' ? 'Derivar' : 'Aprobar'}
-                        </Button>
-
-                        <Button
-                          variant="secondary"
-                          style={{
-                            padding: '8px 16px',
-                            color: 'var(--error)',
-                            borderColor: 'var(--error)',
-                          }}
-                          icon={<X size={18} />}
-                          onClick={() => handleAction(report.id, 'observe')}
-                        >
-                          Observar
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      {renderReportsContent()}
 
       {/* Modal / Sidebar de Detalles */}
       {selectedReportId && reportDetail && (
+        /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
         <div
           style={{
             position: 'fixed',
@@ -413,6 +426,7 @@ export const ReviewProgressReports: React.FC = () => {
           }}
           onClick={() => { setSelectedReportId(null); setReportDetail(null); }}
         >
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
           <div
             style={{
               backgroundColor: 'var(--surface-container-lowest)',

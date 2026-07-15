@@ -150,7 +150,7 @@ export const ProjectMonitoring: React.FC = () => {
 
     const matches: { key: string; label?: string; index: number; length: number }[] = [];
     
-    const fifMatch = summaryText.match(/\[FIF:\s*([^\]]+)\]/i);
+    const fifMatch = /\[FIF:\s*(SI|NO|SÍ)\]/i.exec(summaryText);
     let fifVal = '';
     if (fifMatch) {
       fifVal = fifMatch[1].toUpperCase() === 'SI' || fifMatch[1].toUpperCase() === 'SÍ' ? 'Sí' : 'No';
@@ -158,8 +158,8 @@ export const ProjectMonitoring: React.FC = () => {
 
     headers.forEach(h => {
       if (h.key === 'fif') return;
-      const match = summaryText.match(h.pattern);
-      if (match && match.index !== undefined) {
+      const match = h.pattern.exec(summaryText);
+      if (match?.index !== undefined) {
         matches.push({ key: h.key, label: h.label, index: match.index, length: match[0].length });
       }
     });
@@ -209,7 +209,7 @@ export const ProjectMonitoring: React.FC = () => {
             setProgressReports(reports);
           }
         } catch (err) {
-          // Ignore
+          console.warn('Error al cargar informes de avance:', err);
         }
       } catch (err) {
         console.error('Error al cargar el proyecto:', err);
@@ -264,6 +264,50 @@ export const ProjectMonitoring: React.FC = () => {
       setDocumentName('No registrado');
     }
   }, [project?.responsibleId, project?.documentId]);
+
+  const renderActionButton = (r: any, period: any) => {
+    if (r) {
+      if (r.status === 'OBSERVADO' && currentRole === 'DOCENTE_INVESTIGADOR') {
+        return (
+          <Button 
+            variant="primary"
+            onClick={() => navigate(`/progressreports/amend/${r.id}`)}
+          >
+            Subsanar
+          </Button>
+        );
+      }
+      return (
+        <Button 
+          variant="secondary"
+          onClick={() => {
+            if (r.attachedDocumentId) {
+              window.open(documentService.download(r.attachedDocumentId), '_blank');
+            }
+          }}
+        >
+          Ver
+        </Button>
+      );
+    }
+
+    if (currentRole === 'DOCENTE_INVESTIGADOR') {
+      return (
+        <Button 
+          variant="primary"
+          onClick={() => navigate(`/progressreports/new?projectId=${id}&period=${period.name}`)}
+        >
+          Subir
+        </Button>
+      );
+    }
+
+    return (
+      <Button variant="secondary" disabled>
+        Ver
+      </Button>
+    );
+  };
 
   async function handleMoveToExecution() {
     if (!id) return;
@@ -639,12 +683,13 @@ export const ProjectMonitoring: React.FC = () => {
                         <TableCell>{period.deadline}</TableCell>
                         <TableCell>
                           {r?.attachedDocumentId ? (
-                            <span 
-                              style={{ color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+                            <button 
+                              type="button"
+                              style={{ background: 'none', border: 'none', padding: 0, color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' }}
                               onClick={() => window.open(documentService.download(r.attachedDocumentId), '_blank')}
                             >
                               {r.fileName || `informe_${period.name.replace(' ', '_').toLowerCase()}.pdf`}
-                            </span>
+                            </button>
                           ) : (
                             <span>—</span>
                           )}
@@ -662,40 +707,7 @@ export const ProjectMonitoring: React.FC = () => {
                           {r?.comments?.[0]?.content || r?.observations || (r ? 'Enviado para revisión' : '—')}
                         </TableCell>
                         <TableCell style={{ textAlign: 'right' }}>
-                          {r ? (
-                            r.status === 'OBSERVADO' && currentRole === 'DOCENTE_INVESTIGADOR' ? (
-                              <Button 
-                                variant="primary"
-                                onClick={() => navigate(`/progressreports/amend/${r.id}`)}
-                              >
-                                Subsanar
-                              </Button>
-                            ) : (
-                              <Button 
-                                variant="secondary"
-                                onClick={() => {
-                                  if (r.attachedDocumentId) {
-                                    window.open(documentService.download(r.attachedDocumentId), '_blank');
-                                  }
-                                }}
-                              >
-                                Ver
-                              </Button>
-                            )
-                          ) : (
-                            currentRole === 'DOCENTE_INVESTIGADOR' ? (
-                              <Button 
-                                variant="primary"
-                                onClick={() => navigate(`/progressreports/new?projectId=${id}&period=${period.name}`)}
-                              >
-                                Subir
-                              </Button>
-                            ) : (
-                              <Button variant="secondary" disabled>
-                                Ver
-                              </Button>
-                            )
-                          )}
+                          {renderActionButton(r, period)}
                         </TableCell>
                       </TableRow>
                     );
@@ -866,12 +878,13 @@ export const ProjectMonitoring: React.FC = () => {
                     <strong>Documento asociado</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
                       {project.documentId ? (
-                        <span
-                          style={{ color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+                        <button
+                          type="button"
+                          style={{ background: 'none', border: 'none', padding: 0, color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' }}
                           onClick={() => window.open(documentService.download(project.documentId!), '_blank')}
                         >
                           {documentName}
-                        </span>
+                        </button>
                       ) : (
                         'No registrado'
                       )}
