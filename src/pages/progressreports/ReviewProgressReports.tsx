@@ -66,7 +66,8 @@ export const ReviewProgressReports: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('PENDIENTE');
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
   const [reportDetail, setReportDetail] = useState<any>(null);
-  const [, setLoadingDetail] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   const fetchReports = async () => {
     try {

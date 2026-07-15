@@ -29,6 +29,26 @@ interface FormErrors {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+const validateTitle = (value: string): string | undefined => {
+  const trimmed = value.trim();
+  if (!trimmed) return 'El título es obligatorio';
+  if (trimmed.length < 5) return 'Mínimo 5 caracteres';
+  return undefined;
+};
+
+const validateDescription = (value: string): string | undefined => {
+  const trimmed = value.trim();
+  if (!trimmed) return 'La descripción es obligatoria';
+  if (trimmed.length < 20) return 'Mínimo 20 caracteres';
+  return undefined;
+};
+
+const validateEndDate = (value: string, startDate?: string): string | undefined => {
+  if (!value) return 'La fecha de fin es obligatoria';
+  if (startDate && value < startDate) return 'Debe ser posterior a la fecha de inicio';
+  return undefined;
+};
+
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '12px 14px',
@@ -71,22 +91,10 @@ export const NewConvocatoria: React.FC = () => {
 
   // Validación de campo individual
   const validateField = (field: string, value: string): string | undefined => {
-    const trimmed = value.trim();
-    if (field === 'title') {
-      if (!trimmed) return 'El título es obligatorio';
-      if (trimmed.length < 5) return 'Mínimo 5 caracteres';
-    }
-    if (field === 'description') {
-      if (!trimmed) return 'La descripción es obligatoria';
-      if (trimmed.length < 20) return 'Mínimo 20 caracteres';
-    }
-    if (field === 'startDate' && !value) {
-      return 'La fecha de inicio es obligatoria';
-    }
-    if (field === 'endDate') {
-      if (!value) return 'La fecha de fin es obligatoria';
-      if (formData.startDate && value < formData.startDate) return 'Debe ser posterior a la fecha de inicio';
-    }
+    if (field === 'title') return validateTitle(value);
+    if (field === 'description') return validateDescription(value);
+    if (field === 'startDate') return !value ? 'La fecha de inicio es obligatoria' : undefined;
+    if (field === 'endDate') return validateEndDate(value, formData.startDate);
     return undefined;
   };
 

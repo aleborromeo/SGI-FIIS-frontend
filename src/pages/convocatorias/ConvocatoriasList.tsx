@@ -102,9 +102,12 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
 
   let daysLeftText = '';
   if (daysLeft !== null) {
-    daysLeftText = isOverdue
-      ? `Venció hace ${Math.abs(daysLeft)}d`
-      : `${daysLeft}d restante${daysLeft !== 1 ? 's' : ''}`;
+    if (isOverdue) {
+      daysLeftText = `Venció hace ${Math.abs(daysLeft)}d`;
+    } else {
+      const suffix = daysLeft !== 1 ? 's' : '';
+      daysLeftText = `${daysLeft}d restante${suffix}`;
+    }
   }
 
   return (
