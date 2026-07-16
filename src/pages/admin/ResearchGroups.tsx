@@ -5,7 +5,7 @@
  */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -30,7 +30,7 @@ import { useConfirm } from '../../context/ConfirmContext';
 
 // ── Tipos locales ─────────────────────────────────────────────────────────────
 
-type SortField = 'groupName' | 'groupCode' | 'memberCount' | 'createdAt' | 'active';
+type SortField = 'groupName' | 'groupCode' | 'createdAt' | 'active';
 type SortDir = 'asc' | 'desc' | 'none';
 type FilterStatus = 'all' | 'active' | 'inactive';
 
@@ -56,6 +56,7 @@ function nextSort(current: SortDir): SortDir {
 export const ResearchGroups: React.FC = () => {
   const { t } = useTranslation('admin');
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
   const { confirmDialog } = useConfirm();
 
@@ -92,7 +93,8 @@ export const ResearchGroups: React.FC = () => {
 
   useEffect(() => {
     fetchGroups();
-  }, [fetchGroups]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
 
   // ── Filtrado, ordenamiento, paginación ──────────────────────────────────────
 
@@ -123,7 +125,6 @@ export const ResearchGroups: React.FC = () => {
         switch (sortField) {
           case 'groupName': valA = a.groupName.toLowerCase(); valB = b.groupName.toLowerCase(); break;
           case 'groupCode': valA = a.groupCode.toLowerCase(); valB = b.groupCode.toLowerCase(); break;
-          case 'memberCount': valA = a.memberCount ?? 0; valB = b.memberCount ?? 0; break;
           case 'createdAt': valA = a.createdAt ?? ''; valB = b.createdAt ?? ''; break;
           case 'active': valA = a.active ? 1 : 0; valB = b.active ? 1 : 0; break;
         }
@@ -350,11 +351,6 @@ export const ResearchGroups: React.FC = () => {
                       {t('groups.table.status')} <SortIcon field="active" />
                     </span>
                   </th>
-                  <th style={thStyle} onClick={() => handleSort('memberCount')}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      {t('groups.table.members')} <SortIcon field="memberCount" />
-                    </span>
-                  </th>
                   <th style={thStyle} onClick={() => handleSort('createdAt')}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       {t('groups.table.created')} <SortIcon field="createdAt" />
@@ -391,9 +387,6 @@ export const ResearchGroups: React.FC = () => {
                       <Badge variant={group.active !== false ? 'success' : 'neutral'}>
                         {group.active !== false ? t('groups.table.active') : t('groups.table.inactive')}
                       </Badge>
-                    </td>
-                    <td style={{ ...tdStyle, textAlign: 'center' }}>
-                      <span style={{ fontWeight: 600 }}>{group.memberCount ?? '—'}</span>
                     </td>
                     <td style={{ ...tdStyle, color: 'var(--on-surface-variant)', fontSize: '13px' }}>
                       {formatDate(group.createdAt)}

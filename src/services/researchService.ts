@@ -34,7 +34,6 @@ export interface ResearchGroup {
   currentCoordinatorId?: number;
   coordinatorFirstNames?: string;
   coordinatorLastNames?: string;
-  memberCount?: number;
   createdAt?: string;
   updatedAt?: string;
   /** @deprecated kept for legacy compatibility */
@@ -157,6 +156,11 @@ export const researchService = {
    */
   getAvailableUsers: async (): Promise<{ id: number; firstNames: string; lastNames: string; institutionalEmail: string }[]> => {
     return api.get(`/research-groups/available-users`);
+  },
+
+  /** Devuelve usuarios con rol COORDINADOR_GRUPO (para dropdown de coordinador) */
+  getCoordinatorCandidates: async (): Promise<{ id: number; firstNames: string; lastNames: string; institutionalEmail: string }[]> => {
+    return api.get(`/research-groups/coordinator-candidates`);
   },
 
   // ── Líneas del Grupo ────────────────────────────────────────────────────

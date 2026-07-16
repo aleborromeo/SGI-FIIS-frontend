@@ -108,6 +108,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         label: t('navigation:sidebarMyEvaluations'),
         icon: <ClipboardCheck size={20} />,
         path: '/evaluations/my-evaluations',
+        roles: ['EVALUADOR'],
       },
       {
         id: 'progress',
@@ -328,8 +329,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-            <LanguageSwitcher variant="button" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <button
               type="button"
               className="sidebar-action-button"
@@ -339,7 +339,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               }}
             >
               <Settings size={19} />
-              <span>{t('common:settings')}</span>
+              <span>{t('navigation:settings')}</span>
             </button>
 
             <button
@@ -350,6 +350,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               <LogOut size={19} />
               <span>{t('navigation:sidebarCloseSession')}</span>
             </button>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '8px 12px 0 12px',
+                borderTop: '1px dashed rgba(203, 213, 225, 0.6)',
+                marginTop: '4px',
+              }}
+            >
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)' }}>
+                Idioma / Language
+              </span>
+              <LanguageSwitcher variant="button" />
+            </div>
           </div>
         </div>
       </aside>

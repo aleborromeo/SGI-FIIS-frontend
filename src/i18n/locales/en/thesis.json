@@ -173,6 +173,8 @@
       "observeRoleError": "Your current role does not allow making observations.",
       "observeSuccess": "Observation registered successfully.",
       "observeError": "Error registering observation.",
+      "cancel": "Cancel",
+      "send": "Send",
       "approveConfirm": "Are you sure you want to approve this thesis plan?",
       "resolutionPrompt": "Enter the Dean's Resolution number for final issuance:",
       "resolutionRequired": "You must enter a valid resolution number.",

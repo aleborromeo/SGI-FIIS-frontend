@@ -68,6 +68,7 @@ export const ResearchGroupDetail: React.FC = () => {
   const [group, setGroup] = useState<ResearchGroup | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [availableUsers, setAvailableUsers] = useState<AvailableUser[]>([]);
+  const [coordinatorCandidates, setCoordinatorCandidates] = useState<AvailableUser[]>([]);
   const [groupLines, setGroupLines] = useState<ResearchLine[]>([]);
   const [allLines, setAllLines] = useState<ResearchLine[]>([]);
 
@@ -111,10 +112,15 @@ export const ResearchGroupDetail: React.FC = () => {
       }
 
       try {
-        const available = await researchService.getAvailableUsers();
+        const [available, coords] = await Promise.all([
+          researchService.getAvailableUsers(),
+          researchService.getCoordinatorCandidates(),
+        ]);
         setAvailableUsers(available);
+        setCoordinatorCandidates(coords);
       } catch {
         setAvailableUsers([]);
+        setCoordinatorCandidates([]);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('groupDetail.coordinator.errorLoad'));
@@ -368,9 +374,9 @@ export const ResearchGroupDetail: React.FC = () => {
                   onBlur={e => (e.target.style.borderColor = 'var(--outline)')}
                 >
                   <option value="">{t('groupDetail.coordinator.selectUser')}</option>
-                  {members.filter(m => m.active && m.userRoleCode === 'COORDINADOR_GRUPO').map(m => (
-                    <option key={m.userId} value={m.userId}>
-                      {m.userFirstNames} {m.userLastNames}
+                  {coordinatorCandidates.map(u => (
+                    <option key={u.id} value={u.id}>
+                      {u.firstNames} {u.lastNames}
                     </option>
                   ))}
                 </select>
