@@ -8,6 +8,7 @@ import {
   AlertTitle,
 } from '@mui/material';
 import { Megaphone } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 import { AuthContext } from '../../../context/AuthContext';
 import { useConvocatorias } from '../hooks/useConvocatorias';
@@ -16,6 +17,7 @@ import { ConvocatoriaCard } from '../components/ConvocatoriaCard';
 import { ConvocatoriasSkeleton } from '../components/ConvocatoriasSkeleton';
 import { ConvocatoriasEmpty } from '../components/ConvocatoriasEmpty';
 import { EligibilityWarning } from '../components/EligibilityWarning';
+import { researchService } from '../../../services/researchService';
 import type { Convocatoria } from '../types/convocatoria.types';
 
 export function ConvocatoriasDashboard() {
@@ -24,12 +26,22 @@ export function ConvocatoriasDashboard() {
 
   const { data: convocatorias, isLoading: loadingCalls, error: errorCalls } = useConvocatorias();
   const { data: eligibility, isLoading: loadingEligibility } = useEligibility();
+  const { data: researchLines } = useQuery({
+    queryKey: ['research-lines', 'active'],
+    queryFn: () => researchService.getLines(true),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const lineMap = (researchLines ?? []).reduce<Record<number, string>>((acc, line) => {
+    acc[line.id] = line.lineName;
+    return acc;
+  }, {});
 
   const handlePostular = (convocatoria: Convocatoria) => {
     navigate(`/projects/new?callId=${convocatoria.id}`);
   };
 
-  if (currentRole !== 'DOCENTE_INVESTIGADOR') return null;
+  if (currentRole !== 'DOCENTE_INVESTIGADOR' && currentRole !== 'ESTUDIANTE') return null;
 
   const eligible = eligibility?.valid ?? false;
 
@@ -70,6 +82,7 @@ export function ConvocatoriasDashboard() {
                 convocatoria={convocatoria}
                 eligible={eligible}
                 onPostular={handlePostular}
+                lineMap={lineMap}
               />
             </Grid>
           ))}

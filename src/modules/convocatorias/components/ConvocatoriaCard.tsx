@@ -16,9 +16,10 @@ interface ConvocatoriaCardProps {
   convocatoria: Convocatoria;
   eligible: boolean;
   onPostular: (convocatoria: Convocatoria) => void;
+  lineMap?: Record<number, string>;
 }
 
-export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: ConvocatoriaCardProps) {
+export function ConvocatoriaCard({ convocatoria, eligible, onPostular, lineMap }: ConvocatoriaCardProps) {
   return (
     <Card
       elevation={0}
@@ -108,6 +109,26 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
         >
           {convocatoria.description}
         </Typography>
+
+        {lineMap && convocatoria.researchLineIds.length > 0 && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+            {convocatoria.researchLineIds.map((lineId) => (
+              <Chip
+                key={lineId}
+                label={lineMap[lineId] || `Línea ${lineId}`}
+                size="small"
+                sx={{
+                  fontWeight: 500,
+                  fontSize: '0.7rem',
+                  bgcolor: 'rgba(26, 54, 93, 0.06)',
+                  color: '#1a365d',
+                  border: '1px solid rgba(26, 54, 93, 0.12)',
+                  borderRadius: '9999px',
+                }}
+              />
+            ))}
+          </Box>
+        )}
 
         <Box
           sx={{

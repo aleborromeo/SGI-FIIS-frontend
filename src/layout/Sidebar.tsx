@@ -92,6 +92,13 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         roles: ['DECANO'],
       },
       {
+        id: 'convocatorias-activas',
+        label: t('navigation:convocatoriasVigentes'),
+        icon: <Megaphone size={20} />,
+        path: '/convocatorias/activas',
+        roles: ['ESTUDIANTE', 'DOCENTE_INVESTIGADOR'],
+      },
+      {
         id: 'convocatorias',
         label: t('navigation:convocatorias'),
         icon: <Megaphone size={20} />,
@@ -171,6 +178,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
     if (itemId === 'traceability') {
       return location.pathname.startsWith('/thesis/plan');
+    }
+
+    if (itemId === 'convocatorias-activas') {
+      return location.pathname === '/convocatorias/activas';
     }
 
     return location.pathname === path;
