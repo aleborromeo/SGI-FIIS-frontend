@@ -82,6 +82,8 @@
   "errorMessage": "Ocurrió un error. Por favor, intente de nuevo.",
   "networkError": "Error de conexión. Verifique su conexión a internet.",
   "unauthorized": "No tiene permisos para realizar esta acción",
+  "accessDenied": "Acceso Denegado",
+  "accessDeniedMessage": "No tiene permisos para acceder a esta sección del sistema.",
   "sessionExpired": "Su sesión ha expirado. Por favor, inicie sesión nuevamente",
   "yes": "Sí",
   "no": "No",
