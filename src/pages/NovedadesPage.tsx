@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './WelcomePage.css';
 import universityIcon from '../assets/images/icon-sgi-fiis.png';
-import { Globe, User, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../hooks/useLanguage';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { User, ChevronDown } from 'lucide-react';
 import { callService } from '../services/callService';
 
 // Import news images
@@ -13,14 +16,11 @@ import congresosBg from '../assets/images/congresos.png';
 export const NovedadesPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [language, setLanguage] = useState<'es' | 'en'>('es');
+  const { t } = useTranslation('public');
+  useLanguage();
   const [activeSection, setActiveSection] = useState('novedades-convocatorias');
   const [calls, setCalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const handleToggleLanguage = () => {
-    setLanguage((prev) => (prev === 'es' ? 'en' : 'es'));
-  };
 
   const handleScrollToSection = (id: string) => {
     setActiveSection(id);
@@ -64,7 +64,7 @@ export const NovedadesPage: React.FC = () => {
         {/* Enlaces de Navegación */}
         <nav className="welcome-nav-links">
           <a href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="nav-link">
-            {language === 'es' ? 'Inicio' : 'Home'}
+            {t('nav:home')}
           </a>
 
           {/* Dropdown: Novedades */}
@@ -74,7 +74,7 @@ export const NovedadesPage: React.FC = () => {
               onClick={(e) => e.preventDefault()}
               className="nav-link dropdown-toggle active"
             >
-              <span>{language === 'es' ? 'Novedades' : 'News'}</span>
+              <span>{t('nav:news')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -83,21 +83,21 @@ export const NovedadesPage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); handleScrollToSection('novedades-convocatorias'); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Convocatorias' : 'Announcements'}
+                {t('nav:convocatorias')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); handleScrollToSection('novedades-reconocimientos'); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Reconocimiento' : 'Recognition'}
+                {t('nav:reconocimiento')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); handleScrollToSection('novedades-congresos'); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Congresos' : 'Congresses'}
+                {t('nav:congresos')}
               </a>
             </div>
           </div>
@@ -109,7 +109,7 @@ export const NovedadesPage: React.FC = () => {
               onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi'); }}
               className="nav-link dropdown-toggle"
             >
-              <span>{language === 'es' ? 'Sobre nosotros' : 'About us'}</span>
+              <span>{t('nav:aboutUs')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -118,21 +118,21 @@ export const NovedadesPage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'quienes-somos' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Quiénes somos' : 'Who we are'}
+                {t('nav:quienesSomos')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'lineas-investigacion' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Líneas de investigación' : 'Research lines'}
+                {t('nav:lineasInvestigacion')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'grupos-investigacion' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Grupos' : 'Groups'}
+                {t('nav:grupos')}
               </a>
             </div>
           </div>
@@ -144,7 +144,7 @@ export const NovedadesPage: React.FC = () => {
               onClick={(e) => { e.preventDefault(); navigate('/contacto'); }}
               className="nav-link dropdown-toggle"
             >
-              <span>{language === 'es' ? 'Contacto' : 'Contact'}</span>
+              <span>{t('nav:contacto')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -153,14 +153,14 @@ export const NovedadesPage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/contacto', { state: { scrollToHash: 'contacto-form-section' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Correo' : 'Email'}
+                {t('nav:correo')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/contacto', { state: { scrollToHash: 'whatsapp-contact-section' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'WhatsApp' : 'WhatsApp'}
+                {t('nav:whatsapp')}
               </a>
             </div>
           </div>
@@ -171,20 +171,12 @@ export const NovedadesPage: React.FC = () => {
             onClick={(e) => { e.preventDefault(); navigate('/login'); }}
             className="nav-link btn-submit-research"
           >
-            {language === 'es' ? 'Envía tu investigación' : 'Submit your research'}
+            {t('nav:submitResearch')}
           </a>
         </nav>
 
         <div className="welcome-navbar-actions">
-          <button 
-            type="button" 
-            onClick={handleToggleLanguage} 
-            className="btn-nav btn-language-selector"
-            title={language === 'es' ? 'Cambiar idioma' : 'Change language'}
-          >
-            <Globe size={15} />
-            <span>{language === 'es' ? 'Español' : 'English'}</span>
-          </button>
+          <LanguageSwitcher variant="button" className="btn-nav btn-language-selector" />
           
           <button 
             type="button" 
@@ -192,7 +184,7 @@ export const NovedadesPage: React.FC = () => {
             className="btn-nav btn-login-navbar"
           >
             <User size={15} />
-            <span>{language === 'es' ? 'Iniciar sesión' : 'Log In'}</span>
+            <span>{t('nav:login')}</span>
           </button>
         </div>
       </header>
@@ -204,14 +196,14 @@ export const NovedadesPage: React.FC = () => {
           {/* Columna Izquierda: Novedades Stacked */}
           <div className="about-fiis-main-content">
             <div className="about-fiis-breadcrumbs">
-              {language === 'es' ? 'Inicio » Novedades » Noticias de Investigación' : 'Home » News » Research Announcements'}
+              {t('news:breadcrumb')}
             </div>
 
             {/* Sección 1: Convocatorias */}
             {activeSection === 'novedades-convocatorias' && (
               <section id="novedades-convocatorias" className="about-stacked-section">
                 <h2 className="about-fiis-title" style={{ marginBottom: '1.5rem' }}>
-                  {language === 'es' ? 'Convocatorias Oficiales' : 'Official Announcements'}
+                  {t('news:officialAnnouncements')}
                 </h2>
 
                 {loading ? (
@@ -234,7 +226,7 @@ export const NovedadesPage: React.FC = () => {
                 ) : calls.length === 0 ? (
                   <div className="about-info-card" style={{ padding: '2rem', textAlign: 'center', border: '1px solid #e2e8f0' }}>
                     <p style={{ color: '#64748b', margin: 0 }}>
-                      {language === 'es' ? 'No hay convocatorias vigentes en este momento.' : 'There are no active announcements at this time.'}
+                      {t('news:noActiveAnnouncements')}
                     </p>
                   </div>
                 ) : (
@@ -253,7 +245,7 @@ export const NovedadesPage: React.FC = () => {
                             alignItems: 'flex-end',
                             justifyContent: 'space-between'
                           }}>
-                            <div className="about-card-badge" style={{ backgroundColor: '#1a365d', color: '#ffffff', margin: 0 }}>CONVOCATORIA</div>
+                            <div className="about-card-badge" style={{ backgroundColor: '#1a365d', color: '#ffffff', margin: 0 }}>{t('news:convocatoriaBadge')}</div>
                             <span style={{ 
                               color: '#ffffff', 
                               backgroundColor: 'rgba(15, 23, 42, 0.65)', 
@@ -262,7 +254,7 @@ export const NovedadesPage: React.FC = () => {
                               fontSize: '0.75rem', 
                               fontWeight: 600 
                             }}>
-                              Código: CONV-{call.id}
+                              {t('news:code', { id: call.id })}
                             </span>
                           </div>
                           <div style={{ padding: '2rem' }}>
@@ -274,9 +266,9 @@ export const NovedadesPage: React.FC = () => {
                             </p>
                             
                             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2rem', fontSize: '0.88rem', color: '#64748b' }}>
-                              <span><strong>{language === 'es' ? 'Vigencia:' : 'Duration:'}</strong> {call.startDate} {language === 'es' ? 'al' : 'to'} {call.endDate}</span>
+                              <span><strong>{t('news:duration')}</strong> {call.startDate} {t('news:to')} {call.endDate}</span>
                               <span>
-                                <strong>{language === 'es' ? 'Estado:' : 'Status:'}</strong>{' '}
+                                <strong>{t('news:status')}</strong>{' '}
                                 <span style={{ 
                                   color: isOpen ? '#166534' : '#991b1b', 
                                   fontWeight: 700,
@@ -285,10 +277,7 @@ export const NovedadesPage: React.FC = () => {
                                   borderRadius: '6px',
                                   fontSize: '0.8rem'
                                 }}>
-                                  {language === 'es' 
-                                    ? (isOpen ? 'Abierta' : call.status === 'CERRADA' ? 'Cerrada' : 'Finalizada')
-                                    : (isOpen ? 'Open' : call.status === 'CERRADA' ? 'Closed' : 'Finished')
-                                  }
+                                  {isOpen ? t('news:open') : call.status === 'CERRADA' ? t('news:closed') : t('news:finished')}
                                 </span>
                               </span>
                             </div>
@@ -306,10 +295,7 @@ export const NovedadesPage: React.FC = () => {
                                 background: isOpen ? 'linear-gradient(135deg, #1e3a8a 0%, #1a365d 100%)' : '#cbd5e1'
                               }}
                             >
-                              {language === 'es' 
-                                ? (isOpen ? 'Postular e Iniciar Trámite' : 'Postulación Cerrada') 
-                                : (isOpen ? 'Apply & Start Process' : 'Applications Closed')
-                              }
+                              {isOpen ? t('news:applyStartProcess') : t('news:applicationsClosed')}
                             </button>
                           </div>
                         </div>
@@ -324,7 +310,7 @@ export const NovedadesPage: React.FC = () => {
             {activeSection === 'novedades-reconocimientos' && (
               <section id="novedades-reconocimientos" className="about-stacked-section">
                 <h2 className="about-fiis-title" style={{ marginBottom: '1.5rem' }}>
-                  {language === 'es' ? 'Reconocimiento y Logros Científicos' : 'Scientific Achievements & Recognition'}
+                  {t('news:recognitionTitle')}
                 </h2>
                 
                 <div className="about-info-card" style={{ padding: '0', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
@@ -337,21 +323,19 @@ export const NovedadesPage: React.FC = () => {
                     display: 'flex',
                     alignItems: 'flex-end'
                   }}>
-                    <div className="about-card-badge" style={{ backgroundColor: '#1a365d', color: '#ffffff' }}>RECONOCIMIENTO</div>
+                    <div className="about-card-badge" style={{ backgroundColor: '#1a365d', color: '#ffffff' }}>{t('news:recognitionBadge')}</div>
                   </div>
                   <div style={{ padding: '2rem' }}>
                     <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 1rem 0', color: '#0f172a' }}>
-                      {language === 'es' ? 'Docentes premiados por patentes de innovación tecnológica' : 'Professors recognized for technological innovation patents'}
+                      {t('news:recognitionSubtitle')}
                     </h3>
                     <p style={{ fontSize: '0.98rem', color: '#475569', lineHeight: 1.6, margin: '0 0 1.5rem 0' }}>
-                      {language === 'es'
-                        ? 'Felicitamos a nuestros docentes investigadores reconocidos a nivel nacional por sus patentes de invención registradas ante INDECOPI y su alto impacto científico en informática. Sus investigaciones en algoritmos predictivos aplicados a la agricultura de precisión representan un hito para la universidad.'
-                        : 'We congratulate our researcher professors recognized nationwide for their invention patents registered with INDECOPI and their high scientific impact in computing. Their research on predictive algorithms applied to precision agriculture represents a milestone for the university.'}
+                      {t('news:recognitionDescription')}
                     </p>
                     
                     <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', fontSize: '0.88rem', color: '#64748b' }}>
-                      <span><strong>{language === 'es' ? 'Fecha de publicación:' : 'Publishing Date:'}</strong> 28 de Junio, 2026</span>
-                      <span><strong>{language === 'es' ? 'Categoría:' : 'Category:'}</strong> {language === 'es' ? 'Patente / Innovación' : 'Patent / Innovation'}</span>
+                      <span><strong>{t('news:publishingDate')}</strong> 28 de Junio, 2026</span>
+                      <span><strong>{t('news:category')}</strong> {t('news:patentInnovation')}</span>
                     </div>
                   </div>
                 </div>
@@ -362,7 +346,7 @@ export const NovedadesPage: React.FC = () => {
             {activeSection === 'novedades-congresos' && (
               <section id="novedades-congresos" className="about-stacked-section" style={{ paddingBottom: '4rem' }}>
                 <h2 className="about-fiis-title" style={{ marginBottom: '1.5rem' }}>
-                  {language === 'es' ? 'Próximos Congresos y Eventos' : 'Upcoming Congresses & Events'}
+                  {t('news:upcomingCongresses')}
                 </h2>
                 
                 <div className="about-info-card" style={{ padding: '0', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
@@ -375,21 +359,19 @@ export const NovedadesPage: React.FC = () => {
                     display: 'flex',
                     alignItems: 'flex-end'
                   }}>
-                    <div className="about-card-badge" style={{ backgroundColor: '#1a365d', color: '#ffffff' }}>CONGRESOS</div>
+                    <div className="about-card-badge" style={{ backgroundColor: '#1a365d', color: '#ffffff' }}>{t('news:congressBadge')}</div>
                   </div>
                   <div style={{ padding: '2rem' }}>
                     <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 1rem 0', color: '#0f172a' }}>
-                      {language === 'es' ? 'Congreso Internacional de Ingeniería de Sistemas (CIIS 2026)' : 'International Congress of Systems Engineering (CIIS 2026)'}
+                      {t('news:congressTitle')}
                     </h3>
                     <p style={{ fontSize: '0.98rem', color: '#475569', lineHeight: 1.6, margin: '0 0 1.5rem 0' }}>
-                      {language === 'es'
-                        ? 'Inscríbete en los talleres, ponencias internacionales y mesas redondas programadas para el evento académico más grande del año en la UNAS. Contaremos con expositores de talla mundial de Google, AWS y universidades líderes de Latinoamérica para debatir sobre inteligencia artificial y ciberseguridad.'
-                        : 'Register for workshops, international presentations, and roundtables scheduled for the largest academic event of the year at UNAS. We will feature world-class speakers from Google, AWS, and leading Latin American universities to debate artificial intelligence and cybersecurity.'}
+                      {t('news:congressDescription')}
                     </p>
                     
                     <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', fontSize: '0.88rem', color: '#64748b' }}>
-                      <span><strong>{language === 'es' ? 'Fecha del evento:' : 'Event Date:'}</strong> 15 de Junio, 2026</span>
-                      <span><strong>{language === 'es' ? 'Modalidad:' : 'Modality:'}</strong> {language === 'es' ? 'Híbrida (Presencial / Virtual)' : 'Hybrid (In-person / Virtual)'}</span>
+                      <span><strong>{t('news:eventDate')}</strong> 15 de Junio, 2026</span>
+                      <span><strong>{t('news:modality')}</strong> {t('news:hybrid')}</span>
                     </div>
 
                     <button 
@@ -397,7 +379,7 @@ export const NovedadesPage: React.FC = () => {
                       className="btn-submit-contact"
                       style={{ marginTop: '1.5rem', width: 'auto', padding: '0.75rem 1.5rem' }}
                     >
-                      {language === 'es' ? 'Inscribirse al Evento' : 'Register for Event'}
+                      {t('news:registerForEvent')}
                     </button>
                   </div>
                 </div>
@@ -407,7 +389,7 @@ export const NovedadesPage: React.FC = () => {
 
           {/* Columna Derecha: Sidebar Indices Sticky */}
           <aside className="about-fiis-sidebar">
-            <h4 className="sidebar-title">{language === 'es' ? 'Novedades' : 'News'}</h4>
+            <h4 className="sidebar-title">{t('news:sidebarTitle')}</h4>
             <ul className="sidebar-menu">
               <li>
                 <a 
@@ -415,7 +397,7 @@ export const NovedadesPage: React.FC = () => {
                   onClick={(e) => { e.preventDefault(); handleScrollToSection('novedades-convocatorias'); }} 
                   className={`sidebar-link ${activeSection === 'novedades-convocatorias' ? 'active' : ''}`}
                 >
-                  {language === 'es' ? 'Convocatorias' : 'Announcements'}
+                  {t('nav:convocatorias')}
                 </a>
               </li>
               <li>
@@ -424,7 +406,7 @@ export const NovedadesPage: React.FC = () => {
                   onClick={(e) => { e.preventDefault(); handleScrollToSection('novedades-reconocimientos'); }} 
                   className={`sidebar-link ${activeSection === 'novedades-reconocimientos' ? 'active' : ''}`}
                 >
-                  {language === 'es' ? 'Reconocimiento' : 'Recognition'}
+                  {t('nav:reconocimiento')}
                 </a>
               </li>
               <li>
@@ -433,7 +415,7 @@ export const NovedadesPage: React.FC = () => {
                   onClick={(e) => { e.preventDefault(); handleScrollToSection('novedades-congresos'); }} 
                   className={`sidebar-link ${activeSection === 'novedades-congresos' ? 'active' : ''}`}
                 >
-                  {language === 'es' ? 'Congresos' : 'Congresses'}
+                  {t('nav:congresos')}
                 </a>
               </li>
             </ul>
@@ -452,7 +434,7 @@ export const NovedadesPage: React.FC = () => {
             onClick={() => {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            title={language === 'es' ? 'Volver arriba' : 'Back to top'}
+            title={t('footer:backToTop')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
@@ -463,30 +445,30 @@ export const NovedadesPage: React.FC = () => {
         <div className="footer-premium-content">
           <div className="footer-columns-wrapper" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             <div className="footer-column">
-              <h4>Facultad</h4>
+              <h4>{t('footer:faculty')}</h4>
               <ul>
-                <li><a href="https://www.sistemasunas.edu.pe/nuestra-facultad/decanatura" target="_blank" rel="noopener noreferrer">Decanato FIIS</a></li>
-                <li><a href="https://www.sistemasunas.edu.pe/departamentos-academicos" target="_blank" rel="noopener noreferrer">Departamentos Académicos</a></li>
+                <li><a href="https://www.sistemasunas.edu.pe/nuestra-facultad/decanatura" target="_blank" rel="noopener noreferrer">{t('footer:decanatoFiis')}</a></li>
+                <li><a href="https://www.sistemasunas.edu.pe/departamentos-academicos" target="_blank" rel="noopener noreferrer">{t('footer:departamentosAcademicos')}</a></li>
               </ul>
             </div>
             <div className="footer-column">
-              <h4>Investigación</h4>
+              <h4>{t('footer:research')}</h4>
               <ul>
-                <li><a href="https://investigacion.unas.edu.pe" target="_blank" rel="noopener noreferrer">Dirección General</a></li>
-                <li><a href="https://investigacion.unas.edu.pe/documentos-normativos" target="_blank" rel="noopener noreferrer">Documentos Normativos</a></li>
+                <li><a href="https://investigacion.unas.edu.pe" target="_blank" rel="noopener noreferrer">{t('footer:direccionGeneral')}</a></li>
+                <li><a href="https://investigacion.unas.edu.pe/documentos-normativos" target="_blank" rel="noopener noreferrer">{t('footer:documentosNormativos')}</a></li>
               </ul>
             </div>
             <div className="footer-column">
-              <h4>Soporte</h4>
+              <h4>{t('footer:support')}</h4>
               <ul>
-                <li><a href="#" onClick={(e) => e.preventDefault()}>Preguntas Frecuentes</a></li>
-                <li><a href="#" onClick={(e) => e.preventDefault()}>Manual de Usuario</a></li>
+                <li><a href="#" onClick={(e) => e.preventDefault()}>{t('footer:faq')}</a></li>
+                <li><a href="#" onClick={(e) => e.preventDefault()}>{t('footer:userManual')}</a></li>
               </ul>
             </div>
           </div>
         </div>
         <div className="footer-bottom-copyright">
-          <p>© 2026 SGI - Facultad de Ingeniería en Informática y Sistemas - UNAS. Todos los derechos reservados.</p>
+          <p>{t('footer:copyrightFull')}</p>
         </div>
       </footer>
     </div>

@@ -5,6 +5,7 @@
  * Regla de negocio: solo muestra docentes SIN membresía activa en otro grupo.
  */
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, Users, Shield, UserPlus, Trash2, BookOpen, Plus,
@@ -42,16 +43,6 @@ function formatDate(value?: string): string {
   return new Intl.DateTimeFormat('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
 }
 
-function memberRoleLabel(role?: string): string {
-  const map: Record<string, string> = {
-    INVESTIGADOR_PRINCIPAL: 'Investigador Principal',
-    COINVESTIGADOR: 'Co-investigador',
-    COLABORADOR: 'Colaborador',
-    ASESOR: 'Asesor',
-  };
-  return role ? (map[role] ?? role) : '—';
-}
-
 // ── Estilos de tabla inline ───────────────────────────────────────────────────
 
 const thS: React.CSSProperties = {
@@ -72,10 +63,12 @@ export const ResearchGroupDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('admin');
 
   const [group, setGroup] = useState<ResearchGroup | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [availableUsers, setAvailableUsers] = useState<AvailableUser[]>([]);
+  const [coordinatorCandidates, setCoordinatorCandidates] = useState<AvailableUser[]>([]);
   const [groupLines, setGroupLines] = useState<ResearchLine[]>([]);
   const [allLines, setAllLines] = useState<ResearchLine[]>([]);
 
@@ -118,20 +111,23 @@ export const ResearchGroupDetail: React.FC = () => {
         setSelectedCoordinator(groupData.currentCoordinatorId.toString());
       }
 
-      // Cargar usuarios disponibles (sin membresía activa en otro grupo)
       try {
-        const available = await researchService.getAvailableUsers();
+        const [available, coords] = await Promise.all([
+          researchService.getAvailableUsers(),
+          researchService.getCoordinatorCandidates(),
+        ]);
         setAvailableUsers(available);
+        setCoordinatorCandidates(coords);
       } catch {
-        // Fallback: si el endpoint no está disponible, array vacío
         setAvailableUsers([]);
+        setCoordinatorCandidates([]);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al cargar los detalles del grupo');
+      setError(err instanceof Error ? err.message : t('groupDetail.coordinator.errorLoad'));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -142,10 +138,10 @@ export const ResearchGroupDetail: React.FC = () => {
     try {
       setSubmitting(true);
       await researchService.assignCoordinator(Number(id), Number(selectedCoordinator));
-      toast.success('Coordinador asignado con éxito');
+      toast.success(t('groupDetail.coordinator.toastAssigned'));
       fetchData();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al asignar coordinador');
+      toast.error(err instanceof Error ? err.message : t('groupDetail.coordinator.toastError'));
     } finally {
       setSubmitting(false);
     }
@@ -156,11 +152,11 @@ export const ResearchGroupDetail: React.FC = () => {
     try {
       setSubmitting(true);
       await researchService.addMember(Number(id), Number(selectedMember));
-      toast.success('Miembro agregado con éxito');
+      toast.success(t('groupDetail.membersTab.toastAdded'));
       setSelectedMember('');
       fetchData();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al agregar miembro');
+      toast.error(err instanceof Error ? err.message : t('groupDetail.membersTab.toastErrorAdd'));
     } finally {
       setSubmitting(false);
     }
@@ -168,18 +164,18 @@ export const ResearchGroupDetail: React.FC = () => {
 
   const handleRemoveMember = async (member: GroupMember) => {
     const confirmed = await confirmDialog({
-      title: 'Retirar Miembro',
-      message: `¿Retirar a "${member.userFirstNames} ${member.userLastNames}" del grupo? Se realizará una eliminación lógica.`,
-      confirmText: 'Retirar',
+      title: t('groupDetail.membersTab.confirmRemove.title'),
+      message: t('groupDetail.membersTab.confirmRemove.message', { name: `${member.userFirstNames} ${member.userLastNames}` }),
+      confirmText: t('groupDetail.membersTab.confirmRemove.confirmText'),
       danger: true,
     });
     if (!confirmed) return;
     try {
       await researchService.removeMember(Number(id), member.userId);
-      toast.success('Miembro retirado con éxito');
+      toast.success(t('groupDetail.membersTab.toastRemoved'));
       fetchData();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al retirar miembro');
+      toast.error(err instanceof Error ? err.message : t('groupDetail.membersTab.toastErrorRemove'));
     }
   };
 
@@ -188,11 +184,11 @@ export const ResearchGroupDetail: React.FC = () => {
     try {
       setSubmitting(true);
       await researchService.assignGroupToLine(Number(selectedLine), Number(id));
-      toast.success('Línea asignada con éxito');
+      toast.success(t('groupDetail.linesTab.toastAssigned'));
       setSelectedLine('');
       fetchData();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al asignar línea');
+      toast.error(err instanceof Error ? err.message : t('groupDetail.linesTab.toastErrorAssign'));
     } finally {
       setSubmitting(false);
     }
@@ -200,37 +196,44 @@ export const ResearchGroupDetail: React.FC = () => {
 
   const handleRemoveLine = async (lineId: number) => {
     const confirmed = await confirmDialog({
-      title: 'Remover Línea',
-      message: '¿Remover esta línea de investigación del grupo?',
-      confirmText: 'Remover',
+      title: t('groupDetail.linesTab.confirmRemove.title'),
+      message: t('groupDetail.linesTab.confirmRemove.message'),
+      confirmText: t('groupDetail.linesTab.confirmRemove.confirmText'),
       danger: true,
     });
     if (!confirmed) return;
     try {
       await researchService.removeGroupFromLine(lineId, Number(id));
-      toast.success('Línea removida con éxito');
+      toast.success(t('groupDetail.linesTab.toastRemoved'));
       fetchData();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al remover línea');
+      toast.error(err instanceof Error ? err.message : t('groupDetail.linesTab.toastErrorRemove'));
     }
   };
 
   const handleDeactivateGroup = async () => {
     if (!group) return;
     const confirmed = await confirmDialog({
-      title: 'Desactivar Grupo',
-      message: `¿Desactivar el grupo "${group.groupName}"? Esta acción afectará a todos sus miembros activos.`,
-      confirmText: 'Desactivar',
+      title: t('groupDetail.confirmDeactivate.title'),
+      message: t('groupDetail.confirmDeactivate.message', { name: group.groupName }),
+      confirmText: t('groupDetail.confirmDeactivate.confirmText'),
       danger: true,
     });
     if (!confirmed) return;
     try {
       await researchService.deactivateGroup(Number(id));
-      toast.success('Grupo desactivado');
+      toast.success(t('groupDetail.toastDeactivated'));
       navigate('/groups');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al desactivar el grupo');
+      toast.error(err instanceof Error ? err.message : t('groupDetail.toastErrorDeactivate'));
     }
+  };
+
+  const memberRoleLabel = (role?: string): string => {
+    if (!role) return '—';
+    const key = `groupDetail.members.roles.${role}`;
+    const translated = t(key);
+    return translated !== key ? translated : role;
   };
 
   // ── Loading / Error ─────────────────────────────────────────────────────────
@@ -247,17 +250,14 @@ export const ResearchGroupDetail: React.FC = () => {
     return (
       <div style={{ padding: '24px' }}>
         <div style={{ padding: '16px', backgroundColor: 'var(--error-container)', color: 'var(--on-error-container)', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
-          <strong>Error:</strong> {error ?? 'Grupo no encontrado'}
+          <strong>{t('common.error')}</strong> {error ?? t('groupDetail.errorNotFound')}
         </div>
-        <Button variant="secondary" onClick={() => navigate('/groups')}>Volver</Button>
+        <Button variant="secondary" onClick={() => navigate('/groups')}>{t('common.back')}</Button>
       </div>
     );
   }
 
-  // Usuarios que ya son miembros activos (para excluirlos del select de "agregar")
   const activeMemberIds = new Set(members.filter(m => m.active).map(m => m.userId));
-
-  // Líneas disponibles (no asignadas aún)
   const unassignedLines = allLines.filter(l => !groupLines.some(gl => gl.id === l.id));
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -270,7 +270,7 @@ export const ResearchGroupDetail: React.FC = () => {
         onClick={() => navigate('/groups')}
         style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--on-surface-variant)', fontWeight: 600, marginBottom: '24px', fontSize: '14px' }}
       >
-        <ArrowLeft size={18} /> Volver a Grupos
+        <ArrowLeft size={18} /> {t('groupDetail.backToGroups')}
       </button>
 
       {/* Header */}
@@ -282,16 +282,16 @@ export const ResearchGroupDetail: React.FC = () => {
               {group.groupCode}
             </span>
             <Badge variant={group.active !== false ? 'success' : 'neutral'}>
-              {group.active !== false ? 'Activo' : 'Inactivo'}
+              {group.active !== false ? t('common.active') : t('common.inactive')}
             </Badge>
           </div>
           <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: 'var(--on-surface-variant)', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Users size={14} /> {members.filter(m => m.active).length} miembro{members.filter(m => m.active).length !== 1 ? 's' : ''} activo{members.filter(m => m.active).length !== 1 ? 's' : ''}
+              <Users size={14} /> {members.filter(m => m.active).length} {t('groupDetail.membersActive')}
             </span>
             {group.createdAt && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <Calendar size={14} /> Creado: {formatDate(group.createdAt)}
+                <Calendar size={14} /> {t('groupDetail.createdLabel')} {formatDate(group.createdAt)}
               </span>
             )}
           </div>
@@ -299,7 +299,7 @@ export const ResearchGroupDetail: React.FC = () => {
 
         {group.active !== false && (
           <Button variant="danger" onClick={handleDeactivateGroup} icon={<PowerOff size={16} />}>
-            Desactivar Grupo
+            {t('groupDetail.btnDeactivate')}
           </Button>
         )}
       </div>
@@ -308,9 +308,9 @@ export const ResearchGroupDetail: React.FC = () => {
       <div style={{ display: 'flex', gap: '0', borderBottom: '2px solid var(--outline-variant)', marginBottom: '28px' }}>
         {(['summary', 'members', 'lines'] as ActiveTab[]).map(tab => {
           const labels: Record<ActiveTab, React.ReactNode> = {
-            summary: <><Shield size={16} /> Coordinación</>,
-            members: <><Users size={16} /> Miembros ({members.length})</>,
-            lines: <><BookOpen size={16} /> Líneas ({groupLines.length})</>,
+            summary: <><Shield size={16} /> {t('groupDetail.tabs.summary')}</>,
+            members: <><Users size={16} /> {t('groupDetail.tabs.members')} ({members.length})</>,
+            lines: <><BookOpen size={16} /> {t('groupDetail.tabs.lines')} ({groupLines.length})</>,
           };
           return (
             <button
@@ -339,7 +339,7 @@ export const ResearchGroupDetail: React.FC = () => {
         {activeTab === 'summary' && (
           <div className="animate-fade-in">
             <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '20px' }}>
-              Coordinador del Grupo
+              {t('groupDetail.coordinator.title')}
             </h3>
 
             {group.currentCoordinatorId ? (
@@ -350,19 +350,19 @@ export const ResearchGroupDetail: React.FC = () => {
                     {group.coordinatorFirstNames} {group.coordinatorLastNames}
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--on-primary-container)', opacity: 0.8 }}>
-                    Coordinador actual
+                    {t('groupDetail.coordinator.currentLabel')}
                   </div>
                 </div>
               </div>
             ) : (
               <div style={{ padding: '16px', backgroundColor: 'var(--error-container)', color: 'var(--on-error-container)', borderRadius: 'var(--radius-md)', marginBottom: '24px', fontSize: '14px' }}>
-                Este grupo no tiene coordinador asignado actualmente.
+                {t('groupDetail.coordinator.noCoordinator')}
               </div>
             )}
 
             <div style={{ backgroundColor: 'var(--surface-container)', padding: '24px', borderRadius: 'var(--radius-lg)' }}>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--on-surface-variant)', marginBottom: '10px' }}>
-                Cambiar Coordinador
+                {t('groupDetail.coordinator.changeLabel')}
               </label>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
                 <select
@@ -373,10 +373,10 @@ export const ResearchGroupDetail: React.FC = () => {
                   onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
                   onBlur={e => (e.target.style.borderColor = 'var(--outline)')}
                 >
-                  <option value="">— Seleccione un usuario —</option>
-                  {members.filter(m => m.active && m.userRoleCode === 'COORDINADOR_GRUPO').map(m => (
-                    <option key={m.userId} value={m.userId}>
-                      {m.userFirstNames} {m.userLastNames}
+                  <option value="">{t('groupDetail.coordinator.selectUser')}</option>
+                  {coordinatorCandidates.map(u => (
+                    <option key={u.id} value={u.id}>
+                      {u.firstNames} {u.lastNames}
                     </option>
                   ))}
                 </select>
@@ -385,11 +385,11 @@ export const ResearchGroupDetail: React.FC = () => {
                   onClick={handleAssignCoordinator}
                   disabled={!selectedCoordinator || submitting || group.currentCoordinatorId?.toString() === selectedCoordinator}
                 >
-                  Guardar
+                  {t('groupDetail.coordinator.btnSave')}
                 </Button>
               </div>
               <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', marginTop: '8px' }}>
-                Solo se muestran miembros activos con rol de Coordinador de Grupo.
+                {t('groupDetail.coordinator.onlyActive')}
               </p>
             </div>
           </div>
@@ -398,15 +398,12 @@ export const ResearchGroupDetail: React.FC = () => {
         {/* ── Tab Miembros ── */}
         {activeTab === 'members' && (
           <div className="animate-fade-in">
-            {/* Formulario para agregar miembro */}
             <div style={{ backgroundColor: 'var(--surface-container)', padding: '24px', borderRadius: 'var(--radius-lg)', marginBottom: '28px' }}>
               <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '16px' }}>
                 <UserPlus size={16} style={{ display: 'inline', marginRight: '8px' }} />
-                Agregar Nuevo Miembro
+                {t('groupDetail.membersTab.addTitle')}
               </h3>
-              <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', marginBottom: '14px' }}>
-                Solo se muestran docentes <strong>sin membresía activa</strong> en otro grupo (regla de unicidad de membresías).
-              </p>
+              <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', marginBottom: '14px' }} dangerouslySetInnerHTML={{ __html: t('groupDetail.membersTab.addDescription') }} />
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <select
                   id="select-new-member"
@@ -416,7 +413,7 @@ export const ResearchGroupDetail: React.FC = () => {
                   onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
                   onBlur={e => (e.target.style.borderColor = 'var(--outline)')}
                 >
-                  <option value="">— Seleccione un docente —</option>
+                  <option value="">{t('groupDetail.membersTab.selectTeacher')}</option>
                   {availableUsers
                     .filter(u => !activeMemberIds.has(u.id))
                     .map(u => (
@@ -431,19 +428,18 @@ export const ResearchGroupDetail: React.FC = () => {
                   onClick={handleAddMember}
                   disabled={!selectedMember || submitting}
                 >
-                  Agregar
+                  {t('groupDetail.membersTab.btnAdd')}
                 </Button>
               </div>
             </div>
 
-            {/* Tabla de miembros */}
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '16px' }}>
-              Lista de Miembros
+              {t('groupDetail.membersTab.listTitle')}
             </h3>
 
             {members.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--outline)', color: 'var(--on-surface-variant)' }}>
-                No hay miembros registrados en este grupo.
+                {t('groupDetail.membersTab.empty')}
               </div>
             ) : (
               <div style={{ border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
@@ -451,12 +447,12 @@ export const ResearchGroupDetail: React.FC = () => {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr>
-                        <th style={thS}>Nombre</th>
-                        <th style={thS}>Email</th>
-                        <th style={thS}><span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Tag size={13} /> Rol</span></th>
-                        <th style={thS}>Estado Membresía</th>
-                        <th style={thS}><span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Calendar size={13} /> Fecha Ingreso</span></th>
-                        <th style={{ ...thS, textAlign: 'right' }}>Acción</th>
+                        <th style={thS}>{t('groupDetail.membersTab.table.name')}</th>
+                        <th style={thS}>{t('groupDetail.membersTab.table.email')}</th>
+                        <th style={thS}><span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Tag size={13} /> {t('groupDetail.membersTab.table.role')}</span></th>
+                        <th style={thS}>{t('groupDetail.membersTab.table.membershipStatus')}</th>
+                        <th style={thS}><span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Calendar size={13} /> {t('groupDetail.membersTab.table.joinDate')}</span></th>
+                        <th style={{ ...thS, textAlign: 'right' }}>{t('groupDetail.membersTab.table.action')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -484,7 +480,7 @@ export const ResearchGroupDetail: React.FC = () => {
                           </td>
                           <td style={tdS}>
                             <Badge variant={member.active ? 'success' : 'neutral'}>
-                              {member.active ? 'Activa' : 'Inactiva'}
+                              {member.active ? t('groupDetail.membersTab.membershipActive') : t('groupDetail.membersTab.membershipInactive')}
                             </Badge>
                           </td>
                           <td style={{ ...tdS, color: 'var(--on-surface-variant)', fontSize: '13px' }}>
@@ -504,7 +500,7 @@ export const ResearchGroupDetail: React.FC = () => {
                                   fontSize: '13px', fontWeight: 600, color: 'var(--error)',
                                 }}
                               >
-                                <Trash2 size={14} /> Retirar
+                                <Trash2 size={14} /> {t('groupDetail.membersTab.btnRemove')}
                               </button>
                             )}
                           </td>
@@ -523,7 +519,7 @@ export const ResearchGroupDetail: React.FC = () => {
           <div className="animate-fade-in">
             <div style={{ backgroundColor: 'var(--surface-container)', padding: '24px', borderRadius: 'var(--radius-lg)', marginBottom: '28px' }}>
               <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '16px' }}>
-                Añadir Línea de Investigación
+                {t('groupDetail.linesTab.addTitle')}
               </h3>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <select
@@ -535,7 +531,7 @@ export const ResearchGroupDetail: React.FC = () => {
                   onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
                   onBlur={e => (e.target.style.borderColor = 'var(--outline)')}
                 >
-                  <option value="">{unassignedLines.length === 0 ? '— Sin líneas disponibles —' : '— Seleccione una línea —'}</option>
+                  <option value="">{unassignedLines.length === 0 ? t('groupDetail.linesTab.selectEmpty') : t('groupDetail.linesTab.selectPlaceholder')}</option>
                   {unassignedLines.map(l => (
                     <option key={l.id} value={l.id}>{l.lineName}</option>
                   ))}
@@ -546,27 +542,27 @@ export const ResearchGroupDetail: React.FC = () => {
                   onClick={handleAddLine}
                   disabled={!selectedLine || submitting}
                 >
-                  Añadir
+                  {t('groupDetail.linesTab.btnAdd')}
                 </Button>
               </div>
             </div>
 
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '16px' }}>
-              Líneas Asignadas ({groupLines.length})
+              {t('groupDetail.linesTab.assignedTitle')} ({groupLines.length})
             </h3>
 
             {groupLines.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--outline)', color: 'var(--on-surface-variant)' }}>
-                No hay líneas de investigación asignadas a este grupo.
+                {t('groupDetail.linesTab.empty')}
               </div>
             ) : (
               <div style={{ border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr>
-                      <th style={thS}>Nombre de la Línea</th>
-                      <th style={thS}>Estado</th>
-                      <th style={{ ...thS, textAlign: 'right' }}>Acción</th>
+                      <th style={thS}>{t('groupDetail.linesTab.table.lineName')}</th>
+                      <th style={thS}>{t('groupDetail.linesTab.table.status')}</th>
+                      <th style={{ ...thS, textAlign: 'right' }}>{t('groupDetail.linesTab.table.action')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -578,7 +574,7 @@ export const ResearchGroupDetail: React.FC = () => {
                         <td style={{ ...tdS, fontWeight: 600 }}>{line.lineName}</td>
                         <td style={tdS}>
                           <Badge variant={line.active ? 'success' : 'neutral'}>
-                            {line.active ? 'Activa' : 'Inactiva'}
+                            {line.active ? t('groupDetail.linesTab.lineActive') : t('groupDetail.linesTab.lineInactive')}
                           </Badge>
                         </td>
                         <td style={{ ...tdS, textAlign: 'right' }}>
@@ -593,7 +589,7 @@ export const ResearchGroupDetail: React.FC = () => {
                               fontSize: '13px', fontWeight: 600, color: 'var(--error)',
                             }}
                           >
-                            <Trash2 size={14} /> Remover
+                            <Trash2 size={14} /> {t('groupDetail.linesTab.btnRemove')}
                           </button>
                         </td>
                       </tr>

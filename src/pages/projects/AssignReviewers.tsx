@@ -10,6 +10,7 @@ import {
   Loader,
 } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -49,6 +50,7 @@ function getFullName(reviewer: Reviewer): string {
 }
 
 export const AssignReviewers: React.FC = () => {
+  const { t } = useTranslation('projects');
   const location = useLocation();
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
@@ -70,7 +72,7 @@ export const AssignReviewers: React.FC = () => {
         setAvailableReviewers(users.map(mapUserToReviewer));
       })
       .catch(() => {
-        setFetchError('No se pudieron cargar los docentes disponibles. Verifique la conexión con el servidor.');
+        setFetchError(t('projects:assignReviewers.errorLoadingTeachersDetail'));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -103,17 +105,17 @@ export const AssignReviewers: React.FC = () => {
 
   async function handleConfirm() {
     if (assignedReviewers.length === 0) {
-      toast.warning('Debe asignar al menos un jurado.');
+      toast.warning(t('projects:assignReviewers.mustAssignOne'));
       return;
     }
     try {
       const reviewerIds = assignedReviewers.map((r) => r.id);
       await evaluacionService.assignReviewers(Number(projectId), reviewerIds);
-      toast.success('Jurados asignados exitosamente');
+      toast.success(t('projects:assignReviewers.jurorsAssignedSuccess'));
       navigate(`/projects/${projectId}`);
     } catch (err) {
       console.error(err);
-      toast.error('Error al asignar jurados');
+      toast.error(t('projects:assignReviewers.jurorsAssignError'));
     }
   }
 
@@ -131,7 +133,7 @@ export const AssignReviewers: React.FC = () => {
         }}
       >
         <ArrowLeft size={16} />
-        Volver al proyecto
+        {t('projects:assignReviewers.backToProject')}
       </Link>
 
       <div
@@ -144,7 +146,7 @@ export const AssignReviewers: React.FC = () => {
         }}
       >
         <div>
-          <h1 className="text-headline-lg">Asignación de jurados y revisores</h1>
+          <h1 className="text-headline-lg">{t('projects:assignReviewers.pageTitle')}</h1>
           <p
             className="text-body-md"
             style={{ color: 'var(--on-surface-variant)', marginTop: '8px' }}
@@ -152,18 +154,18 @@ export const AssignReviewers: React.FC = () => {
             Proyecto: <strong>FIIS-2026-{String(projectId).padStart(3, '0')}</strong>
           </p>
         </div>
-        <Badge variant="info">{assignedReviewers.length} seleccionado(s)</Badge>
+        <Badge variant="info">{t('projects:assignReviewers.selectedCount', { count: assignedReviewers.length })}</Badge>
       </div>
 
       {errorMsg && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert title="Revisa la asignación">{errorMsg}</Alert>
+          <Alert title={t('projects:assignReviewers.reviewAssignment')}>{errorMsg}</Alert>
         </div>
       )}
 
       {message && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert title="Asignación registrada en la vista">
+          <Alert title={t('projects:assignReviewers.assignmentRecorded')}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <CheckCircle size={18} />
               <span>{message}</span>
@@ -174,7 +176,7 @@ export const AssignReviewers: React.FC = () => {
 
       {fetchError && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert title="Error al cargar docentes">{fetchError}</Alert>
+          <Alert title={t('projects:assignReviewers.errorLoadingTeachers')}>{fetchError}</Alert>
         </div>
       )}
 
@@ -189,20 +191,20 @@ export const AssignReviewers: React.FC = () => {
         <div>
           <Card>
             <CardHeader>
-              <h2 className="text-title-lg">Buscar docentes disponibles</h2>
+              <h2 className="text-title-lg">{t('projects:assignReviewers.searchTeachers')}</h2>
             </CardHeader>
 
             <CardContent>
               <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                 <div style={{ flex: 1 }}>
                   <Input
-                    placeholder="Buscar por nombre, correo o rol..."
+                    placeholder={t('projects:assignReviewers.searchPlaceholder')}
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                   />
                 </div>
                 <Button variant="secondary" icon={<Search size={18} />}>
-                  Buscar
+                  {t('projects:assignReviewers.search')}
                 </Button>
               </div>
 
@@ -219,7 +221,7 @@ export const AssignReviewers: React.FC = () => {
                     }}
                   >
                     <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} />
-                    Cargando docentes...
+                    {t('projects:assignReviewers.loadingTeachers')}
                   </div>
                 ) : filteredReviewers.length === 0 ? (
                   <div
@@ -230,8 +232,8 @@ export const AssignReviewers: React.FC = () => {
                     }}
                   >
                     {fetchError
-                      ? 'No se pudieron cargar los docentes.'
-                      : 'No se encontraron docentes con ese criterio de búsqueda.'}
+                      ? t('projects:assignReviewers.noTeachersLoaded')
+                      : t('projects:assignReviewers.noTeachersFound')}
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -281,7 +283,7 @@ export const AssignReviewers: React.FC = () => {
                             onClick={() => handleAssign(reviewer)}
                             disabled={assigned}
                           >
-                            {assigned ? 'Asignado' : 'Asignar'}
+                            {assigned ? t('projects:assignReviewers.assigned') : t('projects:assignReviewers.assign')}
                           </Button>
                         </div>
                       );
@@ -301,7 +303,7 @@ export const AssignReviewers: React.FC = () => {
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 <Users size={20} />
-                Jurados asignados
+                {t('projects:assignReviewers.assignedJurors')}
               </h2>
             </CardHeader>
 
@@ -314,7 +316,7 @@ export const AssignReviewers: React.FC = () => {
                     color: 'var(--on-surface-variant)',
                   }}
                 >
-                  No hay jurados asignados aún.
+                  {t('projects:assignReviewers.noJurorsAssigned')}
                 </div>
               ) : (
                 <div
@@ -368,7 +370,7 @@ export const AssignReviewers: React.FC = () => {
                           display: 'flex',
                           alignItems: 'center',
                         }}
-                        title="Quitar revisor"
+                        title={t('projects:assignReviewers.removeReviewer')}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -390,7 +392,7 @@ export const AssignReviewers: React.FC = () => {
                   onClick={handleConfirm}
                   disabled={assignedReviewers.length === 0}
                 >
-                  Confirmar asignación
+                  {t('projects:assignReviewers.confirmAssignment')}
                 </Button>
               </div>
             </CardContent>

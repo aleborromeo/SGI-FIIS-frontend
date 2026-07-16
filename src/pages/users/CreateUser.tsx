@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { UserPlus, User, Phone, Mail, Shield, CheckCircle, Copy, RefreshCw, Key, Search, Edit2, KeyRound, UserCheck, UserX, X } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -18,6 +19,7 @@ import { userService, type User as UserType } from '../../services/userService';
 import './CreateUser.css';
 
 export const CreateUser: React.FC = () => {
+  const { t } = useTranslation('admin');
   // Pestañas
   const [activeTab, setActiveTab] = useState<'create' | 'list'>('create');
 
@@ -89,7 +91,7 @@ export const CreateUser: React.FC = () => {
       setUsersList(data);
     } catch (err: any) {
       console.error(err);
-      toast.error('No se pudo cargar la lista de usuarios.');
+      toast.error(t('createUser.toast.loadUsersError'));
     } finally {
       setLoadingList(false);
     }
@@ -110,7 +112,7 @@ export const CreateUser: React.FC = () => {
   const handleCopyPassword = () => {
     if (createdUser?.temporaryPassword) {
       navigator.clipboard.writeText(createdUser.temporaryPassword);
-      toast.success('¡Contraseña copiada al portapapeles!');
+      toast.success(t('common:copiedToClipboard'));
     }
   };
 
@@ -119,15 +121,15 @@ export const CreateUser: React.FC = () => {
     setErrorMsg(null);
 
     if (!dni || dni.length !== 8) {
-      setErrorMsg('El DNI debe tener exactamente 8 dígitos.');
+      setErrorMsg(t('createUser.validation.dniLength'));
       return;
     }
     if (!firstNames.trim() || !lastNames.trim()) {
-      setErrorMsg('Los nombres y apellidos son obligatorios.');
+      setErrorMsg(t('createUser.validation.namesRequired'));
       return;
     }
     if (institutionalEmail && !institutionalEmail.toLowerCase().endsWith('.edu.pe')) {
-      setErrorMsg('El correo institucional debe pertenecer al dominio (.edu.pe).');
+      setErrorMsg(t('createUser.validation.emailDomain'));
       return;
     }
 
@@ -149,11 +151,11 @@ export const CreateUser: React.FC = () => {
         lastNames: response.lastNames,
         roleDescription: response.roleDescription
       });
-      toast.success('¡Usuario registrado exitosamente!');
+      toast.success(t('createUser.toast.createSuccess'));
     } catch (err: any) {
       console.error(err);
       setErrorMsg(err.message || 'Ocurrió un error al intentar crear el usuario.');
-      toast.error('Error al registrar usuario');
+      toast.error(t('createUser.toast.createError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -184,17 +186,19 @@ export const CreateUser: React.FC = () => {
 
     // Evitar que el admin se desactive a sí mismo (RF-13)
     if (loggedInUser && (loggedInUser.id === userRow.id || loggedInUser.email === userRow.institutionalEmail) && isCurrentlyActive) {
-      toast.error('No puedes desactivar tu propia cuenta de administrador.');
+      toast.error(t('createUser.toast.selfDeactivateError'));
       return;
     }
 
-    const title = isCurrentlyActive ? 'Desactivar Usuario' : 'Activar Usuario';
-    const message = `¿Estás seguro de que deseas ${isCurrentlyActive ? 'desactivar' : 'activar'} la cuenta de ${userRow.firstNames} ${userRow.lastNames}?`;
+    const title = isCurrentlyActive ? t('createUser.confirm.deactivateTitle') : t('createUser.confirm.activateTitle');
+    const message = isCurrentlyActive
+      ? t('createUser.confirm.deactivateMessage', { name: `${userRow.firstNames} ${userRow.lastNames}` })
+      : t('createUser.confirm.activateMessage', { name: `${userRow.firstNames} ${userRow.lastNames}` });
 
     const accepted = await confirm.confirmDialog({
       title,
       message,
-      confirmText: isCurrentlyActive ? 'Desactivar' : 'Activar',
+      confirmText: isCurrentlyActive ? t('common:deactivate') : t('common:activate'),
       danger: isCurrentlyActive,
     });
 
@@ -203,23 +207,23 @@ export const CreateUser: React.FC = () => {
     try {
       if (isCurrentlyActive) {
         await userService.rejectUser(userRow.id);
-        toast.success('Usuario desactivado correctamente.');
+        toast.success(t('createUser.toast.deactivateSuccess'));
       } else {
         await userService.activateUser(userRow.id);
-        toast.success('Usuario activado correctamente.');
+        toast.success(t('createUser.toast.activateSuccess'));
       }
       loadUsers();
     } catch (err: any) {
       console.error(err);
-      toast.error('Error al cambiar el estado del usuario.');
+      toast.error(t('createUser.toast.toggleStatusError'));
     }
   };
 
   const handleResetUserPassword = async (userRow: UserType) => {
     const accepted = await confirm.confirmDialog({
-      title: 'Restablecer Contraseña',
-      message: `¿Estás seguro de que deseas reiniciar la contraseña de ${userRow.firstNames} ${userRow.lastNames}? Se enviará una nueva contraseña al correo del usuario y se le solicitará cambiarla en su próximo ingreso.`,
-      confirmText: 'Restablecer',
+      title: t('createUser.confirm.resetPasswordTitle'),
+      message: t('createUser.confirm.resetPasswordMessage', { name: `${userRow.firstNames} ${userRow.lastNames}` }),
+      confirmText: t('createUser.confirm.resetPasswordConfirm'),
       danger: false,
     });
 
@@ -227,10 +231,10 @@ export const CreateUser: React.FC = () => {
 
     try {
       await userService.resetPassword(userRow.id);
-      toast.success('Contraseña restablecida y enviada exitosamente.');
+      toast.success(t('createUser.toast.resetPasswordSuccess'));
     } catch (err: any) {
       console.error(err);
-      toast.error('Error al restablecer la contraseña.');
+      toast.error(t('createUser.toast.resetPasswordError'));
     }
   };
 
@@ -248,7 +252,7 @@ export const CreateUser: React.FC = () => {
     if (!editingUser) return;
 
     if (!editFirstNames.trim() || !editLastNames.trim() || !editEmail.trim()) {
-      toast.error('Nombres, apellidos y correo son campos requeridos.');
+      toast.error(t('createUser.toast.requiredFields'));
       return;
     }
 
@@ -261,12 +265,12 @@ export const CreateUser: React.FC = () => {
         phone: editPhone || undefined,
         roleCode: editRoleCode
       });
-      toast.success('Datos de usuario actualizados correctamente.');
+      toast.success(t('createUser.toast.updateSuccess'));
       setEditingUser(null);
       loadUsers();
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || 'Error al actualizar el usuario.');
+      toast.error(err.message || t('createUser.toast.updateError'));
     } finally {
       setIsUpdating(false);
     }
@@ -288,19 +292,19 @@ export const CreateUser: React.FC = () => {
   const getRoleBadge = (roleCode: string) => {
     switch (roleCode) {
       case 'ADMIN':
-        return <Badge variant="error">Administrador</Badge>;
+        return <Badge variant="error">{t('users.roles.ADMIN')}</Badge>;
       case 'ESTUDIANTE':
-        return <Badge variant="info">Estudiante</Badge>;
+        return <Badge variant="info">{t('users.roles.ESTUDIANTE')}</Badge>;
       case 'DOCENTE_INVESTIGADOR':
-        return <Badge variant="success">Docente Inv.</Badge>;
+        return <Badge variant="success">{t('users.roles.DOCENTE_INVESTIGADOR')}</Badge>;
       case 'COORDINADOR_GRUPO':
-        return <Badge variant="warning">Coordinador</Badge>;
+        return <Badge variant="warning">{t('users.roles.COORDINADOR_GRUPO')}</Badge>;
       case 'DIRECTOR_INVESTIGACION':
-        return <Badge variant="info">Director</Badge>;
+        return <Badge variant="info">{t('users.roles.DIRECTOR_INVESTIGACION')}</Badge>;
       case 'DECANO':
-        return <Badge variant="neutral">Decano</Badge>;
+        return <Badge variant="neutral">{t('users.roles.DECANO')}</Badge>;
       case 'EVALUADOR':
-        return <Badge variant="neutral">Evaluador</Badge>;
+        return <Badge variant="neutral">{t('users.roles.EVALUADOR')}</Badge>;
       default:
         return <Badge variant="neutral">{roleCode}</Badge>;
     }
@@ -309,9 +313,9 @@ export const CreateUser: React.FC = () => {
   const getStatusBadge = (userRow: UserType) => {
     const isActive = userRow.status !== 'REJECTED' && userRow.status !== 'INACTIVE' && userRow.active !== false;
     return isActive ? (
-      <Badge variant="success">Activo</Badge>
+      <Badge variant="success">{t('users.statusKey.active')}</Badge>
     ) : (
-      <Badge variant="error">Inactivo</Badge>
+      <Badge variant="error">{t('users.statusKey.inactive')}</Badge>
     );
   };
 
@@ -381,9 +385,9 @@ export const CreateUser: React.FC = () => {
             <UserPlus size={28} />
           </div>
           <div>
-            <h1 className="create-user-title">Gestión de Usuarios</h1>
+            <h1 className="create-user-title">{t('createUser.management.title')}</h1>
             <p className="create-user-subtitle">
-              Administración de cuentas institucionales del sistema, registro de nuevos miembros y configuración de accesos.
+              {t('createUser.management.subtitle')}
             </p>
           </div>
         </div>
@@ -395,14 +399,14 @@ export const CreateUser: React.FC = () => {
             className={`nav-tab-btn ${activeTab === 'create' ? 'active' : ''}`}
           >
             <UserPlus size={16} />
-            Agregar
+            {t('createUser.management.tabCreate')}
           </button>
           <button
             onClick={() => setActiveTab('list')}
             className={`nav-tab-btn ${activeTab === 'list' ? 'active' : ''}`}
           >
             <Search size={16} />
-            Ver Usuarios
+            {t('createUser.management.tabList')}
           </button>
         </div>
       </div>
@@ -415,28 +419,28 @@ export const CreateUser: React.FC = () => {
                 <CardContent>
                   <div className="credentials-header">
                     <Shield className="credentials-shield-icon" size={24} />
-                    <h3>Credenciales Temporales de Acceso</h3>
+                    <h3>{t('createUser.management.credentialsTitle')}</h3>
                   </div>
 
                   <div className="credentials-info-list">
                     <div className="credentials-item">
-                      <span className="label">Nombre completo:</span>
+                      <span className="label">{t('createUser.management.fullName')}</span>
                       <span className="value">{createdUser.firstNames} {createdUser.lastNames}</span>
                     </div>
                     <div className="credentials-item">
-                      <span className="label">Correo / Usuario:</span>
+                      <span className="label">{t('createUser.management.emailUser')}</span>
                       <span className="value email-value">{createdUser.institutionalEmail}</span>
                     </div>
                     {createdUser.temporaryPassword && (
                       <div className="credentials-item password-item">
-                        <span className="label">Contraseña temporal:</span>
+                        <span className="label">{t('createUser.management.tempPassword')}</span>
                         <div className="password-display-box">
                           <code className="password-code">{createdUser.temporaryPassword}</code>
                           <button
                             type="button"
                             onClick={handleCopyPassword}
                             className="copy-password-btn"
-                            title="Copiar contraseña"
+                            title={t('createUser.management.copyPassword')}
                           >
                             <Copy size={16} />
                           </button>
@@ -447,9 +451,7 @@ export const CreateUser: React.FC = () => {
 
                   <div className="credentials-footer-alert">
                     <Mail size={18} className="alert-icon" />
-                    <p>
-                      Estas credenciales han sido enviadas de forma segura al correo <strong>{createdUser.institutionalEmail}</strong>. El usuario deberá cambiar esta contraseña obligatoriamente en su primer inicio de sesión.
-                    </p>
+                    <p dangerouslySetInnerHTML={{ __html: t('createUser.management.credentialsNotice', { email: createdUser.institutionalEmail }) }} />
                   </div>
                 </CardContent>
               </Card>
@@ -457,7 +459,7 @@ export const CreateUser: React.FC = () => {
               <div className="success-actions">
                 <Button onClick={handleResetForm} variant="secondary" className="new-user-btn">
                   <UserPlus size={18} className="mr-2" />
-                  Registrar otro usuario
+                  {t('createUser.management.registerAnother')}
                 </Button>
               </div>
             </div>
@@ -483,7 +485,7 @@ export const CreateUser: React.FC = () => {
                   <div className="form-grid-two-columns">
                     {/* DNI */}
                     <div className="form-group-custom">
-                      <label htmlFor="dni" className="field-label">DNI</label>
+                      <label htmlFor="dni" className="field-label">{t('users.form.dniLabel')}</label>
                       <div className="field-input-wrapper">
                         <span className="field-icon"><Shield size={18} /></span>
                         <input
@@ -491,7 +493,7 @@ export const CreateUser: React.FC = () => {
                           id="dni"
                           maxLength={8}
                           className="field-input"
-                          placeholder="8 dígitos"
+                          placeholder={t('users.form.dniPlaceholder')}
                           value={dni}
                           onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))}
                           disabled={isSubmitting}
@@ -502,7 +504,7 @@ export const CreateUser: React.FC = () => {
 
                     {/* Rol */}
                     <div className="form-group-custom">
-                      <label htmlFor="roleCode" className="field-label">Rol del sistema</label>
+                      <label htmlFor="roleCode" className="field-label">{t('users.form.roleLabel')}</label>
                       <div className="field-input-wrapper">
                         <span className="field-icon"><Shield size={18} /></span>
                         <select
@@ -513,27 +515,27 @@ export const CreateUser: React.FC = () => {
                           disabled={isSubmitting}
                           required
                         >
-                          <option value="ESTUDIANTE">Estudiante / Tesista</option>
-                          <option value="DOCENTE_INVESTIGADOR">Docente Investigador</option>
-                          <option value="COORDINADOR_GRUPO">Coordinador de Grupo</option>
-                          <option value="DIRECTOR_INVESTIGACION">Director de Investigación</option>
-                          <option value="DECANO">Decano</option>
-                          <option value="EVALUADOR">Evaluador</option>
-                          <option value="ADMIN">Administrador</option>
+                          <option value="ESTUDIANTE">{t('users.roles.ESTUDIANTE')}</option>
+                          <option value="DOCENTE_INVESTIGADOR">{t('users.roles.DOCENTE_INVESTIGADOR')}</option>
+                          <option value="COORDINADOR_GRUPO">{t('users.roles.COORDINADOR_GRUPO')}</option>
+                          <option value="DIRECTOR_INVESTIGACION">{t('users.roles.DIRECTOR_INVESTIGACION')}</option>
+                          <option value="DECANO">{t('users.roles.DECANO')}</option>
+                          <option value="EVALUADOR">{t('users.roles.EVALUADOR')}</option>
+                          <option value="ADMIN">{t('users.roles.ADMIN')}</option>
                         </select>
                       </div>
                     </div>
 
                     {/* Nombres */}
                     <div className="form-group-custom">
-                      <label htmlFor="firstNames" className="field-label">Nombres</label>
+                      <label htmlFor="firstNames" className="field-label">{t('users.form.namesLabel')}</label>
                       <div className="field-input-wrapper">
                         <span className="field-icon"><User size={18} /></span>
                         <input
                           type="text"
                           id="firstNames"
                           className="field-input"
-                          placeholder="Nombres completos"
+                          placeholder={t('users.form.namesPlaceholder')}
                           value={firstNames}
                           onChange={(e) => setFirstNames(e.target.value)}
                           disabled={isSubmitting}
@@ -544,14 +546,14 @@ export const CreateUser: React.FC = () => {
 
                     {/* Apellidos */}
                     <div className="form-group-custom">
-                      <label htmlFor="lastNames" className="field-label">Apellidos</label>
+                      <label htmlFor="lastNames" className="field-label">{t('users.form.lastNamesLabel')}</label>
                       <div className="field-input-wrapper">
                         <span className="field-icon"><User size={18} /></span>
                         <input
                           type="text"
                           id="lastNames"
                           className="field-input"
-                          placeholder="Apellidos completos"
+                          placeholder={t('users.form.lastNamesPlaceholder')}
                           value={lastNames}
                           onChange={(e) => setLastNames(e.target.value)}
                           disabled={isSubmitting}
@@ -563,7 +565,7 @@ export const CreateUser: React.FC = () => {
                     {/* Correo institucional */}
                     <div className="form-group-custom">
                       <label htmlFor="institutionalEmail" className="field-label">
-                        Correo institucional
+                        {t('users.form.emailLabel')}
                       </label>
                       <div className="field-input-wrapper">
                         <span className="field-icon"><Mail size={18} /></span>
@@ -582,14 +584,14 @@ export const CreateUser: React.FC = () => {
                         />
                       </div>
                       <p className="field-hint">
-                        Se autocompleta automáticamente según los nombres ingresados. Puedes modificarlo si lo requieres.
+                        {t('users.form.emailHelp')}
                       </p>
                     </div>
 
                     {/* Teléfono */}
                     <div className="form-group-custom">
                       <label htmlFor="phone" className="field-label">
-                        Teléfono celular <span className="optional-tag">(Opcional)</span>
+                        {t('users.form.phoneLabel')} <span className="optional-tag">(Optional)</span>
                       </label>
                       <div className="field-input-wrapper">
                         <span className="field-icon"><Phone size={18} /></span>
@@ -610,9 +612,9 @@ export const CreateUser: React.FC = () => {
                   <div className="form-password-disclaimer">
                     <Key className="disclaimer-icon" size={20} />
                     <div>
-                      <h4>Contraseña Segura Automática</h4>
+                      <h4>{t('createUser.management.passwordDisclaimer')}</h4>
                       <p>
-                        El sistema generará una contraseña aleatoria de alta seguridad (mín. 10 caracteres con mayúsculas, minúsculas, números y símbolos) y la enviará de forma automática al usuario por correo.
+                        {t('createUser.management.passwordDisclaimerText')}
                       </p>
                     </div>
                   </div>
@@ -626,12 +628,12 @@ export const CreateUser: React.FC = () => {
                       {isSubmitting ? (
                         <>
                           <RefreshCw className="mr-2 h-4 w-4 animate-spin" size={16} />
-                          Registrando usuario...
+                          {t('createUser.management.registering')}
                         </>
                       ) : (
                         <>
                           <UserPlus size={18} className="mr-2" />
-                          Registrar Usuario
+                          {t('createUser.management.registerUser')}
                         </>
                       )}
                     </Button>
@@ -653,7 +655,7 @@ export const CreateUser: React.FC = () => {
                   <input
                     type="text"
                     className="search-input-field"
-                    placeholder="Buscar usuarios por nombre, correo, DNI, rol o estado..."
+                    placeholder={t('createUser.management.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -667,7 +669,7 @@ export const CreateUser: React.FC = () => {
               {loadingList ? (
                 <div className="list-loading-spinner-box">
                   <RefreshCw className="animate-spin text-blue-600" size={32} />
-                  <p>Cargando directorio de usuarios...</p>
+                  <p>{t('createUser.management.loadingDirectory')}</p>
                 </div>
               ) : (
                 <>
@@ -675,12 +677,12 @@ export const CreateUser: React.FC = () => {
                     <TableContainer>
                       <TableHead>
                         <TableRow>
-                          <TableHeader>DNI</TableHeader>
-                          <TableHeader>Nombres y Apellidos</TableHeader>
-                          <TableHeader>Correo Institucional</TableHeader>
-                          <TableHeader>Rol Principal</TableHeader>
-                          <TableHeader>Estado</TableHeader>
-                          <TableHeader style={{ textAlign: 'center' }}>Acciones</TableHeader>
+                          <TableHeader>{t('users.table.dni')}</TableHeader>
+                          <TableHeader>{t('users.table.nameAndLastname')}</TableHeader>
+                          <TableHeader>{t('users.table.email')}</TableHeader>
+                          <TableHeader>{t('users.table.role')}</TableHeader>
+                          <TableHeader>{t('users.table.status')}</TableHeader>
+                          <TableHeader style={{ textAlign: 'center' }}>{t('users.table.actions')}</TableHeader>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -689,7 +691,7 @@ export const CreateUser: React.FC = () => {
                             <TableCell colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
                               <div className="empty-state-message">
                                 <Shield size={36} className="text-gray-300" />
-                                <p>No se encontraron usuarios coincidentes.</p>
+                                <p>{t('createUser.management.emptyResults')}</p>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -707,7 +709,7 @@ export const CreateUser: React.FC = () => {
                                   <button
                                     onClick={() => handleStartEdit(u)}
                                     className="action-btn edit-action"
-                                    title="Editar Datos"
+                                    title={t('users.btnEdit')}
                                   >
                                     <Edit2 size={16} />
                                   </button>
@@ -715,7 +717,7 @@ export const CreateUser: React.FC = () => {
                                   <button
                                     onClick={() => handleResetUserPassword(u)}
                                     className="action-btn reset-action"
-                                    title="Reiniciar Contraseña"
+                                    title={t('users.btnResetPass')}
                                   >
                                     <KeyRound size={16} />
                                   </button>
@@ -724,7 +726,7 @@ export const CreateUser: React.FC = () => {
                                     onClick={() => handleToggleStatus(u)}
                                     className={`action-btn toggle-action ${u.status !== 'REJECTED' && u.status !== 'INACTIVE' && u.active !== false ? 'active-user' : 'inactive-user'
                                       }`}
-                                    title={u.active !== false ? 'Desactivar Cuenta' : 'Activar Cuenta'}
+                                    title={u.active !== false ? t('users.btnDeactivate') : t('users.btnActivate')}
                                     disabled={loggedInUser && (loggedInUser.id === u.id || loggedInUser.email === u.institutionalEmail)}
                                   >
                                     {u.active !== false ? <UserX size={16} /> : <UserCheck size={16} />}
@@ -776,7 +778,7 @@ export const CreateUser: React.FC = () => {
             <div className="modal-header-custom">
               <div className="modal-title-box">
                 <Edit2 size={20} className="modal-title-icon" />
-                <h3>Editar Datos Personales</h3>
+                <h3>{t('createUser.management.editTitle')}</h3>
               </div>
               <button onClick={() => setEditingUser(null)} className="modal-close-btn">
                 <X size={20} />
@@ -786,7 +788,7 @@ export const CreateUser: React.FC = () => {
             <form onSubmit={handleUpdateSubmit} className="modal-form">
               <div className="modal-fields-grid">
                 <div className="form-group-custom">
-                  <label className="field-label">DNI (No modificable)</label>
+                  <label className="field-label">{t('createUser.management.dniReadonly')}</label>
                   <input
                     type="text"
                     className="field-input readonly-input"
@@ -796,7 +798,7 @@ export const CreateUser: React.FC = () => {
                 </div>
 
                 <div className="form-group-custom">
-                  <label htmlFor="editRoleCode" className="field-label">Rol del sistema</label>
+                  <label htmlFor="editRoleCode" className="field-label">{t('users.form.roleLabel')}</label>
                   <select
                     id="editRoleCode"
                     className="field-input select-input"
@@ -805,18 +807,18 @@ export const CreateUser: React.FC = () => {
                     disabled={isUpdating}
                     required
                   >
-                    <option value="ESTUDIANTE">Estudiante / Tesista</option>
-                    <option value="DOCENTE_INVESTIGADOR">Docente Investigador</option>
-                    <option value="COORDINADOR_GRUPO">Coordinador de Grupo</option>
-                    <option value="DIRECTOR_INVESTIGACION">Director de Investigación</option>
-                    <option value="DECANO">Decano</option>
-                    <option value="EVALUADOR">Evaluador</option>
-                    <option value="ADMIN">Administrador</option>
+                    <option value="ESTUDIANTE">{t('users.roles.ESTUDIANTE')}</option>
+                    <option value="DOCENTE_INVESTIGADOR">{t('users.roles.DOCENTE_INVESTIGADOR')}</option>
+                    <option value="COORDINADOR_GRUPO">{t('users.roles.COORDINADOR_GRUPO')}</option>
+                    <option value="DIRECTOR_INVESTIGACION">{t('users.roles.DIRECTOR_INVESTIGACION')}</option>
+                    <option value="DECANO">{t('users.roles.DECANO')}</option>
+                    <option value="EVALUADOR">{t('users.roles.EVALUADOR')}</option>
+                    <option value="ADMIN">{t('users.roles.ADMIN')}</option>
                   </select>
                 </div>
 
                 <div className="form-group-custom">
-                  <label htmlFor="editFirstNames" className="field-label">Nombres</label>
+                  <label htmlFor="editFirstNames" className="field-label">{t('users.form.namesLabel')}</label>
                   <input
                     type="text"
                     id="editFirstNames"
@@ -829,7 +831,7 @@ export const CreateUser: React.FC = () => {
                 </div>
 
                 <div className="form-group-custom">
-                  <label htmlFor="editLastNames" className="field-label">Apellidos</label>
+                  <label htmlFor="editLastNames" className="field-label">{t('users.form.lastNamesLabel')}</label>
                   <input
                     type="text"
                     id="editLastNames"
@@ -842,7 +844,7 @@ export const CreateUser: React.FC = () => {
                 </div>
 
                 <div className="form-group-custom">
-                  <label htmlFor="editEmail" className="field-label">Correo institucional</label>
+                  <label htmlFor="editEmail" className="field-label">{t('users.form.emailLabel')}</label>
                   <input
                     type="email"
                     id="editEmail"
@@ -855,7 +857,7 @@ export const CreateUser: React.FC = () => {
                 </div>
 
                 <div className="form-group-custom">
-                  <label htmlFor="editPhone" className="field-label">Teléfono celular</label>
+                  <label htmlFor="editPhone" className="field-label">{t('users.form.phoneLabel')}</label>
                   <input
                     type="text"
                     id="editPhone"
@@ -874,14 +876,14 @@ export const CreateUser: React.FC = () => {
                   onClick={() => setEditingUser(null)}
                   disabled={isUpdating}
                 >
-                  Cancelar
+                  {t('common:cancel')}
                 </Button>
                 <Button
                   type="submit"
                   disabled={isUpdating}
                   className="modal-save-btn"
                 >
-                  {isUpdating ? 'Guardando...' : 'Guardar Cambios'}
+                  {isUpdating ? t('createUser.management.saving') : t('createUser.management.saveChanges')}
                 </Button>
               </div>
             </form>

@@ -1,11 +1,13 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../../context/AuthContext';
 import './LoginPage.css';
 import frontisBg from '../../assets/images/frontis_fiis.png';
 import userSesionIcon from '../../assets/images/user-sesion.jpg';
 
 export const LoginPage: React.FC = () => {
+  const { t } = useTranslation('auth');
   const { login, isAuthenticated, error, clearError } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -113,22 +115,22 @@ export const LoginPage: React.FC = () => {
 
   const validateForm = (): boolean => {
     if (!email) {
-      setValidationError('El correo institucional es obligatorio.');
+      setValidationError(t('auth:login.validation.emailRequired'));
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setValidationError('Por favor, ingrese un correo institucional válido.');
+      setValidationError(t('auth:login.validation.emailInvalid'));
       return false;
     }
     if (!password) {
-      setValidationError('La contraseña es obligatoria.');
+      setValidationError(t('auth:login.validation.passwordRequired'));
       return false;
     }
 
     // Validar Captcha
     if (!userCaptchaInput) {
-      setValidationError('El código de verificación es obligatorio.');
+      setValidationError(t('auth:login.validation.captchaRequired'));
       return false;
     }
     if (userCaptchaInput.toUpperCase() !== captchaCode) {
@@ -140,7 +142,7 @@ export const LoginPage: React.FC = () => {
 
     // Validar políticas y privacidad
     if (!acceptedPolicies) {
-      setValidationError('Debe aceptar las políticas y privacidad.');
+      setValidationError(t('auth:login.validation.policiesRequired'));
       return false;
     }
 
@@ -162,7 +164,7 @@ export const LoginPage: React.FC = () => {
       lower.includes('desactivado') ||
       lower.includes('disabled')
     ) {
-      return 'El usuario no está activo';
+      return t('auth:login.error.userInactive');
     }
     
     // Validar credenciales incorrectas
@@ -176,7 +178,7 @@ export const LoginPage: React.FC = () => {
       lower.includes('no autorizado') ||
       lower.includes('contraseña')
     ) {
-      return 'Usuario o contraseña incorrecto';
+      return t('auth:login.error.invalidCredentials');
     }
     
     return errMsg;
@@ -220,7 +222,7 @@ export const LoginPage: React.FC = () => {
             type="button"
             className="login-back-btn" 
             onClick={() => navigate('/')}
-            title="Regresar al inicio"
+            title={t('auth:login.backToHome')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -229,7 +231,7 @@ export const LoginPage: React.FC = () => {
 
           <div className="login-card-header">
             <img src={userSesionIcon} alt="Logo" className="login-logo-img" />
-            <p className="login-logo-subtitle">Sistema de Gestión de Investigación</p>
+            <p className="login-logo-subtitle">{t('auth:login.subtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
@@ -243,7 +245,7 @@ export const LoginPage: React.FC = () => {
                   </svg>
                 </div>
                 <div className="error-alert-content">
-                  <div className="error-alert-title">error</div>
+                  <div className="error-alert-title">{t('auth:login.errorTitle')}</div>
                   <div className="error-alert-message">{getFriendlyErrorMessage(validationError || error)}</div>
                 </div>
               </div>
@@ -251,7 +253,7 @@ export const LoginPage: React.FC = () => {
 
             {/* Input Correo */}
             <div className="form-group">
-              <label htmlFor="email" className="form-label">Correo institucional</label>
+              <label htmlFor="email" className="form-label">{t('auth:login.emailLabel')}</label>
               <div className="input-group-custom">
                 <span className="input-icon-left">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -262,7 +264,7 @@ export const LoginPage: React.FC = () => {
                   type="email"
                   id="email"
                   className={`form-input-custom ${validationError && !email ? 'input-error' : ''}`}
-                  placeholder="ejemplo@unas.edu.pe"
+                  placeholder={t('auth:login.emailPlaceholder')}
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -276,7 +278,7 @@ export const LoginPage: React.FC = () => {
 
             {/* Input Contraseña */}
             <div className="form-group">
-              <label htmlFor="password" className="form-label">Contraseña</label>
+              <label htmlFor="password" className="form-label">{t('auth:login.passwordLabel')}</label>
               <div className="input-group-custom">
                 <span className="input-icon-left">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -287,7 +289,7 @@ export const LoginPage: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   id="password"
                   className={`form-input-custom ${validationError && !password ? 'input-error' : ''}`}
-                  placeholder="Ingresa tu contraseña"
+                  placeholder={t('auth:login.passwordPlaceholder')}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -318,7 +320,7 @@ export const LoginPage: React.FC = () => {
 
             {/* Captcha Visual */}
             <div className="form-group">
-              <label className="form-label">Código de seguridad</label>
+              <label className="form-label">{t('auth:login.captchaLabel')}</label>
               <div className="captcha-display-group">
                 <span className="input-icon-left">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -333,7 +335,7 @@ export const LoginPage: React.FC = () => {
 
             {/* Input Captcha */}
             <div className="form-group">
-              <label htmlFor="captchaInput" className="form-label">Código de verificación</label>
+              <label htmlFor="captchaInput" className="form-label">{t('auth:login.captchaVerificationLabel')}</label>
               <div className="input-group-custom">
                 <span className="input-icon-left">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -344,7 +346,7 @@ export const LoginPage: React.FC = () => {
                   type="text"
                   id="captchaInput"
                   className={`form-input-custom ${captchaError ? 'input-error' : ''}`}
-                  placeholder="Cod. Verificacion"
+                  placeholder={t('auth:login.captchaVerificationPlaceholder')}
                   value={userCaptchaInput}
                   onChange={(e) => {
                     setUserCaptchaInput(e.target.value);
@@ -356,7 +358,7 @@ export const LoginPage: React.FC = () => {
                 />
               </div>
               {captchaError && (
-                <p className="captcha-error-text-simple animate-fade-in">Código de verificación incorrecto</p>
+                <p className="captcha-error-text-simple animate-fade-in">{t('auth:login.captchaIncorrect')}</p>
               )}
             </div>
 
@@ -374,7 +376,7 @@ export const LoginPage: React.FC = () => {
                   }}
                   disabled={isSubmitting}
                 />
-                <span>Aceptar <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: '#0b5ed7', textDecoration: 'underline', fontWeight: 500 }}>políticas y privacidad</a></span>
+                <span>{t('auth:login.acceptPolicies')}</span>
               </label>
               <div className="forgot-password-container">
                 <button 
@@ -383,7 +385,7 @@ export const LoginPage: React.FC = () => {
                   className="forgot-password-link"
                   style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
                 >
-                  ¿Olvidaste tu contraseña?
+                  {t('auth:login.forgotPasswordLink')}
                 </button>
               </div>
             </div>
@@ -401,7 +403,7 @@ export const LoginPage: React.FC = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h3a3 3 0 013 3v1" />
                   </svg>
-                  <span>Ingresar</span>
+                  <span>{t('auth:login.submit')}</span>
                 </>
               )}
             </button>
@@ -411,7 +413,7 @@ export const LoginPage: React.FC = () => {
 
         {/* Footer Centrado */}
         <div className="login-card-footer">
-          <p>© 2025 SGI - Universidad Nacional Agraria de la Selva</p>
+          <p>{t('auth:login.footer')}</p>
         </div>
       </div>
     </div>

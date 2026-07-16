@@ -1,0 +1,515 @@
+{
+  "title": "Progress Reports",
+  "subtitle": "Manage project and thesis progress reports",
+  "list": {
+    "title": "Reports List",
+    "noReports": "No reports registered",
+    "createFirst": "Create your first progress report",
+    "filters": {
+      "status": "Status",
+      "type": "Type",
+      "project": "Project",
+      "thesis": "Thesis",
+      "dateRange": "Date Range",
+      "search": "Search..."
+    },
+    "columns": {
+      "id": "ID",
+      "title": "Title",
+      "type": "Type",
+      "project": "Project",
+      "thesis": "Thesis",
+      "author": "Author",
+      "period": "Period",
+      "status": "Status",
+      "submissionDate": "Submission Date",
+      "reviewDate": "Review Date",
+      "actions": "Actions"
+    },
+    "pagination": {
+      "showing": "Showing {{start}}-{{end}} of {{total}}",
+      "page": "Page {{page}} of {{pages}}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "viewModes": {
+      "list": "List View",
+      "cards": "Card View"
+    }
+  },
+  "types": {
+    "monthly": "Monthly Report",
+    "quarterly": "Quarterly Report",
+    "semiannual": "Semi-annual Report",
+    "annual": "Annual Report",
+    "final": "Final Report",
+    "intermediate": "Intermediate Report",
+    "special": "Special Report"
+  },
+  "status": {
+    "draft": "Draft",
+    "submitted": "Submitted",
+    "inReview": "In Review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "returned": "Returned",
+    "amended": "Amended",
+    "completed": "Completed"
+  },
+  "detail": {
+    "title": "Report Details",
+    "basicInfo": "Basic Information",
+    "content": "Content",
+    "activities": "Activities Performed",
+    "results": "Results Obtained",
+    "problems": "Problems Found",
+    "nextSteps": "Next Steps",
+    "observations": "Observations",
+    "documents": "Attached Documents",
+    "history": "History",
+    "comments": "Comments",
+    "id": "ID",
+    "title_": "Title",
+    "type": "Type",
+    "project": "Project",
+    "thesis": "Thesis",
+    "author": "Author",
+    "period": "Period",
+    "status": "Status",
+    "submissionDate": "Submission Date",
+    "reviewDate": "Review Date",
+    "reviewer": "Reviewer",
+    "grade": "Grade"
+  },
+  "new": {
+    "title": "New Progress Report",
+    "subtitle": "Create a new progress report",
+    "form": {
+      "title": "Report Title",
+      "titlePlaceholder": "Enter report title",
+      "type": "Report Type",
+      "typePlaceholder": "Select type",
+      "project": "Project",
+      "projectPlaceholder": "Select project",
+      "thesis": "Thesis",
+      "thesisPlaceholder": "Select thesis",
+      "period": "Period",
+      "periodPlaceholder": "Enter report period",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "activities": "Activities Performed",
+      "activitiesPlaceholder": "Describe the activities performed",
+      "results": "Results Obtained",
+      "resultsPlaceholder": "Describe the results obtained",
+      "problems": "Problems Found",
+      "problemsPlaceholder": "Describe the problems found",
+      "nextSteps": "Next Steps",
+      "nextStepsPlaceholder": "Describe the next steps",
+      "attachments": "Attached Documents",
+      "submitButton": "Submit Report",
+      "saveDraft": "Save Draft",
+      "cancel": "Cancel"
+    },
+    "steps": {
+      "step1": "General Information",
+      "step2": "Activities and Results",
+      "step3": "Documents",
+      "step4": "Review"
+    },
+    "error": {
+      "titleRequired": "Title is required",
+      "typeRequired": "Report type is required",
+      "projectRequired": "Project is required",
+      "thesisRequired": "Thesis is required",
+      "periodRequired": "Period is required",
+      "startDateRequired": "Start date is required",
+      "endDateRequired": "End date is required",
+      "activitiesRequired": "Activities are required",
+      "resultsRequired": "Results are required",
+      "invalidDates": "End date must be after start date",
+      "uploadFailed": "Error uploading file",
+      "saveFailed": "Error saving report"
+    },
+    "success": {
+      "created": "Report created successfully",
+      "draftSaved": "Draft saved"
+    }
+  },
+  "edit": {
+    "title": "Edit Progress Report",
+    "subtitle": "Modify report information",
+    "form": {
+      "submitButton": "Save Changes",
+      "cancel": "Cancel"
+    },
+    "error": {
+      "updateFailed": "Error updating report",
+      "notFound": "Report not found",
+      "unauthorized": "You don't have permission to edit this report"
+    },
+    "success": {
+      "updated": "Report updated successfully"
+    }
+  },
+  "amend": {
+    "title": "Amend Report",
+    "subtitle": "Make corrections to the report",
+    "form": {
+      "correctionReason": "Correction Reason",
+      "correctionReasonPlaceholder": "Enter the correction reason",
+      "corrections": "Corrections to Make",
+      "correctionsPlaceholder": "Describe the corrections to make",
+      "additionalInfo": "Additional Information",
+      "additionalInfoPlaceholder": "Enter additional information",
+      "attachments": "Support Documents",
+      "submitButton": "Submit Corrections",
+      "cancel": "Cancel"
+    },
+    "error": {
+      "reasonRequired": "Correction reason is required",
+      "correctionsRequired": "Corrections are required",
+      "saveFailed": "Error submitting corrections"
+    },
+    "success": {
+      "amended": "Corrections submitted successfully"
+    }
+  },
+  "review": {
+    "title": "Review Report",
+    "subtitle": "Review and evaluate the report",
+    "form": {
+      "comments": "Comments",
+      "commentsPlaceholder": "Enter your comments",
+      "grade": "Grade",
+      "gradePlaceholder": "Enter the grade",
+      "recommendations": "Recommendations",
+      "recommendationsPlaceholder": "Enter recommendations",
+      "approveButton": "Approve Report",
+      "rejectButton": "Reject Report",
+      "returnButton": "Return for Correction",
+      "cancel": "Cancel"
+    },
+    "error": {
+      "commentsRequired": "Comments are required",
+      "gradeRequired": "Grade is required",
+      "invalidGrade": "Grade must be a number between 0 and 20",
+      "saveFailed": "Error saving review"
+    },
+    "success": {
+      "approved": "Report approved successfully",
+      "rejected": "Report rejected successfully",
+      "returned": "Report returned successfully"
+    }
+  },
+  "actions": {
+    "create": "Create Report",
+    "edit": "Edit Report",
+    "delete": "Delete Report",
+    "submit": "Submit Report",
+    "approve": "Approve Report",
+    "reject": "Reject Report",
+    "return": "Return Report",
+    "amend": "Amend Report",
+    "review": "Review Report",
+    "addComment": "Add Comment",
+    "addDocument": "Add Document",
+    "downloadDocument": "Download Document",
+    "viewHistory": "View History",
+    "export": "Export Report",
+    "print": "Print Report",
+    "share": "Share Report"
+  },
+  "documents": {
+    "title": "Attached Documents",
+    "noDocuments": "No attached documents",
+    "uploadDocument": "Upload Document",
+    "uploadHint": "Drag and drop files here or click to select",
+    "allowedTypes": "Allowed types: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG",
+    "maxSize": "Maximum size: 10 MB",
+    "uploading": "Uploading...",
+    "uploadSuccess": "Document uploaded successfully",
+    "uploadError": "Error uploading document",
+    "deleteDocument": "Delete Document",
+    "deleteConfirm": "Are you sure you want to delete this document?",
+    "downloadDocument": "Download Document",
+    "viewDocument": "View Document"
+  },
+  "comments": {
+    "title": "Comments",
+    "noComments": "No comments",
+    "addComment": "Add Comment",
+    "commentPlaceholder": "Write your comment...",
+    "submitButton": "Submit Comment",
+    "editComment": "Edit Comment",
+    "deleteComment": "Delete Comment",
+    "reply": "Reply",
+    "commentBy": "Comment by {{name}}",
+    "onDate": "on {{date}}"
+  },
+  "history": {
+    "title": "History",
+    "noHistory": "No history available",
+    "event": "Event",
+    "date": "Date",
+    "user": "User",
+    "details": "Details",
+    "eventTypes": {
+      "created": "Report created",
+      "submitted": "Report submitted",
+      "approved": "Report approved",
+      "rejected": "Report rejected",
+      "returned": "Report returned",
+      "amended": "Report amended",
+      "completed": "Report completed",
+      "documentUploaded": "Document uploaded",
+      "commentAdded": "Comment added",
+      "statusChanged": "Status changed"
+    }
+  },
+  "notifications": {
+    "newReport": "New report: {{title}}",
+    "reportUpdate": "Report update: {{title}}",
+    "reportApproved": "Report approved: {{title}}",
+    "reportRejected": "Report rejected: {{title}}",
+    "reportReturned": "Report returned: {{title}}",
+    "reportAmended": "Report amended: {{title}}",
+    "commentAdded": "Comment added to report: {{title}}",
+    "deadlineApproaching": "Deadline approaching for report: {{title}}"
+  },
+  "stats": {
+    "title": "Reports Statistics",
+    "total": "Total Reports",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "byType": "By Type",
+    "byStatus": "By Status",
+    "byMonth": "By Month",
+    "byProject": "By Project",
+    "byThesis": "By Thesis",
+    "averageGrade": "Average Grade",
+    "approvalRate": "Approval Rate"
+  },
+  "error": {
+    "notFound": "Report not found",
+    "unauthorized": "You don't have permission to perform this action",
+    "forbidden": "Access denied",
+    "serverError": "Server error",
+    "networkError": "Connection error",
+    "loadingError": "Error loading data",
+    "savingError": "Error saving",
+    "deletingError": "Error deleting",
+    "updatingError": "Error updating",
+    "creatingError": "Error creating"
+  },
+  "success": {
+    "created": "Report created successfully",
+    "updated": "Report updated successfully",
+    "deleted": "Report deleted successfully",
+    "submitted": "Report submitted successfully",
+    "approved": "Report approved successfully",
+    "rejected": "Report rejected successfully",
+    "returned": "Report returned successfully",
+    "amended": "Report amended successfully",
+    "completed": "Report completed successfully",
+    "documentUploaded": "Document uploaded successfully",
+    "commentAdded": "Comment added successfully"
+  },
+  "status": {
+    "draft": "Draft",
+    "submitted": "Submitted",
+    "inReview": "In Review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "returned": "Returned",
+    "amended": "Amended",
+    "completed": "Completed",
+    "pending": "Pending",
+    "observed": "Observed"
+  },
+  "review": {
+    "title": "Progress Report Review",
+    "subtitle": "Approval, forwarding, and tracking of partial and final research reports.",
+    "filterByStatus": "Filter by Status:",
+    "filterOptions": {
+      "pendingCoordination": "Pending Coordination",
+      "inReviewDirection": "In Review (Direction)",
+      "approved": "Approved",
+      "observed": "Observed",
+      "rejected": "Rejected",
+      "all": "All reports"
+    },
+    "fetchError": "Error fetching progress reports.",
+    "emptyState": {
+      "title": "No progress reports found",
+      "subtitle": "No progress reports registered under the selected filters."
+    },
+    "card": {
+      "responsible": "Responsible",
+      "progress": "Progress",
+      "sendDate": "Send Date",
+      "viewDetail": "View report details",
+      "downloadDoc": "Download attached report"
+    },
+    "action": {
+      "forward": "Forward",
+      "approve": "Approve",
+      "observe": "Observe"
+    },
+    "stats": {
+      "totalInTray": "Total in Tray",
+      "pending": "Pending",
+      "approved": "Approved",
+      "observed": "Observed"
+    },
+    "detail": {
+      "reportLabel": "Progress Report #{{id}}",
+      "title": "Report Details",
+      "project": "Project",
+      "period": "Period",
+      "progress": "Progress",
+      "achievements": "Achievements",
+      "difficulties": "Difficulties",
+      "attachedDoc": "Attached document",
+      "download": "Download",
+      "noRecords": "No records"
+    },
+    "prompt": {
+      "observeDetail": "Enter the observation detail for the teacher:",
+      "commentRequired": "You must enter a comment to register the observation.",
+      "rejectConfirm": "Are you sure you want to permanently reject this report? This action cannot be undone."
+    },
+    "toast": {
+      "forwarded": "Progress report successfully forwarded to the Research Director.",
+      "approved": "Progress report approved successfully.",
+      "observed": "Progress report returned with observations.",
+      "rejected": "Progress report rejected.",
+      "actionError": "Error processing the action on the report.",
+      "detailError": "Error loading report details.",
+      "noDocument": "This report does not have an attached physical document."
+    }
+  },
+  "history": {
+    "title": "Progress Report History",
+    "descriptionDirector": "Chronological tracking of progress across all active projects.",
+    "descriptionTeacher": "Chronological evolution of your research projects.",
+    "update": "Update",
+    "selectProject": "Select Project",
+    "selectProjectPlaceholder": "— Select a project —",
+    "selectedProject": "Selected project",
+    "selectProjectPrompt": "Select a project to view its history",
+    "error": {
+      "loadProjects": "Error loading projects",
+      "loadReports": "Error loading reports"
+    },
+    "stats": {
+      "totalReports": "Total Reports",
+      "approvedReports": "Approved Reports",
+      "avgPhysicalProgress": "Avg. Physical Progress",
+      "avgFinancialProgress": "Avg. Financial Progress"
+    },
+    "emptyState": {
+      "noReports": "No progress reports",
+      "noReportsDescription": "No progress reports have been registered for this project yet."
+    },
+    "timeline": {
+      "title": "Timeline ({{count}} report{{plural}})",
+      "order": "From most recent to oldest",
+      "reportNumber": "Report #{{number}}",
+      "viewDetail": "View details"
+    },
+    "sections": {
+      "activities": "Activities",
+      "evidences": "Evidences",
+      "comments": "Comments",
+      "changeHistory": "Change History"
+    },
+    "detail": {
+      "reportNumber": "Report #{{number}}",
+      "title": "Progress Report Details",
+      "physicalProgress": "Physical Progress",
+      "financialProgress": "Financial Progress",
+      "observations": "Observations",
+      "noActivities": "No activities registered.",
+      "completed": "✓ Completed",
+      "inProgress": "In progress",
+      "noEvidences": "No evidences registered.",
+      "noComments": "No comments.",
+      "noChangeHistory": "No change history.",
+      "attachedFiles": "Attached Files ({{count}})",
+      "loadError": "Could not load report details."
+    }
+  },
+  "new": {
+    "title": "Register New Progress Report",
+    "subtitle": "Submit the physical and financial report corresponding to the execution period.",
+    "backToHistory": "Back to Report History",
+    "errorTitle": "Registration error",
+    "fetchProjectsError": "Error loading teacher projects.",
+    "form": {
+      "project": "Research Project",
+      "loadingProjects": "Loading teacher projects...",
+      "selectProject": "— Select a project in execution —",
+      "reportType": "Report Type",
+      "typePartial": "Partial",
+      "typeFinal": "Final",
+      "period": "Reported Period",
+      "periodPlaceholder": "E.g.: First Quarter / Semester I",
+      "progressPercentage": "Overall Progress Percentage (0 - 100%)",
+      "achievements": "Achievements",
+      "achievementsPlaceholder": "Describe the milestones and activities satisfactorily completed...",
+      "difficulties": "Difficulties",
+      "difficultiesPlaceholder": "Describe any technical, administrative, or logistical setbacks...",
+      "recommendations": "Corrective Measures and Recommendations",
+      "recommendationsPlaceholder": "Propose recommendations or solutions to overcome the problems presented...",
+      "uploadingFile": "Uploading file...",
+      "selectSignedReport": "Select the signed report",
+      "allowedFormats": "Allowed formats: PDF, DOC, DOCX (Max. 10MB)",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "submit": "Submit Report"
+    },
+    "toast": {
+      "invalidFileFormat": "Only PDF, DOC, or DOCX files are allowed.",
+      "fileUploaded": "File uploaded successfully.",
+      "uploadError": "Error uploading file.",
+      "projectRequired": "You must select a project.",
+      "periodRequired": "You must enter the period.",
+      "fieldsRequired": "Please complete all required text fields.",
+      "documentRequired": "It is mandatory to attach a file with the signed report.",
+      "success": "Progress report registered and submitted successfully.",
+      "saveError": "An error occurred while registering the report."
+    }
+  },
+  "amend": {
+    "title": "Remediate Progress Report #{{id}}",
+    "subtitle": "Upload a new version of the report correcting the noted observations.",
+    "backToHistory": "Back to History",
+    "observationRegistered": "Registered Observation",
+    "loadingData": "Loading progress report data...",
+    "loadErrorMsg": "Could not obtain the selected progress report.",
+    "notFound": "The specified progress report was not found.",
+    "context": {
+      "project": "Project:",
+      "period": "Period:",
+      "progress": "Reported Progress Percentage:",
+      "status": "Current Status:"
+    },
+    "form": {
+      "uploadLabel": "Upload Corrected Document (Signed)",
+      "selectFile": "Select the new corrected report",
+      "sending": "Sending...",
+      "submit": "Submit Corrections"
+    },
+    "toast": {
+      "loadError": "Error loading report details.",
+      "invalidFileFormat": "Only PDF, DOC, or DOCX files are allowed.",
+      "fileUploaded": "Remediation document uploaded successfully.",
+      "uploadError": "Error uploading file.",
+      "documentRequired": "It is mandatory to upload the corrected document to submit the remediation.",
+      "success": "Remediation submitted successfully.",
+      "saveError": "An error occurred while submitting the remediation.",
+      "saveErrorDetail": "Error remediating the report."
+    }
+  }
+}

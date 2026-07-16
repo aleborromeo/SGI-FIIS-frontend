@@ -4,7 +4,8 @@
  * Tabla con búsqueda, filtros, paginación, ordenamiento y acciones completas.
  */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -29,7 +30,7 @@ import { useConfirm } from '../../context/ConfirmContext';
 
 // ── Tipos locales ─────────────────────────────────────────────────────────────
 
-type SortField = 'groupName' | 'groupCode' | 'memberCount' | 'createdAt' | 'active';
+type SortField = 'groupName' | 'groupCode' | 'createdAt' | 'active';
 type SortDir = 'asc' | 'desc' | 'none';
 type FilterStatus = 'all' | 'active' | 'inactive';
 
@@ -53,7 +54,9 @@ function nextSort(current: SortDir): SortDir {
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export const ResearchGroups: React.FC = () => {
+  const { t } = useTranslation('admin');
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
   const { confirmDialog } = useConfirm();
 
@@ -81,16 +84,17 @@ export const ResearchGroups: React.FC = () => {
       const data = await researchService.getGroups();
       setGroups(data);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al cargar los grupos de investigación';
+      const msg = err instanceof Error ? err.message : t('groups.errorLoad');
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchGroups();
-  }, [fetchGroups]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
 
   // ── Filtrado, ordenamiento, paginación ──────────────────────────────────────
 
@@ -121,7 +125,6 @@ export const ResearchGroups: React.FC = () => {
         switch (sortField) {
           case 'groupName': valA = a.groupName.toLowerCase(); valB = b.groupName.toLowerCase(); break;
           case 'groupCode': valA = a.groupCode.toLowerCase(); valB = b.groupCode.toLowerCase(); break;
-          case 'memberCount': valA = a.memberCount ?? 0; valB = b.memberCount ?? 0; break;
           case 'createdAt': valA = a.createdAt ?? ''; valB = b.createdAt ?? ''; break;
           case 'active': valA = a.active ? 1 : 0; valB = b.active ? 1 : 0; break;
         }
@@ -154,19 +157,19 @@ export const ResearchGroups: React.FC = () => {
 
   const handleDeactivate = async (group: ResearchGroup) => {
     const confirmed = await confirmDialog({
-      title: 'Desactivar Grupo',
-      message: `¿Estás seguro de desactivar el grupo "${group.groupName}"? Esta acción puede afectar a sus miembros activos.`,
-      confirmText: 'Desactivar',
+      title: t('groups.confirm.deactivateTitle'),
+      message: t('groups.confirm.deactivateMessage', { name: group.groupName }),
+      confirmText: t('groups.confirm.deactivateConfirm'),
       danger: true,
     });
     if (!confirmed) return;
 
     try {
       await researchService.deactivateGroup(group.id);
-      toast.success(`Grupo "${group.groupName}" desactivado`);
+      toast.success(t('groups.toast.deactivated', { name: group.groupName }));
       fetchGroups();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al desactivar el grupo');
+      toast.error(err instanceof Error ? err.message : t('groups.toast.errorDeactivate'));
     }
   };
 
@@ -210,10 +213,10 @@ export const ResearchGroups: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '6px' }}>
-            Grupos de Investigación
+            {t('groups.pageTitle')}
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--on-surface-variant)' }}>
-            Administra los grupos de investigación de la facultad FIIS.
+            {t('groups.pageSubtitle')}
           </p>
         </div>
         <Button
@@ -221,7 +224,7 @@ export const ResearchGroups: React.FC = () => {
           onClick={() => navigate('/groups/new')}
           icon={<Plus size={17} />}
         >
-          Nuevo Grupo
+          {t('groups.btnNew')}
         </Button>
       </div>
 
@@ -233,13 +236,13 @@ export const ResearchGroups: React.FC = () => {
           color: 'var(--on-error-container)', borderRadius: 'var(--radius-md)', marginBottom: '20px'
         }}>
           <AlertTriangle size={20} />
-          <span><strong>Error:</strong> {error}</span>
+          <span><strong>{t('common.error')}</strong> {error}</span>
           <button
             type="button"
             onClick={fetchGroups}
             style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
           >
-            <RefreshCcw size={15} /> Reintentar
+            <RefreshCcw size={15} /> {t('common.retry')}
           </button>
         </div>
       )}
@@ -256,7 +259,7 @@ export const ResearchGroups: React.FC = () => {
           <input
             id="search-groups"
             type="text"
-            placeholder="Buscar por nombre, código o coordinador..."
+            placeholder={t('groups.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{
@@ -281,14 +284,14 @@ export const ResearchGroups: React.FC = () => {
             backgroundColor: 'var(--surface)', color: 'var(--on-surface)', cursor: 'pointer', outline: 'none'
           }}
         >
-          <option value="all">Todos los estados</option>
-          <option value="active">Solo activos</option>
-          <option value="inactive">Solo inactivos</option>
+          <option value="all">{t('groups.filterAll')}</option>
+          <option value="active">{t('groups.filterActive')}</option>
+          <option value="inactive">{t('groups.filterInactive')}</option>
         </select>
 
         {/* Refresh */}
         <Button variant="secondary" onClick={fetchGroups} icon={<RefreshCcw size={15} />}>
-          Actualizar
+          {t('groups.btnUpdate')}
         </Button>
       </div>
 
@@ -303,7 +306,7 @@ export const ResearchGroups: React.FC = () => {
             onClick={() => setSearch('')}
             style={{ fontSize: '12px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
           >
-            × Limpiar búsqueda
+            {t('groups.clearSearch')}
           </button>
         )}
       </div>
@@ -320,10 +323,10 @@ export const ResearchGroups: React.FC = () => {
         }}>
           <Users size={48} style={{ color: 'var(--on-surface-variant)', opacity: 0.4, marginBottom: '16px' }} />
           <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--on-surface)', marginBottom: '8px' }}>
-            No se encontraron grupos
+            {t('groups.emptyTitle')}
           </p>
           <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)' }}>
-            {search ? 'Intenta con otros términos de búsqueda.' : 'Crea el primer grupo usando el botón "Nuevo Grupo".'}
+            {search ? t('groups.emptyWithSearch') : t('groups.emptyCreate')}
           </p>
         </div>
       ) : (
@@ -334,31 +337,26 @@ export const ResearchGroups: React.FC = () => {
                 <tr>
                   <th style={thStyle} onClick={() => handleSort('groupName')}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      Nombre <SortIcon field="groupName" />
+                      {t('groups.table.name')} <SortIcon field="groupName" />
                     </span>
                   </th>
                   <th style={thStyle} onClick={() => handleSort('groupCode')}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      Código <SortIcon field="groupCode" />
+                      {t('groups.table.code')} <SortIcon field="groupCode" />
                     </span>
                   </th>
-                  <th style={{ ...thStyle, cursor: 'default' }}>Coordinador</th>
+                  <th style={{ ...thStyle, cursor: 'default' }}>{t('groups.table.coordinator')}</th>
                   <th style={thStyle} onClick={() => handleSort('active')}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      Estado <SortIcon field="active" />
-                    </span>
-                  </th>
-                  <th style={thStyle} onClick={() => handleSort('memberCount')}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      Integrantes <SortIcon field="memberCount" />
+                      {t('groups.table.status')} <SortIcon field="active" />
                     </span>
                   </th>
                   <th style={thStyle} onClick={() => handleSort('createdAt')}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      Creado <SortIcon field="createdAt" />
+                      {t('groups.table.created')} <SortIcon field="createdAt" />
                     </span>
                   </th>
-                  <th style={{ ...thStyle, textAlign: 'right', cursor: 'default' }}>Acciones</th>
+                  <th style={{ ...thStyle, textAlign: 'right', cursor: 'default' }}>{t('groups.table.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -383,15 +381,12 @@ export const ResearchGroups: React.FC = () => {
                     <td style={{ ...tdStyle, color: group.currentCoordinatorId ? 'var(--on-surface)' : 'var(--on-surface-variant)', fontStyle: group.currentCoordinatorId ? 'normal' : 'italic' }}>
                       {group.currentCoordinatorId
                         ? `${group.coordinatorFirstNames ?? ''} ${group.coordinatorLastNames ?? ''}`.trim()
-                        : 'Sin coordinador'}
+                        : t('groups.table.noCoordinator')}
                     </td>
                     <td style={tdStyle}>
                       <Badge variant={group.active !== false ? 'success' : 'neutral'}>
-                        {group.active !== false ? 'Activo' : 'Inactivo'}
+                        {group.active !== false ? t('groups.table.active') : t('groups.table.inactive')}
                       </Badge>
-                    </td>
-                    <td style={{ ...tdStyle, textAlign: 'center' }}>
-                      <span style={{ fontWeight: 600 }}>{group.memberCount ?? '—'}</span>
                     </td>
                     <td style={{ ...tdStyle, color: 'var(--on-surface-variant)', fontSize: '13px' }}>
                       {formatDate(group.createdAt)}
@@ -409,7 +404,7 @@ export const ResearchGroups: React.FC = () => {
                             fontSize: '13px', fontWeight: 600, color: 'var(--primary)', transition: 'all 0.15s'
                           }}
                         >
-                          <Eye size={15} /> Ver
+                          <Eye size={15} /> {t('groups.btnView')}
                         </button>
                         <button
                           id={`btn-members-group-${group.id}`}
@@ -422,7 +417,7 @@ export const ResearchGroups: React.FC = () => {
                             fontSize: '13px', fontWeight: 600, color: 'var(--on-surface)', transition: 'all 0.15s'
                           }}
                         >
-                          <Users size={15} /> Miembros
+                          <Users size={15} /> {t('groups.btnMembers')}
                         </button>
                         <button
                           id={`btn-coordinator-group-${group.id}`}
@@ -435,7 +430,7 @@ export const ResearchGroups: React.FC = () => {
                             fontSize: '13px', fontWeight: 600, color: 'var(--on-surface)', transition: 'all 0.15s'
                           }}
                         >
-                          <UserCog size={15} /> Coordinador
+                          <UserCog size={15} /> {t('groups.btnCoordinator')}
                         </button>
                         {group.active !== false && (
                           <button
@@ -449,7 +444,7 @@ export const ResearchGroups: React.FC = () => {
                               fontSize: '13px', fontWeight: 600, color: 'var(--error)', transition: 'all 0.15s'
                             }}
                           >
-                            <UserX size={15} /> Desactivar
+                            <UserX size={15} /> {t('groups.btnDeactivate')}
                           </button>
                         )}
                       </div>
@@ -467,7 +462,11 @@ export const ResearchGroups: React.FC = () => {
             backgroundColor: 'var(--surface-container-low)', flexWrap: 'wrap', gap: '12px'
           }}>
             <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>
-              Mostrando {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+              {t('groups.pagination.showing', {
+                from: (page - 1) * PAGE_SIZE + 1,
+                to: Math.min(page * PAGE_SIZE, filtered.length),
+                total: filtered.length
+              })}
             </span>
             <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
               <button

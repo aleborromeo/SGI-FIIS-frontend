@@ -1,64 +1,44 @@
+import type { TFunction } from 'i18next';
 import type { BadgeProps } from '../components/ui/Badge';
 import type { EstadoObservacion, EstadoTramite, TipoObservacion, TipoTramite } from '../types/tramites';
 
 type BadgeVariant = NonNullable<BadgeProps['variant']>;
 
-const ESTADO_TRAMITE_UI: Record<EstadoTramite, { label: string; variant: BadgeVariant }> = {
-  REGISTRADO: { label: 'Registrado', variant: 'neutral' },
-  PENDIENTE_COORDINADOR: { label: 'Pendiente de Coordinador', variant: 'warning' },
-  PENDIENTE_DIRECCION: { label: 'Pendiente de Dirección', variant: 'warning' },
-  PENDIENTE_DECANATO: { label: 'Pendiente de Decanato', variant: 'warning' },
-  OBSERVADO: { label: 'Observado', variant: 'error' },
-  SUBSANADO: { label: 'Subsanado', variant: 'info' },
-  APROBADO_CON_RESOLUCION: { label: 'Aprobado con Resolución', variant: 'success' },
-  FINALIZADO: { label: 'Finalizado', variant: 'success' },
-  RECHAZADO: { label: 'Rechazado', variant: 'error' },
+const ESTADO_TRAMITE_VARIANTS: Record<EstadoTramite, BadgeVariant> = {
+  REGISTRADO: 'neutral',
+  PENDIENTE_COORDINADOR: 'warning',
+  PENDIENTE_DIRECCION: 'warning',
+  PENDIENTE_DECANATO: 'warning',
+  OBSERVADO: 'error',
+  SUBSANADO: 'info',
+  APROBADO_CON_RESOLUCION: 'success',
+  FINALIZADO: 'success',
+  RECHAZADO: 'error',
 };
 
-const TIPO_TRAMITE_LABEL: Record<TipoTramite, string> = {
-  PROYECTO: 'Proyecto de Investigación',
-  PLAN_TESIS: 'Plan de Tesis',
-  INFORME_AVANCE: 'Informe de Avance',
+const ESTADO_OBSERVACION_VARIANTS: Record<EstadoObservacion, BadgeVariant> = {
+  PENDIENTE: 'warning',
+  SUBSANADA: 'success',
+  VIGENTE: 'error',
 };
 
-const TIPO_OBSERVACION_LABEL: Record<TipoObservacion, string> = {
-  TECNICA: 'Técnica',
-  DOCUMENTAL: 'Documental',
-  PRESUPUESTAL: 'Presupuestal',
-  FORMATO: 'Formato',
-};
-
-const ESTADO_OBSERVACION_UI: Record<EstadoObservacion, { label: string; variant: BadgeVariant }> = {
-  PENDIENTE: { label: 'Pendiente', variant: 'warning' },
-  SUBSANADA: { label: 'Subsanada', variant: 'success' },
-  VIGENTE: { label: 'Vigente', variant: 'error' },
-};
-
-const ROL_LABEL: Record<string, string> = {
-  ESTUDIANTE: 'Estudiante / Tesista',
-  DOCENTE_INVESTIGADOR: 'Docente Investigador',
-  COORDINADOR_GRUPO: 'Coordinador de Grupo',
-  DIRECTOR_INVESTIGACION: 'Director de Investigación',
-  DECANO: 'Decano',
-};
-
-export const getEstadoTramiteLabel = (estado: EstadoTramite): string =>
-  ESTADO_TRAMITE_UI[estado]?.label ?? estado;
+export const getEstadoTramiteLabel = (estado: EstadoTramite, t: TFunction): string =>
+  t(`tramites:estadosTramite.${estado}`, { defaultValue: estado });
 
 export const getEstadoTramiteVariant = (estado: EstadoTramite): BadgeVariant =>
-  ESTADO_TRAMITE_UI[estado]?.variant ?? 'neutral';
+  ESTADO_TRAMITE_VARIANTS[estado] ?? 'neutral';
 
-export const getTipoTramiteLabel = (tipo: TipoTramite): string =>
-  TIPO_TRAMITE_LABEL[tipo] ?? tipo;
+export const getTipoTramiteLabel = (tipo: TipoTramite, t: TFunction): string =>
+  t(`tramites:tiposTramite.${tipo}`, { defaultValue: tipo });
 
-export const getTipoObservacionLabel = (tipo: TipoObservacion): string =>
-  TIPO_OBSERVACION_LABEL[tipo] ?? tipo;
+export const getTipoObservacionLabel = (tipo: TipoObservacion, t: TFunction): string =>
+  t(`tramites:tiposObservacion.${tipo}`, { defaultValue: tipo });
 
-export const getEstadoObservacionLabel = (estado: EstadoObservacion): string =>
-  ESTADO_OBSERVACION_UI[estado]?.label ?? estado;
+export const getEstadoObservacionLabel = (estado: EstadoObservacion, t: TFunction): string =>
+  t(`tramites:estadosObservacion.${estado}`, { defaultValue: estado });
 
 export const getEstadoObservacionVariant = (estado: EstadoObservacion): BadgeVariant =>
-  ESTADO_OBSERVACION_UI[estado]?.variant ?? 'neutral';
+  ESTADO_OBSERVACION_VARIANTS[estado] ?? 'neutral';
 
-export const getRolLabel = (rol: string | null): string =>
-  (rol && ROL_LABEL[rol]) || '—';
+export const getRolLabel = (rol: string | null, t: TFunction): string =>
+  (rol && t(`admin:users.roles.${rol}`, { defaultValue: '—' })) || '—';

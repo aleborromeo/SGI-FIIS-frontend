@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import './LoginPage.css'; // Reutilizamos los estilos premium del login
@@ -7,6 +8,7 @@ import frontisBg from '../../assets/images/frontis_fiis.png';
 import userSesionIcon from '../../assets/images/user-sesion.jpg';
 
 export const ChangePasswordPage: React.FC = () => {
+  const { t } = useTranslation('auth');
   const { logout, completeRegistration } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -41,42 +43,42 @@ export const ChangePasswordPage: React.FC = () => {
     setSuccessMsg(null);
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setErrorMsg('Todos los campos son obligatorios.');
+      setErrorMsg(t('auth:changePassword.validation.allFieldsRequired'));
       return;
     }
 
     if (newPassword.length < 6 || newPassword.length > 12) {
-      setErrorMsg('La contraseña debe tener entre 6 y 12 caracteres.');
+      setErrorMsg(t('auth:changePassword.validation.passwordLength'));
       return;
     }
 
     if (!/[A-Z]/.test(newPassword)) {
-      setErrorMsg('La contraseña debe contener al menos una letra mayúscula.');
+      setErrorMsg(t('auth:changePassword.validation.passwordUppercase'));
       return;
     }
 
     if (!/[a-z]/.test(newPassword)) {
-      setErrorMsg('La contraseña debe contener al menos una letra minúscula.');
+      setErrorMsg(t('auth:changePassword.validation.passwordLowercase'));
       return;
     }
 
     if (!/\d/.test(newPassword)) {
-      setErrorMsg('La contraseña debe contener al menos un número.');
+      setErrorMsg(t('auth:changePassword.validation.passwordNumber'));
       return;
     }
 
     if (!/[^A-Za-z0-9]/.test(newPassword)) {
-      setErrorMsg('La contraseña debe contener al menos un símbolo (ej. !, @, #, $, %, etc.).');
+      setErrorMsg(t('auth:changePassword.validation.passwordSymbol'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorMsg('Las contraseñas no coinciden');
+      setErrorMsg(t('auth:changePassword.validation.passwordMismatch'));
       return;
     }
 
     if (newPassword === currentPassword) {
-      setErrorMsg('La nueva contraseña no puede ser igual a la contraseña actual.');
+      setErrorMsg(t('auth:changePassword.validation.samePassword'));
       return;
     }
 
@@ -88,7 +90,7 @@ export const ChangePasswordPage: React.FC = () => {
         newPassword
       });
 
-      setSuccessMsg('Contraseña actualizada con éxito. Redirigiendo...');
+      setSuccessMsg(t('auth:changePassword.success.passwordChanged'));
 
       // Actualizar el estado del usuario localmente para quitar la bandera mustChangePassword
       const storedToken = localStorage.getItem('sgi_token');
@@ -117,7 +119,7 @@ export const ChangePasswordPage: React.FC = () => {
       }, 2000);
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || 'Error al cambiar la contraseña. Verifique sus datos.');
+      setErrorMsg(err.message || t('auth:changePassword.error.changeFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -142,10 +144,10 @@ export const ChangePasswordPage: React.FC = () => {
           <div className="login-card-header">
             <img src={userSesionIcon} alt="Logo" className="login-logo-img" />
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a365d', marginTop: '0.5rem' }}>
-              Cambio de Contraseña Obligatorio
+              {t('auth:changePassword.title')}
             </h2>
             <p className="login-logo-subtitle" style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-              Por seguridad, debe actualizar su contraseña temporal antes de continuar.
+              {t('auth:changePassword.subtitle')}
             </p>
           </div>
 
@@ -166,7 +168,7 @@ export const ChangePasswordPage: React.FC = () => {
 
             {/* Input Contraseña Actual */}
             <div className="form-group">
-              <label htmlFor="currentPassword" className="form-label">Contraseña actual</label>
+              <label htmlFor="currentPassword" className="form-label">{t('auth:changePassword.currentPasswordLabel')}</label>
               <div className="input-group-custom">
                 <span className="input-icon-left">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -177,7 +179,7 @@ export const ChangePasswordPage: React.FC = () => {
                   type={showCurrentPassword ? 'text' : 'password'}
                   id="currentPassword"
                   className="form-input-custom"
-                  placeholder="Ingrese su contraseña actual"
+                  placeholder={t('auth:changePassword.currentPasswordPlaceholder')}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   disabled={isSubmitting}
@@ -204,7 +206,7 @@ export const ChangePasswordPage: React.FC = () => {
 
             {/* Input Nueva Contraseña */}
             <div className="form-group">
-              <label htmlFor="newPassword" className="form-label">Nueva contraseña</label>
+              <label htmlFor="newPassword" className="form-label">{t('auth:changePassword.newPasswordLabel')}</label>
               <div className="input-group-custom">
                 <span className="input-icon-left">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -215,7 +217,7 @@ export const ChangePasswordPage: React.FC = () => {
                   type={showNewPassword ? 'text' : 'password'}
                   id="newPassword"
                   className="form-input-custom"
-                  placeholder="De 6 a 12 caracteres"
+                  placeholder={t('auth:changePassword.newPasswordPlaceholder')}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   disabled={isSubmitting}
@@ -242,7 +244,7 @@ export const ChangePasswordPage: React.FC = () => {
 
             {/* Input Confirmar Contraseña */}
             <div className="form-group">
-              <label htmlFor="confirmPassword" className="form-label">Confirmar nueva contraseña</label>
+              <label htmlFor="confirmPassword" className="form-label">{t('auth:changePassword.confirmPasswordLabel')}</label>
               <div className="input-group-custom">
                 <span className="input-icon-left">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -253,7 +255,7 @@ export const ChangePasswordPage: React.FC = () => {
                   type={showConfirmPassword ? 'text' : 'password'}
                   id="confirmPassword"
                   className="form-input-custom"
-                  placeholder="Repita su nueva contraseña"
+                  placeholder={t('auth:changePassword.confirmPasswordPlaceholder')}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={isSubmitting}
@@ -286,7 +288,7 @@ export const ChangePasswordPage: React.FC = () => {
                 onClick={handleCancel}
                 disabled={isSubmitting}
               >
-                Cancelar
+                {t('auth:changePassword.cancel')}
               </button>
               <button
                 type="submit"
@@ -297,7 +299,7 @@ export const ChangePasswordPage: React.FC = () => {
                 {isSubmitting ? (
                   <span className="btn-spinner"></span>
                 ) : (
-                  <span>Actualizar</span>
+                  <span>{t('auth:changePassword.submit')}</span>
                 )}
               </button>
             </div>
@@ -305,7 +307,7 @@ export const ChangePasswordPage: React.FC = () => {
         </div>
 
         <div className="login-card-footer">
-          <p>© 2026 SGI - Universidad Nacional Agraria de la Selva</p>
+          <p>{t('auth:changePassword.footer')}</p>
         </div>
       </div>
     </div>

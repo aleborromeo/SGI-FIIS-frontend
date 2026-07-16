@@ -1,0 +1,650 @@
+{
+  "welcome": {
+    "title": "Welcome, {{name}}!",
+    "subtitle": "Here's a summary of your recent activity",
+    "role": "Role: {{role}}"
+  },
+  "stats": {
+    "totalProjects": "Total Projects",
+    "activeProjects": "Active Projects",
+    "pendingObservations": "Pending Observations",
+    "pendingReports": "Pending Reports",
+    "recentActivity": "Recent Activity",
+    "myTasks": "My Tasks",
+    "myAssignments": "My Assignments",
+    "mySubmissions": "My Submissions",
+    "myApprovals": "My Approvals",
+    "totalThesis": "Total Thesis",
+    "activeThesis": "Active Thesis",
+    "completedThesis": "Completed Thesis",
+    "pendingThesis": "Pending Thesis",
+    "totalUsers": "Total Users",
+    "activeUsers": "Active Users",
+    "totalGroups": "Total Groups",
+    "activeGroups": "Active Groups",
+    "totalLines": "Total Lines",
+    "activeLines": "Active Lines",
+    "documentsUploaded": "Documents Uploaded",
+    "documentsPending": "Pending Documents",
+    "tramitesInProgress": "Procedures in Progress",
+    "tramitesCompleted": "Completed Procedures",
+    "convocatoriasActive": "Active Calls",
+    "proposalsPending": "Pending Proposals"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "sectionTitle": "Quick Access",
+    "sectionSubtitle": "Operational shortcuts based on your role in the system.",
+    "newProject": "New Project",
+    "newThesis": "New Thesis",
+    "newTramite": "New Procedure",
+    "newReport": "New Report",
+    "uploadDocument": "Upload Document",
+    "viewObservations": "View Observations",
+    "viewProjects": "View Projects",
+    "viewThesis": "View Thesis",
+    "viewTramites": "View Procedures",
+    "viewReports": "View Reports",
+    "viewDocuments": "View Documents",
+    "searchAll": "Search All",
+    "generateReport": "Generate Report",
+    "exportData": "Export Data",
+    "admin": {
+      "manageProjects": "Manage projects",
+      "manageProjectsDesc": "View registered projects and their current status.",
+      "assignReviewers": "Assign reviewers",
+      "assignReviewersDesc": "Route projects or procedures for evaluation.",
+      "reviewReports": "Review reports",
+      "reviewReportsDesc": "Supervise pending progress reports.",
+      "projectAudit": "Project audit",
+      "projectAuditDesc": "Review traceability and process changes."
+    },
+    "evaluator": {
+      "myEvaluations": "My evaluations",
+      "myEvaluationsDesc": "Review assigned and pending evaluations.",
+      "evaluateProject": "Evaluate project",
+      "evaluateProjectDesc": "Record results, scores, or observations.",
+      "observations": "Observations",
+      "observationsDesc": "View observations made or received."
+    },
+    "teacher": {
+      "myProjects": "My projects",
+      "myProjectsDesc": "View projects where you participate as lead or member.",
+      "newProposal": "New proposal",
+      "newProposalDesc": "Register a new research proposal.",
+      "myObservations": "My observations",
+      "myObservationsDesc": "Review observations associated with your procedures."
+    },
+    "coordinator": {
+      "groupProjects": "Group projects",
+      "groupProjectsDesc": "Supervise projects linked to the research group.",
+      "groupReports": "Group reports",
+      "groupReportsDesc": "Review progress and information submitted by members.",
+      "observations": "Observations",
+      "observationsDesc": "Address group procedure observations."
+    },
+    "director": {
+      "institutionalProjects": "Institutional projects",
+      "institutionalProjectsDesc": "View projects registered in the faculty.",
+      "pendingReports": "Pending reports",
+      "pendingReportsDesc": "View reports requiring hierarchical review.",
+      "traceability": "Traceability",
+      "traceabilityDesc": "View process tracking and auditing."
+    },
+    "student": {
+      "myThesisPlans": "My Thesis Plans",
+      "myThesisPlansDesc": "View the status and traceability of your thesis proposals.",
+      "registerThesisPlan": "Register Thesis Plan",
+      "registerThesisPlanDesc": "Start the submission of an academic thesis plan.",
+      "myObservations": "My observations",
+      "myObservationsDesc": "View observations pending attention."
+    },
+    "default": {
+      "viewProjects": "View projects",
+      "viewProjectsDesc": "View available system information."
+    }
+  },
+  "alertTypes": {
+    "REVIEW": "Review",
+    "WARNING": "Warning",
+    "ERROR": "Error",
+    "INFO": "Information",
+    "SUCCESS": "Correct"
+  },
+  "alertTitles": {
+    "pendingProcedures": "Pending procedures",
+    "pendingAttention": "Pending attention",
+    "reviewPending": "Review pending"
+  },
+  "alerts": {
+    "noAlerts": "You have no notifications or pending alerts at this time."
+  },
+  "admin": {
+    "title": "Administrator general dashboard",
+    "subtitle": "Macro institutional indicators for users, groups, projects, and system procedures.",
+    "metrics": {
+      "registeredUsers": "Registered users",
+      "activeUsersSuffix": "active users",
+      "researchGroups": "Research groups",
+      "activeGroupsSuffix": "active groups",
+      "institutionalProjects": "Institutional projects",
+      "activeProjectsSuffix": "active projects",
+      "activeProcedures": "Active procedures",
+      "activeProceduresSublabel": "Pending or under review in the system"
+    },
+    "sections": {
+      "procedureIndicators": "Institutional procedure indicators",
+      "macroView": "Institutional macro view",
+      "macroViewDesc": "Consolidated information for general system administration.",
+      "alerts": "Institutional alerts"
+    },
+    "procedures": {
+      "underReview": "Procedures under review",
+      "approved": "Approved procedures",
+      "pending": "Pending procedures",
+      "rejected": "Rejected procedures"
+    }
+  },
+  "student": {
+    "title": "Student / thesis portal",
+    "subtitle": "Monitoring of thesis plans, procedures, and academic calls.",
+    "metrics": {
+      "thesisPlansSubmitted": "Thesis plans submitted",
+      "currentStatusLabel": "Current status:",
+      "currentStatusNone": "None",
+      "proceduresInProgress": "Procedures in progress",
+      "realTimeTracking": "Real-time tracking",
+      "uploadedDocuments": "Uploaded documents",
+      "platformFiles": "Files attached to the platform",
+      "openCalls": "Open calls",
+      "activeOpportunities": "Active research opportunities"
+    },
+    "sections": {
+      "affiliation": "Affiliation information",
+      "notifications": "My notifications"
+    },
+    "affiliation": {
+      "noGroup": "No group assigned",
+      "groupCode": "Group code:",
+      "description": "Procedures and thesis plans are routed to the research group coordinator for initial review when applicable."
+    }
+  },
+  "teacher": {
+    "title": "Researcher teacher dashboard",
+    "subtitlePart1": "Personalized summary of projects, documents, procedures, and reports.",
+    "groupLabel": "Group:",
+    "pendingGroup": "Group pending assignment",
+    "groupCode": "Group code:",
+    "metrics": {
+      "registeredProjects": "My registered projects",
+      "asLeadAnd": "as lead and",
+      "asMember": "as member",
+      "myDocuments": "My documents",
+      "myDocumentsSublabel": "Documents uploaded by the researcher teacher",
+      "myProceduresInProgress": "My procedures in progress",
+      "myProceduresInProgressSublabel": "Procedures pending attention or review",
+      "myReportsSubmitted": "My submitted reports",
+      "myReportsSubmittedSublabel": "Progress reports registered or pending follow-up"
+    },
+    "sections": {
+      "groupAndProjects": "Research group and my projects",
+      "alerts": "My alerts"
+    },
+    "affiliation": {
+      "description": "This view shows only information linked to the authenticated teacher and their research group."
+    },
+    "projects": {
+      "submitted": "Submitted projects",
+      "approved": "Approved projects",
+      "inExecution": "Projects in execution",
+      "completed": "Completed projects"
+    }
+  },
+  "coordinator": {
+    "title": "Group coordinator dashboard",
+    "subtitlePrefix": "Information restricted to the group",
+    "groupCode": "Group code:",
+    "metrics": {
+      "groupMembers": "My group members",
+      "activeMembersSuffix": "active members",
+      "groupProjects": "My group projects",
+      "activeProjectsSuffix": "active projects",
+      "groupProcedures": "My group procedures",
+      "groupProceduresSublabel": "Pending coordinator review",
+      "groupReports": "My group reports",
+      "associatedThesisPlans": "associated thesis plans"
+    },
+    "sections": {
+      "procedureControl": "Group procedure control",
+      "alerts": "My group alerts"
+    },
+    "affiliation": {
+      "noGroup": "Unidentified group",
+      "description": "The coordinator sees only members, projects, procedures, and reports corresponding to their own research group."
+    },
+    "procedures": {
+      "submitted": "Submitted procedures",
+      "underReview": "Procedures under review",
+      "approved": "Approved procedures",
+      "observed": "Observed procedures"
+    }
+  },
+  "director": {
+    "title": "Research director institutional dashboard",
+    "subtitle": "Institutional consolidation of projects, research groups, active procedures, and calls.",
+    "metrics": {
+      "researchProjects": "Research projects",
+      "activeProjectsSuffix": "active projects",
+      "researchGroups": "Research groups",
+      "researchGroupsSublabel": "Consolidated information by institutional groups",
+      "activeProcedures": "Active procedures",
+      "pendingReviewSuffix": "pending review",
+      "calls": "Calls",
+      "callsSublabel": "Current calls for research"
+    },
+    "sections": {
+      "procedureDistribution": "Institutional procedure distribution",
+      "institutionalView": "Consolidated institutional view",
+      "institutionalViewDesc": "The director views global information for academic and institutional oversight.",
+      "notifications": "Institutional notifications"
+    },
+    "procedures": {
+      "withCoordinator": "Procedures with coordinator",
+      "withDirector": "Procedures with director",
+      "withDean": "Procedures with dean",
+      "completed": "Completed procedures"
+    }
+  },
+  "dean": {
+    "title": "Faculty dean's office console",
+    "subtitle": "Institutional oversight, final resolutions, and management reports.",
+    "metrics": {
+      "facultyProjects": "Faculty projects",
+      "activeProjectsSuffix": "active projects",
+      "pendingSignatureProcedures": "Procedures pending signature",
+      "pendingSignatureSublabel": "Awaiting dean's resolution",
+      "issuedResolutions": "Issued resolutions",
+      "issuedResolutionsSublabel": "Historical administrative signatures",
+      "activeResearchGroups": "Active research groups",
+      "activeCallsSuffix": "current calls"
+    },
+    "sections": {
+      "monthlyStats": "Dean's office monthly statistics",
+      "notifications": "Dean's notifications"
+    },
+    "procedures": {
+      "waiting": "Procedures waiting",
+      "approvedThisMonth": "Approved this month",
+      "rejectedThisMonth": "Rejected or returned this month"
+    }
+  },
+  "evaluator": {
+    "title": "Evaluator dashboard",
+    "subtitlePart1": "Dashboard focused on assigned projects and evaluations.",
+    "groupLabel": "Group:",
+    "pendingGroup": "Group pending assignment",
+    "groupCode": "Group code:",
+    "metrics": {
+      "assignedProjects": "Assigned projects",
+      "assignedThesisPlansSuffix": "assigned thesis plans",
+      "pendingEvaluations": "Pending evaluations",
+      "pendingEvaluationsSublabel": "Assigned evaluations to address",
+      "completedEvaluations": "Completed evaluations",
+      "completedEvaluationsSublabel": "Results recorded by the evaluator",
+      "observationsIssued": "Observations issued",
+      "observationsIssuedSublabel": "Evaluations returned with observations"
+    },
+    "sections": {
+      "groupAndEvaluations": "Research group and my evaluations",
+      "notifications": "My notifications"
+    },
+    "affiliation": {
+      "description": "This view shows only projects and evaluations assigned to the authenticated evaluator."
+    },
+    "evaluations": {
+      "approved": "Approved evaluations",
+      "rejected": "Rejected evaluations",
+      "pending": "Pending evaluations"
+    }
+  },
+  "metricsPage": {
+    "eyebrow": "Metrics and reports",
+    "title": "Institutional indicators",
+    "description": "Analytical view built with real indicators returned by the backend for the current role.",
+    "currentRole": "Current role:",
+    "roleUndefined": "Not defined",
+    "distribution": {
+      "title": "Indicator distribution",
+      "description": "Proportional comparison between available values."
+    },
+    "byCategory": {
+      "title": "Indicators by category",
+      "description": "Grouping by type of institutional information.",
+      "count": "{{count}} indicator(s) available"
+    },
+    "table": {
+      "title": "Available metrics detail",
+      "description": "Numeric fields received from the backend for the current role dashboard.",
+      "indicator": "Indicator",
+      "category": "Category",
+      "value": "Value",
+      "descriptionCol": "Description"
+    },
+    "metricDefs": {
+      "totalUsers": {
+        "label": "Registered users",
+        "description": "Total number of users registered in the system."
+      },
+      "totalActiveUsers": {
+        "label": "Active users",
+        "description": "Currently enabled or active users."
+      },
+      "totalGroups": {
+        "label": "Research groups",
+        "description": "Total number of registered groups."
+      },
+      "totalActiveGroups": {
+        "label": "Active groups",
+        "description": "Active research groups."
+      },
+      "totalProjects": {
+        "label": "Registered projects",
+        "description": "Total registered projects."
+      },
+      "activeProjects": {
+        "label": "Active projects",
+        "description": "Projects currently in execution or monitoring."
+      },
+      "pendingProcedures": {
+        "label": "Pending procedures",
+        "description": "Procedures pending attention."
+      },
+      "proceduresUnderReview": {
+        "label": "Procedures under review",
+        "description": "Procedures currently in the review process."
+      },
+      "approvedProcedures": {
+        "label": "Approved procedures",
+        "description": "Procedures approved through the corresponding workflow."
+      },
+      "rejectedProcedures": {
+        "label": "Rejected procedures",
+        "description": "Procedures rejected or observed as non-compliant."
+      },
+      "issuedResolutions": {
+        "label": "Issued resolutions",
+        "description": "Registered administrative resolutions."
+      },
+      "fallback": {
+        "description": "Indicator returned by the backend."
+      }
+    },
+    "categories": {
+      "Usuarios": "Users",
+      "Proyectos": "Projects",
+      "Trámites": "Procedures",
+      "Resoluciones": "Resolutions",
+      "Otros": "Others"
+    }
+  },
+  "dashboardContainer": {
+    "openMenu": "Open menu",
+    "footer": "© 2026 Research Management System FIIS - National Agrarian University of the Jungle"
+  },
+  "recentActivity": {
+    "title": "Recent Activity",
+    "noActivity": "No recent activity",
+    "viewAll": "View All Activity",
+    "projectUpdate": "Project Update",
+    "observationReceived": "Observation Received",
+    "reportSubmitted": "Report Submitted",
+    "tramiteUpdate": "Procedure Update",
+    "thesisUpdate": "Thesis Update",
+    "documentUploaded": "Document Uploaded",
+    "userCreated": "User Created",
+    "groupCreated": "Group Created",
+    "lineCreated": "Line Created",
+    "resolutionApproved": "Resolution Approved",
+    "convocatoriaCreated": "Call Created",
+    "proposalSubmitted": "Proposal Submitted"
+  },
+  "tasks": {
+    "title": "My Tasks",
+    "noTasks": "You have no pending tasks",
+    "viewAll": "View All Tasks",
+    "overdue": "Overdue",
+    "dueSoon": "Due Soon",
+    "inProgress": "In Progress",
+    "pending": "Pending",
+    "completed": "Completed",
+    "taskDue": "Task due on {{date}}",
+    "taskOverdue": "Task overdue since {{date}}",
+    "daysRemaining": "{{days}} days remaining",
+    "hoursRemaining": "{{hours}} hours remaining",
+    "minutesRemaining": "{{minutes}} minutes remaining"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "No notifications",
+    "viewAll": "View All Notifications",
+    "markAllRead": "Mark All as Read",
+    "unread": "Unread",
+    "read": "Read",
+    "archive": "Archived",
+    "notificationTypes": {
+      "projectUpdate": "Project Update",
+      "observation": "Observation",
+      "report": "Report",
+      "tramite": "Procedure",
+      "thesis": "Thesis",
+      "document": "Document",
+      "user": "User",
+      "group": "Group",
+      "line": "Line",
+      "resolution": "Resolution",
+      "convocatoria": "Call",
+      "proposal": "Proposal",
+      "system": "System",
+      "reminder": "Reminder",
+      "deadline": "Deadline",
+      "approval": "Approval",
+      "rejection": "Rejection"
+    }
+  },
+  "charts": {
+    "title": "Charts and Statistics",
+    "projectsByStatus": "Projects by Status",
+    "projectsByMonth": "Projects by Month",
+    "thesisByStatus": "Thesis by Status",
+    "thesisByMonth": "Thesis by Month",
+    "tramitesByStatus": "Procedures by Status",
+    "tramitesByMonth": "Procedures by Month",
+    "documentsByType": "Documents by Type",
+    "documentsByMonth": "Documents by Month",
+    "usersByRole": "Users by Role",
+    "usersByMonth": "Users by Month",
+    "groupsByFaculty": "Groups by Faculty",
+    "groupsByMonth": "Groups by Month",
+    "linesByGroup": "Lines by Group",
+    "linesByMonth": "Lines by Month",
+    "observationsByStatus": "Observations by Status",
+    "observationsByMonth": "Observations by Month",
+    "reportsByStatus": "Reports by Status",
+    "reportsByMonth": "Reports by Month",
+    "convocatoriasByStatus": "Calls by Status",
+    "convocatoriasByMonth": "Calls by Month",
+    "proposalsByStatus": "Proposals by Status",
+    "proposalsByMonth": "Proposals by Month",
+    "noData": "No data available for this chart"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "today": "Today",
+    "upcoming": "Upcoming Events",
+    "noEvents": "No events scheduled",
+    "viewAll": "View All Events",
+    "addEvent": "Add Event",
+    "editEvent": "Edit Event",
+    "deleteEvent": "Delete Event",
+    "eventDetails": "Event Details",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "location": "Location",
+    "participants": "Participants",
+    "organizer": "Organizer",
+    "description": "Description",
+    "reminder": "Reminder",
+    "recurring": "Recurring",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly"
+  },
+  "announcements": {
+    "title": "Announcements",
+    "noAnnouncements": "No recent announcements",
+    "viewAll": "View All Announcements",
+    "publishAnnouncement": "Publish Announcement",
+    "editAnnouncement": "Edit Announcement",
+    "deleteAnnouncement": "Delete Announcement",
+    "announcementDetails": "Announcement Details",
+    "title_": "Title",
+    "content": "Content",
+    "author": "Author",
+    "publishDate": "Publish Date",
+    "expires": "Expires on",
+    "priority": "Priority",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "targetAudience": "Target Audience",
+    "allUsers": "All Users",
+    "specificRoles": "Specific Roles",
+    "specificGroups": "Specific Groups"
+  },
+  "help": {
+    "title": "Help and Support",
+    "faq": "Frequently Asked Questions",
+    "documentation": "Documentation",
+    "tutoriales": "Tutorials",
+    "contactSupport": "Contact Support",
+    "reportIssue": "Report Issue",
+    "feedback": "Send Feedback",
+    "userGuide": "User Guide",
+    "videoTutorials": "Video Tutorials",
+    "releaseNotes": "Release Notes",
+    "changelog": "Changelog",
+    "version": "Version {{version}}",
+    "lastUpdated": "Last updated: {{date}}"
+  },
+  "footer": {
+    "copyright": "© 2026 Faculty of Industrial and Systems Engineering",
+    "terms": "Terms and Conditions",
+    "privacy": "Privacy Policy",
+    "accessibility": "Accessibility",
+    "contact": "Contact",
+    "help": "Help",
+    "about": "About",
+    "version": "Version {{version}}"
+  },
+  "evaluations": {
+    "inboxTitle": "Evaluations Inbox",
+    "inboxSubtitle": "Files assigned for evaluation. Investigator data is confidential.",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "pendingCount_one": "{{count}} pending",
+    "pendingCount_other": "{{count}} pending",
+    "anonymousProcess": "Anonymous process:",
+    "anonymousProcessDesc": "For process integrity, the investigator's name, research group, and professional school are not displayed.",
+    "searchPlaceholder": "Search by code or call...",
+    "allStatuses": "All statuses",
+    "thCode": "File Code",
+    "thCall": "Call",
+    "thStatus": "Status",
+    "thDateAssigned": "Assignment Date",
+    "thDeadline": "Deadline",
+    "thAction": "Action",
+    "evaluate": "Evaluate",
+    "completed": "Completed",
+    "noResultsFiltered": "No evaluations found with those filters",
+    "noEvaluations": "You have no assigned evaluations",
+    "tryOtherFilters": "Try different search criteria.",
+    "assignedLater": "When files are assigned to you, they will appear here.",
+    "loadError": "Error loading evaluations",
+    "statusPending": "Pending",
+    "statusInReview": "In review",
+    "statusCompleted": "Completed",
+    "statusSent": "Sent",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "statusWithObs": "With observations",
+    "daysOverdue": "Overdue by {{days}}d",
+    "daysRemaining_one": "{{days}}d remaining",
+    "daysRemaining_other": "{{days}}d remaining",
+    "formTitle": "Evaluation Form",
+    "fileLabel": "File:",
+    "callLabel": "Call:",
+    "projectTechnicalInfo": "Project Technical Information",
+    "titleLabel": "Title",
+    "callInfoLabel": "Call",
+    "summaryLabel": "Summary",
+    "generalObjectiveLabel": "General Objective",
+    "totalBudgetLabel": "Total Budget",
+    "durationLabel": "Duration",
+    "months": "months",
+    "totalCalculatedScore": "Total Calculated Score",
+    "evaluationCriteriaTitle": "Evaluation Criteria",
+    "scoreMax": "Score (max. {{max}}):",
+    "criterionRequired": "This criterion is required",
+    "scoreMustBeBetween": "Score must be between 0 and {{max}}",
+    "criterionObsPlaceholder": "Observation about this criterion (optional)",
+    "generalObservations": "General Observations",
+    "generalObservationsPlaceholder": "General comments about the evaluated project...",
+    "recommendations": "Recommendations",
+    "recommendationsPlaceholder": "Recommendations to improve the project...",
+    "finalDictamen": "Final Verdict",
+    "dictamenRequired": "Select a verdict",
+    "dictamenApproved": "✓ Approved",
+    "dictamenApprovedWithObs": "⚠ Approved with observations",
+    "dictamenRejected": "✗ Rejected",
+    "cancel": "Cancel",
+    "submitting": "Submitting…",
+    "submitEvaluation": "Submit Evaluation",
+    "validationError": "Complete all criteria and select a verdict before submitting.",
+    "submitSuccess": "Evaluation submitted successfully",
+    "submitError": "Error submitting the evaluation"
+  },
+  "directorEvaluations": {
+    "title": "Global Evaluation Monitoring",
+    "subtitle": "Review and track evaluations assigned to research projects and thesis plans.",
+    "refresh": "Refresh",
+    "searchPlaceholder": "Search by evaluation ID or file...",
+    "statusLabel": "Status:",
+    "allStatuses": "All statuses",
+    "pendingPlural": "Pending",
+    "approvedPlural": "Approved",
+    "rejectedPlural": "Rejected",
+    "withObservations": "With observations",
+    "noResults": "No evaluations found",
+    "thEvalId": "Evaluation ID",
+    "thFileCode": "File Code",
+    "thDateAssigned": "Assignment Date",
+    "thDictamen": "Verdict / Result",
+    "thScore": "Score",
+    "thActions": "Actions",
+    "anonymousFile": "Anonymous File",
+    "detail": "Detail",
+    "detailTitle": "Evaluation Detail",
+    "fileCode": "File Code:",
+    "anonymous": "Anonymous",
+    "dictamenLabel": "Verdict:",
+    "totalScoreLabel": "Total Score:",
+    "points": "points",
+    "evalDateLabel": "Evaluation Date:",
+    "evaluatorObsLabel": "Evaluator Observations:",
+    "noObs": "No observations recorded.",
+    "close": "Close",
+    "loadError": "Error fetching the evaluations list.",
+    "detailLoadError": "Error fetching evaluation details."
+  }
+}

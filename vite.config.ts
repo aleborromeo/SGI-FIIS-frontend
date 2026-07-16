@@ -25,6 +25,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    setupFiles: ['./src/test-i18n.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

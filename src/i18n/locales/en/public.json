@@ -1,0 +1,357 @@
+{
+  "nav": {
+    "home": "Home",
+    "news": "News",
+    "convocatorias": "Announcements",
+    "reconocimiento": "Recognition",
+    "congresos": "Congresses",
+    "aboutUs": "About us",
+    "quienesSomos": "Who we are",
+    "lineasInvestigacion": "Research lines",
+    "grupos": "Groups",
+    "contacto": "Contact",
+    "correo": "Email",
+    "whatsapp": "WhatsApp",
+    "submitResearch": "Submit your research",
+    "login": "Log In",
+    "changeLanguage": "Change language"
+  },
+  "hero": {
+    "slide1Line1": "Research Management",
+    "slide1Line2": "System",
+    "slide1Highlight": "SGI-FIIS",
+    "slide1Description": "Manage, coordinate, and monitor your academic research projects and initiatives.",
+    "slide2Line1": "Research Management",
+    "slide2Line2": "System",
+    "slide2Highlight": "UNAS",
+    "slide2Description": "Boosting research, innovation, and academic development at our university.",
+    "stats": {
+      "activeProjects": "Active Projects",
+      "researchers": "Researchers",
+      "publications": "Publications"
+    }
+  },
+  "researchLines": {
+    "categoryLabel": "SCIENTIFIC RESEARCH",
+    "title": "Explore our research lines",
+    "subtitle": "Discover the scientific fields in which we develop high-impact and excellence projects",
+    "exploreLine": "Explore line",
+    "groupsCategoryLabel": "SCIENTIFIC GROUPS",
+    "groupsTitle": "Research Groups",
+    "groupsSubtitle": "Discover the scientific groups driving innovation and development at FIIS",
+    "viewAllGroups": "View all research groups"
+  },
+  "home": {
+    "title": "Research Management System",
+    "subtitle": "Faculty of Industrial and Systems Engineering",
+    "welcome": "Welcome to SGI",
+    "description": "Comprehensive platform for managing research projects, thesis, procedures and more",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "features": {
+      "title": "Features",
+      "projectManagement": "Project Management",
+      "projectManagementDesc": "Manage your research projects from start to finish",
+      "thesisManagement": "Thesis Management",
+      "thesisManagementDesc": "Track the progress of degree thesis",
+      "tramitesManagement": "Procedures Management",
+      "tramitesManagementDesc": "Manage academic and administrative procedures",
+      "documentRepository": "Document Repository",
+      "documentRepositoryDesc": "Store and manage research documents",
+      "progressReports": "Progress Reports",
+      "progressReportsDesc": "Record and track progress reports",
+      "resolutions": "Resolutions",
+      "resolutionsDesc": "Manage academic resolutions"
+    },
+    "statistics": {
+      "title": "Statistics",
+      "projects": "Projects",
+      "thesis": "Thesis",
+      "tramites": "Procedures",
+      "users": "Users"
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "subtitle": "Join our research community",
+      "register": "Register",
+      "login": "Log In"
+    }
+  },
+  "about": {
+    "title": "About SGI",
+    "subtitle": "Research Management System",
+    "description": "SGI is a comprehensive platform designed to facilitate the management of research projects, degree thesis, academic procedures and documents at the Faculty of Industrial and Systems Engineering.",
+    "mission": {
+      "title": "Mission",
+      "description": "Facilitate and optimize academic research processes through innovative digital tools."
+    },
+    "vision": {
+      "title": "Vision",
+      "description": "To be a reference in academic research management in Peru, driving excellence and innovation."
+    },
+    "objectives": {
+      "title": "Objectives",
+      "items": [
+        "Centralize research project management",
+        "Facilitate degree thesis tracking",
+        "Optimize academic procedures",
+        "Promote collaboration among researchers",
+        "Ensure quality and transparency in processes"
+      ]
+    },
+    "team": {
+      "title": "Development Team",
+      "description": "Developed by the technology team of the Faculty of Industrial and Systems Engineering"
+    }
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "We're here to help",
+    "form": {
+      "name": "Full Name",
+      "namePlaceholder": "Enter your full name",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "subject": "Subject",
+      "subjectPlaceholder": "Enter the subject",
+      "message": "Message",
+      "messagePlaceholder": "Enter your message",
+      "sendButton": "Send Message",
+      "sending": "Sending..."
+    },
+    "info": {
+      "title": "Contact Information",
+      "address": "Address",
+      "addressValue": "Av. Las Palmas s/n, Huancayo, Peru",
+      "phone": "Phone",
+      "phoneValue": "+51 64 211 123",
+      "email": "Email",
+      "emailValue": "investigacion@fiis.unach.edu.pe",
+      "hours": "Business Hours",
+      "hoursValue": "Monday to Friday: 8:00 AM - 5:00 PM"
+    },
+    "map": {
+      "title": "Location",
+      "description": "Find us at the main campus of the University"
+    },
+    "error": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
+      "subjectRequired": "Subject is required",
+      "messageRequired": "Message is required",
+      "sendFailed": "Error sending message",
+      "networkError": "Connection error"
+    },
+    "success": {
+      "messageSent": "Message sent successfully",
+      "willRespond": "We will respond shortly"
+    }
+  },
+  "help": {
+    "title": "Help Center",
+    "subtitle": "Find answers to your questions",
+    "search": {
+      "placeholder": "Search help...",
+      "noResults": "No results found for '{{query}}'"
+    },
+    "categories": {
+      "gettingStarted": "Getting Started",
+      "projects": "Projects",
+      "thesis": "Thesis",
+      "tramites": "Procedures",
+      "documents": "Documents",
+      "accounts": "Accounts",
+      "troubleshooting": "Troubleshooting"
+    },
+    "faqs": {
+      "title": "Frequently Asked Questions",
+      "noFaqs": "No FAQs available"
+    },
+    "tutorials": {
+      "title": "Tutorials",
+      "noTutorials": "No tutorials available"
+    },
+    "contact": {
+      "title": "Contact Support",
+      "description": "Can't find what you're looking for? Contact our support team",
+      "button": "Contact Support"
+    }
+  },
+  "login": {
+    "title": "Log In",
+    "subtitle": "Access your SGI account",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot your password?",
+      "loginButton": "Log In",
+      "loggingIn": "Logging in...",
+      "orContinueWith": "Or continue with",
+      "google": "Google",
+      "github": "GitHub",
+      "microsoft": "Microsoft"
+    },
+    "footer": {
+      "noAccount": "Don't have an account?",
+      "registerLink": "Register here",
+      "help": "Help",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    }
+  },
+  "register": {
+    "title": "Create Account",
+    "subtitle": "Register to access SGI",
+    "form": {
+      "name": "Full Name",
+      "namePlaceholder": "Enter your full name",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "code": "University Code",
+      "codePlaceholder": "Enter your university code",
+      "phone": "Phone",
+      "phonePlaceholder": "Enter your phone",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "role": "Role",
+      "rolePlaceholder": "Select your role",
+      "researchGroup": "Research Group",
+      "researchGroupPlaceholder": "Select your research group",
+      "registerButton": "Create Account",
+      "registering": "Creating account...",
+      "terms": "By registering, you agree to our",
+      "termsLink": "Terms and Conditions",
+      "privacyLink": "Privacy Policy"
+    },
+    "footer": {
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in here"
+    }
+  },
+  "news": {
+    "title": "News",
+    "subtitle": "Latest research news",
+    "noNews": "No recent news",
+    "viewAll": "View All News",
+    "readMore": "Read More",
+    "publishedOn": "Published on {{date}}",
+    "author": "By {{author}}",
+    "breadcrumb": "Home » News » Research Announcements",
+    "sidebarTitle": "News",
+    "officialAnnouncements": "Official Announcements",
+    "noActiveAnnouncements": "There are no active announcements at this time.",
+    "convocatoriaBadge": "ANNOUNCEMENT",
+    "recognitionBadge": "RECOGNITION",
+    "congressBadge": "CONGRESSES",
+    "code": "Code: CONV-{{id}}",
+    "duration": "Duration:",
+    "to": "to",
+    "status": "Status:",
+    "open": "Open",
+    "closed": "Closed",
+    "finished": "Finished",
+    "applyStartProcess": "Apply & Start Process",
+    "applicationsClosed": "Applications Closed",
+    "recognitionTitle": "Scientific Achievements & Recognition",
+    "recognitionSubtitle": "Professors recognized for technological innovation patents",
+    "recognitionDescription": "We congratulate our researcher professors recognized nationwide for their invention patents registered with INDECOPI and their high scientific impact in computing. Their research on predictive algorithms applied to precision agriculture represents a milestone for the university.",
+    "publishingDate": "Publishing Date:",
+    "category": "Category:",
+    "patentInnovation": "Patent / Innovation",
+    "upcomingCongresses": "Upcoming Congresses & Events",
+    "congressTitle": "International Congress of Systems Engineering (CIIS 2026)",
+    "congressDescription": "Register for workshops, international presentations, and roundtables scheduled for the largest academic event of the year at UNAS. We will feature world-class speakers from Google, AWS, and leading Latin American universities to debate artificial intelligence and cybersecurity.",
+    "eventDate": "Event Date:",
+    "modality": "Modality:",
+    "hybrid": "Hybrid (In-person / Virtual)",
+    "registerForEvent": "Register for Event",
+    "categoryLabel": "NEWS AND EVENTS",
+    "homeTitle": "Research News",
+    "homeSubtitle": "Stay informed with the latest events and opportunities in the scientific ecosystem.",
+    "convocatoriaFallbackTitle": "New announcements",
+    "convocatoriaFallbackDesc": "Applications are now open for the funding of scientific research and technological development projects.",
+    "deadline": "Deadline:",
+    "view": "View",
+    "welcomeRecognitionTitle": "Awarded professors",
+    "welcomeRecognitionDesc": "We congratulate our professor-researchers recognized nationwide for their patents and scientific impact in computer science.",
+    "welcomeRecognitionDate": "June 28, 2026",
+    "welcomeCongressTitle": "Upcoming congresses",
+    "welcomeCongressDesc": "Register for workshops, presentations, and roundtables scheduled for the largest academic event of the year at UNAS.",
+    "welcomeCongressDate": "June 15, 2026"
+  },
+  "events": {
+    "title": "Events",
+    "subtitle": "Upcoming research events",
+    "noEvents": "No events scheduled",
+    "viewAll": "View All Events",
+    "register": "Register",
+    "registered": "Registered",
+    "spotsLeft": "{{spots}} spots available",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "location": "Location",
+    "organizer": "Organizer"
+  },
+  "publications": {
+    "title": "Publications",
+    "subtitle": "Featured research publications",
+    "noPublications": "No publications available",
+    "viewAll": "View All Publications",
+    "downloadPDF": "Download PDF",
+    "cite": "Cite",
+    "abstract": "Abstract",
+    "authors": "Authors",
+    "journal": "Journal",
+    "year": "Year",
+    "doi": "DOI",
+    "keywords": "Keywords"
+  },
+  "footer": {
+    "copyright": "© 2026 Faculty of Industrial and Systems Engineering",
+    "university": "Universidad Nacional del Centro del Perú",
+    "terms": "Terms and Conditions",
+    "privacy": "Privacy Policy",
+    "accessibility": "Accessibility",
+    "contact": "Contact",
+    "help": "Help",
+    "about": "About",
+    "version": "Version {{version}}",
+    "backToTop": "Back to top",
+    "faculty": "Faculty",
+    "decanatoFiis": "FIIS Dean's Office",
+    "departamentosAcademicos": "Academic Departments",
+    "research": "Research",
+    "direccionGeneral": "General Directorate",
+    "documentosNormativos": "Regulatory Documents",
+    "support": "Support",
+    "faq": "Frequently Asked Questions",
+    "userManual": "User Manual",
+    "copyrightFull": "© 2026 SGI - Faculty of Computer Science and Systems Engineering - UNAS. All rights reserved.",
+    "facultyTitle": "Faculty",
+    "universityTitle": "University",
+    "contactTitle": "Contact",
+    "normativasTitle": "Regulations",
+    "comisionGradosTitulos": "Degrees and Titles Commission",
+    "unidadInvestigacion": "FIIS Research Unit",
+    "portalPrincipalUnas": "UNAS Main Portal",
+    "vicerrectoradoInvestigacion": "Vice-Rectorate of Research",
+    "bibliotecaCentral": "Central Library",
+    "repositorioInstitucional": "Institutional Repository",
+    "soporteTecnico": "Technical Support",
+    "mesaPartesVirtual": "UNAS Virtual Registry",
+    "ubicacion": "Location",
+    "directorioTelefonico": "Phone Directory",
+    "politicaPrivacidad": "Privacy Policy",
+    "terminosUso": "Terms of Use",
+    "reglamentoInvestigacion": "Research Regulations",
+    "donaASgi": "Donate to SGI",
+    "donaASgiDesc": "Scan the QR code with your Yape phone to help maintain the platform",
+    "donaASgiBadge": "DONATE TO SGI!"
+  }
+}

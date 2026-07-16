@@ -1,0 +1,357 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "news": "Novedades",
+    "convocatorias": "Convocatorias",
+    "reconocimiento": "Reconocimiento",
+    "congresos": "Congresos",
+    "aboutUs": "Sobre nosotros",
+    "quienesSomos": "Quiénes somos",
+    "lineasInvestigacion": "Líneas de investigación",
+    "grupos": "Grupos",
+    "contacto": "Contacto",
+    "correo": "Correo",
+    "whatsapp": "WhatsApp",
+    "submitResearch": "Envía tu investigación",
+    "login": "Iniciar sesión",
+    "changeLanguage": "Cambiar idioma"
+  },
+  "hero": {
+    "slide1Line1": "Sistema de Gestión",
+    "slide1Line2": "de Investigación",
+    "slide1Highlight": "SGI-FIIS",
+    "slide1Description": "Gestiona, coordina y de seguimiento a tus proyectos e iniciativas académicas de investigación.",
+    "slide2Line1": "Sistema de Gestión",
+    "slide2Line2": "de Investigación",
+    "slide2Highlight": "UNAS",
+    "slide2Description": "Impulsando la investigación, la innovación y el desarrollo académico de nuestra universidad.",
+    "stats": {
+      "activeProjects": "Proyectos Activos",
+      "researchers": "Investigadores",
+      "publications": "Publicaciones"
+    }
+  },
+  "researchLines": {
+    "categoryLabel": "INVESTIGACIÓN CIENTÍFICA",
+    "title": "Explora nuestras líneas de investigación",
+    "subtitle": "Conoce los campos científicos en los que desarrollamos proyectos de alto impacto y excelencia",
+    "exploreLine": "Explorar línea",
+    "groupsCategoryLabel": "AGRUPACIONES CIENTÍFICAS",
+    "groupsTitle": "Grupos de Investigación",
+    "groupsSubtitle": "Conoce las agrupaciones científicas que impulsan la innovación y desarrollo en la FIIS",
+    "viewAllGroups": "Ver todos los grupos de investigación"
+  },
+  "home": {
+    "title": "Sistema de Gestión de Investigación",
+    "subtitle": "Facultad de Ingeniería en Industria y Sistemas",
+    "welcome": "Bienvenido al SGI",
+    "description": "Plataforma integral para la gestión de proyectos de investigación, tesis, trámites y más",
+    "getStarted": "Comenzar",
+    "learnMore": "Conocer Más",
+    "features": {
+      "title": "Características",
+      "projectManagement": "Gestión de Proyectos",
+      "projectManagementDesc": "Administra tus proyectos de investigación de principio a fin",
+      "thesisManagement": "Gestión de Tesis",
+      "thesisManagementDesc": "Supervisa el progreso de las tesis de grado",
+      "tramitesManagement": "Gestión de Trámites",
+      "tramitesManagementDesc": "Gestiona trámites académicos y administrativos",
+      "documentRepository": "Repositorio Documental",
+      "documentRepositoryDesc": "Almacena y gestiona documentos de investigación",
+      "progressReports": "Informes de Avance",
+      "progressReportsDesc": "Registra y supervisa informes de avance",
+      "resolutions": "Resoluciones",
+      "resolutionsDesc": "Gestiona resoluciones académicas"
+    },
+    "statistics": {
+      "title": "Estadísticas",
+      "projects": "Proyectos",
+      "thesis": "Tesis",
+      "tramites": "Trámites",
+      "users": "Usuarios"
+    },
+    "cta": {
+      "title": "¿Listo para comenzar?",
+      "subtitle": "Únete a nuestra comunidad de investigación",
+      "register": "Registrarse",
+      "login": "Iniciar Sesión"
+    }
+  },
+  "about": {
+    "title": "Acerca del SGI",
+    "subtitle": "Sistema de Gestión de Investigación",
+    "description": "El SGI es una plataforma integral diseñada para facilitar la gestión de proyectos de investigación, tesis de grado, trámites académicos y documentos en la Facultad de Ingeniería en Industria y Sistemas.",
+    "mission": {
+      "title": "Misión",
+      "description": "Facilitar y optimizar los procesos de investigación académica a través de herramientas digitales innovadoras."
+    },
+    "vision": {
+      "title": "Visión",
+      "description": "Ser referente en gestión de investigación académica en el Perú, impulsando la excelencia y la innovación."
+    },
+    "objectives": {
+      "title": "Objetivos",
+      "items": [
+        "Centralizar la gestión de proyectos de investigación",
+        "Facilitar el seguimiento de tesis de grado",
+        "Optimizar los trámites académicos",
+        "Promover la colaboración entre investigadores",
+        "Garantizar la calidad y transparencia en los procesos"
+      ]
+    },
+    "team": {
+      "title": "Equipo de Desarrollo",
+      "description": "Desarrollado por el equipo de tecnología de la Facultad de Ingeniería en Industria y Sistemas"
+    }
+  },
+  "contact": {
+    "title": "Contacto",
+    "subtitle": "Estamos aquí para ayudarte",
+    "form": {
+      "name": "Nombre Completo",
+      "namePlaceholder": "Ingrese su nombre completo",
+      "email": "Correo Electrónico",
+      "emailPlaceholder": "Ingrese su correo electrónico",
+      "subject": "Asunto",
+      "subjectPlaceholder": "Ingrese el asunto",
+      "message": "Mensaje",
+      "messagePlaceholder": "Ingrese su mensaje",
+      "sendButton": "Enviar Mensaje",
+      "sending": "Enviando..."
+    },
+    "info": {
+      "title": "Información de Contacto",
+      "address": "Dirección",
+      "addressValue": "Av. Las Palmas s/n, Huancayo, Perú",
+      "phone": "Teléfono",
+      "phoneValue": "+51 64 211 123",
+      "email": "Correo Electrónico",
+      "emailValue": "investigacion@fiis.unach.edu.pe",
+      "hours": "Horario de Atención",
+      "hoursValue": "Lunes a Viernes: 8:00 AM - 5:00 PM"
+    },
+    "map": {
+      "title": "Ubicación",
+      "description": "Encuéntranos en el campus principal de la Universidad"
+    },
+    "error": {
+      "nameRequired": "El nombre es requerido",
+      "emailRequired": "El correo electrónico es requerido",
+      "emailInvalid": "El correo electrónico no es válido",
+      "subjectRequired": "El asunto es requerido",
+      "messageRequired": "El mensaje es requerido",
+      "sendFailed": "Error al enviar el mensaje",
+      "networkError": "Error de conexión"
+    },
+    "success": {
+      "messageSent": "Mensaje enviado exitosamente",
+      "willRespond": "Responderemos a la brevedad"
+    }
+  },
+  "help": {
+    "title": "Centro de Ayuda",
+    "subtitle": "Encuentra respuestas a tus preguntas",
+    "search": {
+      "placeholder": "Buscar ayuda...",
+      "noResults": "No se encontraron resultados para '{{query}}'"
+    },
+    "categories": {
+      "gettingStarted": "Primeros Pasos",
+      "projects": "Proyectos",
+      "thesis": "Tesis",
+      "tramites": "Trámites",
+      "documents": "Documentos",
+      "accounts": "Cuentas",
+      "troubleshooting": "Solución de Problemas"
+    },
+    "faqs": {
+      "title": "Preguntas Frecuentes",
+      "noFaqs": "No hay preguntas frecuentes disponibles"
+    },
+    "tutorials": {
+      "title": "Tutoriales",
+      "noTutorials": "No hay tutoriales disponibles"
+    },
+    "contact": {
+      "title": "Contactar Soporte",
+      "description": "¿No encontraste lo que buscas? Contacta a nuestro equipo de soporte",
+      "button": "Contactar Soporte"
+    }
+  },
+  "login": {
+    "title": "Iniciar Sesión",
+    "subtitle": "Accede a tu cuenta del SGI",
+    "form": {
+      "email": "Correo Electrónico",
+      "emailPlaceholder": "Ingrese su correo electrónico",
+      "password": "Contraseña",
+      "passwordPlaceholder": "Ingrese su contraseña",
+      "rememberMe": "Recordarme",
+      "forgotPassword": "¿Olvidó su contraseña?",
+      "loginButton": "Iniciar Sesión",
+      "loggingIn": "Iniciando sesión...",
+      "orContinueWith": "O continúe con",
+      "google": "Google",
+      "github": "GitHub",
+      "microsoft": "Microsoft"
+    },
+    "footer": {
+      "noAccount": "¿No tiene cuenta?",
+      "registerLink": "Regístrese aquí",
+      "help": "Ayuda",
+      "privacy": "Privacidad",
+      "terms": "Términos"
+    }
+  },
+  "register": {
+    "title": "Crear Cuenta",
+    "subtitle": "Regístrese para acceder al SGI",
+    "form": {
+      "name": "Nombre Completo",
+      "namePlaceholder": "Ingrese su nombre completo",
+      "email": "Correo Electrónico",
+      "emailPlaceholder": "Ingrese su correo electrónico",
+      "code": "Código Universitario",
+      "codePlaceholder": "Ingrese su código universitario",
+      "phone": "Teléfono",
+      "phonePlaceholder": "Ingrese su teléfono",
+      "password": "Contraseña",
+      "passwordPlaceholder": "Ingrese su contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "confirmPasswordPlaceholder": "Confirme su contraseña",
+      "role": "Rol",
+      "rolePlaceholder": "Seleccione su rol",
+      "researchGroup": "Grupo de Investigación",
+      "researchGroupPlaceholder": "Seleccione su grupo de investigación",
+      "registerButton": "Crear Cuenta",
+      "registering": "Creando cuenta...",
+      "terms": "Al registrarse, acepta nuestros",
+      "termsLink": "Términos y Condiciones",
+      "privacyLink": "Política de Privacidad"
+    },
+    "footer": {
+      "hasAccount": "¿Ya tiene cuenta?",
+      "loginLink": "Inicie sesión aquí"
+    }
+  },
+  "news": {
+    "title": "Noticias",
+    "subtitle": "Últimas noticias de investigación",
+    "noNews": "No hay noticias recientes",
+    "viewAll": "Ver Todas las Noticias",
+    "readMore": "Leer Más",
+    "publishedOn": "Publicado el {{date}}",
+    "author": "Por {{author}}",
+    "breadcrumb": "Inicio » Novedades » Noticias de Investigación",
+    "sidebarTitle": "Novedades",
+    "officialAnnouncements": "Convocatorias Oficiales",
+    "noActiveAnnouncements": "No hay convocatorias vigentes en este momento.",
+    "convocatoriaBadge": "CONVOCATORIA",
+    "recognitionBadge": "RECONOCIMIENTO",
+    "congressBadge": "CONGRESOS",
+    "code": "Código: CONV-{{id}}",
+    "duration": "Vigencia:",
+    "to": "al",
+    "status": "Estado:",
+    "open": "Abierta",
+    "closed": "Cerrada",
+    "finished": "Finalizada",
+    "applyStartProcess": "Postular e Iniciar Trámite",
+    "applicationsClosed": "Postulación Cerrada",
+    "recognitionTitle": "Reconocimiento y Logros Científicos",
+    "recognitionSubtitle": "Docentes premiados por patentes de innovación tecnológica",
+    "recognitionDescription": "Felicitamos a nuestros docentes investigadores reconocidos a nivel nacional por sus patentes de invención registradas ante INDECOPI y su alto impacto científico en informática. Sus investigaciones en algoritmos predictivos aplicados a la agricultura de precisión representan un hito para la universidad.",
+    "publishingDate": "Fecha de publicación:",
+    "category": "Categoría:",
+    "patentInnovation": "Patente / Innovación",
+    "upcomingCongresses": "Próximos Congresos y Eventos",
+    "congressTitle": "Congreso Internacional de Ingeniería de Sistemas (CIIS 2026)",
+    "congressDescription": "Inscríbete en los talleres, ponencias internacionales y mesas redondas programadas para el evento académico más grande del año en la UNAS. Contaremos con expositores de talla mundial de Google, AWS y universidades líderes de Latinoamérica para debatir sobre inteligencia artificial y ciberseguridad.",
+    "eventDate": "Fecha del evento:",
+    "modality": "Modalidad:",
+    "hybrid": "Híbrida (Presencial / Virtual)",
+    "registerForEvent": "Inscribirse al Evento",
+    "categoryLabel": "NOTICIAS Y EVENTOS",
+    "homeTitle": "Novedades de Investigación",
+    "homeSubtitle": "Mantente informado con los últimos acontecimientos y oportunidades del ecosistema científico.",
+    "convocatoriaFallbackTitle": "Nuevas convocatorias",
+    "convocatoriaFallbackDesc": "Se abren las postulaciones para el financiamiento de proyectos de investigación científica aplicada y desarrollo tecnológico.",
+    "deadline": "Cierre:",
+    "view": "Ver",
+    "welcomeRecognitionTitle": "Docentes premiados",
+    "welcomeRecognitionDesc": "Felicitamos a nuestros docentes investigadores reconocidos a nivel nacional por sus patentes e impacto científico en informática.",
+    "welcomeRecognitionDate": "28 de Junio, 2026",
+    "welcomeCongressTitle": "Próximos congresos",
+    "welcomeCongressDesc": "Inscríbete en los talleres, ponencias y mesas redondas programadas para el evento académico más grande del año en la UNAS.",
+    "welcomeCongressDate": "15 de Junio, 2026"
+  },
+  "events": {
+    "title": "Eventos",
+    "subtitle": "Próximos eventos de investigación",
+    "noEvents": "No hay eventos programados",
+    "viewAll": "Ver Todos los Eventos",
+    "register": "Registrarse",
+    "registered": "Registrado",
+    "spotsLeft": "{{spots}} lugares disponibles",
+    "startDate": "Fecha de Inicio",
+    "endDate": "Fecha de Fin",
+    "location": "Ubicación",
+    "organizer": "Organizador"
+  },
+  "publications": {
+    "title": "Publicaciones",
+    "subtitle": "Publicaciones de investigación destacadas",
+    "noPublications": "No hay publicaciones disponibles",
+    "viewAll": "Ver Todas las Publicaciones",
+    "downloadPDF": "Descargar PDF",
+    "cite": "Citar",
+    "abstract": "Resumen",
+    "authors": "Autores",
+    "journal": "Revista",
+    "year": "Año",
+    "doi": "DOI",
+    "keywords": "Palabras Clave"
+  },
+  "footer": {
+    "copyright": "© 2026 Facultad de Ingeniería en Industria y Sistemas",
+    "university": "Universidad Nacional del Centro del Perú",
+    "terms": "Términos y Condiciones",
+    "privacy": "Política de Privacidad",
+    "accessibility": "Accesibilidad",
+    "contact": "Contacto",
+    "help": "Ayuda",
+    "about": "Acerca de",
+    "version": "Versión {{version}}",
+    "backToTop": "Volver arriba",
+    "faculty": "Facultad",
+    "decanatoFiis": "Decanato FIIS",
+    "departamentosAcademicos": "Departamentos Académicos",
+    "research": "Investigación",
+    "direccionGeneral": "Dirección General",
+    "documentosNormativos": "Documentos Normativos",
+    "support": "Soporte",
+    "faq": "Preguntas Frecuentes",
+    "userManual": "Manual de Usuario",
+    "copyrightFull": "© 2026 SGI - Facultad de Ingeniería en Informática y Sistemas - UNAS. Todos los derechos reservados.",
+    "facultyTitle": "Facultad",
+    "universityTitle": "Universidad",
+    "contactTitle": "Contacto",
+    "normativasTitle": "Normativas",
+    "comisionGradosTitulos": "Comisión de Grados y Títulos",
+    "unidadInvestigacion": "Unidad de Investigación FIIS",
+    "portalPrincipalUnas": "Portal Principal UNAS",
+    "vicerrectoradoInvestigacion": "Vicerrectorado de Investigación",
+    "bibliotecaCentral": "Biblioteca Central",
+    "repositorioInstitucional": "Repositorio Institucional",
+    "soporteTecnico": "Soporte Técnico",
+    "mesaPartesVirtual": "Mesa de Partes Virtual UNAS",
+    "ubicacion": "Ubicación",
+    "directorioTelefonico": "Directorio Telefónico",
+    "politicaPrivacidad": "Política de Privacidad",
+    "terminosUso": "Términos de Uso",
+    "reglamentoInvestigacion": "Reglamento de Investigación",
+    "donaASgi": "Dona a SGI",
+    "donaASgiDesc": "Escanea el código QR con tu celular Yape para colaborar con el mantenimiento de la plataforma",
+    "donaASgiBadge": "¡DONA A SGI!"
+  }
+}

@@ -18,6 +18,7 @@ import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
 import { TableContainer, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../../components/ui/Table';
 
+import { useTranslation } from 'react-i18next';
 import { projectService } from '../../services/projectService';
 import type { Project } from '../../services/projectService';
 import { useToast } from '../../context/ToastContext';
@@ -26,28 +27,56 @@ import { AuthContext } from '../../context/AuthContext';
 import { progressReportService } from '../../services/progressReportService';
 import { userService } from '../../services/userService';
 
-function getStatusLabel(status?: string): string {
-  if (!status) return 'Sin estado';
+function getStatusLabel(status?: string, t?: (key: string) => string): string {
+  if (!status) {
+    return t ? t('projects:statuses.noStatus') : 'Sin estado';
+  }
 
-  const dictionary: Record<string, string> = {
-    POSTULATED: 'Postulado',
-    POSTULADO: 'Postulado',
-    OBSERVED: 'Observado',
-    OBSERVADO: 'Observado',
-    APPROVED: 'Aprobado',
-    APROBADO: 'Aprobado',
-    REJECTED: 'Rechazado',
-    RECHAZADO: 'Rechazado',
-    IN_PROGRESS: 'En ejecución',
-    EN_EJECUCION: 'En ejecución',
-    EN_EJECUCIÓN: 'En ejecución',
-    COMPLETED: 'Finalizado',
-    FINALIZADO: 'Finalizado',
-    ACTIVE: 'Activo',
-    ACTIVO: 'Activo',
-  };
+  const upperStatus = status.toUpperCase();
 
-  return dictionary[status.toUpperCase()] ?? status;
+  if (t) {
+    const translationKeys: Record<string, string> = {
+      POSTULATED: 'projects:statuses.postulado',
+      POSTULADO: 'projects:statuses.postulado',
+      OBSERVED: 'projects:statuses.observado',
+      OBSERVADO: 'projects:statuses.observado',
+      APPROVED: 'projects:statuses.aprobado',
+      APROBADO: 'projects:statuses.aprobado',
+      REJECTED: 'projects:statuses.rechazado',
+      RECHAZADO: 'projects:statuses.rechazado',
+      IN_PROGRESS: 'projects:statuses.enEjecucion',
+      EN_EJECUCION: 'projects:statuses.enEjecucion',
+      EN_EJECUCIÓN: 'projects:statuses.enEjecucion',
+      COMPLETED: 'projects:statuses.finalizado',
+      FINALIZADO: 'projects:statuses.finalizado',
+      ACTIVE: 'projects:statuses.activo',
+      ACTIVO: 'projects:statuses.activo',
+    };
+    const key = translationKeys[upperStatus];
+    if (key) return t(key);
+  } else {
+    const fallbackDictionary: Record<string, string> = {
+      POSTULATED: 'Postulado',
+      POSTULADO: 'Postulado',
+      OBSERVED: 'Observado',
+      OBSERVADO: 'Observado',
+      APPROVED: 'Aprobado',
+      APROBADO: 'Aprobado',
+      REJECTED: 'Rechazado',
+      RECHAZADO: 'Rechazado',
+      IN_PROGRESS: 'En ejecución',
+      EN_EJECUCION: 'En ejecución',
+      EN_EJECUCIÓN: 'En ejecución',
+      COMPLETED: 'Finalizado',
+      FINALIZADO: 'Finalizado',
+      ACTIVE: 'Activo',
+      ACTIVO: 'Activo',
+    };
+    const fallback = fallbackDictionary[upperStatus];
+    if (fallback) return fallback;
+  }
+
+  return status;
 }
 
 function getStatusProgress(status?: string): number {
@@ -98,26 +127,32 @@ function formatMoney(value?: number): string {
   }).format(value);
 }
 
-function getDurationLabel(startDate?: string, endDate?: string): string {
-  if (!startDate || !endDate) return 'No registrada';
+function getDurationLabel(startDate?: string, endDate?: string, t?: (key: string, options?: any) => string): string {
+  if (!startDate || !endDate) return t ? t('projects:monitoring.notRegisteredDuration') : 'No registrada';
 
   const start = new Date(startDate);
   const end = new Date(endDate);
 
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return 'No registrada';
+    return t ? t('projects:monitoring.notRegisteredDuration') : 'No registrada';
   }
 
   const months =
     (end.getFullYear() - start.getFullYear()) * 12 +
     (end.getMonth() - start.getMonth());
 
-  if (months <= 0) return 'Menos de 1 mes';
+  if (months <= 0) return t ? t('projects:monitoring.lessThanOneMonth') : 'Menos de 1 mes';
 
-  return `${months} mes${months === 1 ? '' : 'es'}`;
+  if (t) {
+    return t('projects:monitoring.months', { count: months });
+  }
+
+  const suffix = months === 1 ? '' : 'es';
+  return `${months} mes${suffix}`;
 }
 
 export const ProjectMonitoring: React.FC = () => {
+  const { t } = useTranslation('projects');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentRole } = useContext(AuthContext);
@@ -141,11 +176,11 @@ export const ProjectMonitoring: React.FC = () => {
     
     const headers = [
       { key: 'fif', pattern: /\[FIF:\s*(SI|NO|SÍ)\]/i },
-      { key: 'resumen', label: 'Resumen', pattern: /RESUMEN:/ },
-      { key: 'objetivos', label: 'Objetivos específicos', pattern: /OBJETIVOS ESPECÍFICOS:/ },
-      { key: 'metodologia', label: 'Metodología', pattern: /METODOLOGÍA:/ },
-      { key: 'resultados', label: 'Resultados esperados', pattern: /RESULTADOS ESPERADOS:/ },
-      { key: 'tipo', label: 'Tipo de proyecto', pattern: /TIPO DE PROYECTO:/ }
+      { key: 'resumen', label: t('projects:monitoring.summaryLabels.resumen'), pattern: /RESUMEN:/ },
+      { key: 'objetivos', label: t('projects:monitoring.summaryLabels.objetivos'), pattern: /OBJETIVOS ESPECÍFICOS:/ },
+      { key: 'metodologia', label: t('projects:monitoring.summaryLabels.metodologia'), pattern: /METODOLOGÍA:/ },
+      { key: 'resultados', label: t('projects:monitoring.summaryLabels.resultados'), pattern: /RESULTADOS ESPERADOS:/ },
+      { key: 'tipo', label: t('projects:monitoring.summaryLabels.tipo'), pattern: /TIPO DE PROYECTO:/ }
     ];
 
     const matches: { key: string; label?: string; index: number; length: number }[] = [];
@@ -169,7 +204,7 @@ export const ProjectMonitoring: React.FC = () => {
     const sections: { label: string; content: string }[] = [];
     
     if (matches.length === 0) {
-      sections.push({ label: 'Resumen', content: summaryText });
+      sections.push({ label: t('projects:monitoring.summaryLabels.resumen'), content: summaryText });
     } else {
       for (let i = 0; i < matches.length; i++) {
         const current = matches[i];
@@ -184,7 +219,7 @@ export const ProjectMonitoring: React.FC = () => {
     }
 
     return { fifVal, sections };
-  }, [project?.summary]);
+  }, [project?.summary, t]);
 
   useEffect(() => {
     let mounted = true;
@@ -218,7 +253,7 @@ export const ProjectMonitoring: React.FC = () => {
           setError(
             err instanceof Error
               ? err.message
-              : 'No se pudo cargar el detalle del proyecto.'
+              : t('projects:monitoring.errorLoading')
           );
         }
       } finally {
@@ -235,8 +270,8 @@ export const ProjectMonitoring: React.FC = () => {
     };
   }, [id]);
 
-  const [responsibleName, setResponsibleName] = useState<string>('Cargando...');
-  const [documentName, setDocumentName] = useState<string>('Cargando...');
+  const [responsibleName, setResponsibleName] = useState<string>(t('projects:monitoring.loadingDefault'));
+  const [documentName, setDocumentName] = useState<string>(t('projects:monitoring.loadingDefault'));
 
   useEffect(() => {
     if (!project) return;
@@ -244,9 +279,9 @@ export const ProjectMonitoring: React.FC = () => {
     if (project.responsibleId) {
       userService.getById(project.responsibleId)
         .then(u => setResponsibleName(`${u.firstNames} ${u.lastNames}`))
-        .catch(() => setResponsibleName(`Usuario #${project.responsibleId}`));
+        .catch(() => setResponsibleName(`${t('projects:monitoring.userNumber', { id: project.responsibleId })}`));
     } else {
-      setResponsibleName('No registrado');
+      setResponsibleName(t('projects:monitoring.notRegistered'));
     }
 
     if (project.documentId) {
@@ -256,12 +291,12 @@ export const ProjectMonitoring: React.FC = () => {
           if (doc) {
             setDocumentName(doc.fileName);
           } else {
-            setDocumentName(`Documento #${project.documentId}`);
+            setDocumentName(`${t('projects:monitoring.documentNumber', { id: project.documentId })}`);
           }
         })
-        .catch(() => setDocumentName(`Documento #${project.documentId}`));
+        .catch(() => setDocumentName(`${t('projects:monitoring.documentNumber', { id: project.documentId })}`));
     } else {
-      setDocumentName('No registrado');
+      setDocumentName(t('projects:monitoring.notRegistered'));
     }
   }, [project?.responsibleId, project?.documentId]);
 
@@ -273,7 +308,7 @@ export const ProjectMonitoring: React.FC = () => {
             variant="primary"
             onClick={() => navigate(`/progressreports/amend/${r.id}`)}
           >
-            Subsanar
+            {t('projects:monitoring.actionSubsanar')}
           </Button>
         );
       }
@@ -282,11 +317,11 @@ export const ProjectMonitoring: React.FC = () => {
           variant="secondary"
           onClick={() => {
             if (r.attachedDocumentId) {
-              window.open(documentService.download(r.attachedDocumentId), '_blank');
+              documentService.downloadFile(r.attachedDocumentId, r.fileName);
             }
           }}
         >
-          Ver
+          {t('projects:monitoring.actionView')}
         </Button>
       );
     }
@@ -297,7 +332,7 @@ export const ProjectMonitoring: React.FC = () => {
           variant="primary"
           onClick={() => navigate(`/progressreports/new?projectId=${id}&period=${period.name}`)}
         >
-          Subir
+          {t('projects:monitoring.actionUpload')}
         </Button>
       );
     }
@@ -316,10 +351,10 @@ export const ProjectMonitoring: React.FC = () => {
       setUpdatingStatus(true);
       const updatedProject = await projectService.updateStatus(id, 'IN_PROGRESS');
       setProject(updatedProject);
-      toast.success('Estado actualizado correctamente.');
+      toast.success(t('projects:monitoring.statusUpdated'));
     } catch (err) {
       console.error('Error al actualizar estado:', err);
-      toast.error('No se pudo actualizar el estado del proyecto.');
+      toast.error(t('projects:monitoring.statusUpdateError'));
     } finally {
       setUpdatingStatus(false);
     }
@@ -328,7 +363,7 @@ export const ProjectMonitoring: React.FC = () => {
   if (loading) {
     return (
       <div style={{ padding: '32px', color: 'var(--on-surface-variant)' }}>
-        Cargando detalle del proyecto...
+        {t('projects:monitoring.loading')}
       </div>
     );
   }
@@ -347,11 +382,11 @@ export const ProjectMonitoring: React.FC = () => {
             marginBottom: '24px',
           }}
         >
-          <ArrowLeft size={16} /> Volver a proyectos
+          <ArrowLeft size={16} /> {t('projects:monitoring.backToProjects')}
         </Link>
 
-        <Alert title="No se pudo cargar el proyecto">
-          El backend respondió: {error}. Verifica el endpoint GET /api/v1/projects/{id}.
+        <Alert title={t('projects:monitoring.couldNotLoad')}>
+          {t('projects:monitoring.backendResponse', { error, id })}
         </Alert>
       </div>
     );
@@ -360,7 +395,7 @@ export const ProjectMonitoring: React.FC = () => {
   if (!project) {
     return (
       <div style={{ padding: '32px', color: 'var(--on-surface-variant)' }}>
-        Proyecto no encontrado.
+        {t('projects:monitoring.notFound')}
       </div>
     );
   }
@@ -378,7 +413,7 @@ export const ProjectMonitoring: React.FC = () => {
           marginBottom: '24px',
         }}
       >
-        <ArrowLeft size={16} /> Volver a proyectos
+        <ArrowLeft size={16} /> {t('projects:monitoring.backToProjects')}
       </Link>
 
       <div
@@ -403,7 +438,7 @@ export const ProjectMonitoring: React.FC = () => {
               fontWeight: 800,
             }}
           >
-            {project.title || 'Proyecto sin título'}
+            {project.title || t('projects:monitoring.untitledProject')}
           </h1>
         </div>
 
@@ -414,13 +449,13 @@ export const ProjectMonitoring: React.FC = () => {
           disabled={updatingStatus}
           style={{ height: 'fit-content' }}
         >
-          {updatingStatus ? 'Actualizando...' : 'Pasar a ejecución'}
+          {updatingStatus ? t('projects:monitoring.updatingStatus') : t('projects:monitoring.moveToExecution')}
         </Button>
       </div>
 
       <Card style={{ marginBottom: '32px', border: '1px solid var(--outline-variant)' }}>
         <CardHeader style={{ borderBottom: '1px solid var(--outline-variant)', padding: '18px 24px' }}>
-          <h3 className="text-title-lg" style={{ margin: 0, fontWeight: 700 }}>Resumen y Detalles de la Propuesta</h3>
+          <h3 className="text-title-lg" style={{ margin: 0, fontWeight: 700 }}>{t('projects:monitoring.summaryTitle')}</h3>
         </CardHeader>
         <CardContent style={{ padding: '24px' }}>
           {parsedSummary ? (
@@ -447,7 +482,7 @@ export const ProjectMonitoring: React.FC = () => {
             </div>
           ) : (
             <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
-              Este proyecto no tiene resumen registrado.
+              {t('projects:monitoring.noSummary')}
             </p>
           )}
         </CardContent>
@@ -476,7 +511,7 @@ export const ProjectMonitoring: React.FC = () => {
               >
                 Estado
               </div>
-              <Badge variant="neutral">{getStatusLabel(project.status)}</Badge>
+              <Badge variant="neutral">{getStatusLabel(project.status, t)}</Badge>
             </div>
 
             <div style={{ backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: '12px', border: '1px solid var(--outline-variant)' }}>
@@ -494,7 +529,7 @@ export const ProjectMonitoring: React.FC = () => {
                 Línea de investigación
               </div>
               <div className="text-body-md" style={{ fontWeight: 600 }}>
-                {project.researchLineName || 'Sin línea registrada'}
+                {project.researchLineName || t('projects:monitoring.noResearchLine')}
               </div>
             </div>
 
@@ -513,7 +548,7 @@ export const ProjectMonitoring: React.FC = () => {
                 Grupo
               </div>
               <div className="text-body-md" style={{ fontWeight: 600 }}>
-                {project.researchGroupCode || 'Sin grupo registrado'}
+                {project.researchGroupCode || t('projects:monitoring.noGroupRegistered')}
               </div>
             </div>
 
@@ -551,7 +586,7 @@ export const ProjectMonitoring: React.FC = () => {
         <div style={{ flex: '2 1 600px', display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
           <Card>
             <CardHeader>
-              <h3 className="text-title-lg">Progreso general del proyecto</h3>
+              <h3 className="text-title-lg">{t('projects:monitoring.progressTitle')}</h3>
             </CardHeader>
 
             <CardContent>
@@ -563,7 +598,7 @@ export const ProjectMonitoring: React.FC = () => {
                 }}
               >
                 <span className="text-label-md">
-                  Estado actual: {getStatusLabel(project.status)}
+                  {t('projects:monitoring.currentStatus', { status: getStatusLabel(project.status, t) })}
                 </span>
                 <span className="text-label-md">{progress}%</span>
               </div>
@@ -595,11 +630,11 @@ export const ProjectMonitoring: React.FC = () => {
                 }}
               >
                 {[
-                  ['Postulación', 'POSTULATED'],
-                  ['Observación', 'OBSERVED'],
-                  ['Aprobación', 'APPROVED'],
-                  ['Ejecución', 'IN_PROGRESS'],
-                  ['Cierre', 'COMPLETED'],
+                  [t('projects:monitoring.steps.postulation'), 'POSTULATED'],
+                  [t('projects:monitoring.steps.observation'), 'OBSERVED'],
+                  [t('projects:monitoring.steps.approval'), 'APPROVED'],
+                  [t('projects:monitoring.steps.execution'), 'IN_PROGRESS'],
+                  [t('projects:monitoring.steps.closure'), 'COMPLETED'],
                 ].map(([label, status]) => (
                   <div
                     key={status}
@@ -619,7 +654,7 @@ export const ProjectMonitoring: React.FC = () => {
                         fontSize: '12px',
                       }}
                     >
-                      Estado referencial
+                      {t('projects:monitoring.referentialStatus')}
                     </div>
                   </div>
                 ))}
@@ -629,7 +664,7 @@ export const ProjectMonitoring: React.FC = () => {
 
           <Card>
             <CardHeader>
-              <h3 className="text-title-lg">Objetivo general</h3>
+              <h3 className="text-title-lg">{t('projects:monitoring.generalObjective')}</h3>
             </CardHeader>
 
             <CardContent>
@@ -640,25 +675,25 @@ export const ProjectMonitoring: React.FC = () => {
                   lineHeight: 1.7,
                 }}
               >
-                {project.generalObjective || 'No se registró el objetivo general del proyecto.'}
+                {project.generalObjective || t('projects:monitoring.noObjective')}
               </p>
             </CardContent>
           </Card>
 
           <Card style={{ marginTop: '24px' }}>
             <CardHeader>
-              <h3 className="text-title-lg">Informes Trimestrales y Final de Ejecución</h3>
+              <h3 className="text-title-lg">{t('projects:monitoring.reportsTitle')}</h3>
             </CardHeader>
             <CardContent>
               <TableContainer>
                 <TableHead>
                   <TableRow>
-                    <TableHeader>Periodo</TableHeader>
-                    <TableHeader>Fecha Límite</TableHeader>
-                    <TableHeader>Documento Subido</TableHeader>
-                    <TableHeader>Estado</TableHeader>
-                    <TableHeader>Observaciones</TableHeader>
-                    <TableHeader style={{ textAlign: 'right' }}>Acción</TableHeader>
+                    <TableHeader>{t('projects:monitoring.reportsTable.period')}</TableHeader>
+                    <TableHeader>{t('projects:monitoring.reportsTable.deadline')}</TableHeader>
+                    <TableHeader>{t('projects:monitoring.reportsTable.uploadedDocument')}</TableHeader>
+                    <TableHeader>{t('projects:monitoring.reportsTable.status')}</TableHeader>
+                    <TableHeader>{t('projects:monitoring.reportsTable.observations')}</TableHeader>
+                    <TableHeader style={{ textAlign: 'right' }}>{t('projects:monitoring.reportsTable.action')}</TableHeader>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -686,7 +721,7 @@ export const ProjectMonitoring: React.FC = () => {
                             <button 
                               type="button"
                               style={{ background: 'none', border: 'none', padding: 0, color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' }}
-                              onClick={() => window.open(documentService.download(r.attachedDocumentId), '_blank')}
+                              onClick={() => documentService.downloadFile(r.attachedDocumentId, r.fileName)}
                             >
                               {r.fileName || `informe_${period.name.replace(' ', '_').toLowerCase()}.pdf`}
                             </button>
@@ -697,14 +732,14 @@ export const ProjectMonitoring: React.FC = () => {
                         <TableCell>
                           {r ? (
                             <Badge variant={getReportBadgeVariant(r.status)}>
-                              {getStatusLabel(r.status)}
+                              {getStatusLabel(r.status, t)}
                             </Badge>
                           ) : (
-                            <Badge variant="neutral">Programado</Badge>
+                            <Badge variant="neutral">{t('projects:statuses.programado')}</Badge>
                           )}
                         </TableCell>
                         <TableCell>
-                          {r?.comments?.[0]?.content || r?.observations || (r ? 'Enviado para revisión' : '—')}
+                          {r?.comments?.[0]?.content || r?.observations || (r ? t('projects:monitoring.sentForReview') : '—')}
                         </TableCell>
                         <TableCell style={{ textAlign: 'right' }}>
                           {renderActionButton(r, period)}
@@ -716,43 +751,43 @@ export const ProjectMonitoring: React.FC = () => {
               </TableContainer>
               <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--warning)' }}></span>
-                <strong>Regla institucional:</strong> La omisión de informes trimestrales suspende el financiamiento FIF de forma automática.
+                <strong>{t('projects:monitoring.institutionalRule')}</strong> {t('projects:monitoring.institutionalRuleText')}
               </div>
             </CardContent>
           </Card>
 
           <Card style={{ marginTop: '24px' }}>
             <CardHeader>
-              <h3 className="text-title-lg">Documentos del Expediente y Trazabilidad</h3>
+              <h3 className="text-title-lg">{t('projects:monitoring.documentsTitle')}</h3>
             </CardHeader>
             <CardContent>
               <div className="section-grid-asymmetric" style={{ gap: '24px' }}>
                 
                 {/* Lista de Documentos */}
                 <div>
-                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Historial Documental</h4>
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>{t('projects:monitoring.documentHistory')}</h4>
                   <TableContainer>
                     <TableHead>
                       <TableRow>
-                        <TableHeader>Archivo</TableHeader>
-                        <TableHeader>Subido por</TableHeader>
-                        <TableHeader>Fecha</TableHeader>
-                        <TableHeader style={{ textAlign: 'right' }}>Descarga</TableHeader>
+                        <TableHeader>{t('projects:monitoring.docTable.file')}</TableHeader>
+                        <TableHeader>{t('projects:monitoring.docTable.uploadedBy')}</TableHeader>
+                        <TableHeader>{t('projects:monitoring.docTable.date')}</TableHeader>
+                        <TableHeader style={{ textAlign: 'right' }}>{t('projects:monitoring.docTable.download')}</TableHeader>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       <TableRow>
                         <TableCell><strong>{project.documentId ? documentName : 'Proyecto_inicial.pdf'}</strong></TableCell>
-                        <TableCell>Investigador</TableCell>
+                        <TableCell>{t('projects:monitoring.investigator')}</TableCell>
                         <TableCell>{formatDate(project.startDate)}</TableCell>
                         <TableCell style={{ textAlign: 'right' }}>
                           <Button 
                             variant="secondary"
                             onClick={() => {
                               if (project.documentId) {
-                                window.open(documentService.download(project.documentId), '_blank');
+                                documentService.downloadFile(project.documentId, documentName);
                               } else {
-                                toast.showError("No hay archivo registrado para la propuesta inicial.");
+                                toast.showError(t('projects:monitoring.noInitialFile'));
                               }
                             }}
                           >
@@ -763,14 +798,14 @@ export const ProjectMonitoring: React.FC = () => {
                       {['APPROVED', 'EN_EJECUCION', 'EN_EJECUCIÓN', 'FINALIZADO', 'COMPLETED'].includes(String(project.status).toUpperCase()) && (
                         <TableRow>
                           <TableCell><strong>Resolución_R.D._045.pdf</strong></TableCell>
-                          <TableCell>Decanato</TableCell>
+                          <TableCell>{t('projects:monitoring.deanOffice')}</TableCell>
                           <TableCell>{formatDate(project.startDate)}</TableCell>
                           <TableCell style={{ textAlign: 'right' }}>
                             <Button 
                               variant="secondary"
                               onClick={() => {
-                                toast.showSuccess("Descargando resolución del proyecto...");
-                                window.open(documentService.download(project.documentId || 1), '_blank');
+                                toast.showSuccess(t('projects:monitoring.downloadingResolution'));
+                                documentService.downloadFile(project.documentId || 1, 'Resolución_R.D._045.pdf');
                               }}
                             >
                               Descargar
@@ -784,26 +819,26 @@ export const ProjectMonitoring: React.FC = () => {
 
                 {/* Trazabilidad lineal */}
                 <div>
-                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Trazabilidad de Firmas y Cambios</h4>
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>{t('projects:monitoring.signatureTracking')}</h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderLeft: '2px solid var(--outline-variant)', paddingLeft: '16px', marginLeft: '6px', overflowX: 'hidden' }}>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
-                      <strong style={{ fontSize: '13px' }}>Postulación Enviada</strong>
+                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.proposalSent')}</strong>
                       <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>08/06/2026 10:25 - Docente Investigador</div>
                     </div>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
-                      <strong style={{ fontSize: '13px' }}>Aprobado por Coordinador</strong>
+                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.approvedByCoordinator')}</strong>
                       <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>09/06/2026 15:40 - Coordinador de Grupo</div>
                     </div>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
-                      <strong style={{ fontSize: '13px' }}>Aprobado por Dirección</strong>
+                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.approvedByDirection')}</strong>
                       <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>12/06/2026 11:10 - Director de Investigación</div>
                     </div>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--primary)' }}></span>
-                      <strong style={{ fontSize: '13px' }}>Resolución Emitida</strong>
+                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.resolutionIssued')}</strong>
                       <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>20/06/2026 09:30 - Decanato (Firma RD-045)</div>
                     </div>
                   </div>
@@ -817,7 +852,7 @@ export const ProjectMonitoring: React.FC = () => {
         <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <Card>
             <CardHeader>
-              <h3 className="text-title-lg">Detalles administrativos</h3>
+              <h3 className="text-title-lg">{t('projects:monitoring.adminDetails')}</h3>
             </CardHeader>
 
             <CardContent>
@@ -825,7 +860,7 @@ export const ProjectMonitoring: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <CalendarDays size={20} color="var(--primary)" />
                   <div>
-                    <strong>Fechas</strong>
+                    <strong>{t('projects:monitoring.dates')}</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
                       {formatDate(project.startDate)} - {formatDate(project.endDate)}
                     </div>
@@ -835,9 +870,9 @@ export const ProjectMonitoring: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <ClipboardCheck size={20} color="var(--primary)" />
                   <div>
-                    <strong>Duración</strong>
+                    <strong>{t('projects:monitoring.duration')}</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
-                      {getDurationLabel(project.startDate, project.endDate)}
+                      {getDurationLabel(project.startDate, project.endDate, t)}
                     </div>
                   </div>
                 </div>
@@ -845,9 +880,9 @@ export const ProjectMonitoring: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <MapPin size={20} color="var(--primary)" />
                   <div>
-                    <strong>Lugar de ejecución</strong>
+                    <strong>{t('projects:monitoring.executionPlace')}</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
-                      {project.executionPlace || 'No registrado'}
+                      {project.executionPlace || t('projects:monitoring.notRegistered')}
                     </div>
                   </div>
                 </div>
@@ -865,7 +900,7 @@ export const ProjectMonitoring: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <Users size={20} color="var(--primary)" />
                   <div>
-                    <strong>Responsable</strong>
+                    <strong>{t('projects:monitoring.responsible')}</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
                       {responsibleName}
                     </div>
@@ -875,18 +910,18 @@ export const ProjectMonitoring: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <FileText size={20} color="var(--primary)" />
                   <div>
-                    <strong>Documento asociado</strong>
+                    <strong>{t('projects:monitoring.associatedDocument')}</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
                       {project.documentId ? (
                         <button
                           type="button"
                           style={{ background: 'none', border: 'none', padding: 0, color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' }}
-                          onClick={() => window.open(documentService.download(project.documentId!), '_blank')}
+                           onClick={() => documentService.downloadFile(project.documentId!, documentName)}
                         >
                           {documentName}
                         </button>
                       ) : (
-                        'No registrado'
+                        t('projects:monitoring.notRegistered')
                       )}
                     </div>
                   </div>
@@ -912,15 +947,14 @@ export const ProjectMonitoring: React.FC = () => {
               }}
             >
               <HelpCircle size={24} />
-              <h3 className="text-title-lg">¿Necesitas ayuda?</h3>
+              <h3 className="text-title-lg">{t('projects:monitoring.needHelp')}</h3>
             </div>
 
             <p
               className="text-body-md"
               style={{ marginBottom: '24px', opacity: 0.9 }}
             >
-              Si tienes problemas con la revisión, trazabilidad o documentación del proyecto,
-              contacta a la oficina de investigación.
+              {t('projects:monitoring.helpText')}
             </p>
 
             <Link
@@ -931,7 +965,7 @@ export const ProjectMonitoring: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              Ir a revisión de informes
+              {t('projects:monitoring.goToReportReview')}
             </Link>
           </div>
         </div>

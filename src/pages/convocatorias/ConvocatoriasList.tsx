@@ -4,6 +4,7 @@
  * Tarjetas visuales, filtros por estado, cambio de estado con confirmación, buscador.
  */
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Plus, RefreshCw, Search, Megaphone, Calendar, Clock,
@@ -22,44 +23,48 @@ import type { CallResponse } from '../../services/callService';
 
 type CallStatus = 'ABIERTA' | 'CERRADA' | 'FINALIZADA';
 
-const STATUS_META: Record<CallStatus, {
+function getStatusMeta(t: (key: string) => string): Record<CallStatus, {
   label: string;
   badgeVariant: 'success' | 'warning' | 'error' | 'info' | 'neutral';
   icon: React.ReactNode;
   accentColor: string;
   bgColor: string;
   description: string;
-}> = {
-  ABIERTA: {
-    label: 'Abierta',
-    badgeVariant: 'success',
-    icon: <CheckCircle2 size={15} />,
-    accentColor: '#059669',
-    bgColor: '#d1fae5',
-    description: 'Recibiendo postulaciones',
-  },
-  CERRADA: {
-    label: 'Cerrada',
-    badgeVariant: 'warning',
-    icon: <Lock size={15} />,
-    accentColor: '#d97706',
-    bgColor: '#fef3c7',
-    description: 'Postulaciones cerradas',
-  },
-  FINALIZADA: {
-    label: 'Finalizada',
-    badgeVariant: 'error',
-    icon: <Flag size={15} />,
-    accentColor: '#dc2626',
-    bgColor: '#fee2e2',
-    description: 'Proceso concluido',
-  },
-};
+}> {
+  return {
+    ABIERTA: {
+      label: t('pages.callCard.statusOpen'),
+      badgeVariant: 'success',
+      icon: <CheckCircle2 size={15} />,
+      accentColor: '#059669',
+      bgColor: '#d1fae5',
+      description: t('pages.callCard.statusOpenDesc'),
+    },
+    CERRADA: {
+      label: t('pages.callCard.statusClosed'),
+      badgeVariant: 'warning',
+      icon: <Lock size={15} />,
+      accentColor: '#d97706',
+      bgColor: '#fef3c7',
+      description: t('pages.callCard.statusClosedDesc'),
+    },
+    FINALIZADA: {
+      label: t('pages.callCard.statusFinished'),
+      badgeVariant: 'error',
+      icon: <Flag size={15} />,
+      accentColor: '#dc2626',
+      bgColor: '#fee2e2',
+      description: t('pages.callCard.statusFinishedDesc'),
+    },
+  };
+}
 
-const TRANSITIONS: Record<string, { next: string; label: string; confirmMsg: string; danger: boolean }> = {
-  ABIERTA:   { next: 'CERRADA',   label: 'Cerrar Convocatoria', confirmMsg: '¿Cerrar esta convocatoria? No se aceptarán más postulaciones.', danger: true },
-  CERRADA: { next: 'FINALIZADA', label: 'Finalizar Proceso',   confirmMsg: '¿Finalizar esta convocatoria? Esta acción no se puede deshacer.', danger: true },
-};
+function getTransitions(t: (key: string) => string): Record<string, { next: string; label: string; confirmMsg: string; danger: boolean }> {
+  return {
+    ABIERTA:   { next: 'CERRADA',   label: t('pages.callCard.closeCall'), confirmMsg: t('pages.callCard.closeCallConfirm'), danger: true },
+    CERRADA: { next: 'FINALIZADA', label: t('pages.callCard.finishProcess'),   confirmMsg: t('pages.callCard.finishProcessConfirm'), danger: true },
+  };
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -84,7 +89,7 @@ interface DaysLeftStyle {
   text: string;
 }
 
-function getDaysLeftStyle(daysLeft: number | null, isOverdue: boolean): DaysLeftStyle {
+function getDaysLeftStyle(daysLeft: number | null, isOverdue: boolean, t: (key: string, opts?: any) => string): DaysLeftStyle {
   let bg = '#d1fae5';
   let color = '#065f46';
   if (isOverdue) {
@@ -98,10 +103,9 @@ function getDaysLeftStyle(daysLeft: number | null, isOverdue: boolean): DaysLeft
   let text = '';
   if (daysLeft !== null) {
     if (isOverdue) {
-      text = `Venció hace ${Math.abs(daysLeft)}d`;
+      text = t('pages.listPage.daysOverdue', { days: Math.abs(daysLeft) });
     } else {
-      const suffix = daysLeft !== 1 ? 's' : '';
-      text = `${daysLeft}d restante${suffix}`;
+      text = t('pages.listPage.daysRemaining', { count: daysLeft, days: daysLeft });
     }
   }
 
@@ -115,12 +119,15 @@ interface CallCardProps {
 }
 
 const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) => {
+  const { t } = useTranslation('convocatorias');
+  const STATUS_META = getStatusMeta(t);
+  const TRANSITIONS = getTransitions(t);
   const meta = STATUS_META[call.status as CallStatus] ?? STATUS_META.ABIERTA;
   const transition = TRANSITIONS[call.status];
   const daysLeft = call.status === 'ABIERTA' ? getDaysLeft(call.endDate) : null;
   const isOverdue = daysLeft !== null && daysLeft < 0;
 
-  const { bg: daysLeftBg, color: daysLeftColor, text: daysLeftText } = getDaysLeftStyle(daysLeft, isOverdue);
+  const { bg: daysLeftBg, color: daysLeftColor, text: daysLeftText } = getDaysLeftStyle(daysLeft, isOverdue, t);
 
   return (
     <div style={{
@@ -173,16 +180,16 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', paddingTop: '12px', borderTop: '1px solid var(--outline-variant)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--on-surface-variant)' }}>
             <Calendar size={14} style={{ color: meta.accentColor }} />
-            <span>Inicio: <strong style={{ color: 'var(--on-surface)' }}>{formatDate(call.startDate)}</strong></span>
+            <span>{t('pages.listPage.startDate')} <strong style={{ color: 'var(--on-surface)' }}>{formatDate(call.startDate)}</strong></span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--on-surface-variant)' }}>
             <Clock size={14} style={{ color: meta.accentColor }} />
-            <span>Cierre: <strong style={{ color: 'var(--on-surface)' }}>{formatDate(call.endDate)}</strong></span>
+            <span>{t('pages.listPage.endDate')} <strong style={{ color: 'var(--on-surface)' }}>{formatDate(call.endDate)}</strong></span>
           </div>
           {call.researchLineIds?.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--on-surface-variant)' }}>
               <BookOpen size={14} style={{ color: meta.accentColor }} />
-              <span><strong style={{ color: 'var(--on-surface)' }}>{call.researchLineIds.length}</strong> línea(s)</span>
+              <span><strong style={{ color: 'var(--on-surface)' }}>{call.researchLineIds.length}</strong> {t('pages.listPage.linesCount', { count: call.researchLineIds.length })}</span>
             </div>
           )}
           {daysLeft !== null && (
@@ -211,7 +218,7 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
                   backgroundColor: 'var(--surface)', color: 'var(--on-surface)', transition: 'all 0.2s',
                 }}
               >
-                <FileEdit size={14} /> Editar
+                <FileEdit size={14} /> {t('pages.listPage.edit')}
               </button>
             </Link>
           )}
@@ -230,7 +237,7 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
               }}
             >
               {updating
-                ? <><RefreshCw size={13} style={{ animation: 'spin 1s linear infinite' }} /> Actualizando...</>
+                ? <><RefreshCw size={13} style={{ animation: 'spin 1s linear infinite' }} /> {t('pages.listPage.updating')}</>
                 : <>{transition.label} <ArrowRight size={14} /></>
               }
             </button>
@@ -244,8 +251,12 @@ const CallCard: React.FC<CallCardProps> = ({ call, updating, onStatusChange }) =
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export const ConvocatoriasList: React.FC = () => {
+  const { t } = useTranslation('convocatorias');
   const toast = useToast();
   const { confirmDialog } = useConfirm();
+
+  const STATUS_META = getStatusMeta(t);
+  const TRANSITIONS = getTransitions(t);
 
   const [calls, setCalls] = useState<CallResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -261,11 +272,11 @@ export const ConvocatoriasList: React.FC = () => {
       const data = await callService.getAll();
       setCalls(Array.isArray(data) ? data : []);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al cargar las convocatorias.');
+      setError(err instanceof Error ? err.message : t('pages.listPage.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { fetchCalls(); }, [fetchCalls]);
 
@@ -285,9 +296,9 @@ export const ConvocatoriasList: React.FC = () => {
     try {
       const updated = await callService.updateStatus(call.id, transition.next);
       setCalls(prev => prev.map(c => c.id === call.id ? { ...c, status: updated.status } : c));
-      toast.success(`Convocatoria actualizada a "${STATUS_META[transition.next as CallStatus]?.label ?? transition.next}"`);
+      toast.success(t('pages.listPage.statusUpdated', { status: STATUS_META[transition.next as CallStatus]?.label ?? transition.next }));
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al actualizar el estado.');
+      toast.error(err instanceof Error ? err.message : t('pages.listPage.statusChangeError'));
     } finally {
       setUpdatingId(null);
     }
@@ -325,16 +336,16 @@ export const ConvocatoriasList: React.FC = () => {
             <Megaphone size={32} style={{ color: 'var(--primary)', opacity: 0.7 }} />
           </div>
           <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '8px' }}>
-            {search || filterStatus ? 'Sin resultados' : 'No hay convocatorias'}
+            {search || filterStatus ? t('pages.listPage.noResultsTitle') : t('pages.listPage.noResultsWithoutFilters')}
           </h3>
           <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', marginBottom: '24px' }}>
             {search || filterStatus
-              ? 'Intenta con otros términos o limpia los filtros.'
-              : 'Crea la primera convocatoria institucional de investigación.'}
+              ? t('pages.listPage.noResultsWithFilters')
+              : t('pages.listPage.noResultsWithoutFilters')}
           </p>
           {!search && !filterStatus && (
             <Link to="/convocatorias/new">
-              <Button variant="primary" icon={<Plus size={16} />}>Nueva Convocatoria</Button>
+              <Button variant="primary" icon={<Plus size={16} />}>{t('pages.listPage.newCall')}</Button>
             </Link>
           )}
         </div>
@@ -363,18 +374,18 @@ export const ConvocatoriasList: React.FC = () => {
           <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--on-surface)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
               <Megaphone size={22} style={{ color: 'var(--on-primary)' }} />
-            </span>Convocatorias de Investigación
+            </span>{t('pages.listPage.title')}
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--on-surface-variant)', marginLeft: '54px' }}>
-            Gestión de periodos de postulación científica institucional.
+            {t('pages.listPage.subtitle')}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <Button variant="secondary" icon={<RefreshCw size={15} />} onClick={fetchCalls} disabled={loading}>
-            Actualizar
+            {t('pages.listPage.refresh')}
           </Button>
           <Link to="/convocatorias/new">
-            <Button variant="primary" icon={<Plus size={16} />}>Nueva Convocatoria</Button>
+            <Button variant="primary" icon={<Plus size={16} />}>{t('pages.listPage.newCall')}</Button>
           </Link>
         </div>
       </div>
@@ -420,7 +431,7 @@ export const ConvocatoriasList: React.FC = () => {
           <AlertTriangle size={18} />
           <span>{error}</span>
           <button type="button" onClick={fetchCalls} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
-            <RefreshCw size={13} /> Reintentar
+            <RefreshCw size={13} /> {t('pages.listPage.retry')}
           </button>
         </div>
       )}
@@ -432,7 +443,7 @@ export const ConvocatoriasList: React.FC = () => {
           <input
             id="search-convocatorias"
             type="text"
-            placeholder="Buscar por título o descripción..."
+            placeholder={t('pages.listPage.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ width: '100%', paddingLeft: '38px', paddingRight: search ? '36px' : '12px', paddingTop: '11px', paddingBottom: '11px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', fontSize: '14px', backgroundColor: 'var(--surface)', color: 'var(--on-surface)', outline: 'none', transition: 'border-color 0.2s' }}
@@ -447,11 +458,11 @@ export const ConvocatoriasList: React.FC = () => {
         </div>
         {filterStatus && (
           <button type="button" onClick={() => setFilterStatus('')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: 'var(--radius-full)', border: `1px solid ${STATUS_META[filterStatus as CallStatus]?.accentColor ?? 'var(--outline)'}`, backgroundColor: STATUS_META[filterStatus as CallStatus]?.bgColor ?? 'var(--surface)', color: STATUS_META[filterStatus as CallStatus]?.accentColor ?? 'var(--on-surface)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
-            <Filter size={12} /> Filtrando: {STATUS_META[filterStatus as CallStatus]?.label} <X size={12} />
+            <Filter size={12} /> {t('pages.listPage.filtering')} {STATUS_META[filterStatus as CallStatus]?.label} <X size={12} />
           </button>
         )}
         <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)', marginLeft: 'auto' }}>
-          {filtered.length} convocatoria{filtered.length !== 1 ? 's' : ''}
+          {t('pages.listPage.count', { count: filtered.length })}
         </span>
       </div>
 

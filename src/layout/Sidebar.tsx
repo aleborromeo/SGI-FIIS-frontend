@@ -18,8 +18,10 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { AuthContext } from '../context/AuthContext';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 type NavItem = {
   id: string;
@@ -35,63 +37,63 @@ type NavGroup = {
   items: NavItem[];
 };
 
-const navGroups: NavGroup[] = [
+const getNavGroups = (t: (key: string) => string): NavGroup[] => [
   {
-    title: 'Principal',
+    title: t('navigation:groupPrincipal'),
     items: [
       {
         id: 'dashboard',
-        label: 'Dashboard',
+        label: t('navigation:dashboard'),
         icon: <LayoutDashboard size={20} />,
         path: '/dashboard',
       },
       {
         id: 'metrics',
-        label: 'Métricas y Reportes',
+        label: t('navigation:sidebarMetrics'),
         icon: <BarChart2 size={20} />,
         path: '/metrics',
       },
     ],
   },
   {
-    title: 'Gestión Académica',
+    title: t('navigation:groupGestionAcademica'),
     items: [
       {
         id: 'proposals',
-        label: 'Proyectos de Investigación',
+        label: t('navigation:projects'),
         icon: <FileText size={20} />,
         path: '/projects',
         roles: ['DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'EVALUADOR'],
       },
       {
         id: 'thesis-plans',
-        label: 'Planes de Tesis',
+        label: t('navigation:sidebarThesisPlans'),
         icon: <GraduationCap size={20} />,
         path: '/thesis/plans',
         roles: ['ESTUDIANTE', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO'],
       },
       {
         id: 'tramites',
-        label: 'Trámites',
+        label: t('navigation:sidebarTramites'),
         icon: <Inbox size={20} />,
         path: '/tramites',
       },
       {
         id: 'observations',
-        label: 'Mis Observaciones',
+        label: t('navigation:sidebarMyObservations'),
         icon: <AlertCircle size={20} />,
         path: '/observations/panel',
       },
       {
         id: 'decano-review',
-        label: 'Consola Decanato',
+        label: t('navigation:sidebarDecanoReview'),
         icon: <Scale size={20} />,
         path: '/decano/review',
         roles: ['DECANO'],
       },
       {
         id: 'convocatorias',
-        label: 'Convocatorias',
+        label: t('navigation:convocatorias'),
         icon: <Megaphone size={20} />,
         path: '/convocatorias',
         roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
@@ -99,30 +101,31 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'Evaluación y Revisión',
+    title: t('navigation:groupEvaluacionRevision'),
     items: [
       {
         id: 'evaluations',
-        label: 'Mis Evaluaciones',
+        label: t('navigation:sidebarMyEvaluations'),
         icon: <ClipboardCheck size={20} />,
         path: '/evaluations/my-evaluations',
+        roles: ['EVALUADOR'],
       },
       {
         id: 'progress',
-        label: 'Revisión Informes',
+        label: t('navigation:sidebarReviewReports'),
         icon: <FileSearch size={20} />,
         path: '/progressreports/review',
       },
       {
         id: 'director-evaluations',
-        label: 'Monitoreo Evaluaciones',
+        label: t('navigation:sidebarMonitorEvaluations'),
         icon: <ClipboardCheck size={20} />,
         path: '/evaluations/director',
         roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
       },
       {
         id: 'audit',
-        label: 'Trazabilidad',
+        label: t('navigation:sidebarTraceability'),
         icon: <ShieldCheck size={20} />,
         path: '/audit',
         roles: ['ADMIN', 'DIRECTOR_INVESTIGACION'],
@@ -130,14 +133,14 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'Administración',
+    title: t('navigation:groupAdministracion'),
     roles: ['ADMIN'],
     items: [
-      { id: 'create-user', label: 'Agregar Usuarios', icon: <Users size={20} />, path: '/users/create' },
-      { id: 'users', label: 'Gestionar Usuarios', icon: <Users size={20} />, path: '/users' },
-      { id: 'documents', label: 'Repositorio Docs', icon: <FileText size={20} />, path: '/documents' },
-      { id: 'groups', label: 'Grupos Inv.', icon: <Users size={20} />, path: '/groups' },
-      { id: 'lines', label: 'Líneas Inv.', icon: <BookOpen size={20} />, path: '/lines' },
+      { id: 'create-user', label: t('navigation:sidebarAddUsers'), icon: <Users size={20} />, path: '/users/create' },
+      { id: 'users', label: t('navigation:sidebarManageUsers'), icon: <Users size={20} />, path: '/users' },
+      { id: 'documents', label: t('navigation:sidebarDocumentRepo'), icon: <FileText size={20} />, path: '/documents' },
+      { id: 'groups', label: t('navigation:sidebarResearchGroups'), icon: <Users size={20} />, path: '/groups' },
+      { id: 'lines', label: t('navigation:sidebarResearchLines'), icon: <BookOpen size={20} />, path: '/lines' },
     ],
   },
 ];
@@ -150,9 +153,12 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation('navigation');
   const { user, currentRole, logout } = React.useContext(AuthContext);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
+
+  const navGroups = getNavGroups(t);
 
   const isItemActive = (itemId: string, path: string): boolean => {
     if (itemId === 'proposals') {
@@ -174,21 +180,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
   const getRoleLabel = (role: string | null): string => {
     switch (role) {
       case 'ADMIN':
-        return 'Administrador';
+        return t('navigation:roleAdmin');
       case 'ESTUDIANTE':
-        return 'Estudiante / Tesista';
+        return t('navigation:roleEstudiante');
       case 'DOCENTE_INVESTIGADOR':
-        return 'Docente Investigador';
+        return t('navigation:roleDocente');
       case 'COORDINADOR_GRUPO':
-        return 'Coordinador de Grupo';
+        return t('navigation:roleCoordinador');
       case 'DIRECTOR_INVESTIGACION':
-        return 'Director de Investigación';
+        return t('navigation:roleDirector');
       case 'DECANO':
-        return 'Decano';
+        return t('navigation:roleDecano');
       case 'EVALUADOR':
-        return 'Evaluador';
+        return t('navigation:roleEvaluador');
       default:
-        return 'Usuario';
+        return t('navigation:roleUsuario');
     }
   };
 
@@ -232,7 +238,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
           <button
             className="sidebar-close-btn"
             onClick={onClose}
-            aria-label="Cerrar menú"
+            aria-label={t('navigation:sidebarCloseMenu')}
           >
             <X size={24} />
           </button>
@@ -244,7 +250,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
             <div>
               <h1 className="sidebar-brand-title">
-                Investigación
+                {t('navigation:sidebarInvestigacion')}
               </h1>
 
               <span className="sidebar-brand-subtitle">
@@ -323,26 +329,44 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
             </div>
           </div>
 
-          <button
-            type="button"
-            className="sidebar-action-button"
-            onClick={() => {
-              setSettingsMessage('Configuración general pendiente de integración.');
-              setTimeout(() => setSettingsMessage(null), 3000);
-            }}
-          >
-            <Settings size={19} />
-            <span>Configuración</span>
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <button
+              type="button"
+              className="sidebar-action-button"
+              onClick={() => {
+                setSettingsMessage(t('navigation:sidebarSettingsPending'));
+                setTimeout(() => setSettingsMessage(null), 3000);
+              }}
+            >
+              <Settings size={19} />
+              <span>{t('navigation:settings')}</span>
+            </button>
 
-          <button
-            type="button"
-            className="sidebar-action-button danger"
-            onClick={() => setShowLogoutConfirm(true)}
-          >
-            <LogOut size={19} />
-            <span>Cerrar sesión</span>
-          </button>
+            <button
+              type="button"
+              className="sidebar-action-button danger"
+              onClick={() => setShowLogoutConfirm(true)}
+            >
+              <LogOut size={19} />
+              <span>{t('navigation:sidebarCloseSession')}</span>
+            </button>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '8px 12px 0 12px',
+                borderTop: '1px dashed rgba(203, 213, 225, 0.6)',
+                marginTop: '4px',
+              }}
+            >
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)' }}>
+                Idioma / Language
+              </span>
+              <LanguageSwitcher variant="button" />
+            </div>
+          </div>
         </div>
       </aside>
 
@@ -378,11 +402,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
             </div>
 
             <h2 className="sgi-logout-title">
-              ¿Cerrar sesión?
+              {t('navigation:sidebarCloseSession')}?
             </h2>
 
             <p className="sgi-logout-text">
-              ¿Estás seguro de que deseas cerrar tu sesión actual?
+              {t('navigation:sidebarCloseSessionConfirm')}
             </p>
 
             <div className="sgi-logout-actions">
@@ -391,7 +415,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 className="sgi-modal-cancel"
                 onClick={() => setShowLogoutConfirm(false)}
               >
-                Cancelar
+                {t('common:cancel')}
               </button>
 
               <button
@@ -399,7 +423,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 className="sgi-modal-confirm"
                 onClick={confirmLogout}
               >
-                Sí, cerrar sesión
+                {t('navigation:sidebarYesCloseSession')}
               </button>
             </div>
           </div>

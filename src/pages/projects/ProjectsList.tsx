@@ -25,6 +25,7 @@ import {
   TableCell,
 } from '../../components/ui/Table';
 
+import { useTranslation } from 'react-i18next';
 import { projectService } from '../../services/projectService';
 import type { Project } from '../../services/projectService';
 
@@ -42,32 +43,32 @@ function normalizeText(value: unknown): string {
   return String(value ?? '').toLowerCase().trim();
 }
 
-function getStatusLabel(status: string | undefined): string {
-  if (!status) return 'Sin estado';
+function getStatusLabel(status: string | undefined, t: (key: string) => string): string {
+  if (!status) return t('projects:statuses.noStatus');
   const normalized = status.toUpperCase();
   const dictionary: Record<string, string> = {
-    POSTULATED: 'Postulado',
-    POSTULADO: 'Postulado',
-    OBSERVED: 'Observado',
-    OBSERVADO: 'Observado',
-    APPROVED: 'Aprobado',
-    APROBADO: 'Aprobado',
-    REJECTED: 'Rechazado',
-    RECHAZADO: 'Rechazado',
-    IN_PROGRESS: 'En ejecución',
-    EN_EJECUCION: 'En ejecución',
-    EN_EJECUCIÓN: 'En ejecución',
-    COMPLETED: 'Finalizado',
-    FINALIZADO: 'Finalizado',
-    ACTIVE: 'Activo',
-    ACTIVO: 'Activo',
-    PENDING: 'Pendiente',
-    PENDIENTE: 'Pendiente',
-    UNDER_REVIEW: 'En revisión',
-    EN_REVISION: 'En revisión',
-    EN_REVISIÓN: 'En revisión',
-    DRAFT: 'Borrador',
-    BORRADOR: 'Borrador',
+    POSTULATED: t('projects:statuses.postulado'),
+    POSTULADO: t('projects:statuses.postulado'),
+    OBSERVED: t('projects:statuses.observado'),
+    OBSERVADO: t('projects:statuses.observado'),
+    APPROVED: t('projects:statuses.aprobado'),
+    APROBADO: t('projects:statuses.aprobado'),
+    REJECTED: t('projects:statuses.rechazado'),
+    RECHAZADO: t('projects:statuses.rechazado'),
+    IN_PROGRESS: t('projects:statuses.enEjecucion'),
+    EN_EJECUCION: t('projects:statuses.enEjecucion'),
+    EN_EJECUCIÓN: t('projects:statuses.enEjecucion'),
+    COMPLETED: t('projects:statuses.finalizado'),
+    FINALIZADO: t('projects:statuses.finalizado'),
+    ACTIVE: t('projects:statuses.activo'),
+    ACTIVO: t('projects:statuses.activo'),
+    PENDING: t('projects:statuses.pendiente'),
+    PENDIENTE: t('projects:statuses.pendiente'),
+    UNDER_REVIEW: t('projects:statuses.enRevision'),
+    EN_REVISION: t('projects:statuses.enRevision'),
+    EN_REVISIÓN: t('projects:statuses.enRevision'),
+    DRAFT: t('projects:statuses.borrador'),
+    BORRADOR: t('projects:statuses.borrador'),
   };
   return dictionary[normalized] ?? status;
 }
@@ -114,6 +115,7 @@ const tabButtonStyle = (active: boolean): React.CSSProperties => ({
 });
 
 export const ProjectsList: React.FC = () => {
+  const { t } = useTranslation('projects');
   const [activeTab, setActiveTab] = useState<'proposals' | 'drafts'>('proposals');
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -136,9 +138,9 @@ export const ProjectsList: React.FC = () => {
       console.error('Error al cargar proyectos:', err);
       const errorMsg = err.message || '';
       if (errorMsg.includes('500') || errorMsg.includes('NullPointer')) {
-        setError('No fue posible cargar las propuestas. Inténtelo nuevamente.');
+        setError(t('projects:list.errorLoadingProposals500'));
       } else {
-        setError(errorMsg || 'Ocurrió un problema al obtener la información.');
+        setError(errorMsg || t('projects:list.errorLoadingProposalsGeneric'));
       }
     } finally {
       setLoadingProposals(false);
@@ -153,19 +155,19 @@ export const ProjectsList: React.FC = () => {
       setDrafts(normalizeProjects(response as ProjectResponse));
     } catch (err: any) {
       console.error('Error al cargar borradores:', err);
-      setError('No fue posible cargar los borradores. Inténtelo nuevamente.');
+      setError(t('projects:list.errorLoadingDrafts'));
     } finally {
       setLoadingDrafts(false);
     }
   }
 
   async function handleDeleteDraft(id: string | number) {
-    if (!window.confirm('¿Estás seguro de eliminar este borrador?')) return;
+    if (!window.confirm(t('projects:list.deleteDraftConfirm'))) return;
     try {
       await projectService.deleteDraft(id);
       setDrafts((prev) => prev.filter((d) => d.id !== id));
     } catch {
-      setError('No se pudo eliminar el borrador.');
+      setError(t('projects:list.deleteDraftError'));
     }
   }
 
@@ -229,12 +231,12 @@ export const ProjectsList: React.FC = () => {
         }}
       >
         <div>
-          <h1 className="text-headline-lg">Proyectos y tesis</h1>
+          <h1 className="text-headline-lg">{t('projects:list.pageTitle')}</h1>
           <p
             className="text-body-md"
             style={{ color: 'var(--on-surface-variant)', marginTop: '8px' }}
           >
-            Gestiona, consulta y da seguimiento a los proyectos y propuestas académicas de investigación.
+            {t('projects:list.pageSubtitle')}
           </p>
         </div>
 
@@ -248,11 +250,11 @@ export const ProjectsList: React.FC = () => {
             }}
             disabled={loadingProposals || loadingDrafts}
           >
-            {loadingProposals || loadingDrafts ? 'Actualizando...' : 'Actualizar'}
+            {loadingProposals || loadingDrafts ? t('projects:list.updating') : t('projects:list.refresh')}
           </Button>
 
           <Link to="/projects/new">
-            <Button icon={<Plus size={18} />}>Nueva propuesta</Button>
+            <Button icon={<Plus size={18} />}>{t('projects:list.newProposal')}</Button>
           </Link>
         </div>
       </div>
@@ -271,7 +273,7 @@ export const ProjectsList: React.FC = () => {
               <FolderOpen size={24} color="var(--primary)" />
               <div>
                 <strong style={{ display: 'block', fontSize: '24px' }}>{projects.length}</strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>Total registrados</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('projects:list.totalRegistered')}</span>
               </div>
             </div>
           </CardContent>
@@ -283,7 +285,7 @@ export const ProjectsList: React.FC = () => {
               <Clock size={24} color="#f59e0b" />
               <div>
                 <strong style={{ display: 'block', fontSize: '24px' }}>{postulatedCount}</strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>Postulados</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('projects:list.postulated')}</span>
               </div>
             </div>
           </CardContent>
@@ -295,7 +297,7 @@ export const ProjectsList: React.FC = () => {
               <CheckCircle size={24} color="#15803d" />
               <div>
                 <strong style={{ display: 'block', fontSize: '24px' }}>{inProgressCount}</strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>En ejecución</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('projects:list.inExecution')}</span>
               </div>
             </div>
           </CardContent>
@@ -307,7 +309,7 @@ export const ProjectsList: React.FC = () => {
               <AlertTriangle size={24} color="#ba1a1a" />
               <div>
                 <strong style={{ display: 'block', fontSize: '24px' }}>{observedCount}</strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>Observados o rechazados</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('projects:list.observedOrRejected')}</span>
               </div>
             </div>
           </CardContent>
@@ -319,7 +321,7 @@ export const ProjectsList: React.FC = () => {
               <FileText size={24} color="#6366f1" />
               <div>
                 <strong style={{ display: 'block', fontSize: '24px' }}>{drafts.length}</strong>
-                <span style={{ color: 'var(--on-surface-variant)' }}>Borradores</span>
+                <span style={{ color: 'var(--on-surface-variant)' }}>{t('projects:list.draftsCount')}</span>
               </div>
             </div>
           </CardContent>
@@ -342,7 +344,7 @@ export const ProjectsList: React.FC = () => {
             }}
           >
             <FolderOpen size={16} />
-            Propuestas
+            {t('projects:list.proposals')}
             <Badge variant="info" style={{ marginLeft: '4px' }}>{projects.length}</Badge>
           </button>
 
@@ -354,7 +356,7 @@ export const ProjectsList: React.FC = () => {
             }}
           >
             <FileText size={16} />
-            Borradores
+            {t('projects:list.draftsCount')}
             <Badge variant="neutral" style={{ marginLeft: '4px' }}>{drafts.length}</Badge>
           </button>
         </div>
@@ -380,7 +382,7 @@ export const ProjectsList: React.FC = () => {
               />
               <input
                 type="text"
-                placeholder="Buscar por código, título, grupo o línea..."
+                placeholder={t('projects:list.searchPlaceholder')}
                 className="input"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
@@ -405,10 +407,10 @@ export const ProjectsList: React.FC = () => {
                   onChange={(event) => setStatusFilter(event.target.value)}
                   style={{ paddingLeft: '36px' }}
                 >
-                  <option value="TODOS">Todos los estados</option>
+                  <option value="TODOS">{t('projects:list.allStatuses')}</option>
                   {availableStatuses.map((status) => (
                     <option key={status} value={status}>
-                      {getStatusLabel(status)}
+                      {getStatusLabel(status, t)}
                     </option>
                   ))}
                 </select>
@@ -420,12 +422,12 @@ export const ProjectsList: React.FC = () => {
             <TableContainer>
               <TableHead>
                 <TableRow>
-                  <TableHeader>Código</TableHeader>
-                  <TableHeader>Proyecto</TableHeader>
-                  <TableHeader>Grupo</TableHeader>
-                  <TableHeader>Línea de investigación</TableHeader>
-                  <TableHeader>Estado</TableHeader>
-                  <TableHeader style={{ textAlign: 'right' }}>Acciones</TableHeader>
+                  <TableHeader>{t('projects:list.columns.code')}</TableHeader>
+                  <TableHeader>{t('projects:list.project')}</TableHeader>
+                  <TableHeader>{t('projects:list.columns.group')}</TableHeader>
+                  <TableHeader>{t('projects:list.researchLine')}</TableHeader>
+                  <TableHeader>{t('projects:list.columns.status')}</TableHeader>
+                  <TableHeader style={{ textAlign: 'right' }}>{t('projects:list.columns.actions')}</TableHeader>
                 </TableRow>
               </TableHead>
 
@@ -439,13 +441,13 @@ export const ProjectsList: React.FC = () => {
                 ) : loadingProposals ? (
                   <TableRow>
                     <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
-                      Cargando proyectos...
+                      {t('projects:list.loadingProjects')}
                     </td>
                   </TableRow>
                 ) : filteredProjects.length === 0 ? (
                   <TableRow>
                     <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
-                      No se encontraron proyectos con los filtros aplicados.
+                      {t('projects:list.noResults')}
                     </td>
                   </TableRow>
                 ) : (
@@ -455,7 +457,7 @@ export const ProjectsList: React.FC = () => {
                         {item.code || `PRY-${item.id}`}
                       </TableCell>
                       <TableCell>
-                        <div style={{ fontWeight: 600 }}>{item.title || 'Sin título'}</div>
+                        <div style={{ fontWeight: 600 }}>{item.title || t('projects:list.noTitle')}</div>
                         {item.summary && (
                           <div
                             style={{
@@ -473,24 +475,24 @@ export const ProjectsList: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="info">{item.researchGroupCode || 'Sin grupo'}</Badge>
+                        <Badge variant="info">{item.researchGroupCode || t('projects:list.noGroup')}</Badge>
                       </TableCell>
-                      <TableCell>{item.researchLineName || 'Sin línea asignada'}</TableCell>
+                      <TableCell>{item.researchLineName || t('projects:list.noLine')}</TableCell>
                       <TableCell>
                         <Badge variant={getStatusVariant(item.status)}>
-                          {getStatusLabel(item.status)}
+                          {getStatusLabel(item.status, t)}
                         </Badge>
                       </TableCell>
                       <TableCell style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                           <Link to={`/projects/${item.id}`}>
                             <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
-                              Ver detalle
+                              {t('projects:list.viewDetail')}
                             </Button>
                           </Link>
                           <Link to={`/projects/assign?projectId=${item.id}`}>
                             <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
-                              Revisores
+                              {t('projects:list.reviewers')}
                             </Button>
                           </Link>
                         </div>
@@ -504,12 +506,12 @@ export const ProjectsList: React.FC = () => {
             <TableContainer>
               <TableHead>
                 <TableRow>
-                  <TableHeader>Código</TableHeader>
-                  <TableHeader>Proyecto</TableHeader>
-                  <TableHeader>Grupo</TableHeader>
-                  <TableHeader>Línea de investigación</TableHeader>
-                  <TableHeader>Estado</TableHeader>
-                  <TableHeader style={{ textAlign: 'right' }}>Acciones</TableHeader>
+                  <TableHeader>{t('projects:list.columns.code')}</TableHeader>
+                  <TableHeader>{t('projects:list.project')}</TableHeader>
+                  <TableHeader>{t('projects:list.columns.group')}</TableHeader>
+                  <TableHeader>{t('projects:list.researchLine')}</TableHeader>
+                  <TableHeader>{t('projects:list.columns.status')}</TableHeader>
+                  <TableHeader style={{ textAlign: 'right' }}>{t('projects:list.columns.actions')}</TableHeader>
                 </TableRow>
               </TableHead>
 
@@ -523,13 +525,13 @@ export const ProjectsList: React.FC = () => {
                 ) : loadingDrafts ? (
                   <TableRow>
                     <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
-                      Cargando borradores...
+                      {t('projects:list.loadingDrafts')}
                     </td>
                   </TableRow>
                 ) : filteredDrafts.length === 0 ? (
                   <TableRow>
                     <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
-                      No tienes borradores guardados.
+                      {t('projects:list.noDrafts')}
                     </td>
                   </TableRow>
                 ) : (
@@ -539,7 +541,7 @@ export const ProjectsList: React.FC = () => {
                         {item.code || `BOR-${item.id}`}
                       </TableCell>
                       <TableCell>
-                        <div style={{ fontWeight: 600 }}>{item.title || 'Sin título'}</div>
+                        <div style={{ fontWeight: 600 }}>{item.title || t('projects:list.noTitle')}</div>
                         {item.summary && (
                           <div
                             style={{
@@ -557,17 +559,17 @@ export const ProjectsList: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="info">{item.researchGroupCode || 'Sin grupo'}</Badge>
+                        <Badge variant="info">{item.researchGroupCode || t('projects:list.noGroup')}</Badge>
                       </TableCell>
-                      <TableCell>{item.researchLineName || 'Sin línea asignada'}</TableCell>
+                      <TableCell>{item.researchLineName || t('projects:list.noLine')}</TableCell>
                       <TableCell>
-                        <Badge variant="neutral">Borrador</Badge>
+                        <Badge variant="neutral">{t('projects:list.editDraft')}</Badge>
                       </TableCell>
                       <TableCell style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                           <Link to={`/projects/new?editDraft=${item.id}`}>
                             <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
-                              Editar
+                              {t('projects:list.editDraft')}
                             </Button>
                           </Link>
                           <Button
@@ -580,7 +582,7 @@ export const ProjectsList: React.FC = () => {
                             icon={<Trash2 size={14} />}
                             onClick={() => handleDeleteDraft(item.id)}
                           >
-                            Eliminar
+                            {t('projects:list.deleteDraft')}
                           </Button>
                         </div>
                       </TableCell>

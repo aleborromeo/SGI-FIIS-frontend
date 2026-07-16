@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../hooks/useLanguage';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import './WelcomePage.css';
 import universityIcon from '../assets/images/icon-sgi-fiis.png';
-import { Globe, User, ChevronDown } from 'lucide-react';
+import { User, ChevronDown } from 'lucide-react';
 
 export const SobreSgiPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [language, setLanguage] = useState<'es' | 'en'>('es');
+  const { t } = useTranslation('public');
+  useLanguage();
   const [activeSection, setActiveSection] = useState('quienes-somos');
-
-  const handleToggleLanguage = () => {
-    setLanguage((prev) => (prev === 'es' ? 'en' : 'es'));
-  };
 
   const handleScrollToSection = (id: string) => {
     setActiveSection(id);
@@ -126,7 +126,7 @@ export const SobreSgiPage: React.FC = () => {
         {/* Enlaces de Navegación */}
         <nav className="welcome-nav-links">
           <a href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="nav-link">
-            {language === 'es' ? 'Inicio' : 'Home'}
+            {t('nav.home')}
           </a>
 
           {/* Dropdown: Novedades */}
@@ -136,7 +136,7 @@ export const SobreSgiPage: React.FC = () => {
               onClick={(e) => { e.preventDefault(); navigate('/novedades'); }}
               className="nav-link dropdown-toggle"
             >
-              <span>{language === 'es' ? 'Novedades' : 'News'}</span>
+              <span>{t('nav.news')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -145,21 +145,21 @@ export const SobreSgiPage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-convocatorias' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Convocatorias' : 'Announcements'}
+                {t('nav.announcements')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-reconocimientos' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Reconocimiento' : 'Recognition'}
+                {t('nav.recognition')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-congresos' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Congresos' : 'Congresses'}
+                {t('nav.congresses')}
               </a>
             </div>
           </div>
@@ -171,7 +171,7 @@ export const SobreSgiPage: React.FC = () => {
               onClick={(e) => e.preventDefault()}
               className="nav-link dropdown-toggle active"
             >
-              <span>{language === 'es' ? 'Sobre nosotros' : 'About us'}</span>
+              <span>{t('nav.about')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -180,21 +180,21 @@ export const SobreSgiPage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); handleScrollToSection('quienes-somos'); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Quiénes somos' : 'Who we are'}
+                {t('nav.whoWeAre')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); handleScrollToSection('lineas-investigacion'); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Líneas de investigación' : 'Research lines'}
+                {t('nav.researchLines')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); handleScrollToSection('grupos-investigacion'); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Grupos' : 'Groups'}
+                {t('nav.groups')}
               </a>
             </div>
           </div>
@@ -206,7 +206,7 @@ export const SobreSgiPage: React.FC = () => {
               onClick={(e) => { e.preventDefault(); navigate('/contacto'); }}
               className="nav-link dropdown-toggle"
             >
-              <span>{language === 'es' ? 'Contacto' : 'Contact'}</span>
+              <span>{t('nav.contact')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -215,14 +215,14 @@ export const SobreSgiPage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/contacto', { state: { scrollToHash: 'contacto-form-section' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'Correo' : 'Email'}
+                {t('nav.email')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/contacto', { state: { scrollToHash: 'whatsapp-contact-section' } }); }}
                 className="dropdown-item"
               >
-                {language === 'es' ? 'WhatsApp' : 'WhatsApp'}
+                {t('nav.whatsapp')}
               </a>
             </div>
           </div>
@@ -233,20 +233,12 @@ export const SobreSgiPage: React.FC = () => {
             onClick={(e) => { e.preventDefault(); navigate('/login'); }}
             className="nav-link btn-submit-research"
           >
-            {language === 'es' ? 'Envía tu investigación' : 'Submit your research'}
+            {t('nav.submitResearch')}
           </a>
         </nav>
 
         <div className="welcome-navbar-actions">
-          <button 
-            type="button" 
-            onClick={handleToggleLanguage} 
-            className="btn-nav btn-language-selector"
-            title={language === 'es' ? 'Cambiar idioma' : 'Change language'}
-          >
-            <Globe size={15} />
-            <span>{language === 'es' ? 'Español' : 'English'}</span>
-          </button>
+          <LanguageSwitcher variant="button" />
           
           <button 
             type="button" 
@@ -254,7 +246,7 @@ export const SobreSgiPage: React.FC = () => {
             className="btn-nav btn-login-navbar"
           >
             <User size={15} />
-            <span>{language === 'es' ? 'Iniciar sesión' : 'Log In'}</span>
+            <span>{t('nav.login')}</span>
           </button>
         </div>
       </header>
@@ -265,14 +257,12 @@ export const SobreSgiPage: React.FC = () => {
         {/* Cabecera Principal */}
         <div className="about-fiis-header-wrapper">
           <div className="about-fiis-breadcrumbs">
-            {language === 'es' 
-              ? 'Inicio » Sobre nosotros » Quiénes somos / Líneas / Grupos' 
-              : 'Home » About us » Who we are / Lines / Groups'}
+            {t('about.breadcrumbs')}
           </div>
           <h1 className="about-fiis-main-page-title">
-            {activeSection === 'quienes-somos' && (language === 'es' ? 'Quiénes somos' : 'Who we are')}
-            {activeSection === 'lineas-investigacion' && (language === 'es' ? 'Líneas de Investigación' : 'Research Lines')}
-            {activeSection === 'grupos-investigacion' && (language === 'es' ? 'Grupos de Investigación' : 'Research Groups')}
+            {activeSection === 'quienes-somos' && t('about.pageTitleWhoWeAre')}
+            {activeSection === 'lineas-investigacion' && t('about.pageTitleResearchLines')}
+            {activeSection === 'grupos-investigacion' && t('about.pageTitleResearchGroups')}
           </h1>
         </div>
 
@@ -286,33 +276,21 @@ export const SobreSgiPage: React.FC = () => {
               <section id="quienes-somos" className="about-stacked-section">
                 
                 <h3 className="sgi-article-section-title">
-                  {language === 'es' ? 'Donde todo comenzó' : 'Where it all began'}
+                  {t('about.whereItAllBegan')}
                 </h3>
                 
                 <article className="sgi-article">
                   <div className="sgi-article-body">
                     <p>
-                      {language === 'es' ? (
-                        <>El <strong className="text-highlight">SGI-FIIS</strong> fue creado en 2025 por la <strong className="text-highlight">Facultad de Ingeniería en Informática y Sistemas</strong> (<strong className="text-highlight">FIIS</strong>) de la <strong className="text-highlight">Universidad Nacional Agraria de la Selva</strong> (<strong className="text-highlight">UNAS</strong>), con el propósito de centralizar y optimizar la gestión de la investigación científica en nuestra comunidad académica.</>
-                      ) : (
-                        <>The <strong className="text-highlight">SGI-FIIS</strong> was created in 2025 by the <strong className="text-highlight">Faculty of Computer Science and Systems Engineering</strong> (<strong className="text-highlight">FIIS</strong>) of the <strong className="text-highlight">National Agricultural University of the Jungle</strong> (<strong className="text-highlight">UNAS</strong>), with the purpose of centralizing and optimizing scientific research management in our academic community.</>
-                      )}
+                      {t('about.history1')}
                     </p>
 
                     <p>
-                      {language === 'es' ? (
-                        <>La <strong className="text-highlight">FIIS</strong> y la <strong className="text-highlight">UNAS</strong> impulsaron este proyecto con la visión de lograr una gestión transparente, eficiente y trazable, aprovechando el poder de la tecnología para satisfacer verdaderamente las necesidades de los investigadores, docentes y estudiantes de nuestra facultad.</>
-                      ) : (
-                        <>The <strong className="text-highlight">FIIS</strong> and <strong className="text-highlight">UNAS</strong> promoted this project with the vision of achieving transparent, efficient and traceable management, leveraging the power of technology to truly meet the needs of researchers, professors and students of our faculty.</>
-                      )}
+                      {t('about.history2')}
                     </p>
 
                     <p>
-                      {language === 'es' ? (
-                        <>Inicialmente orientado a la gestión de planes de tesis y proyectos de investigación docente, el <strong className="text-highlight">SGI-FIIS</strong> abarca ahora la administración integral de resoluciones decanales, evaluaciones de jurado, informes de avance y la trazabilidad completa de cada proceso investigativo. Es una de las plataformas de gestión de investigación más completas y especializadas de la universidad.</>
-                      ) : (
-                        <>Initially focused on managing thesis plans and faculty research projects, <strong className="text-highlight">SGI-FIIS</strong> now encompasses the comprehensive management of dean resolutions, jury evaluations, progress reports and the complete traceability of every research process. It is one of the most complete and specialized research management platforms at the university.</>
-                      )}
+                      {t('about.history3')}
                     </p>
                   </div>
                 </article>
@@ -323,24 +301,22 @@ export const SobreSgiPage: React.FC = () => {
             {activeSection === 'lineas-investigacion' && (
               <section id="lineas-investigacion" className="about-stacked-section">
                 <p className="about-tab-description">
-                  {language === 'es' 
-                    ? 'La Facultad cuenta con líneas aprobadas que orientan la producción científica de docentes y estudiantes hacia la solución de necesidades tecnológicas.'
-                    : 'The Faculty has approved lines that orient the scientific production of professors and students towards solving technological needs.'}
+                  {t('about.researchLinesDescription')}
                 </p>
 
                 <div className="about-tabs-grid-container">
                   {researchLinesDetail.map((line) => (
                     <div key={line.title} className="about-info-card">
                       <div className="about-card-header-row">
-                        <div className="about-card-badge">{language === 'es' ? 'LÍNEA' : 'LINE'}</div>
+                        <div className="about-card-badge">{t('about.badgeLine')}</div>
                         <h4 className="about-card-title">{line.title}</h4>
                       </div>
                       <div className="about-card-divider" />
                       <p className="about-card-bases">
-                        <strong>{language === 'es' ? 'En qué se basa:' : 'Based on:'}</strong> {line.bases}
+                        <strong>{t('about.basedOn')}</strong> {line.bases}
                       </p>
                       <div className="about-card-subareas">
-                        <strong>{language === 'es' ? 'Áreas prioritarias:' : 'Priority areas:'}</strong>
+                        <strong>{t('about.priorityAreas')}</strong>
                         <ul className="about-subareas-list">
                           {line.areas.map((area, idx) => (
                             <li key={idx}>{area}</li>
@@ -357,9 +333,7 @@ export const SobreSgiPage: React.FC = () => {
             {activeSection === 'grupos-investigacion' && (
               <section id="grupos-investigacion" className="about-stacked-section" style={{ paddingBottom: '4rem' }}>
                 <p className="about-tab-description">
-                  {language === 'es' 
-                    ? 'Las agrupaciones de docentes investigadores, egresados y alumnos que impulsan la generación de conocimiento en informática y sistemas.'
-                    : 'Groupings of researcher professors, alumni, and students driving knowledge generation in computing and systems.'}
+                  {t('about.researchGroupsDescription')}
                 </p>
 
                 <div className="about-tabs-grid-container">
@@ -371,11 +345,11 @@ export const SobreSgiPage: React.FC = () => {
                       </div>
                       <div className="about-card-divider" />
                       <p className="about-card-bases">
-                        <strong>{language === 'es' ? 'En qué se basa:' : 'Based on:'}</strong> {group.bases}
+                        <strong>{t('about.basedOn')}</strong> {group.bases}
                       </p>
                       <div className="about-card-meta-row">
                         <div>
-                          <strong>{language === 'es' ? 'Línea científica asociada:' : 'Associated scientific line:'}</strong> <span className="meta-value">{group.lineas}</span>
+                          <strong>{t('about.associatedLine')}</strong> <span className="meta-value">{group.lineas}</span>
                         </div>
                       </div>
                     </div>
@@ -388,7 +362,7 @@ export const SobreSgiPage: React.FC = () => {
 
           {/* Columna Derecha: Menú Lateral Sticky (Estilo Frontiers) */}
           <aside className="about-fiis-sidebar">
-            <h4 className="sidebar-title">{language === 'es' ? 'Quiénes somos' : 'Who we are'}</h4>
+            <h4 className="sidebar-title">{t('nav.whoWeAre')}</h4>
             <ul className="sidebar-menu">
               <li>
                 <a 
@@ -396,7 +370,7 @@ export const SobreSgiPage: React.FC = () => {
                   onClick={(e) => { e.preventDefault(); handleScrollToSection('quienes-somos'); }} 
                   className={`sidebar-link ${activeSection === 'quienes-somos' ? 'active' : ''}`}
                 >
-                  {language === 'es' ? 'Quiénes somos' : 'Who we are'}
+                  {t('nav.whoWeAre')}
                 </a>
               </li>
               <li>
@@ -405,7 +379,7 @@ export const SobreSgiPage: React.FC = () => {
                   onClick={(e) => { e.preventDefault(); handleScrollToSection('lineas-investigacion'); }} 
                   className={`sidebar-link ${activeSection === 'lineas-investigacion' ? 'active' : ''}`}
                 >
-                  {language === 'es' ? 'Líneas de investigación' : 'Research lines'}
+                  {t('nav.researchLines')}
                 </a>
               </li>
               <li>
@@ -414,7 +388,7 @@ export const SobreSgiPage: React.FC = () => {
                   onClick={(e) => { e.preventDefault(); handleScrollToSection('grupos-investigacion'); }} 
                   className={`sidebar-link ${activeSection === 'grupos-investigacion' ? 'active' : ''}`}
                 >
-                  {language === 'es' ? 'Grupos de investigación' : 'Research groups'}
+                  {t('nav.researchGroups')}
                 </a>
               </li>
             </ul>
@@ -433,7 +407,7 @@ export const SobreSgiPage: React.FC = () => {
             onClick={() => {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            title={language === 'es' ? 'Volver arriba' : 'Back to top'}
+            title={t('footer.backToTop')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
@@ -444,78 +418,78 @@ export const SobreSgiPage: React.FC = () => {
         <div className="footer-premium-content">
           <div className="footer-columns-wrapper" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             <div className="footer-column">
-              <h4>Facultad</h4>
+              <h4>{t('footer.faculty')}</h4>
               <ul>
                 <li>
                   <a href="https://www.sistemasunas.edu.pe/nuestra-facultad/decanatura" target="_blank" rel="noopener noreferrer">
-                    Decanato FIIS
+                    {t('footer.decanato')}
                   </a>
                 </li>
                 <li>
                   <a href="https://www.sistemasunas.edu.pe/departamentos-academicos" target="_blank" rel="noopener noreferrer">
-                    Departamentos Académicos
+                    {t('footer.departments')}
                   </a>
                 </li>
                 <li>
                   <a href="https://www.sistemasunas.edu.pe/comisiones/comision-grados-y-titulos" target="_blank" rel="noopener noreferrer">
-                    Comisión de Grados y Títulos
+                    {t('footer.commission')}
                   </a>
                 </li>
                 <li>
                   <a href="https://www.sistemasunas.edu.pe/unidad-de-investigacion" target="_blank" rel="noopener noreferrer">
-                    Unidad de Investigación FIIS
+                    {t('footer.researchUnit')}
                   </a>
                 </li>
               </ul>
             </div>
 
             <div className="footer-column">
-              <h4>Universidad</h4>
+              <h4>{t('footer.universityLabel')}</h4>
               <ul>
                 <li>
                   <a href="https://www.unas.edu.pe" target="_blank" rel="noopener noreferrer">
-                    Portal Principal UNAS
+                    {t('footer.portalUNAS')}
                   </a>
                 </li>
                 <li>
                   <a href="https://investigacion.unas.edu.pe" target="_blank" rel="noopener noreferrer">
-                    Vicerrectorado de Investigación
+                    {t('footer.vicerrectorado')}
                   </a>
                 </li>
                 <li>
                   <a href="https://biblioteca.unas.edu.pe" target="_blank" rel="noopener noreferrer">
-                    Biblioteca Central
+                    {t('footer.library')}
                   </a>
                 </li>
                 <li>
                   <a href="https://repositorio.unas.edu.pe" target="_blank" rel="noopener noreferrer">
-                    Repositorio Institucional
+                    {t('footer.repository')}
                   </a>
                 </li>
               </ul>
             </div>
 
             <div className="footer-column">
-              <h4>Legales</h4>
+              <h4>{t('footer.legal')}</h4>
               <ul>
                 <li>
                   <a href="#" onClick={(e) => e.preventDefault()}>
-                    Manual de Usuario
+                    {t('footer.userManual')}
                   </a>
                 </li>
                 <li>
-                  <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
-                    Política de Privacidad
+                  <a href="#" onClick={(e) => e.preventDefault()}>
+                    {t('footer.privacyPolicy')}
                   </a>
                 </li>
                 <li>
-                  <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
-                    Términos de Uso
+                  <a href="#" onClick={(e) => e.preventDefault()}>
+                    {t('footer.termsOfUse')}
                   </a>
                 </li>
                 <li>
                   <a href="https://investigacion.unas.edu.pe/documentos-normativos" target="_blank" rel="noopener noreferrer">
-                    Reglamento de Investigación
+                    {t('footer.researchRegulations')}
                   </a>
                 </li>
               </ul>
@@ -524,7 +498,7 @@ export const SobreSgiPage: React.FC = () => {
         </div>
 
         <div className="footer-bottom-copyright">
-          <p>© 2026 SGI - Facultad de Ingeniería en Informática y Sistemas - UNAS. Todos los derechos reservados.</p>
+          <p>{t('footer.copyrightSGI')}</p>
         </div>
       </footer>
     </div>
