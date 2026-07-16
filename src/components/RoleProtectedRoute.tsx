@@ -16,13 +16,13 @@ const RoleProtectedRoute = ({
   fallbackPath = '/dashboard',
 }: RoleProtectedRouteProps) => {
   const { currentRole } = useContext(AuthContext);
-  const { addToast } = useToast();
+  const { showToast } = useToast();
   const { t } = useTranslation('common');
   const hasAccess = currentRole !== null && allowedRoles.includes(currentRole);
 
   useEffect(() => {
     if (!hasAccess) {
-      addToast(t('accessDeniedMessage'), 'warning');
+      showToast(t('accessDeniedMessage'), 'warning');
     }
   }, [hasAccess]);
 

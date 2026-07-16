@@ -88,8 +88,7 @@ export const ReviewProgressReports: React.FC = () => {
 
   useEffect(() => {
     fetchReports();
-    console.debug('loadingDetailState:', loadingDetail);
-  }, [filterStatus, loadingDetail]);
+  }, [filterStatus]);
 
   React.useEffect(() => {
     setPage(1);
