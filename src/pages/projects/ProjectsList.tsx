@@ -25,6 +25,7 @@ import {
   TableCell,
 } from '../../components/ui/Table';
 
+import Pagination from '../../components/ui/Pagination';
 import { useTranslation } from 'react-i18next';
 import { projectService } from '../../services/projectService';
 import type { Project } from '../../services/projectService';
@@ -114,6 +115,8 @@ const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   gap: '8px',
 });
 
+const PAGE_SIZE = 10;
+
 export const ProjectsList: React.FC = () => {
   const { t } = useTranslation('projects');
   const [activeTab, setActiveTab] = useState<'proposals' | 'drafts'>('proposals');
@@ -127,6 +130,8 @@ export const ProjectsList: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');
+  const [pageProposals, setPageProposals] = useState(1);
+  const [pageDrafts, setPageDrafts] = useState(1);
 
   async function loadProposals() {
     try {
@@ -201,6 +206,12 @@ export const ProjectsList: React.FC = () => {
     });
   }, [projects, searchTerm, statusFilter]);
 
+  const totalProposalsPages = Math.ceil(filteredProjects.length / PAGE_SIZE);
+  const paginatedProjects = filteredProjects.slice(
+    (pageProposals - 1) * PAGE_SIZE,
+    pageProposals * PAGE_SIZE
+  );
+
   const filteredDrafts = useMemo(() => {
     const search = normalizeText(searchTerm);
     return drafts.filter((draft) => {
@@ -213,6 +224,20 @@ export const ProjectsList: React.FC = () => {
       );
     });
   }, [drafts, searchTerm]);
+
+  const totalDraftsPages = Math.ceil(filteredDrafts.length / PAGE_SIZE);
+  const paginatedDrafts = filteredDrafts.slice(
+    (pageDrafts - 1) * PAGE_SIZE,
+    pageDrafts * PAGE_SIZE
+  );
+
+  React.useEffect(() => {
+    setPageProposals(1);
+  }, [searchTerm, statusFilter]);
+
+  React.useEffect(() => {
+    setPageDrafts(1);
+  }, [searchTerm]);
 
   const postulatedCount = projects.filter((p) => isStatus(p, ['POSTULATED', 'POSTULADO'])).length;
   const inProgressCount = projects.filter((p) => isStatus(p, ['IN_PROGRESS', 'EN_EJECUCION', 'EN_EJECUCIÓN', 'ACTIVE', 'ACTIVO'])).length;
@@ -451,7 +476,7 @@ export const ProjectsList: React.FC = () => {
                     </td>
                   </TableRow>
                 ) : (
-                  filteredProjects.map((item) => (
+                  paginatedProjects.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell style={{ fontWeight: 700 }}>
                         {item.code || `PRY-${item.id}`}
@@ -502,6 +527,13 @@ export const ProjectsList: React.FC = () => {
                 )}
               </TableBody>
             </TableContainer>
+            <Pagination
+              currentPage={pageProposals}
+              totalPages={totalProposalsPages}
+              totalItems={filteredProjects.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setPageProposals}
+            />
           ) : (
             <TableContainer>
               <TableHead>
@@ -535,7 +567,7 @@ export const ProjectsList: React.FC = () => {
                     </td>
                   </TableRow>
                 ) : (
-                  filteredDrafts.map((item) => (
+                  paginatedDrafts.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell style={{ fontWeight: 700 }}>
                         {item.code || `BOR-${item.id}`}
@@ -591,6 +623,13 @@ export const ProjectsList: React.FC = () => {
                 )}
               </TableBody>
             </TableContainer>
+            <Pagination
+              currentPage={pageDrafts}
+              totalPages={totalDraftsPages}
+              totalItems={filteredDrafts.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setPageDrafts}
+            />
           )}
         </CardContent>
       </Card>

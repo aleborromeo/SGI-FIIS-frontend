@@ -4,6 +4,7 @@ import { UserPlus, User, Phone, Mail, Shield, CheckCircle, Copy, RefreshCw, Key,
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import Pagination from '../../components/ui/Pagination';
 import {
   TableContainer,
   TableHead,
@@ -325,57 +326,6 @@ export const CreateUser: React.FC = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  const renderPageNumbers = () => {
-    const pages: (number | string)[] = [];
-    const maxVisible = 5;
-
-    if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages.push(1);
-
-      let start = Math.max(2, currentPage - 1);
-      let end = Math.min(totalPages - 1, currentPage + 1);
-
-      if (currentPage <= 2) {
-        end = 3;
-      } else if (currentPage >= totalPages - 1) {
-        start = totalPages - 2;
-      }
-
-      if (start > 2) {
-        pages.push('ellipsis-start');
-      }
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-
-      if (end < totalPages - 1) {
-        pages.push('ellipsis-end');
-      }
-
-      pages.push(totalPages);
-    }
-
-    return pages.map((page, idx) => {
-      if (page === 'ellipsis-start' || page === 'ellipsis-end') {
-        return <span key={`ellipsis-${idx}`} className="pagination-ellipsis">...</span>;
-      }
-      return (
-        <button
-          key={`page-${page}`}
-          onClick={() => setCurrentPage(page as number)}
-          className={`pagination-number-btn ${currentPage === page ? 'active' : ''}`}
-        >
-          {page}
-        </button>
-      );
-    });
-  };
 
   return (
     <div className="create-user-view animate-fade-in full-screen-width">
@@ -742,27 +692,13 @@ export const CreateUser: React.FC = () => {
 
                   {/* Controles de Paginación */}
                   {totalPages > 1 && (
-                    <div className="pagination-wrapper-box">
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="pagination-arrow-btn"
-                        title="Página Anterior"
-                      >
-                        &lt;
-                      </button>
-                      <div className="pagination-numbers-list">
-                        {renderPageNumbers()}
-                      </div>
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="pagination-arrow-btn"
-                        title="Página Siguiente"
-                      >
-                        &gt;
-                      </button>
-                    </div>
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalItems={filteredUsers.length}
+                      pageSize={itemsPerPage}
+                      onPageChange={setCurrentPage}
+                    />
                   )}
                 </>
               )}

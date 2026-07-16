@@ -31,6 +31,7 @@ import {
   TableHeader, 
   TableCell 
 } from '../../components/ui/Table';
+import Pagination from '../../components/ui/Pagination';
 
 interface ThesisPlanItem {
   idPlanTesis: number;
@@ -60,6 +61,8 @@ export const ThesisPlansList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
 
   const loadData = async () => {
     try {
@@ -111,6 +114,10 @@ export const ThesisPlansList: React.FC = () => {
     }
   }, [currentRole, user]);
 
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchTerm, activeTab]);
+
   const getStatusLabel = (status: string | undefined): string => {
     if (!status) return t('thesis:statusLabels.noStatus');
     const normalized = status.toUpperCase();
@@ -155,6 +162,12 @@ export const ThesisPlansList: React.FC = () => {
       plan.estadoPlan.toLowerCase().includes(search)
     );
   });
+
+  const totalPages = Math.ceil(filteredPlans.length / PAGE_SIZE);
+  const pagedPlans = filteredPlans.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
 
   return (
     <div className="animate-fade-in" style={{ padding: '24px' }}>
@@ -296,7 +309,7 @@ export const ThesisPlansList: React.FC = () => {
               </TableHead>
 
               <TableBody>
-                {filteredPlans.map((plan) => (
+                {pagedPlans.map((plan) => (
                   <TableRow key={plan.idPlanTesis}>
                     <TableCell style={{ fontWeight: 700 }}>
                       {plan.idTramite ? `TESIS-${plan.idTramite}` : `PLAN-${plan.idPlanTesis}`}
@@ -362,6 +375,13 @@ export const ThesisPlansList: React.FC = () => {
               </TableBody>
             </TableContainer>
           )}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={filteredPlans.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
         </CardContent>
       </Card>
     </div>

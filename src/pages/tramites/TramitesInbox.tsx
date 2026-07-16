@@ -9,6 +9,7 @@ import { Spinner } from '../../components/common/Spinner';
 import { TramiteStatusBadge } from '../../components/business/TramiteStatusBadge';
 import { getEstadoTramiteLabel, getRolLabel, getTipoTramiteLabel } from '../../utils/tramiteLabels';
 import { Search, Eye, PenLine, Inbox } from 'lucide-react';
+import Pagination from '../../components/ui/Pagination';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { tramiteService, PENDING_STATE_BY_ROLE } from '../../services/tramiteService';
@@ -28,6 +29,8 @@ const ESTADOS: EstadoTramite[] = [
 
 const TIPOS: TipoTramite[] = ['PROYECTO', 'PLAN_TESIS', 'INFORME_AVANCE'];
 
+const PAGE_SIZE = 10;
+
 const formatFecha = (iso: string): string =>
   new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
 
@@ -40,6 +43,8 @@ export const TramitesInbox: React.FC = () => {
   const [filtroEstado, setFiltroEstado] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
   const [busqueda, setBusqueda] = useState('');
+
+const [page, setPage] = useState(1);
 
   const pendingState = currentRole ? PENDING_STATE_BY_ROLE[currentRole] : undefined;
   const isRevisor = Boolean(pendingState);
@@ -64,6 +69,16 @@ export const TramitesInbox: React.FC = () => {
       return true;
     });
   }, [tramites, filtroEstado, filtroTipo, busqueda]);
+
+const totalPages = Math.ceil(tramitesFiltrados.length / PAGE_SIZE);
+const paginatedTramites = tramitesFiltrados.slice(
+  (page - 1) * PAGE_SIZE,
+  page * PAGE_SIZE
+);
+
+React.useEffect(() => {
+  setPage(1);
+}, [busqueda, filtroEstado, filtroTipo]);
 
   const resumen = useMemo(() => ({
     total: tramites.length,
@@ -180,7 +195,7 @@ export const TramitesInbox: React.FC = () => {
                   </td>
                 </TableRow>
               ) : (
-                tramitesFiltrados.map((tramite) => {
+                paginatedTramites.map((tramite) => {
                   const pendienteDeMi = isRevisor && tramite.estadoActual === pendingState;
                   return (
                     <TableRow key={tramite.id}>
@@ -222,6 +237,14 @@ export const TramitesInbox: React.FC = () => {
               )}
             </TableBody>
           </TableContainer>
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={tramitesFiltrados.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
         </CardContent>
       </Card>
     </div>

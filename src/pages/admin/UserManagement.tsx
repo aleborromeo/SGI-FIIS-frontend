@@ -33,6 +33,7 @@ import {
 } from '../../services/userService';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
+import Pagination from '../../components/ui/Pagination';
 
 const ROLE_OPTIONS = [
   { value: 'ADMIN', label: 'Administrador' },
@@ -53,6 +54,8 @@ const ROLE_BADGE_MAP: Record<string, 'success' | 'info' | 'warning' | 'error' | 
   DECANO: 'warning',
   EVALUADOR: 'neutral',
 };
+
+const PAGE_SIZE = 10;
 
 interface UserFormData {
   dni: string;
@@ -79,6 +82,7 @@ export const UserManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
 
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -112,6 +116,16 @@ export const UserManagement: React.FC = () => {
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
+  const totalPages = Math.ceil(users.length / PAGE_SIZE);
+  const paginatedUsers = users.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [users]);
 
   const handleSearch = () => {
     loadUsers();
@@ -427,7 +441,7 @@ export const UserManagement: React.FC = () => {
               </td>
             </TableRow>
           ) : (
-            users.map((user) => (
+            paginatedUsers.map((user) => (
               <TableRow key={user.id}>
                 <TableCell style={{ fontWeight: 700 }}>{user.dni}</TableCell>
                 <TableCell>
@@ -484,6 +498,14 @@ export const UserManagement: React.FC = () => {
           )}
         </TableBody>
       </TableContainer>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={users.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+      />
 
       {showForm && (
         <div

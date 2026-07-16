@@ -25,6 +25,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card';
 import { Alert } from '../../components/ui/Alert';
+import Pagination from '../../components/ui/Pagination';
 
 interface AuditEvent {
   id: string;
@@ -181,6 +182,10 @@ export const ProjectAudit: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [message, setMessage] = useState<string | null>(null);
 
+  const PAGE_SIZE = 10;
+  const [eventsPage, setEventsPage] = useState(1);
+  const [docsPage, setDocsPage] = useState(1);
+
   const filteredEvents = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
 
@@ -197,6 +202,12 @@ export const ProjectAudit: React.FC = () => {
     });
   }, [searchTerm]);
 
+  const eventsTotalPages = Math.ceil(filteredEvents.length / PAGE_SIZE);
+  const pagedEvents = filteredEvents.slice(
+    (eventsPage - 1) * PAGE_SIZE,
+    eventsPage * PAGE_SIZE
+  );
+
   const filteredDocuments = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
 
@@ -210,6 +221,17 @@ export const ProjectAudit: React.FC = () => {
         document.type.toLowerCase().includes(search)
       );
     });
+  }, [searchTerm]);
+
+  const docsTotalPages = Math.ceil(filteredDocuments.length / PAGE_SIZE);
+  const pagedDocuments = filteredDocuments.slice(
+    (docsPage - 1) * PAGE_SIZE,
+    docsPage * PAGE_SIZE
+  );
+
+  React.useEffect(() => {
+    setEventsPage(1);
+    setDocsPage(1);
   }, [searchTerm]);
 
   function handlePrint() {
@@ -517,7 +539,7 @@ export const ProjectAudit: React.FC = () => {
                     {t('projects:audit.noDocumentsFound')}
                   </p>
                 ) : (
-                  filteredDocuments.map((document) => (
+                  pagedDocuments.map((document) => (
                     <div
                       key={document.id}
                       style={{
@@ -573,6 +595,13 @@ export const ProjectAudit: React.FC = () => {
                   ))
                 )}
               </div>
+              <Pagination
+                currentPage={docsPage}
+                totalPages={docsTotalPages}
+                totalItems={filteredDocuments.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setDocsPage}
+              />
             </CardContent>
           </Card>
 
@@ -649,7 +678,7 @@ export const ProjectAudit: React.FC = () => {
                   {t('projects:audit.noMovementsFound')}
                 </p>
               ) : (
-                filteredEvents.map((event) => (
+                pagedEvents.map((event) => (
                   <div
                     key={event.id}
                     style={{
@@ -745,6 +774,13 @@ export const ProjectAudit: React.FC = () => {
                 {t('projects:audit.attachEvidence')}
               </Button>
             </div>
+            <Pagination
+              currentPage={eventsPage}
+              totalPages={eventsTotalPages}
+              totalItems={filteredEvents.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setEventsPage}
+            />
           </CardContent>
         </Card>
       </div>
