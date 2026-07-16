@@ -50,6 +50,12 @@ function buildUrl(endpoint: string, params?: FetchOptions['params']): string {
   return url;
 }
 
+/**
+ * RNF-05 CSRF Mitigation Strategy:
+ * - Uses JWT Bearer tokens (not cookies), which inherently mitigates CSRF
+ * - Adds X-Requested-With header to prevent simple cross-origin form attacks
+ * - Backend should reject requests without this header for state-changing operations
+ */
 async function request<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const token = getToken();
   const headers = new Headers(options.headers);
@@ -61,6 +67,10 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
 
   if (!headers.has('Accept')) {
     headers.set('Accept', 'application/json');
+  }
+
+  if (!headers.has('X-Requested-With')) {
+    headers.set('X-Requested-With', 'XMLHttpRequest');
   }
 
   if (token) {
