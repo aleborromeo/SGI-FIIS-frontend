@@ -7,6 +7,7 @@ export interface CallResponse {
   startDate: string;
   endDate: string;
   status: string; // ABIERTA | CERRADA | FINALIZADA
+  targetAudience: string;
   documentId?: number;
   researchLineIds: number[];
 }
@@ -16,7 +17,8 @@ export interface CreateCallPayload {
   description: string;
   startDate: string;
   endDate: string;
-  researchLineIds: number[];
+  targetAudience: string;
+  researchLineIds?: number[];
   documentId?: number;
   // Soporte dual snake_case para backend
   titulo_convocatoria?: string;
@@ -24,6 +26,7 @@ export interface CreateCallPayload {
   fecha_inicio?: string;
   fecha_fin?: string;
   estado?: string;
+  poblacion_objetivo?: string;
 }
 
 function normalizeStatus(status?: string): string {
@@ -45,6 +48,7 @@ export function normalizeCall(data: any): CallResponse {
     startDate: data.fecha_inicio || data.startDate || '',
     endDate: data.fecha_fin || data.endDate || '',
     status: normalizeStatus(data.estado || data.status),
+    targetAudience: data.targetAudience || data.poblacion_objetivo || 'AMBOS',
     documentId: data.documentId,
     researchLineIds: data.researchLineIds || [],
   };
@@ -77,6 +81,7 @@ export const callService = {
       descripcion: data.description,
       fecha_inicio: data.startDate,
       fecha_fin: data.endDate,
+      poblacion_objetivo: data.targetAudience,
       estado: 'ABIERTA',
       status: 'ABIERTA',
     };
@@ -98,7 +103,9 @@ export const callService = {
       description: data.description,
       startDate: data.startDate,
       endDate: data.endDate,
-      researchLineIds: data.researchLineIds,
+      targetAudience: data.targetAudience,
+      poblacion_objetivo: data.targetAudience,
+      researchLineIds: data.researchLineIds || [],
       documentId: data.documentId,
     };
     const res = await api.put<any>(`/api/v1/calls/${id}`, payload);

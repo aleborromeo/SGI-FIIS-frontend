@@ -19,6 +19,7 @@ export function normalizeConvocatoria(data: any): Convocatoria {
     startDate: data.fecha_inicio || data.startDate || '',
     endDate: data.fecha_fin || data.endDate || '',
     status: normalizeStatus(data.estado || data.status),
+    targetAudience: data.targetAudience || data.poblacion_objetivo || 'AMBOS',
     researchLineIds: data.researchLineIds || [],
     documentId: data.documentId,
   };
