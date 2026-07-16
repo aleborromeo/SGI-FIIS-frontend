@@ -146,7 +146,8 @@
       "RECHAZADO_POR_DIRECTOR": "Rechazado por el Director",
       "RECHAZADO_POR_REVISOR": "Rechazado por el revisor",
       "RESOLUCION_REGISTRADA": "Resolución registrada",
-      "TRAMITE_FINALIZADO": "Trámite finalizado"
+      "TRAMITE_FINALIZADO": "Trámite finalizado",
+      "REGISTRAR_PLAN_TESIS": "Registrar plan de tesis"
     }
   },
   "list": {

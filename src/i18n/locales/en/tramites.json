@@ -146,7 +146,8 @@
       "RECHAZADO_POR_DIRECTOR": "Rejected by Director",
       "RECHAZADO_POR_REVISOR": "Rejected by reviewer",
       "RESOLUCION_REGISTRADA": "Resolution registered",
-      "TRAMITE_FINALIZADO": "Procedure finalized"
+      "TRAMITE_FINALIZADO": "Procedure finalized",
+      "REGISTRAR_PLAN_TESIS": "Register thesis plan"
     }
   },
   "list": {
