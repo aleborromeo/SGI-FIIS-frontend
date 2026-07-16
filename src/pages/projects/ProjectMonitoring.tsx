@@ -317,7 +317,7 @@ export const ProjectMonitoring: React.FC = () => {
           variant="secondary"
           onClick={() => {
             if (r.attachedDocumentId) {
-              window.open(documentService.download(r.attachedDocumentId), '_blank');
+              documentService.downloadFile(r.attachedDocumentId, r.fileName);
             }
           }}
         >
@@ -721,7 +721,7 @@ export const ProjectMonitoring: React.FC = () => {
                             <button 
                               type="button"
                               style={{ background: 'none', border: 'none', padding: 0, color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' }}
-                              onClick={() => window.open(documentService.download(r.attachedDocumentId), '_blank')}
+                              onClick={() => documentService.downloadFile(r.attachedDocumentId, r.fileName)}
                             >
                               {r.fileName || `informe_${period.name.replace(' ', '_').toLowerCase()}.pdf`}
                             </button>
@@ -785,7 +785,7 @@ export const ProjectMonitoring: React.FC = () => {
                             variant="secondary"
                             onClick={() => {
                               if (project.documentId) {
-                                window.open(documentService.download(project.documentId), '_blank');
+                                documentService.downloadFile(project.documentId, documentName);
                               } else {
                                 toast.showError(t('projects:monitoring.noInitialFile'));
                               }
@@ -805,7 +805,7 @@ export const ProjectMonitoring: React.FC = () => {
                               variant="secondary"
                               onClick={() => {
                                 toast.showSuccess(t('projects:monitoring.downloadingResolution'));
-                                window.open(documentService.download(project.documentId || 1), '_blank');
+                                documentService.downloadFile(project.documentId || 1, 'Resolución_R.D._045.pdf');
                               }}
                             >
                               Descargar
@@ -916,7 +916,7 @@ export const ProjectMonitoring: React.FC = () => {
                         <button
                           type="button"
                           style={{ background: 'none', border: 'none', padding: 0, color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' }}
-                          onClick={() => window.open(documentService.download(project.documentId!), '_blank')}
+                           onClick={() => documentService.downloadFile(project.documentId!, documentName)}
                         >
                           {documentName}
                         </button>

@@ -128,6 +128,8 @@ export const ThesisTraceability: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage] = useState<string | null>(null);
+  const [observeModal, setObserveModal] = useState<{ open: boolean; type: 'plan' | 'report' }>({ open: false, type: 'plan' });
+  const [observeText, setObserveText] = useState('');
 
   const steps = useMemo(() => {
     const [studentStatus, coordinatorStatus, directorStatus, currentStatus] =
@@ -232,51 +234,58 @@ export const ThesisTraceability: React.FC = () => {
     }
   }
 
-  async function handleObserveReport() {
+  function handleObserveReport() {
     if (!report) return;
-    const obs = window.prompt(t('thesis:traceability.actions.observeReportPrompt'));
-    if (obs === null) return;
-    if (!obs.trim()) {
-      toast.showError(t('thesis:traceability.actions.observeReportRequired'));
-      return;
-    }
-    try {
-      setLoading(true);
-      await thesisService.observeReport(report.idInformeTesis, obs.trim());
-      toast.showSuccess(t('thesis:traceability.actions.observeReportSuccess'));
-      window.location.reload();
-    } catch (err: any) {
-      toast.showError(err.message || t('thesis:traceability.actions.observeReportError'));
-    } finally {
-      setLoading(false);
-    }
+    setObserveText('');
+    setObserveModal({ open: true, type: 'report' });
   }
 
-  async function handleObserve() {
+  function handleObserve() {
     if (!plan || !id) return;
-    const notes = window.prompt(t('thesis:traceability.actions.observePrompt'));
-    if (notes === null) return;
-    if (!notes.trim()) {
-      toast.error(t('thesis:traceability.actions.observeRequired'));
+    setObserveText('');
+    setObserveModal({ open: true, type: 'plan' });
+  }
+
+  async function submitObserve() {
+    const notes = observeText.trim();
+    if (!notes) {
+      toast.showError(t('thesis:traceability.actions.observeRequired'));
       return;
     }
 
-    try {
-      setLoading(true);
-      if (currentRole === 'COORDINADOR_GRUPO') {
-        await thesisService.observeCoordinator(id, notes);
-      } else if (currentRole === 'DIRECTOR_INVESTIGACION') {
-        await thesisService.observeDirector(id, notes);
-      } else {
-        toast.error(t('thesis:traceability.actions.observeRoleError'));
-        return;
+    setObserveModal({ open: false, type: observeModal.type });
+
+    if (observeModal.type === 'report') {
+      if (!report) return;
+      try {
+        setLoading(true);
+        await thesisService.observeReport(report.idInformeTesis, notes);
+        toast.showSuccess(t('thesis:traceability.actions.observeReportSuccess'));
+        window.location.reload();
+      } catch (err: any) {
+        toast.showError(err.message || t('thesis:traceability.actions.observeReportError'));
+      } finally {
+        setLoading(false);
       }
-      toast.success(t('thesis:traceability.actions.observeSuccess'));
-      window.location.reload();
-    } catch (err: any) {
-      toast.error(err.message || t('thesis:traceability.actions.observeError'));
-    } finally {
-      setLoading(false);
+    } else {
+      if (!plan || !id) return;
+      try {
+        setLoading(true);
+        if (currentRole === 'COORDINADOR_GRUPO') {
+          await thesisService.observeCoordinator(id, notes);
+        } else if (currentRole === 'DIRECTOR_INVESTIGACION') {
+          await thesisService.observeDirector(id, notes);
+        } else {
+          toast.showError(t('thesis:traceability.actions.observeRoleError'));
+          return;
+        }
+        toast.showSuccess(t('thesis:traceability.actions.observeSuccess'));
+        window.location.reload();
+      } catch (err: any) {
+        toast.showError(err.message || t('thesis:traceability.actions.observeError'));
+      } finally {
+        setLoading(false);
+      }
     }
   }
 
@@ -596,8 +605,7 @@ export const ThesisTraceability: React.FC = () => {
                         variant="secondary"
                         icon={<Download size={16} />}
                         onClick={() => {
-                          const url = documentService.download(report.idDocumentoTesis);
-                          window.open(url, '_blank');
+                          documentService.downloadFile(report.idDocumentoTesis, report.tituloFinal || 'Informe_Tesis_Final.pdf');
                         }}
                       >
                         {t('thesis:traceability.downloadThesis')}
@@ -699,8 +707,7 @@ export const ThesisTraceability: React.FC = () => {
                   variant="secondary"
                   onClick={() => {
                     if (plan.idDocumentoActual) {
-                      const url = documentService.download(plan.idDocumentoActual);
-                      window.open(url, '_blank');
+                      documentService.downloadFile(plan.idDocumentoActual, readValue(plan, ['nombreDocumento', 'documentName', 'fileName'], 'Plan_Tesis.pdf'));
                     }
                   }}
                   disabled={!plan.idDocumentoActual}
@@ -916,6 +923,72 @@ export const ThesisTraceability: React.FC = () => {
           >
             {t('thesis:traceability.registerRectification')}
           </Button>
+        </div>
+      )}
+
+      {observeModal.open && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={() => setObserveModal({ open: false, type: observeModal.type })}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-lg)',
+              padding: '28px', width: '100%', maxWidth: '520px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.24)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
+                {observeModal.type === 'report'
+                  ? t('thesis:traceability.actions.observeReportPrompt')
+                  : t('thesis:traceability.actions.observePrompt')}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setObserveModal({ open: false, type: observeModal.type })}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <textarea
+              rows={5}
+              value={observeText}
+              onChange={e => setObserveText(e.target.value)}
+              placeholder={t('thesis:traceability.actions.observePrompt')}
+              style={{
+                width: '100%', padding: '12px 14px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--outline)',
+                fontSize: '14px', fontFamily: 'inherit',
+                backgroundColor: 'var(--surface)', color: 'var(--on-surface)',
+                resize: 'vertical', outline: 'none', boxSizing: 'border-box',
+              }}
+              onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--outline)')}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '18px' }}>
+              <Button
+                variant="secondary"
+                onClick={() => setObserveModal({ open: false, type: observeModal.type })}
+              >
+                {t('thesis:traceability.cancel', 'Cancelar')}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={submitObserve}
+                disabled={!observeText.trim()}
+              >
+                {t('thesis:traceability.send', 'Enviar')}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

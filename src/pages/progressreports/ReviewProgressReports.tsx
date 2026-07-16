@@ -149,13 +149,12 @@ export const ReviewProgressReports: React.FC = () => {
     }
   };
 
-  const handleDownload = (docId?: number) => {
+  const handleDownload = (docId?: number, fileName?: string) => {
     if (!docId) {
       toast.showError(t('review.toast.noDocument'));
       return;
     }
-    const url = documentService.download(docId);
-    window.open(url, '_blank');
+    documentService.downloadFile(docId, fileName);
   };
 
   const renderReportsContent = () => {
@@ -283,7 +282,7 @@ export const ReviewProgressReports: React.FC = () => {
                       style={{ padding: '8px' }}
                       title={t('review.card.downloadDoc')}
                       icon={<Download size={18} />}
-                      onClick={() => handleDownload(report.attachedDocumentId)}
+                      onClick={() => handleDownload(report.attachedDocumentId, report.fileName)}
                     />
                   )}
 
@@ -494,7 +493,7 @@ export const ReviewProgressReports: React.FC = () => {
                   <Button
                     variant="secondary"
                     icon={<Download size={15} />}
-                    onClick={() => handleDownload(reportDetail.attachments[0].id)}
+                    onClick={() => handleDownload(reportDetail.attachments[0].id, reportDetail.attachments[0].fileName)}
                   >
                     {t('review.detail.download')} {reportDetail.attachments[0].fileName}
                   </Button>

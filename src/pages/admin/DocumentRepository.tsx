@@ -300,11 +300,7 @@ export const DocumentRepository: React.FC = () => {
                       variant="secondary"
                       icon={<Download size={14} />}
                       onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = documentService.download(doc.id);
-                        link.target = '_blank';
-                        link.download = doc.fileName;
-                        link.click();
+                        documentService.downloadFile(doc.id, doc.fileName);
                       }}
                     >
                       {t('documents.btnDownload')}
@@ -397,11 +393,7 @@ export const DocumentRepository: React.FC = () => {
                     variant="primary"
                     icon={<Download size={16} />}
                     onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = documentService.download(previewDoc.id);
-                      link.target = '_blank';
-                      link.download = previewDoc.fileName;
-                      link.click();
+                      documentService.downloadFile(previewDoc.id, previewDoc.fileName);
                     }}
                   >
                     {t('documents.preview.downloadToView')}
