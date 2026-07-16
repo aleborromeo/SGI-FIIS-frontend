@@ -50,7 +50,7 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
       />
 
       <CardContent sx={{ flex: 1, pb: 1, pt: 2.5, px: 2.5, display: 'flex', flexDirection: 'column' }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Box 
             sx={{
               bgcolor: 'rgba(26, 54, 93, 0.06)',
@@ -81,9 +81,9 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
 
         <Typography 
           variant="h6" 
-          fontWeight={700} 
           gutterBottom 
           sx={{ 
+            fontWeight: 700,
             lineHeight: 1.3, 
             color: '#002045',
             mb: 1.5,
@@ -121,24 +121,24 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
           }}
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Stack direction="row" alignItems="center" spacing={1}>
+            <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
               <Calendar size={14} style={{ color: '#455f88' }} />
-              <Typography variant="caption" color="text.secondary" fontWeight={500}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                 Inicio:
               </Typography>
             </Stack>
-            <Typography variant="caption" fontWeight={600} color="text.primary">
+            <Typography variant="caption" sx={{ fontWeight: 600 }} color="text.primary">
               {convocatoria.startDate}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Stack direction="row" alignItems="center" spacing={1}>
+            <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
               <Calendar size={14} style={{ color: '#ba1a1a' }} />
-              <Typography variant="caption" color="text.secondary" fontWeight={500}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                 Cierre:
               </Typography>
             </Stack>
-            <Typography variant="caption" fontWeight={600} color="#ba1a1a">
+            <Typography variant="caption" sx={{ fontWeight: 600 }} color="#ba1a1a">
               {convocatoria.endDate}
             </Typography>
           </Box>
