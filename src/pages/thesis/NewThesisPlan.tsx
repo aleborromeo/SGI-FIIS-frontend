@@ -81,14 +81,12 @@ export const NewThesisPlan: React.FC = () => {
         console.error('Error cargando catálogos de tesis', err);
       }
 
-      if (currentRole !== 'ESTUDIANTE') {
-        try {
-          const usersData = await api.get<any[]>('/users?role=DOCENTE_INVESTIGADOR');
-          const arr = Array.isArray(usersData) ? usersData : (usersData as any)?.content ?? [];
-          setDocentes(arr);
-        } catch {
-          setDocentes([]);
-        }
+      try {
+        const usersData = await api.get<any[]>('/users?role=DOCENTE_INVESTIGADOR');
+        const arr = Array.isArray(usersData) ? usersData : (usersData as any)?.content ?? [];
+        setDocentes(arr);
+      } catch {
+        setDocentes([]);
       }
 
       setLoadingCatalogs(false);

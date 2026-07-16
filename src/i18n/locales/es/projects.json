@@ -618,16 +618,17 @@
     "evaluationSubmitted": "Evaluación enviada con éxito",
     "evaluationSubmitError": "Error al enviar evaluación",
     "criteria": {
-      "problem": "Planteamiento del problema",
-      "framework": "Marco teórico y antecedentes",
-      "methodology": "Metodología propuesta",
-      "schedule": "Cronograma y presupuesto",
-      "writing": "Formato y redacción"
+      "pertinencia": "Pertinencia",
+      "marco_teorico": "Marco teórico",
+      "objetivos": "Objetivos",
+      "viabilidad": "Viabilidad",
+      "impacto": "Impacto"
     },
     "verdicts": {
       "approved": "Aprobado",
       "withObservations": "Con observaciones",
-      "rejected": "Rechazado"
-    }
+      "rejected": "Desaprobado"
+    },
+    "anonymousNotice": "Su identidad será confidencial para el postulante."
   }
 }

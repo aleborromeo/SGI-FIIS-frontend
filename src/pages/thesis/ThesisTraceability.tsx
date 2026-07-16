@@ -130,6 +130,8 @@ export const ThesisTraceability: React.FC = () => {
   const [actionMessage] = useState<string | null>(null);
   const [observeModal, setObserveModal] = useState<{ open: boolean; type: 'plan' | 'report' }>({ open: false, type: 'plan' });
   const [observeText, setObserveText] = useState('');
+  const [rectifyFile, setRectifyFile] = useState<File | null>(null);
+  const [rectifying, setRectifying] = useState(false);
 
   const steps = useMemo(() => {
     const [studentStatus, coordinatorStatus, directorStatus, currentStatus] =
@@ -335,18 +337,23 @@ export const ThesisTraceability: React.FC = () => {
     }
 
     try {
-      setLoading(true);
+      setRectifying(true);
+      let docId = plan.idDocumentoActual;
+      if (rectifyFile) {
+        const uploaded = await documentService.upload(rectifyFile);
+        docId = uploaded.id;
+      }
       await thesisService.rectifyPlan(id, {
         resumenSubsanado: plan.resumen,
         comentarioSubsanacion: comment,
-        idDocumentoActual: plan.idDocumentoActual
+        idDocumentoActual: docId,
       });
       toast.success(t('thesis:traceability.actions.rectifySuccess'));
       window.location.reload();
     } catch (err: any) {
       toast.error(err.message || t('thesis:traceability.actions.rectifyError'));
     } finally {
-      setLoading(false);
+      setRectifying(false);
     }
   }
 
@@ -908,20 +915,38 @@ export const ThesisTraceability: React.FC = () => {
         <div
           style={{
             display: 'flex',
-            justifyContent: 'center',
+            flexDirection: 'column',
+            alignItems: 'center',
             gap: '16px',
             marginTop: '32px',
             paddingTop: '32px',
             borderTop: '1px solid var(--outline-variant)',
           }}
         >
+          <div style={{ width: '100%', maxWidth: '400px' }}>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px', color: 'var(--on-surface)' }}>
+              {t('thesis:traceability.newDocumentLabel', { defaultValue: 'Documento corregido (opcional)' })}
+            </label>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={(e) => setRectifyFile(e.target.files?.[0] ?? null)}
+              style={{ display: 'block', width: '100%', padding: '8px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '13px' }}
+            />
+            {rectifyFile && (
+              <span style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '4px', display: 'block' }}>
+                {rectifyFile.name}
+              </span>
+            )}
+          </div>
           <Button
             variant="primary"
             icon={<Send size={18} />}
             style={{ width: '100%', maxWidth: '300px' }}
             onClick={handleReturnForCorrection}
+            disabled={rectifying}
           >
-            {t('thesis:traceability.registerRectification')}
+            {rectifying ? t('thesis:traceability.rectifying', { defaultValue: 'Rectificando...' }) : t('thesis:traceability.registerRectification')}
           </Button>
         </div>
       )}

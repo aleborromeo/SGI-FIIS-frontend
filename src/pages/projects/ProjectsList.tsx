@@ -444,7 +444,8 @@ export const ProjectsList: React.FC = () => {
           </div>
 
           {activeTab === 'proposals' ? (
-            <TableContainer>
+            <>
+              <TableContainer>
               <TableHead>
                 <TableRow>
                   <TableHeader>{t('projects:list.columns.code')}</TableHeader>
@@ -534,8 +535,10 @@ export const ProjectsList: React.FC = () => {
               pageSize={PAGE_SIZE}
               onPageChange={setPageProposals}
             />
+            </>
           ) : (
-            <TableContainer>
+            <>
+              <TableContainer>
               <TableHead>
                 <TableRow>
                   <TableHeader>{t('projects:list.columns.code')}</TableHeader>
@@ -630,6 +633,7 @@ export const ProjectsList: React.FC = () => {
               pageSize={PAGE_SIZE}
               onPageChange={setPageDrafts}
             />
+            </>
           )}
         </CardContent>
       </Card>

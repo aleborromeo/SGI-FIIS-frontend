@@ -21,6 +21,7 @@ import { ArrowLeft, CheckCircle, FileCheck, PenLine, ThumbsUp, XCircle } from 'l
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { tramiteService, PENDING_STATE_BY_ROLE } from '../../services/tramiteService';
+import { documentService } from '../../services/documentService';
 import type { EstadoTramite, MovimientoTramite, ObservacionTramite, Tramite } from '../../types/tramites';
 
 const formatFechaHora = (iso: string): string =>
@@ -100,6 +101,7 @@ export const TramiteDetail: React.FC = () => {
   const [showObservarForm, setShowObservarForm] = useState(false);
   const [textoObservacion, setTextoObservacion] = useState('');
   const [observacionError, setObservacionError] = useState<string | undefined>(undefined);
+  const [observationFile, setObservationFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const tramiteId = Number(id);
@@ -148,13 +150,23 @@ export const TramiteDetail: React.FC = () => {
       .finally(() => setSubmitting(false));
   };
 
-  const handleObservar = () => {
+  const handleObservar = async () => {
     if (!textoObservacion.trim()) {
       setObservacionError(t('tramites:detailPage.observationForm.requiredError'));
       return;
     }
+    let attachedDocumentId: number | undefined;
+    if (observationFile) {
+      try {
+        const uploaded = await documentService.upload(observationFile);
+        attachedDocumentId = uploaded.id;
+      } catch {
+        setObservacionError(t('tramites:detailPage.observationForm.uploadError', { defaultValue: 'Error al subir el archivo adjunto.' }));
+        return;
+      }
+    }
     ejecutarAccion(
-      () => tramiteService.flag(tramiteId, textoObservacion.trim()),
+      () => tramiteService.flag(tramiteId, textoObservacion.trim(), attachedDocumentId),
       t('tramites:detailPage.feedback.observed'),
     );
   };
@@ -305,6 +317,22 @@ export const TramiteDetail: React.FC = () => {
                         setObservacionError(undefined);
                       }}
                     />
+                    <div>
+                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px', color: 'var(--on-surface)' }}>
+                        {t('tramites:detailPage.observationForm.attachmentLabel', { defaultValue: 'Archivo adjunto (opcional)' })}
+                      </label>
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        onChange={(e) => setObservationFile(e.target.files?.[0] ?? null)}
+                        style={{ display: 'block', width: '100%', padding: '8px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '13px' }}
+                      />
+                      {observationFile && (
+                        <span style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '4px', display: 'block' }}>
+                          {observationFile.name}
+                        </span>
+                      )}
+                    </div>
                     <Button variant="secondary" disabled={submitting} onClick={handleObservar}>
                       {t('tramites:detailPage.buttons.confirmObservation')}
                     </Button>

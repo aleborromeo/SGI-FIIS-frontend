@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Users,
@@ -33,6 +33,7 @@ import {
 } from '../../services/userService';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
+import { AuthContext } from '../../context/AuthContext';
 import Pagination from '../../components/ui/Pagination';
 
 const ROLE_OPTIONS = [
@@ -92,6 +93,7 @@ export const UserManagement: React.FC = () => {
 
   const toast = useToast();
   const confirm = useConfirm();
+  const { user: currentUser } = useContext(AuthContext);
 
   const roleLabelMap = (code: string): string => {
     const key = `users.roles.${code}`;
@@ -220,6 +222,12 @@ export const UserManagement: React.FC = () => {
 
   const handleToggleStatus = async (user: User) => {
     const newActive = !user.active;
+
+    if (!newActive && currentUser?.id === user.id) {
+      toast.error(t('users.toast.cannotDeactivateSelf', { defaultValue: 'No puede desactivar su propio usuario.' }));
+      return;
+    }
+
     const userName = `${user.firstNames} ${user.lastNames}`;
 
     const accepted = await confirm.confirmDialog({

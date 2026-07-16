@@ -58,6 +58,7 @@ import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
 import { ResearchLineDetail } from './pages/admin/ResearchLineDetail.tsx';
 import { ResearchGroups } from './pages/admin/ResearchGroups.tsx';
 import { NewResearchGroup } from './pages/admin/NewResearchGroup.tsx';
+import { EditResearchGroup } from './pages/admin/EditResearchGroup.tsx';
 import { ResearchGroupDetail } from './pages/admin/ResearchGroupDetail.tsx';
 
 // Auditoría
@@ -161,7 +162,11 @@ function App() {
                 {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
                 <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
                   <Route path="/dashboard" element={<RoleDashboards />} />
-                  <Route path="/metrics" element={<MetricsReportsPage />} />
+                  <Route path="/metrics" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION']}>
+                      <MetricsReportsPage />
+                    </RoleProtectedRoute>
+                  } />
 
                   {/* Tesis */}
                   <Route path="/thesis/plans" element={<ThesisPlansList />} />
@@ -187,7 +192,11 @@ function App() {
                     </RoleProtectedRoute>
                   } />
                   <Route path="/projects/:id" element={<ProjectMonitoring />} />
-                  <Route path="/projects/audit" element={<ProjectAudit />} />
+                  <Route path="/projects/audit" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION', 'DECANO']}>
+                      <ProjectAudit />
+                    </RoleProtectedRoute>
+                  } />
 
                   {/* Convocatorias */}
                   <Route path="/convocatorias" element={
@@ -293,6 +302,11 @@ function App() {
                   <Route path="/groups/:id" element={
                     <RoleProtectedRoute allowedRoles={['ADMIN']}>
                       <ResearchGroupDetail />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/groups/:id/edit" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <EditResearchGroup />
                     </RoleProtectedRoute>
                   } />
 

@@ -328,6 +328,17 @@ export const ReviewProgressReports: React.FC = () => {
                       >
                         {t('review.action.observe')}
                       </Button>
+
+                      {currentRole === 'DIRECTOR_INVESTIGACION' && (
+                        <Button
+                          variant="danger"
+                          style={{ padding: '8px 16px' }}
+                          icon={<X size={18} />}
+                          onClick={() => handleAction(report.id, 'reject')}
+                        >
+                          {t('review.action.reject')}
+                        </Button>
+                      )}
                     </>
                   )}
                 </div>

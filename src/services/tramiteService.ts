@@ -1,4 +1,5 @@
 import { api } from './api';
+import { documentService } from './documentService';
 import type {
   EstadoTramite,
   MovimientoTramite,
@@ -95,9 +96,10 @@ export const tramiteService = {
     return mapProcedureToTramite(res);
   },
 
-  flag: async (id: number, textoObservacion: string): Promise<Tramite> => {
+  flag: async (id: number, textoObservacion: string, attachedDocumentId?: number): Promise<Tramite> => {
     const res = await api.put<ProcedureResponseDto>(`/api/v1/procedures/${id}/flag`, {
       textoObservacion,
+      ...(attachedDocumentId ? { attachedDocumentId } : {}),
     });
     return mapProcedureToTramite(res);
   },
@@ -119,11 +121,18 @@ export const tramiteService = {
     return mapProcedureToTramite(res);
   },
 
-  subsanarObservacion: async (idObservacion: number, descripcion: string, attachedDocumentName: string | null): Promise<void> => {
+  subsanarObservacion: async (idObservacion: number, descripcion: string, file: File | null): Promise<void> => {
+    let attachedDocumentId: number | undefined;
+    if (file) {
+      const uploaded = await documentService.upload(file);
+      attachedDocumentId = uploaded.id;
+    }
+    const userStr = localStorage.getItem('sgi_user');
+    const user = userStr ? JSON.parse(userStr) : null;
     return api.post<void>(`/api/observations/${idObservacion}/remedy`, {
-      applicantId: 1,
+      applicantId: user?.id ?? 1,
       description: descripcion,
-      attachedDocumentId: attachedDocumentName ? 1 : undefined
+      attachedDocumentId,
     });
   },
 };

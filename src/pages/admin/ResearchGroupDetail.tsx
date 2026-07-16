@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, Users, Shield, UserPlus, Trash2, BookOpen, Plus,
-  PowerOff, Calendar, Tag,
+  PowerOff, Calendar, Tag, Pencil,
 } from 'lucide-react';
 import {
   researchService,
@@ -298,9 +298,14 @@ export const ResearchGroupDetail: React.FC = () => {
         </div>
 
         {group.active !== false && (
-          <Button variant="danger" onClick={handleDeactivateGroup} icon={<PowerOff size={16} />}>
-            {t('groupDetail.btnDeactivate')}
-          </Button>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <Button variant="secondary" onClick={() => navigate(`/groups/${id}/edit`)} icon={<Pencil size={16} />}>
+              {t('groupDetail.btnEdit', { defaultValue: 'Editar' })}
+            </Button>
+            <Button variant="danger" onClick={handleDeactivateGroup} icon={<PowerOff size={16} />}>
+              {t('groupDetail.btnDeactivate')}
+            </Button>
+          </div>
         )}
       </div>
 

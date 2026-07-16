@@ -24,24 +24,24 @@ interface EvaluationCriterion {
 }
 
 const criteriaList: EvaluationCriterion[] = [
-  { id: 'problem', name: 'Planteamiento del problema', weight: 20 },
-  { id: 'framework', name: 'Marco teórico y antecedentes', weight: 20 },
-  { id: 'methodology', name: 'Metodología propuesta', weight: 30 },
-  { id: 'schedule', name: 'Cronograma y presupuesto', weight: 15 },
-  { id: 'writing', name: 'Formato y redacción', weight: 15 },
+  { id: 'pertinencia', name: 'Pertinencia', weight: 20 },
+  { id: 'marco_teorico', name: 'Marco teórico', weight: 20 },
+  { id: 'objetivos', name: 'Objetivos', weight: 20 },
+  { id: 'viabilidad', name: 'Viabilidad', weight: 20 },
+  { id: 'impacto', name: 'Impacto', weight: 20 },
 ];
 
 function getVerdict(total: number): string {
   if (total >= 13) return 'APROBADO';
   if (total >= 10) return 'CON_OBSERVACIONES';
-  return 'RECHAZADO';
+  return 'DESAPROBADO';
 }
 
 function getVerdictLabel(verdict: string): string {
   const labels: Record<string, string> = {
     APROBADO: 'Aprobado',
     CON_OBSERVACIONES: 'Con observaciones',
-    RECHAZADO: 'Rechazado',
+    DESAPROBADO: 'Desaprobado',
   };
 
   return labels[verdict] ?? verdict;
@@ -131,7 +131,7 @@ export const EvaluationForm: React.FC = () => {
       const user = userStr ? JSON.parse(userStr) : { id: 1 };
       await evaluacionService.submitResult(evaluacionId, {
         idEvaluador: user.id,
-        resultado: Number(totalScore) >= 13 ? 'APROBADO' : 'RECHAZADO',
+        resultado: Number(totalScore) >= 13 ? 'APROBADO' : 'DESAPROBADO',
         puntaje: Math.round(Number(totalScore)),
         observaciones: generalComments
       });
@@ -182,6 +182,16 @@ export const EvaluationForm: React.FC = () => {
             }}
           >
             {t('projects:evaluation.evaluationId', { id: evaluacionId })}
+          </p>
+          <p
+            className="text-body-sm"
+            style={{
+              color: 'var(--on-surface-variant)',
+              marginTop: '4px',
+              fontStyle: 'italic',
+            }}
+          >
+            {t('projects:evaluation.anonymousNotice', { defaultValue: 'Su identidad será confidencial para el postulante.' })}
           </p>
         </div>
 

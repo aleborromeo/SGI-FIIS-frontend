@@ -9,13 +9,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   Save, ArrowLeft, AlertCircle, Calendar,
   Megaphone, FileText, ChevronRight, Check, Loader, Lock,
-  Users, GraduationCap, UserCheck,
+  Users, GraduationCap, UserCheck, BookOpen,
 } from 'lucide-react';
 
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/common/Spinner';
 import { useToast } from '../../context/ToastContext';
 import { callService } from '../../services/callService';
+import { researchService, type ResearchLine } from '../../services/researchService';
 
 type TargetAudience = 'DOCENTES' | 'ESTUDIANTES' | 'AMBOS';
 
@@ -59,12 +60,18 @@ export const EditConvocatoria: React.FC = () => {
     endDate: '',
   });
   const [targetAudience, setTargetAudience] = useState<TargetAudience>('AMBOS');
+  const [selectedLines, setSelectedLines] = useState<number[]>([]);
+  const [availableLines, setAvailableLines] = useState<ResearchLine[]>([]);
   const [loadingCall, setLoadingCall] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [callNotFound, setCallNotFound] = useState(false);
   const [callStatus, setCallStatus] = useState('');
+
+  useEffect(() => {
+    researchService.getLines(true).then(setAvailableLines).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -83,6 +90,7 @@ export const EditConvocatoria: React.FC = () => {
           endDate: call.endDate || '',
         });
         setTargetAudience((call.targetAudience as TargetAudience) || 'AMBOS');
+        setSelectedLines(call.researchLineIds || []);
       })
       .catch(() => setCallNotFound(true))
       .finally(() => setLoadingCall(false));
@@ -153,7 +161,7 @@ export const EditConvocatoria: React.FC = () => {
         startDate: formData.startDate,
         endDate: formData.endDate,
         targetAudience,
-        researchLineIds: [],
+        researchLineIds: selectedLines,
       });
       toast.success(t('pages.editPage.updateSuccess'));
       navigate('/convocatorias');
@@ -385,6 +393,58 @@ export const EditConvocatoria: React.FC = () => {
           <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <AlertCircle size={13} /> {errors.targetAudience}
           </p>
+        )}
+      </div>
+
+      {/* Seccion 3: Lineas de Investigacion */}
+      <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-xl)', padding: '28px', marginBottom: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+          <span style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: 'var(--secondary-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <BookOpen size={16} style={{ color: 'var(--on-secondary-container)' }} />
+          </span>
+          <div>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
+              {t('pages.editPage.linesTitle', { defaultValue: 'Líneas de Investigación' })}
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0 }}>
+              {t('pages.editPage.linesDescription', { defaultValue: 'Selecciona las líneas asociadas a esta convocatoria (opcional).' })}
+            </p>
+          </div>
+        </div>
+        {availableLines.length === 0 ? (
+          <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>
+            {t('pages.editPage.noLinesAvailable', { defaultValue: 'No hay líneas disponibles.' })}
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {availableLines.map(line => {
+              const selected = selectedLines.includes(line.id);
+              return (
+                <button
+                  key={line.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedLines(prev =>
+                      selected ? prev.filter(id => id !== line.id) : [...prev, line.id]
+                    );
+                  }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px',
+                    border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`,
+                    borderRadius: 'var(--radius-full)', cursor: 'pointer', fontSize: '13px', fontWeight: selected ? 700 : 500,
+                    backgroundColor: selected ? 'var(--primary-container)' : 'var(--surface)',
+                    color: selected ? 'var(--on-primary-container)' : 'var(--on-surface)',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <span style={{ width: '16px', height: '16px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', backgroundColor: selected ? 'var(--primary)' : 'transparent', border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}` }}>
+                    {selected && <Check size={10} style={{ color: 'white', strokeWidth: 3 }} />}
+                  </span>
+                  {line.lineName}
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
 

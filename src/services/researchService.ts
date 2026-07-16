@@ -125,6 +125,10 @@ export const researchService = {
     return api.post<ResearchGroup>('/research-groups', data);
   },
 
+  updateGroup: async (id: number, data: ResearchGroupRequest): Promise<ResearchGroup> => {
+    return api.put<ResearchGroup>(`/research-groups/${id}`, data);
+  },
+
   deactivateGroup: async (id: number): Promise<ResearchGroup> => {
     return api.patch<ResearchGroup>(`/research-groups/${id}/status`, { active: false });
   },
@@ -145,9 +149,9 @@ export const researchService = {
     return api.post<GroupMember>(`/research-groups/${id}/members`, { userId });
   },
 
-  /** Retira un miembro del grupo (eliminación lógica) */
+  /** Desactiva la membresía de un miembro (baja lógica, no eliminación) */
   removeMember: async (id: number, userId: number): Promise<GroupMember> => {
-    return api.delete<GroupMember>(`/research-groups/${id}/members/${userId}`);
+    return api.patch<GroupMember>(`/research-groups/${id}/members/${userId}/deactivate`, {});
   },
 
   /**

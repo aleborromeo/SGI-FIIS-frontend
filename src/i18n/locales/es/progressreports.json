@@ -354,7 +354,8 @@
     "action": {
       "forward": "Derivar",
       "approve": "Aprobar",
-      "observe": "Observar"
+      "observe": "Observar",
+      "reject": "Rechazar"
     },
     "stats": {
       "totalInTray": "Total en Bandeja",
