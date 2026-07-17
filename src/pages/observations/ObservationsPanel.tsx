@@ -8,6 +8,7 @@ import {
   RefreshCcw,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
 
 import { Card, CardContent } from '../../components/ui/Card';
@@ -20,22 +21,22 @@ import {
   type Observation,
 } from '../../services/observationService';
 
-function getStatusLabel(status?: string): string {
-  if (!status) return 'Pendiente';
+function getStatusLabel(status?: string, t?: (key: string) => string): string {
+  if (!status) return t ? t('panel.statuses.pending') : 'Pendiente';
 
   const normalized = status.toUpperCase();
 
   const dictionary: Record<string, string> = {
-    PENDING: 'Pendiente',
-    PENDIENTE: 'Pendiente',
-    OBSERVED: 'Observado',
-    OBSERVADO: 'Observado',
-    SUBSANADO: 'Subsanado',
-    REMEDIED: 'Subsanado',
-    RESUELTO: 'Resuelto',
-    RESOLVED: 'Resuelto',
-    CLOSED: 'Cerrado',
-    CERRADO: 'Cerrado',
+    PENDING: t ? t('panel.statuses.pending') : 'Pendiente',
+    PENDIENTE: t ? t('panel.statuses.pending') : 'Pendiente',
+    OBSERVED: t ? t('panel.statuses.observed') : 'Observado',
+    OBSERVADO: t ? t('panel.statuses.observed') : 'Observado',
+    SUBSANADO: t ? t('panel.statuses.remediated') : 'Subsanado',
+    REMEDIED: t ? t('panel.statuses.remediated') : 'Subsanado',
+    RESUELTO: t ? t('panel.statuses.resolved') : 'Resuelto',
+    RESOLVED: t ? t('panel.statuses.resolved') : 'Resuelto',
+    CLOSED: t ? t('panel.statuses.closed') : 'Cerrado',
+    CERRADO: t ? t('panel.statuses.closed') : 'Cerrado',
   };
 
   return dictionary[normalized] ?? status;
@@ -49,8 +50,8 @@ function isResolved(status?: string): boolean {
   );
 }
 
-function formatDate(value?: string): string {
-  if (!value) return 'Sin fecha';
+function formatDate(value?: string, noDateLabel?: string): string {
+  if (!value) return noDateLabel ?? 'Sin fecha';
 
   const date = new Date(value);
 
@@ -66,6 +67,7 @@ function formatDate(value?: string): string {
 }
 
 export const ObservationsPanel: React.FC = () => {
+  const { t } = useTranslation('observations');
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
 
@@ -101,7 +103,7 @@ export const ObservationsPanel: React.FC = () => {
       setError(
         err instanceof Error
           ? err.message
-          : 'No se pudieron cargar las observaciones.'
+          : t('panel.loadErrorDetail')
       );
 
       setObservations([]);
@@ -117,13 +119,13 @@ export const ObservationsPanel: React.FC = () => {
 
   async function handleRemedySubmit() {
     if (!justification.trim()) {
-      toast.warning('Debe ingresar una justificación.');
+      toast.warning(t('panel.toast.justificationRequired'));
       return;
     }
     
     const pendingObs = observations.filter(o => !isResolved(o.status));
     if (pendingObs.length === 0) {
-      toast.info('No hay observaciones pendientes por subsanar.');
+      toast.info(t('panel.toast.noPendingObservations'));
       return;
     }
 
@@ -137,7 +139,7 @@ export const ObservationsPanel: React.FC = () => {
           description: justification
         });
       }
-      toast.success('Subsanación registrada correctamente. El estado de la propuesta ha sido actualizado.');
+      toast.success(t('panel.toast.remedySuccess'));
       setJustification('');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -145,7 +147,7 @@ export const ObservationsPanel: React.FC = () => {
       await loadObservations();
     } catch (err) {
       console.error('Error al subsanar', err);
-      toast.error('Error al registrar la subsanación.');
+      toast.error(t('panel.toast.remedyError'));
     } finally {
       setSubmitting(false);
     }
@@ -170,7 +172,7 @@ export const ObservationsPanel: React.FC = () => {
         }}
       >
         <ArrowLeft size={16} />
-        Volver al dashboard
+        {t('panel.backToDashboard')}
       </Link>
 
       <div
@@ -183,7 +185,7 @@ export const ObservationsPanel: React.FC = () => {
         }}
       >
         <div>
-          <h1 className="text-headline-lg">Mis observaciones</h1>
+          <h1 className="text-headline-lg">{t('panel.myObservations')}</h1>
 
           <p
             className="text-body-md"
@@ -193,13 +195,12 @@ export const ObservationsPanel: React.FC = () => {
               maxWidth: '760px',
             }}
           >
-            Consulta las observaciones asociadas a un trámite y registra la
-            subsanación correspondiente cuando sea necesario.
+            {t('panel.description')}
           </p>
         </div>
 
         <Badge variant={hasPendingObservations ? 'error' : 'success'}>
-          {hasPendingObservations ? 'Requiere subsanación' : 'Todo conforme'}
+          {hasPendingObservations ? t('panel.requiresRemedy') : t('panel.allCompliant')}
         </Badge>
       </div>
 
@@ -217,7 +218,7 @@ export const ObservationsPanel: React.FC = () => {
               {observations.length}
             </strong>
             <span style={{ color: 'var(--on-surface-variant)' }}>
-              Observaciones registradas
+              {t('panel.registeredObservations')}
             </span>
           </CardContent>
         </Card>
@@ -228,7 +229,7 @@ export const ObservationsPanel: React.FC = () => {
               {pendingObservations.length}
             </strong>
             <span style={{ color: 'var(--on-surface-variant)' }}>
-              Pendientes de subsanar
+              {t('panel.pendingRemedy')}
             </span>
           </CardContent>
         </Card>
@@ -239,7 +240,7 @@ export const ObservationsPanel: React.FC = () => {
               {resolvedObservations}
             </strong>
             <span style={{ color: 'var(--on-surface-variant)' }}>
-              Subsanadas o cerradas
+              {t('panel.remediatedOrClosed')}
             </span>
           </CardContent>
         </Card>
@@ -266,7 +267,7 @@ export const ObservationsPanel: React.FC = () => {
                   marginBottom: '4px',
                 }}
               >
-                Expediente / trámite
+                {t('panel.procedure')}
               </div>
 
               <div className="text-title-lg">{procedureId}</div>
@@ -278,20 +279,20 @@ export const ObservationsPanel: React.FC = () => {
               onClick={loadObservations}
               disabled={loading}
             >
-              {loading ? 'Actualizando...' : 'Actualizar'}
+              {loading ? t('panel.updating') : t('panel.update')}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {error && (
-        <Alert title="No se pudieron cargar las observaciones">
-          El backend respondió: {error}. Verifica el endpoint
-          GET /api/observations/procedure/{procedureId}.
+        <Alert title={t('panel.loadErrorTitle')}>
+          {t('panel.loadErrorDetail', { error })}. {t('panel.loadErrorEndpoint', { procedureId })}
         </Alert>
       )}
 
       <div
+        className="responsive-grid-split"
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 420px',
@@ -310,7 +311,7 @@ export const ObservationsPanel: React.FC = () => {
             }}
           >
             <MessageSquare size={20} />
-            Detalle de observaciones
+            {t('panel.observationDetail')}
           </h3>
 
           <div
@@ -324,7 +325,7 @@ export const ObservationsPanel: React.FC = () => {
               <Card>
                 <CardContent>
                   <p style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
-                    Cargando observaciones...
+                    {t('panel.loading')}
                   </p>
                 </CardContent>
               </Card>
@@ -332,7 +333,7 @@ export const ObservationsPanel: React.FC = () => {
               <Card>
                 <CardContent>
                   <p style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
-                    No hay observaciones registradas para este expediente.
+                    {t('panel.noObservations')}
                   </p>
                 </CardContent>
               </Card>
@@ -368,7 +369,7 @@ export const ObservationsPanel: React.FC = () => {
                             )}
 
                             <strong>
-                              {observation.type || 'Observación general'}
+                              {observation.type || t('panel.generalObservation')}
                             </strong>
                           </div>
 
@@ -376,12 +377,12 @@ export const ObservationsPanel: React.FC = () => {
                             className="text-caption"
                             style={{ color: 'var(--on-surface-variant)' }}
                           >
-                            Registrado: {formatDate(observation.createdAt)}
+                            {t('panel.registeredDate', { date: formatDate(observation.createdAt, t('panel.noDate')) })}
                           </div>
                         </div>
 
                         <Badge variant={resolved ? 'success' : 'warning'}>
-                          {getStatusLabel(observation.status)}
+                          {getStatusLabel(observation.status, t)}
                         </Badge>
                       </div>
 
@@ -392,7 +393,7 @@ export const ObservationsPanel: React.FC = () => {
                           marginBottom: observation.remedy ? '14px' : 0,
                         }}
                       >
-                        {observation.content || 'Sin detalle registrado.'}
+                        {observation.content || t('panel.noDetail')}
                       </p>
 
                       {observation.remedy && (
@@ -406,7 +407,7 @@ export const ObservationsPanel: React.FC = () => {
                           }}
                         >
                           <strong style={{ display: 'block', marginBottom: '4px' }}>
-                            Respuesta registrada
+                            {t('panel.responseRegistered')}
                           </strong>
                           <span>{observation.remedy}</span>
                         </div>
@@ -426,7 +427,7 @@ export const ObservationsPanel: React.FC = () => {
               marginBottom: '16px',
             }}
           >
-            Enviar subsanación
+            {t('panel.sendRemedy')}
           </h3>
 
           <Card
@@ -443,8 +444,7 @@ export const ObservationsPanel: React.FC = () => {
                   marginBottom: '20px',
                 }}
               >
-                Adjunta el documento corregido y registra una respuesta clara a
-                las observaciones pendientes.
+              {t('panel.remedyDescription')}
               </p>
 
               <div style={{ marginBottom: '20px' }}>
@@ -457,7 +457,7 @@ export const ObservationsPanel: React.FC = () => {
                     marginBottom: '8px',
                   }}
                 >
-                  Documento corregido
+                  {t('panel.correctedDocument')}
                 </label>
 
                 <input
@@ -489,11 +489,11 @@ export const ObservationsPanel: React.FC = () => {
                   />
 
                   <strong style={{ display: 'block', marginBottom: '4px' }}>
-                    Haz clic para subir archivo
+                    {t('panel.clickToUpload')}
                   </strong>
 
                   <span style={{ fontSize: '12px' }}>
-                    PDF, DOC o DOCX hasta 10 MB
+                    {t('panel.fileInfo')}
                   </span>
                 </button>
               </div>
@@ -508,14 +508,14 @@ export const ObservationsPanel: React.FC = () => {
                     marginBottom: '8px',
                   }}
                 >
-                  Justificación o respuesta
+                  {t('panel.justificationLabel')}
                 </label>
 
                 <textarea
                   rows={5}
                   value={justification}
                   onChange={(event) => setJustification(event.target.value)}
-                  placeholder="Detalla cómo se resolvieron las observaciones..."
+                  placeholder={t('panel.justificationPlaceholder')}
                   disabled={!hasPendingObservations}
                   style={{
                     width: '100%',
@@ -541,7 +541,7 @@ export const ObservationsPanel: React.FC = () => {
                 disabled={!hasPendingObservations || submitting}
                 style={{ width: '100%' }}
               >
-                {submitting ? 'Registrando...' : 'Registrar subsanación'}
+                {submitting ? t('panel.registering') : t('panel.registerRemedy')}
               </Button>
             </CardContent>
           </Card>

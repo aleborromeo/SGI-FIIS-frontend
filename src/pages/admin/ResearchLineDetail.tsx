@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, Building, Plus, Trash2 } from 'lucide-react';
 import { researchService, type ResearchLine, type ResearchGroup } from '../../services/researchService';
@@ -10,11 +11,12 @@ import { useConfirm } from '../../context/ConfirmContext';
 export const ResearchLineDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation('admin');
   
   const [line, setLine] = useState<ResearchLine | null>(null);
   const [groups, setGroups] = useState<ResearchGroup[]>([]);
   const [allGroups, setAllGroups] = useState<ResearchGroup[]>([]);
-  const [members, setMembers] = useState<any[]>([]); // Derived from groups
+  const [members, setMembers] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,18 +43,16 @@ export const ResearchLineDetail: React.FC = () => {
       setGroups(groupsData);
       setAllGroups(allGroupsData);
 
-      // Fetch members for all associated groups
       const allMembersData = await Promise.all(
         groupsData.map(g => researchService.getMembers(g.id))
       );
       
-      // Flatten and deduplicate members by userId
       const flattened = allMembersData.flat();
       const uniqueMembers = Array.from(new Map(flattened.map(item => [item.userId, item])).values());
       setMembers(uniqueMembers);
       
     } catch (err: any) {
-      setError(err.message || 'Error al cargar los detalles de la línea de investigación');
+      setError(err.message || t('lineDetail.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -69,11 +69,11 @@ export const ResearchLineDetail: React.FC = () => {
     try {
       setSubmitting(true);
       await researchService.assignGroupToLine(Number(id), Number(selectedGroup));
-      toast.success('Grupo asignado con éxito');
+      toast.success(t('lineDetail.groupsTab.toastLinked'));
       setSelectedGroup('');
       fetchData();
     } catch (err: any) {
-      toast.error(`Error: ${err.message}`);
+      toast.error(`${t('lineDetail.groupsTab.toastErrorLink')}: ${err.message}`);
     } finally {
       setSubmitting(false);
     }
@@ -81,19 +81,19 @@ export const ResearchLineDetail: React.FC = () => {
 
   const handleRemoveGroup = async (groupId: number) => {
     const isConfirmed = await confirmDialog({
-      title: 'Desvincular Grupo',
-      message: '¿Estás seguro de desvincular este grupo de la línea de investigación?',
-      confirmText: 'Desvincular',
+      title: t('lineDetail.groupsTab.confirmUnlink.title'),
+      message: t('lineDetail.groupsTab.confirmUnlink.message'),
+      confirmText: t('lineDetail.groupsTab.confirmUnlink.confirmText'),
       danger: true
     });
     if (!isConfirmed) return;
     
     try {
       await researchService.removeGroupFromLine(Number(id), groupId);
-      toast.success('Grupo desvinculado con éxito');
+      toast.success(t('lineDetail.groupsTab.toastUnlinked'));
       fetchData();
     } catch (err: any) {
-      toast.error(`Error: ${err.message}`);
+      toast.error(`${t('lineDetail.groupsTab.toastErrorUnlink')}: ${err.message}`);
     }
   };
 
@@ -109,15 +109,15 @@ export const ResearchLineDetail: React.FC = () => {
     return (
       <div style={{ padding: '24px' }}>
         <div style={{ padding: '16px', backgroundColor: 'var(--error-container)', color: 'var(--on-error-container)', borderRadius: 'var(--radius-md)' }}>
-          <strong>Error:</strong> {error || 'Línea no encontrada'}
+          <strong>{t('common.error')}</strong> {error || t('lineDetail.errorNotFound')}
         </div>
-        <Button variant="secondary" onClick={() => navigate('/lines')} style={{ marginTop: '16px' }}>Volver</Button>
+        <Button variant="secondary" onClick={() => navigate('/lines')} style={{ marginTop: '16px' }}>{t('common.back')}</Button>
       </div>
     );
   }
 
   return (
-    <div className="animate-fade-in" style={{ padding: '24px', width: '95%', margin: '0 auto' }}>
+    <div className="animate-fade-in" style={{ padding: '24px' }}>
       <button 
         type="button"
         onClick={() => navigate('/lines')}
@@ -128,7 +128,7 @@ export const ResearchLineDetail: React.FC = () => {
         }}
       >
         <ArrowLeft size={20} />
-        Volver a Líneas
+        {t('lineDetail.backToLines')}
       </button>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
@@ -145,11 +145,11 @@ export const ResearchLineDetail: React.FC = () => {
               backgroundColor: line.active ? 'var(--primary-container)' : 'var(--error-container)',
               color: line.active ? 'var(--on-primary-container)' : 'var(--on-error-container)'
             }}>
-              {line.active ? 'ACTIVA' : 'INACTIVA'}
+              {line.active ? t('lineDetail.statusActive') : t('lineDetail.statusInactive')}
             </span>
           </div>
           <p className="text-body-lg" style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
-            Línea de Investigación
+            {t('lineDetail.typeLabel')}
           </p>
         </div>
       </div>
@@ -165,7 +165,7 @@ export const ResearchLineDetail: React.FC = () => {
             transition: 'all 0.2s ease'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Building size={18} /> Grupos Asociados ({groups.length})</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Building size={18} /> {t('lineDetail.tabGroups')} ({groups.length})</div>
         </button>
         <button 
           onClick={() => setActiveTab('users')}
@@ -176,7 +176,7 @@ export const ResearchLineDetail: React.FC = () => {
             transition: 'all 0.2s ease'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={18} /> Usuarios Vinculados ({members.length})</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={18} /> {t('lineDetail.tabUsers')} ({members.length})</div>
         </button>
       </div>
 
@@ -196,14 +196,14 @@ export const ResearchLineDetail: React.FC = () => {
         {activeTab === 'groups' && (
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 className="text-title-md" style={{ margin: 0 }}>Grupos que desarrollan esta línea</h3>
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <h3 className="text-title-md" style={{ margin: 0 }}>{t('lineDetail.groupsTab.title')}</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                 <select 
                   value={selectedGroup}
                   onChange={(e) => setSelectedGroup(e.target.value)}
-                  style={{ width: '250px', padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)', fontSize: '14px' }}
+                  style={{ flex: '1 1 220px', padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)', fontSize: '14px' }}
                 >
-                  <option value="">Seleccione grupo para vincular...</option>
+                  <option value="">{t('lineDetail.groupsTab.selectPlaceholder')}</option>
                   {allGroups
                     .filter(g => g.active && !groups.some(ag => ag.id === g.id))
                     .map(g => (
@@ -216,7 +216,7 @@ export const ResearchLineDetail: React.FC = () => {
                   onClick={handleAssignGroup} 
                   disabled={!selectedGroup || submitting}
                 >
-                  Vincular
+                  {t('lineDetail.groupsTab.btnLink')}
                 </Button>
               </div>
             </div>
@@ -233,17 +233,17 @@ export const ResearchLineDetail: React.FC = () => {
                 padding: '48px',
                 color: 'var(--on-surface-variant)'
               }}>
-                No hay grupos vinculados a esta línea de investigación.
+                {t('lineDetail.groupsTab.empty')}
               </div>
             ) : (
               <div style={{ border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', backgroundColor: 'var(--surface)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                   <thead style={{ backgroundColor: 'var(--surface-container)' }}>
                     <tr>
-                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Código</th>
-                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Nombre del Grupo</th>
-                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Coordinador</th>
-                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)', textAlign: 'right' }}>Acciones</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>{t('lineDetail.groupsTab.table.code')}</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>{t('lineDetail.groupsTab.table.name')}</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>{t('lineDetail.groupsTab.table.coordinator')}</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)', textAlign: 'right' }}>{t('lineDetail.groupsTab.table.actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -252,7 +252,7 @@ export const ResearchLineDetail: React.FC = () => {
                         <td style={{ padding: '16px', fontWeight: 600 }}>{group.groupCode}</td>
                         <td style={{ padding: '16px' }}>{group.groupName}</td>
                         <td style={{ padding: '16px', color: 'var(--on-surface-variant)' }}>
-                          {group.coordinatorFirstNames ? `${group.coordinatorFirstNames} ${group.coordinatorLastNames}` : 'Sin asignar'}
+                          {group.coordinatorFirstNames ? `${group.coordinatorFirstNames} ${group.coordinatorLastNames}` : t('lineDetail.groupsTab.table.noCoordinator')}
                         </td>
                         <td style={{ padding: '16px', textAlign: 'right' }}>
                           <Button 
@@ -262,7 +262,7 @@ export const ResearchLineDetail: React.FC = () => {
                             style={{ padding: '6px 12px', fontSize: '13px' }}
                             icon={<Trash2 size={14} />}
                           >
-                            Desvincular
+                            {t('lineDetail.groupsTab.btnUnlink')}
                           </Button>
                         </td>
                       </tr>
@@ -276,9 +276,9 @@ export const ResearchLineDetail: React.FC = () => {
 
         {activeTab === 'users' && (
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <h3 className="text-title-md" style={{ marginBottom: '24px' }}>Investigadores Vinculados</h3>
+            <h3 className="text-title-md" style={{ marginBottom: '24px' }}>{t('lineDetail.usersTab.title')}</h3>
             <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '24px' }}>
-              Esta lista muestra a todos los miembros de los grupos de investigación asociados a esta línea.
+              {t('lineDetail.usersTab.description')}
             </p>
 
             {members.length === 0 ? (
@@ -293,16 +293,18 @@ export const ResearchLineDetail: React.FC = () => {
                 padding: '48px',
                 color: 'var(--on-surface-variant)'
               }}>
-                No hay usuarios vinculados (los grupos asociados no tienen miembros o no hay grupos).
+                {t('lineDetail.usersTab.empty')}
               </div>
             ) : (
               <div style={{ border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', backgroundColor: 'var(--surface)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                   <thead style={{ backgroundColor: 'var(--surface-container)' }}>
                     <tr>
-                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Nombre</th>
-                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Email</th>
-                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>Estado</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>{t('lineDetail.usersTab.table.name')}</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>{t('lineDetail.usersTab.table.email')}</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>{t('lineDetail.usersTab.table.role')}</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>{t('lineDetail.usersTab.table.joinDate')}</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid var(--outline-variant)' }}>{t('lineDetail.usersTab.table.status')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -314,13 +316,21 @@ export const ResearchLineDetail: React.FC = () => {
                         <td style={{ padding: '16px', color: 'var(--on-surface-variant)' }}>
                           {member.userEmail}
                         </td>
+                        <td style={{ padding: '16px', fontSize: '13px' }}>
+                          <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, backgroundColor: 'var(--secondary-container)', color: 'var(--on-secondary-container)' }}>
+                            {member.userRoleCode?.replace(/_/g, ' ') || t('lineDetail.usersTab.table.noRole')}
+                          </span>
+                        </td>
+                        <td style={{ padding: '16px', fontSize: '13px', color: 'var(--on-surface-variant)' }}>
+                          {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                        </td>
                         <td style={{ padding: '16px' }}>
                           <span style={{ 
                             padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600,
                             backgroundColor: member.active ? 'var(--primary-container)' : 'var(--error-container)',
                             color: member.active ? 'var(--on-primary-container)' : 'var(--on-error-container)'
                           }}>
-                            {member.active ? 'Activo' : 'Inactivo'}
+                            {member.active ? t('lineDetail.usersTab.table.active') : t('lineDetail.usersTab.table.inactive')}
                           </span>
                         </td>
                       </tr>

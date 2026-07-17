@@ -14,9 +14,18 @@ export default defineConfig({
       }
     }
   },
+  optimizeDeps: {
+    include: [
+      '@mui/material',
+      '@emotion/react',
+      '@emotion/styled',
+      '@tanstack/react-query',
+    ],
+  },
   test: {
     environment: 'jsdom',
     globals: true,
+    setupFiles: ['./src/test-i18n.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

@@ -63,6 +63,8 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           gap: '12px',
           zIndex: 9999,
           pointerEvents: 'none',
+          overflow: 'hidden',
+          maxWidth: 'calc(100vw - 48px)',
         }}
       >
         {toasts.map((toast) => (

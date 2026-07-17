@@ -1,0 +1,424 @@
+{
+  "title": "Gestión de Observaciones",
+  "subtitle": "Administra las observaciones del sistema",
+  "panel": {
+    "title": "Panel de Observaciones",
+    "subtitle": "Gestiona y da seguimiento a las observaciones",
+    "backToDashboard": "Volver al dashboard",
+    "myObservations": "Mis observaciones",
+    "description": "Consulta las observaciones asociadas a un trámite y registra la subsanación correspondiente cuando sea necesario.",
+    "requiresRemedy": "Requiere subsanación",
+    "allCompliant": "Todo conforme",
+    "registeredObservations": "Observaciones registradas",
+    "pendingRemedy": "Pendientes de subsanar",
+    "remediatedOrClosed": "Subsanadas o cerradas",
+    "procedure": "Expediente / trámite",
+    "updating": "Actualizando...",
+    "update": "Actualizar",
+    "loadErrorTitle": "No se pudieron cargar las observaciones",
+    "loadErrorDetail": "No se pudieron cargar las observaciones.",
+    "loadErrorEndpoint": "El backend respondió: {{error}}. Verifica el endpoint GET /api/observations/procedure/{procedureId}.",
+    "observationDetail": "Detalle de observaciones",
+    "loading": "Cargando observaciones...",
+    "noObservations": "No hay observaciones registradas para este expediente.",
+    "generalObservation": "Observación general",
+    "registeredDate": "Registrado: {{date}}",
+    "noDetail": "Sin detalle registrado.",
+    "noDate": "Sin fecha",
+    "responseRegistered": "Respuesta registrada",
+    "sendRemedy": "Enviar subsanación",
+    "remedyDescription": "Adjunta el documento corregido y registra una respuesta clara a las observaciones pendientes.",
+    "correctedDocument": "Documento corregido",
+    "clickToUpload": "Haz clic para subir archivo",
+    "fileInfo": "PDF, DOC o DOCX hasta 10 MB",
+    "justificationLabel": "Justificación o respuesta",
+    "justificationPlaceholder": "Detalla cómo se resolvieron las observaciones...",
+    "registering": "Registrando...",
+    "registerRemedy": "Registrar subsanación",
+    "tabs": {
+      "pending": "Pendientes",
+      "inReview": "En Revisión",
+      "resolved": "Resueltas",
+      "all": "Todas"
+    },
+    "filters": {
+      "status": "Estado",
+      "type": "Tipo",
+      "priority": "Prioridad",
+      "entityType": "Tipo de Entidad",
+      "dateRange": "Rango de Fechas",
+      "search": "Buscar...",
+      "assignedTo": "Asignado A",
+      "createdBy": "Creado Por"
+    },
+    "columns": {
+      "id": "ID",
+      "title": "Título",
+      "type": "Tipo",
+      "priority": "Prioridad",
+      "status": "Estado",
+      "entityType": "Entidad",
+      "entityName": "Nombre Entidad",
+      "assignedTo": "Asignado A",
+      "createdBy": "Creado Por",
+      "createdDate": "Fecha Creación",
+      "dueDate": "Fecha Límite",
+      "actions": "Acciones"
+    },
+    "pagination": {
+      "showing": "Mostrando {{start}}-{{end}} de {{total}}",
+      "page": "Página {{page}} de {{pages}}",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "emptyState": {
+      "title": "No hay observaciones pendientes",
+      "subtitle": "Todas las observaciones han sido resueltas",
+      "viewAll": "Ver Todas las Observaciones"
+    },
+    "statuses": {
+      "pending": "Pendiente",
+      "observed": "Observado",
+      "remediated": "Subsanado",
+      "resolved": "Resuelto",
+      "closed": "Cerrado"
+    },
+    "toast": {
+      "justificationRequired": "Debe ingresar una justificación.",
+      "noPendingObservations": "No hay observaciones pendientes por subsanar.",
+      "remedySuccess": "Subsanación registrada correctamente. El estado de la propuesta ha sido actualizado.",
+      "remedyError": "Error al registrar la subsanación."
+    }
+  },
+  "detail": {
+    "title": "Detalle de la Observación",
+    "basicInfo": "Información Básica",
+    "description": "Descripción",
+    "entityInfo": "Información de la Entidad",
+    "comments": "Comentarios",
+    "history": "Historial",
+    "attachments": "Archivos Adjuntos",
+    "status": "Estado",
+    "priority": "Prioridad",
+    "type": "Tipo",
+    "entityType": "Tipo de Entidad",
+    "entityName": "Nombre de la Entidad",
+    "entityLink": "Ver Entidad",
+    "assignedTo": "Asignado A",
+    "createdBy": "Creado Por",
+    "createdDate": "Fecha de Creación",
+    "dueDate": "Fecha Límite",
+    "resolvedBy": "Resuelto Por",
+    "resolvedDate": "Fecha de Resolución"
+  },
+  "types": {
+    "comment": "Comentario",
+    "request": "Solicitud",
+    "correction": "Corrección",
+    "observation": "Observación",
+    "urgent": "Urgente",
+    "suggestion": "Sugerencia",
+    "complaint": "Queja",
+    "inquiry": "Consulta",
+    "feedback": "Retroalimentación"
+  },
+  "priority": {
+    "low": "Baja",
+    "medium": "Media",
+    "high": "Alta",
+    "urgent": "Urgente"
+  },
+  "status": {
+    "pending": "Pendiente",
+    "inReview": "En Revisión",
+    "resolved": "Resuelta",
+    "rejected": "Rechazada",
+    "closed": "Cerrada",
+    "reopened": "Reabierta",
+    "overdue": "Vencida"
+  },
+  "entityTypes": {
+    "project": "Proyecto",
+    "thesis": "Tesis",
+    "tramite": "Trámite",
+    "progressReport": "Informe de Avance",
+    "convocatoria": "Convocatoria",
+    "proposal": "Propuesta",
+    "resolution": "Resolución",
+    "user": "Usuario",
+    "group": "Grupo",
+    "line": "Línea",
+    "document": "Documento"
+  },
+  "new": {
+    "title": "Nueva Observación",
+    "subtitle": "Crea una nueva observación",
+    "form": {
+      "title": "Título",
+      "titlePlaceholder": "Ingrese el título de la observación",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Ingrese una descripción detallada",
+      "type": "Tipo de Observación",
+      "typePlaceholder": "Seleccione el tipo",
+      "priority": "Prioridad",
+      "priorityPlaceholder": "Seleccione la prioridad",
+      "entityType": "Tipo de Entidad",
+      "entityTypePlaceholder": "Seleccione el tipo de entidad",
+      "entity": "Entidad",
+      "entityPlaceholder": "Seleccione la entidad",
+      "assignedTo": "Asignar A",
+      "assignedToPlaceholder": "Seleccione a quién asignar",
+      "dueDate": "Fecha Límite",
+      "attachments": "Archivos Adjuntos",
+      "submitButton": "Crear Observación",
+      "cancel": "Cancelar"
+    },
+    "error": {
+      "titleRequired": "El título es requerido",
+      "descriptionRequired": "La descripción es requerida",
+      "typeRequired": "El tipo es requerido",
+      "priorityRequired": "La prioridad es requerida",
+      "entityTypeRequired": "El tipo de entidad es requerido",
+      "entityRequired": "La entidad es requerida",
+      "invalidDate": "Fecha inválida",
+      "uploadFailed": "Error al subir el archivo",
+      "saveFailed": "Error al guardar la observación"
+    },
+    "success": {
+      "created": "Observación creada exitosamente"
+    }
+  },
+  "edit": {
+    "title": "Editar Observación",
+    "subtitle": "Modifica la información de la observación",
+    "form": {
+      "submitButton": "Guardar Cambios",
+      "cancel": "Cancelar"
+    },
+    "error": {
+      "updateFailed": "Error al actualizar la observación",
+      "notFound": "Observación no encontrada",
+      "unauthorized": "No tiene permisos para editar esta observación"
+    },
+    "success": {
+      "updated": "Observación actualizada exitosamente"
+    }
+  },
+  "actions": {
+    "create": "Crear Observación",
+    "edit": "Editar Observación",
+    "delete": "Eliminar Observación",
+    "resolve": "Resolver Observación",
+    "reject": "Rechazar Observación",
+    "close": "Cerrar Observación",
+    "reopen": "Reabrir Observación",
+    "assign": "Asignar Observación",
+    "reassign": "Reasignar Observación",
+    "escalate": "Escalar Observación",
+    "addComment": "Agregar Comentario",
+    "addAttachment": "Agregar Archivo",
+    "viewEntity": "Ver Entidad",
+    "export": "Exportar Observación",
+    "print": "Imprimir Observación"
+  },
+  "resolve": {
+    "title": "Resolver Observación",
+    "subtitle": "Marcar la observación como resuelta",
+    "form": {
+      "resolution": "Resolución",
+      "resolutionPlaceholder": "Describa cómo se resolvió la observación",
+      "actions": "Acciones Tomadas",
+      "actionsPlaceholder": "Describa las acciones realizadas",
+      "attachments": "Archivos de Soporte",
+      "submitButton": "Resolver Observación",
+      "cancel": "Cancelar"
+    },
+    "error": {
+      "resolutionRequired": "La resolución es requerida",
+      "actionsRequired": "Las acciones tomadas son requeridas",
+      "saveFailed": "Error al resolver la observación"
+    },
+    "success": {
+      "resolved": "Observación resuelta exitosamente"
+    }
+  },
+  "reject": {
+    "title": "Rechazar Observación",
+    "subtitle": "Rechazar la observación",
+    "form": {
+      "reason": "Motivo del Rechazo",
+      "reasonPlaceholder": "Ingrese el motivo del rechazo",
+      "submitButton": "Rechazar Observación",
+      "cancel": "Cancelar"
+    },
+    "error": {
+      "reasonRequired": "El motivo del rechazo es requerido",
+      "saveFailed": "Error al rechazar la observación"
+    },
+    "success": {
+      "rejected": "Observación rechazada exitosamente"
+    }
+  },
+  "comments": {
+    "title": "Comentarios",
+    "noComments": "No hay comentarios",
+    "addComment": "Agregar Comentario",
+    "commentPlaceholder": "Escriba su comentario...",
+    "submitButton": "Enviar Comentario",
+    "editComment": "Editar Comentario",
+    "deleteComment": "Eliminar Comentario",
+    "reply": "Responder",
+    "commentBy": "Comentario por {{name}}",
+    "onDate": "el {{date}}"
+  },
+  "attachments": {
+    "title": "Archivos Adjuntos",
+    "noAttachments": "No hay archivos adjuntos",
+    "uploadAttachment": "Subir Archivo",
+    "uploadHint": "Arrastre y suelte archivos aquí o haga clic para seleccionar",
+    "allowedTypes": "Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG",
+    "maxSize": "Tamaño máximo: 10 MB",
+    "uploading": "Subiendo...",
+    "uploadSuccess": "Archivo subido exitosamente",
+    "uploadError": "Error al subir el archivo",
+    "deleteAttachment": "Eliminar Archivo",
+    "deleteConfirm": "¿Está seguro de eliminar este archivo?",
+    "downloadAttachment": "Descargar Archivo",
+    "previewAttachment": "Vista Previa"
+  },
+  "history": {
+    "title": "Historial",
+    "noHistory": "No hay historial disponible",
+    "event": "Evento",
+    "date": "Fecha",
+    "user": "Usuario",
+    "details": "Detalles",
+    "eventTypes": {
+      "created": "Observación creada",
+      "assigned": "Observación asignada",
+      "reassigned": "Observación reasignada",
+      "escalated": "Observación escalada",
+      "commentAdded": "Comentario agregado",
+      "attachmentAdded": "Archivo adjunto agregado",
+      "statusChanged": "Estado cambiado",
+      "priorityChanged": "Prioridad cambiada",
+      "resolved": "Observación resuelta",
+      "rejected": "Observación rechazada",
+      "closed": "Observación cerrada",
+      "reopened": "Observación reabierta"
+    }
+  },
+  "notifications": {
+    "newObservation": "Nueva observación: {{title}}",
+    "observationAssigned": "Observación asignada: {{title}}",
+    "observationUpdate": "Actualización en observación: {{title}}",
+    "observationResolved": "Observación resuelta: {{title}}",
+    "observationRejected": "Observación rechazada: {{title}}",
+    "observationOverdue": "Observación vencida: {{title}}",
+    "commentAdded": "Comentario agregado en observación: {{title}}",
+    "dueDateApproaching": "Fecha límite próxima para observación: {{title}}"
+  },
+  "subsancion": {
+    "title": "Subsanación de Observaciones",
+    "subtitle": "Gestiona la subsanación de observaciones",
+    "tramiteNotFound": "Trámite no encontrado.",
+    "noTramite": "No se indicó el trámite a subsanar. Regresa a la bandeja y usa la acción \"Subsanar\".",
+    "backToTray": "Volver a la bandeja",
+    "backToDetail": "Volver al detalle del trámite",
+    "noPendingTitle": "Sin observaciones pendientes",
+    "noPendingDescription": "Este trámite no tiene observaciones pendientes de subsanar en este momento.",
+    "noObservations": "No hay observaciones registradas para este trámite.",
+    "yourRemedy": "Tu subsanación",
+    "newSubsanacion": {
+      "title": "Nueva Subsanación",
+      "subtitle": "Registrar una subsanación para una observación",
+      "form": {
+        "observation": "Observación",
+        "observationPlaceholder": "Seleccione la observación a subsanar",
+        "description": "Descripción de la Subsanación",
+        "descriptionPlaceholder": "Describa la subsanación realizada",
+        "documents": "Documentos de Soporte",
+        "submitButton": "Enviar Subsanación",
+        "cancel": "Cancelar"
+      }
+    },
+    "list": {
+      "title": "Lista de Subsanaciones",
+      "noSubsanaciones": "No hay subsanaciones registradas",
+      "columns": {
+        "id": "ID",
+        "observation": "Observación",
+        "description": "Descripción",
+        "status": "Estado",
+        "createdBy": "Creado Por",
+        "createdDate": "Fecha",
+        "actions": "Acciones"
+      }
+    },
+    "status": {
+      "pending": "Pendiente",
+      "inReview": "En Revisión",
+      "approved": "Aprobada",
+      "rejected": "Rechazada"
+    },
+    "actions": {
+      "approve": "Aprobar Subsanación",
+      "reject": "Rechazar Subsanación",
+      "requestInfo": "Solicitar Información Adicional"
+    },
+    "form": {
+      "description": "Descripción de la subsanación",
+      "descriptionPlaceholder": "Explica cómo levantaste esta observación...",
+      "document": "Documento adjunto (opcional)",
+      "descriptionRequired": "La descripción de la subsanación es obligatoria.",
+      "registering": "Registrando...",
+      "register": "Registrar subsanación"
+    },
+    "toast": {
+      "loadError": "Error al cargar las observaciones",
+      "success": "Subsanación registrada correctamente.",
+      "error": "Error al registrar la subsanación"
+    }
+  },
+  "stats": {
+    "title": "Estadísticas de Observaciones",
+    "total": "Total de Observaciones",
+    "pending": "Pendientes",
+    "inReview": "En Revisión",
+    "resolved": "Resueltas",
+    "overdue": "Vencidas",
+    "byType": "Por Tipo",
+    "byPriority": "Por Prioridad",
+    "byStatus": "Por Estado",
+    "byEntity": "Por Entidad",
+    "byMonth": "Por Mes",
+    "averageResolutionTime": "Tiempo Promedio de Resolución",
+    "resolutionRate": "Tasa de Resolución"
+  },
+  "error": {
+    "notFound": "Observación no encontrada",
+    "unauthorized": "No tiene permisos para realizar esta acción",
+    "forbidden": "Acceso denegado",
+    "serverError": "Error del servidor",
+    "networkError": "Error de conexión",
+    "loadingError": "Error al cargar los datos",
+    "savingError": "Error al guardar",
+    "deletingError": "Error al eliminar",
+    "updatingError": "Error al actualizar",
+    "creatingError": "Error al crear"
+  },
+  "success": {
+    "created": "Observación creada exitosamente",
+    "updated": "Observación actualizada exitosamente",
+    "deleted": "Observación eliminada exitosamente",
+    "resolved": "Observación resuelta exitosamente",
+    "rejected": "Observación rechazada exitosamente",
+    "closed": "Observación cerrada exitosamente",
+    "reopened": "Observación reabierta exitosamente",
+    "assigned": "Observación asignada exitosamente",
+    "reassigned": "Observación reasignada exitosamente",
+    "escalated": "Observación escalada exitosamente",
+    "commentAdded": "Comentario agregado exitosamente",
+    "attachmentAdded": "Archivo adjunto agregado exitosamente"
+  }
+}

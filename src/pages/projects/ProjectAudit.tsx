@@ -20,6 +20,7 @@ import {
   Users,
 } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card';
@@ -176,6 +177,7 @@ function getAuditVariant(status: AuditEvent['status']): 'success' | 'warning' | 
 }
 
 export const ProjectAudit: React.FC = () => {
+  const { t } = useTranslation('projects');
   const [searchTerm, setSearchTerm] = useState('');
   const [message, setMessage] = useState<string | null>(null);
 
@@ -216,18 +218,18 @@ export const ProjectAudit: React.FC = () => {
 
   function handleUpload() {
     setMessage(
-      'Anexo preparado en la vista. La carga real de archivos queda pendiente de integración con backend.'
+      t('projects:audit.uploadPending')
     );
   }
 
   function handleDownloadLog() {
     setMessage(
-      'Log de auditoría preparado en la vista. La descarga real queda pendiente de integración con backend.'
+      t('projects:audit.downloadPending')
     );
   }
 
   return (
-    <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
+    <div className="animate-fade-in" style={{ padding: '24px' }}>
       <div
         style={{
           display: 'flex',
@@ -239,7 +241,7 @@ export const ProjectAudit: React.FC = () => {
           gap: '24px',
         }}
       >
-        <div style={{ position: 'relative', width: '360px' }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: '360px' }}>
           <Search
             size={18}
             style={{
@@ -252,7 +254,7 @@ export const ProjectAudit: React.FC = () => {
 
           <input
             type="text"
-            placeholder="Buscar acciones, usuarios, documentos o fechas..."
+            placeholder={t('projects:audit.searchPlaceholder')}
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
             className="input"
@@ -277,7 +279,7 @@ export const ProjectAudit: React.FC = () => {
         }}
       >
         <ArrowLeft size={16} />
-        Volver a proyectos
+        {t('projects:audit.backToProjects')}
       </Link>
 
       <div
@@ -299,7 +301,7 @@ export const ProjectAudit: React.FC = () => {
             }}
           >
             <Badge variant="info">#EXP-2026-442</Badge>
-            <Badge variant="success">Expediente activo</Badge>
+            <Badge variant="success">{t('projects:audit.activeFile')}</Badge>
           </div>
 
           <h1
@@ -309,7 +311,7 @@ export const ProjectAudit: React.FC = () => {
               marginBottom: '8px',
             }}
           >
-            Expediente digital único y auditoría de trámite
+            {t('projects:audit.pageTitle')}
           </h1>
 
           <p
@@ -319,8 +321,7 @@ export const ProjectAudit: React.FC = () => {
               maxWidth: '820px',
             }}
           >
-            Seguimiento documental, participantes, movimientos y evidencias del
-            trámite académico asociado al proyecto de investigación.
+            {t('projects:audit.pageSubtitle')}
           </p>
         </div>
 
@@ -330,7 +331,7 @@ export const ProjectAudit: React.FC = () => {
             icon={<Printer size={18} />}
             onClick={handlePrint}
           >
-            Imprimir
+            {t('projects:audit.print')}
           </Button>
 
           <Button
@@ -338,14 +339,14 @@ export const ProjectAudit: React.FC = () => {
             icon={<Plus size={18} />}
             onClick={handleUpload}
           >
-            Subir anexo
+            {t('projects:audit.uploadAnnex')}
           </Button>
         </div>
       </div>
 
       {message && (
         <div style={{ marginBottom: '24px' }}>
-          <Alert title="Acción registrada en la vista">{message}</Alert>
+          <Alert title={t('projects:audit.actionRecorded')}>{message}</Alert>
         </div>
       )}
 
@@ -375,7 +376,7 @@ export const ProjectAudit: React.FC = () => {
           }}
         >
           <FolderOpen size={18} />
-          Expediente
+          {t('projects:audit.navExpediente')}
         </Link>
 
         <Link
@@ -393,7 +394,7 @@ export const ProjectAudit: React.FC = () => {
           }}
         >
           <BarChart3 size={18} />
-          Seguimiento
+          {t('projects:audit.navSeguimiento')}
         </Link>
 
         <Link
@@ -411,7 +412,7 @@ export const ProjectAudit: React.FC = () => {
           }}
         >
           <Activity size={18} />
-          Trazabilidad
+          {t('projects:audit.navTrazabilidad')}
         </Link>
 
         <Link
@@ -429,7 +430,7 @@ export const ProjectAudit: React.FC = () => {
           }}
         >
           <Users size={18} />
-          Revisores
+          {t('projects:audit.navRevisores')}
         </Link>
       </div>
 
@@ -448,7 +449,7 @@ export const ProjectAudit: React.FC = () => {
               {auditEvents.length}
             </strong>
             <span style={{ color: 'var(--on-surface-variant)' }}>
-              Movimientos
+              {t('projects:audit.movements')}
             </span>
           </CardContent>
         </Card>
@@ -460,7 +461,7 @@ export const ProjectAudit: React.FC = () => {
               {documents.length}
             </strong>
             <span style={{ color: 'var(--on-surface-variant)' }}>
-              Documentos
+              {t('projects:audit.documentsCount')}
             </span>
           </CardContent>
         </Card>
@@ -472,7 +473,7 @@ export const ProjectAudit: React.FC = () => {
               {participants.length}
             </strong>
             <span style={{ color: 'var(--on-surface-variant)' }}>
-              Participantes
+              {t('projects:audit.participantsCount')}
             </span>
           </CardContent>
         </Card>
@@ -481,10 +482,10 @@ export const ProjectAudit: React.FC = () => {
           <CardContent>
             <CheckCircle size={24} color="#15803d" />
             <strong style={{ display: 'block', fontSize: '26px', marginTop: '10px' }}>
-              Vigente
+              {t('projects:audit.current')}
             </strong>
             <span style={{ color: 'var(--on-surface-variant)' }}>
-              Estado documental
+              {t('projects:audit.documentalStatus')}
             </span>
           </CardContent>
         </Card>
@@ -505,7 +506,7 @@ export const ProjectAudit: React.FC = () => {
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 <ClipboardList size={20} />
-                Documentos del expediente
+                {t('projects:audit.documentsTitle')}
               </h2>
             </CardHeader>
 
@@ -513,7 +514,7 @@ export const ProjectAudit: React.FC = () => {
               <div style={{ display: 'grid', gap: '12px' }}>
                 {filteredDocuments.length === 0 ? (
                   <p style={{ color: 'var(--on-surface-variant)' }}>
-                    No se encontraron documentos con el criterio ingresado.
+                    {t('projects:audit.noDocumentsFound')}
                   </p>
                 ) : (
                   filteredDocuments.map((document) => (
@@ -582,7 +583,7 @@ export const ProjectAudit: React.FC = () => {
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 <Users size={20} />
-                Participantes del trámite
+                {t('projects:audit.participantsTitle')}
               </h2>
             </CardHeader>
 
@@ -630,7 +631,7 @@ export const ProjectAudit: React.FC = () => {
               style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               <ShieldCheck size={20} />
-              Auditoría
+              {t('projects:audit.auditTitle')}
             </h2>
           </CardHeader>
 
@@ -645,7 +646,7 @@ export const ProjectAudit: React.FC = () => {
             <div style={{ display: 'grid', gap: '18px' }}>
               {filteredEvents.length === 0 ? (
                 <p style={{ color: '#9ca3af' }}>
-                  No se encontraron movimientos con el criterio ingresado.
+                  {t('projects:audit.noMovementsFound')}
                 </p>
               ) : (
                 filteredEvents.map((event) => (
@@ -733,7 +734,7 @@ export const ProjectAudit: React.FC = () => {
                 icon={<Download size={16} />}
                 onClick={handleDownloadLog}
               >
-                Descargar log
+                {t('projects:audit.downloadLog')}
               </Button>
 
               <Button
@@ -741,7 +742,7 @@ export const ProjectAudit: React.FC = () => {
                 icon={<UploadCloud size={16} />}
                 onClick={handleUpload}
               >
-                Adjuntar evidencia
+                {t('projects:audit.attachEvidence')}
               </Button>
             </div>
           </CardContent>

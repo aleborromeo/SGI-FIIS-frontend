@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import { authService } from '../services/authService';
 import type { LoginResponse } from '../types/auth';
+import i18n from '../i18n';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -39,14 +40,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         // Validar token y traer perfil actual del backend
         const profile = await authService.getProfile();
-        const role = profile.rolPrincipal.codigoRol;
+        const role = profile.roleCode || profile.rolPrincipal?.codigoRol || '';
         
         const userData = {
           id: profile.id,
-          email: profile.correoInstitucional,
-          firstNames: profile.nombres,
-          lastNames: profile.apellidos,
+          email: profile.institutionalEmail || profile.correoInstitucional || '',
+          firstNames: profile.firstNames || profile.nombres || '',
+          lastNames: profile.lastNames || profile.apellidos || '',
           roleCode: role,
+          mustChangePassword: profile.mustChangePassword,
         };
 
         setUser(userData);
@@ -69,7 +71,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<LoginResponse> => {
     setError(null);
-    setLoading(true);
     try {
       const response = await authService.login(email, password);
       
@@ -77,10 +78,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('sgi_token', response.token);
       
       const userData = {
+        id: response.id,
         email: response.email,
         firstNames: response.firstNames,
         lastNames: response.lastNames,
         roleCode: response.roleCode,
+        mustChangePassword: response.mustChangePassword,
       };
       
       // Guardar información del usuario
@@ -93,21 +96,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       return response;
     } catch (err: any) {
-      const msg = err.message || 'Error al iniciar sesión';
+      const msg = err.message || i18n.t('auth:login.error.unknown');
       setError(msg);
       throw new Error(msg);
-    } finally {
-      setLoading(false);
     }
   };
 
   const completeRegistration = (response: LoginResponse) => {
     localStorage.setItem('sgi_token', response.token);
     const userData = {
+      id: response.id,
       email: response.email,
       firstNames: response.firstNames,
       lastNames: response.lastNames,
       roleCode: response.roleCode,
+      mustChangePassword: response.mustChangePassword,
     };
     localStorage.setItem('sgi_user', JSON.stringify(userData));
     setUser(userData);

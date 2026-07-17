@@ -1,39 +1,75 @@
 import { useContext, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, AuthContext } from './context/AuthContext.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
 import { ConfirmProvider } from './context/ConfirmContext.tsx';
 
 import { WelcomePage } from './pages/WelcomePage.tsx';
 import { LoginPage } from './pages/auth/LoginPage.tsx';
-import { RegisterPage } from './pages/auth/RegisterPage.tsx';
+import { ChangePasswordPage } from './pages/auth/ChangePasswordPage.tsx';
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage.tsx';
+import { SobreSgiPage } from './pages/SobreSgiPage.tsx';
+import { ContactoPage } from './pages/ContactoPage.tsx';
+import { NovedadesPage } from './pages/NovedadesPage.tsx';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.tsx';
 import { DashboardContainer } from './pages/dashboards/DashboardContainer.tsx';
 import { RoleDashboards } from './pages/dashboards/RoleDashboards.tsx';
 import { Spinner } from './components/common/Spinner.tsx';
+import MetricsReportsPage from './pages/dashboards/MetricsReportsPage.tsx';
 
 import { ThesisTraceability } from './pages/thesis/ThesisTraceability.tsx';
+import { ThesisPlansList } from './pages/thesis/ThesisPlansList.tsx';
+import { NewThesisPlan } from './pages/thesis/NewThesisPlan.tsx';
 import { ProjectMonitoring } from './pages/projects/ProjectMonitoring.tsx';
 import { ProjectAudit } from './pages/projects/ProjectAudit.tsx';
 import { ProjectsList } from './pages/projects/ProjectsList.tsx';
-import { NewProposal } from './pages/projects/NewProposal.tsx';
 import { AssignReviewers } from './pages/projects/AssignReviewers.tsx';
 import { EvaluationForm } from './pages/projects/EvaluationForm.tsx';
 import { MyEvaluations } from './pages/evaluations/MyEvaluations.tsx';
 import { ObservationsPanel } from './pages/observations/ObservationsPanel.tsx';
 import { ReviewProgressReports } from './pages/progressreports/ReviewProgressReports.tsx';
+import { ProgressReportHistory } from './pages/progressreports/ProgressReportHistory.tsx';
+import { NewProgressReport } from './pages/progressreports/NewProgressReport.tsx';
+import { AmendProgressReport } from './pages/progressreports/AmendProgressReport.tsx';
+import { NewThesisReport } from './pages/thesis/NewThesisReport.tsx';
+import { DirectorEvaluations } from './pages/evaluations/DirectorEvaluations.tsx';
+import { ConvocatoriasList } from './pages/convocatorias/ConvocatoriasList.tsx';
+import { NewConvocatoria } from './pages/convocatorias/NewConvocatoria.tsx';
+import { EditConvocatoria } from './pages/convocatorias/EditConvocatoria.tsx';
 
-// Nuevos módulos (Fase 1)
-import { DocumentsPage } from './pages/documents/DocumentsPage.tsx';
-import { ResolutionsPage } from './pages/resolutions/ResolutionsPage.tsx';
-import { ProgressReportsPage } from './pages/progressreports/ProgressReportsPage.tsx';
+import { ConvocatoriasDashboard } from './modules/convocatorias/pages/ConvocatoriasDashboard.tsx';
+import { NewProposalForm } from './modules/convocatorias/pages/NewProposalForm.tsx';
+import { TramitesList } from './pages/tramites/TramitesList.tsx';
+import { DecanoReview } from './pages/resolutions/DecanoReview.tsx';
+import { NewResolutionForm } from './pages/resolutions/NewResolutionForm.tsx';
+
+// Views del módulo Bandeja Lógica de Trámites y Subsanaciones
+import { TramitesInbox } from './pages/tramites/TramitesInbox.tsx';
+import { TramiteDetail } from './pages/tramites/TramiteDetail.tsx';
+import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
+
+// Views del módulo Gestión Documental y Resoluciones
+import { DocumentsPanel } from './pages/documents/DocumentsPanel.tsx';
+import { ResolutionsInbox } from './pages/resolutions/ResolutionsInbox.tsx';
+import { IssueResolution } from './pages/resolutions/IssueResolution.tsx';
+import { ReportsInbox } from './pages/reports/ReportsInbox.tsx';
 
 // Admin Views
+import { CreateUser } from './pages/users/CreateUser';
+import { UserManagement } from './pages/admin/UserManagement.tsx';
+import { DocumentRepository } from './pages/admin/DocumentRepository.tsx';
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
 import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
 import { ResearchLineDetail } from './pages/admin/ResearchLineDetail.tsx';
 import { ResearchGroups } from './pages/admin/ResearchGroups.tsx';
 import { NewResearchGroup } from './pages/admin/NewResearchGroup.tsx';
 import { ResearchGroupDetail } from './pages/admin/ResearchGroupDetail.tsx';
+
+// Auditoría
+import { AuditTrail } from './pages/audit/AuditTrail.tsx';
+
+const queryClient = new QueryClient();
 
 // Componente para proteger las rutas privadas del sistema
 interface ProtectedRouteProps {
@@ -68,7 +104,7 @@ const PublicRoute = ({ children }: ProtectedRouteProps) => {
 
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, loading } = useContext(AuthContext);
+  const { isAuthenticated, loading, user } = useContext(AuthContext);
 
   if (loading) {
     return (
@@ -95,65 +131,109 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/" replace />;
   }
 
+  if (user?.mustChangePassword && window.location.pathname !== '/change-password') {
+    return <Navigate to="/change-password" replace />;
+  }
+
   return <>{children}</>;
 };
 
 function App() {
   return (
-    <ToastProvider>
-      <ConfirmProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-          {/* Ruta raíz (Página de Bienvenida) */}
-          <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
+    <QueryClientProvider client={queryClient}>
+      <ToastProvider>
+        <ConfirmProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Rutas públicas */}
+                <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />
+                <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+                <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+                <Route path="/sobre-sgi" element={<SobreSgiPage />} />
+                <Route path="/contacto" element={<ContactoPage />} />
+                <Route path="/novedades" element={<NovedadesPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route
+                  path="/change-password"
+                  element={
+                    <ProtectedRoute>
+                      <ChangePasswordPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-          {/* Ruta de Login (Pública) */}
-          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+                {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
+                <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
+                  <Route path="/dashboard" element={<RoleDashboards />} />
+                  <Route path="/metrics" element={<MetricsReportsPage />} />
 
-          {/* Ruta de Registro (Pública) */}
-          <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+                  {/* Tesis */}
+                  <Route path="/thesis/plans" element={<ThesisPlansList />} />
+                  <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
+                  <Route path="/thesis/new" element={<NewThesisPlan />} />
+                  <Route path="/thesis/report/new/:planId" element={<NewThesisReport />} />
 
-          {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
-          <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
-            <Route path="/dashboard" element={<RoleDashboards />} />
-            
-            {/* Vistas específicas de postulaciones y seguimiento */}
-            <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
-            <Route path="/projects" element={<ProjectsList />} />
-            <Route path="/projects/new" element={<NewProposal />} />
-            <Route path="/projects/assign" element={<AssignReviewers />} />
-            <Route path="/projects/evaluate" element={<EvaluationForm />} />
-            <Route path="/projects/:id" element={<ProjectMonitoring />} />
-            <Route path="/projects/audit" element={<ProjectAudit />} />
-            <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
-            <Route path="/observations/panel" element={<ObservationsPanel />} />
-            <Route path="/progressreports/review" element={<ReviewProgressReports />} />
-            
-            {/* Gestión Documental y Resoluciones */}
-            <Route path="/documents" element={<DocumentsPage />} />
-            <Route path="/resolutions" element={<ResolutionsPage />} />
-            <Route path="/reports" element={<ProgressReportsPage />} />
-            
-            {/* Vistas de Administración */}
-            <Route path="/lines" element={<ResearchLines />} />
-            <Route path="/lines/new" element={<NewResearchLine />} />
-            <Route path="/lines/:id" element={<ResearchLineDetail />} />
-            <Route path="/groups" element={<ResearchGroups />} />
-            <Route path="/groups/new" element={<NewResearchGroup />} />
-            <Route path="/groups/:id" element={<ResearchGroupDetail />} />
-            
-            {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Route>
+                  {/* Proyectos */}
+                  <Route path="/projects" element={<ProjectsList />} />
+                  <Route path="/projects/new" element={<NewProposalForm />} />
+                  <Route path="/projects/assign" element={<AssignReviewers />} />
+                  <Route path="/projects/evaluate" element={<EvaluationForm />} />
+                  <Route path="/projects/:id" element={<ProjectMonitoring />} />
+                  <Route path="/projects/audit" element={<ProjectAudit />} />
 
-          {/* Redirección por defecto para cualquier ruta inválida */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </ConfirmProvider>
-    </ToastProvider>
+                  {/* Convocatorias */}
+                  <Route path="/convocatorias" element={<ConvocatoriasList />} />
+                  <Route path="/convocatorias/activas" element={<ConvocatoriasDashboard />} />
+                  <Route path="/convocatorias/new" element={<NewConvocatoria />} />
+                  <Route path="/convocatorias/:id/edit" element={<EditConvocatoria />} />
+
+                  {/* Evaluaciones y observaciones */}
+                  <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
+                  <Route path="/evaluations/director" element={<DirectorEvaluations />} />
+                  <Route path="/observations/panel" element={<ObservationsPanel />} />
+                  <Route path="/progressreports/review" element={<ReviewProgressReports />} />
+                  <Route path="/progressreports/history" element={<ProgressReportHistory />} />
+                  <Route path="/progressreports/new" element={<NewProgressReport />} />
+                  <Route path="/progressreports/amend/:id" element={<AmendProgressReport />} />
+
+                  {/* Trámites y Resoluciones Decanato */}
+                  <Route path="/tramites" element={<TramitesInbox />} />
+                  <Route path="/tramites/:id" element={<TramiteDetail />} />
+                  <Route path="/tramites/legacy" element={<TramitesList />} />
+                  <Route path="/observations/subsanacion" element={<SubsanacionPanel />} />
+                  <Route path="/decano/review" element={<DecanoReview />} />
+
+                  {/* Gestión Documental y Resoluciones */}
+                  <Route path="/resolutions" element={<ResolutionsInbox />} />
+                  <Route path="/resolutions/new" element={<IssueResolution />} />
+                  <Route path="/resolutions/new-legacy" element={<NewResolutionForm />} />
+                  <Route path="/reports" element={<ReportsInbox />} />
+
+                  {/* Administración */}
+                  <Route path="/users/create" element={<CreateUser />} />
+                  <Route path="/users" element={<UserManagement />} />
+                  <Route path="/documents" element={<DocumentsPanel />} />
+                  <Route path="/admin/documents" element={<DocumentRepository />} />
+                  <Route path="/audit" element={<AuditTrail />} />
+                  <Route path="/lines" element={<ResearchLines />} />
+                  <Route path="/lines/new" element={<NewResearchLine />} />
+                  <Route path="/lines/:id" element={<ResearchLineDetail />} />
+                  <Route path="/groups" element={<ResearchGroups />} />
+                  <Route path="/groups/new" element={<NewResearchGroup />} />
+                  <Route path="/groups/:id" element={<ResearchGroupDetail />} />
+
+                  {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Route>
+
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
+        </ConfirmProvider>
+      </ToastProvider>
+    </QueryClientProvider>
   );
 }
 

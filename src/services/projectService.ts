@@ -11,7 +11,12 @@ export interface Project {
   code?: string;
   title?: string;
   summary?: string;
+  abstract?: string;
   generalObjective?: string;
+  specificObjectives?: string;
+  methodology?: string;
+  expectedResults?: string;
+  projectType?: string;
   researchLineId?: number;
   researchLineName?: string;
   budget?: number;
@@ -23,10 +28,11 @@ export interface Project {
   researchGroupCode?: string;
   callId?: number;
   documentId?: number;
+  documentName?: string;
   status?: string;
   members?: ProjectMember[];
+  recibeApoyoFif?: string;
 
-  // Compatibilidad temporal con pantallas antiguas
   line?: string;
   type?: string;
 }
@@ -35,20 +41,32 @@ export interface CreateProjectPayload {
   title: string;
   summary: string;
   generalObjective: string;
-  researchLineId: number;
-  budget: number;
-  startDate: string;
-  endDate: string;
-  executionPlace: string;
-  researchGroupId: number;
+  researchLineId?: number;
+  budget?: number;
+  startDate?: string;
+  endDate?: string;
+  executionPlace?: string;
+  researchGroupId?: number;
+  callId?: number;
+  documentId?: number;
+  members?: ProjectMember[];
+  draft?: boolean;
+}
+
+export interface DocumentUploadResponse {
+  id: number;
+  originalName: string;
+  extension: string;
+  sizeBytes?: number;
 }
 
 export const projectService = {
   getAll: () => fetchApi<Project[]>('/projects'),
+
   getById: (id: string | number) =>
     fetchApi<Project>(`/projects/${id}`),
 
-  create: (data: Partial<Project>) =>
+  create: (data: CreateProjectPayload) =>
     fetchApi<Project>('/projects', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -58,4 +76,19 @@ export const projectService = {
     fetchApi<Project>(`/projects/${id}/status?status=${encodeURIComponent(status)}`, {
       method: 'PATCH',
     }),
+
+  getMyDrafts: () =>
+    fetchApi<Project[]>('/projects/drafts'),
+
+  deleteDraft: (id: string | number) =>
+    fetchApi<void>(`/projects/${id}`, { method: 'DELETE' }),
+
+  uploadDocument: (file: File): Promise<DocumentUploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return fetchApi<DocumentUploadResponse>('/api/documents/upload', {
+      method: 'POST',
+      body: formData,
+    });
+  },
 };

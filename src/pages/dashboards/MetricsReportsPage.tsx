@@ -1,4 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   BarChart2,
@@ -24,62 +25,18 @@ interface MetricDefinition {
   category: 'Usuarios' | 'Proyectos' | 'Trámites' | 'Resoluciones' | 'Otros';
 }
 
-const metricLabels: Record<string, Omit<MetricDefinition, 'key'>> = {
-  totalUsers: {
-    label: 'Usuarios registrados',
-    description: 'Cantidad total de usuarios registrados en el sistema.',
-    category: 'Usuarios',
-  },
-  totalActiveUsers: {
-    label: 'Usuarios activos',
-    description: 'Usuarios habilitados o activos actualmente.',
-    category: 'Usuarios',
-  },
-  totalGroups: {
-    label: 'Grupos de investigación',
-    description: 'Cantidad total de grupos registrados.',
-    category: 'Usuarios',
-  },
-  totalActiveGroups: {
-    label: 'Grupos activos',
-    description: 'Grupos de investigación activos.',
-    category: 'Usuarios',
-  },
-  totalProjects: {
-    label: 'Proyectos registrados',
-    description: 'Total de proyectos registrados.',
-    category: 'Proyectos',
-  },
-  activeProjects: {
-    label: 'Proyectos activos',
-    description: 'Proyectos actualmente en ejecución o seguimiento.',
-    category: 'Proyectos',
-  },
-  pendingProcedures: {
-    label: 'Trámites pendientes',
-    description: 'Trámites pendientes de atención.',
-    category: 'Trámites',
-  },
-  proceduresUnderReview: {
-    label: 'Trámites en revisión',
-    description: 'Trámites actualmente en proceso de revisión.',
-    category: 'Trámites',
-  },
-  approvedProcedures: {
-    label: 'Trámites aprobados',
-    description: 'Trámites aprobados por el flujo correspondiente.',
-    category: 'Trámites',
-  },
-  rejectedProcedures: {
-    label: 'Trámites rechazados',
-    description: 'Trámites rechazados u observados como no conformes.',
-    category: 'Trámites',
-  },
-  issuedResolutions: {
-    label: 'Resoluciones emitidas',
-    description: 'Resoluciones administrativas registradas.',
-    category: 'Resoluciones',
-  },
+const metricCategoryMap: Record<string, MetricDefinition['category']> = {
+  totalUsers: 'Usuarios',
+  totalActiveUsers: 'Usuarios',
+  totalGroups: 'Usuarios',
+  totalActiveGroups: 'Usuarios',
+  totalProjects: 'Proyectos',
+  activeProjects: 'Proyectos',
+  pendingProcedures: 'Trámites',
+  proceduresUnderReview: 'Trámites',
+  approvedProcedures: 'Trámites',
+  rejectedProcedures: 'Trámites',
+  issuedResolutions: 'Resoluciones',
 };
 
 function formatNumber(value: number): string {
@@ -105,14 +62,14 @@ const metricPriority = [
   'totalGroups',
 ];
 
-function getMetricDefinitions(data: DashboardRecord): MetricDefinition[] {
+function getMetricDefinitions(data: DashboardRecord, t: (key: string, options?: Record<string, unknown>) => string): MetricDefinition[] {
   return Object.entries(data)
     .filter(([key, value]) => key !== 'alerts' && getNumericValue(value) !== null)
     .map(([key]) => ({
       key,
-      label: metricLabels[key]?.label ?? key,
-      description: metricLabels[key]?.description ?? 'Indicador devuelto por el backend.',
-      category: metricLabels[key]?.category ?? 'Otros',
+      label: t(`dashboard:metricsPage.metricDefs.${key}.label`, { defaultValue: key }),
+      description: t(`dashboard:metricsPage.metricDefs.${key}.description`, { defaultValue: t('dashboard:metricsPage.metricDefs.fallback.description') }),
+      category: metricCategoryMap[key] ?? 'Otros',
     }))
     .sort((a, b) => {
       const indexA = metricPriority.indexOf(a.key);
@@ -150,6 +107,7 @@ function getMaxValue(metrics: MetricDefinition[], data: DashboardRecord): number
 
 export function MetricsReportsPage() {
   const { currentRole } = useContext(AuthContext);
+  const { t } = useTranslation('dashboard');
   const [data, setData] = useState<DashboardRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -174,7 +132,7 @@ export function MetricsReportsPage() {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : 'No se pudieron cargar las métricas del sistema.'
+              : t('dashboard:error.metricsDefaultMessage')
           );
         }
       } finally {
@@ -189,12 +147,12 @@ export function MetricsReportsPage() {
     return () => {
       mounted = false;
     };
-  }, [currentRole]);
+  }, [currentRole, t]);
 
   const metrics = useMemo(() => {
     if (!data) return [];
-    return getMetricDefinitions(data);
-  }, [data]);
+    return getMetricDefinitions(data, t);
+  }, [data, t]);
 
   const groupedMetrics = useMemo(() => {
     const groups = new Map<MetricDefinition['category'], MetricDefinition[]>();
@@ -217,7 +175,7 @@ export function MetricsReportsPage() {
     return (
       <div className="metrics-state">
         <Spinner size="large" color="#0b5ed7" />
-        <p>Cargando métricas y reportes...</p>
+        <p>{t('dashboard:loading.metrics')}</p>
       </div>
     );
   }
@@ -226,7 +184,7 @@ export function MetricsReportsPage() {
     return (
       <div className="metrics-state metrics-state-error">
         <AlertTriangle size={42} />
-        <h2>No se pudieron cargar las métricas</h2>
+        <h2>{t('dashboard:error.metricsLoad')}</h2>
         <p>{errorMessage}</p>
       </div>
     );
@@ -236,8 +194,8 @@ export function MetricsReportsPage() {
     return (
       <div className="metrics-state">
         <FileText size={42} />
-        <h2>Sin métricas disponibles</h2>
-        <p>El backend no devolvió indicadores numéricos para este rol.</p>
+        <h2>{t('dashboard:empty.noMetrics')}</h2>
+        <p>{t('dashboard:empty.noMetricsDescription')}</p>
       </div>
     );
   }
@@ -246,17 +204,16 @@ export function MetricsReportsPage() {
     <div className="metrics-page">
       <header className="metrics-header">
         <div>
-          <span className="metrics-eyebrow">Métricas y reportes</span>
-          <h2>Indicadores institucionales</h2>
+          <span className="metrics-eyebrow">{t('dashboard:metricsPage.eyebrow')}</span>
+          <h2>{t('dashboard:metricsPage.title')}</h2>
           <p>
-            Vista analítica construida con los indicadores reales devueltos por el backend
-            para el rol actual.
+            {t('dashboard:metricsPage.description')}
           </p>
         </div>
 
         <div className="metrics-header-badge">
           <TrendingUp size={20} />
-          <span>Rol actual: {currentRole ?? 'No definido'}</span>
+          <span>{t('dashboard:metricsPage.currentRole')} {currentRole ?? t('dashboard:metricsPage.roleUndefined')}</span>
         </div>
       </header>
 
@@ -282,8 +239,8 @@ export function MetricsReportsPage() {
       <section className="metrics-content-grid">
         <article className="metrics-panel">
           <div className="metrics-panel-header">
-            <h3>Distribución de indicadores</h3>
-            <p>Comparación proporcional entre los valores disponibles.</p>
+            <h3>{t('dashboard:metricsPage.distribution.title')}</h3>
+            <p>{t('dashboard:metricsPage.distribution.description')}</p>
           </div>
 
           <div className="metrics-bars">
@@ -309,8 +266,8 @@ export function MetricsReportsPage() {
 
         <article className="metrics-panel">
           <div className="metrics-panel-header">
-            <h3>Indicadores por categoría</h3>
-            <p>Agrupación según el tipo de información institucional.</p>
+            <h3>{t('dashboard:metricsPage.byCategory.title')}</h3>
+            <p>{t('dashboard:metricsPage.byCategory.description')}</p>
           </div>
 
           <div className="metrics-category-list">
@@ -323,8 +280,8 @@ export function MetricsReportsPage() {
                     <Icon size={22} />
                   </span>
                   <div>
-                    <strong>{category}</strong>
-                    <p>{items.length} indicador(es) disponible(s)</p>
+                    <strong>{t(`dashboard:metricsPage.categories.${category}` as never)}</strong>
+                    <p>{t('dashboard:metricsPage.byCategory.count', { count: items.length })}</p>
                   </div>
                 </div>
               );
@@ -335,25 +292,25 @@ export function MetricsReportsPage() {
 
       <section className="metrics-table-panel">
         <div className="metrics-panel-header">
-          <h3>Detalle de métricas disponibles</h3>
-          <p>Campos numéricos recibidos desde el backend para el dashboard del rol actual.</p>
+          <h3>{t('dashboard:metricsPage.table.title')}</h3>
+          <p>{t('dashboard:metricsPage.table.description')}</p>
         </div>
 
         <div className="metrics-table-wrapper">
           <table className="metrics-table">
             <thead>
               <tr>
-                <th>Indicador</th>
-                <th>Categoría</th>
-                <th>Valor</th>
-                <th>Descripción</th>
+                <th>{t('dashboard:metricsPage.table.indicator')}</th>
+                <th>{t('dashboard:metricsPage.table.category')}</th>
+                <th>{t('dashboard:metricsPage.table.value')}</th>
+                <th>{t('dashboard:metricsPage.table.descriptionCol')}</th>
               </tr>
             </thead>
             <tbody>
               {metrics.map((metric) => (
                 <tr key={metric.key}>
                   <td>{metric.label}</td>
-                  <td>{metric.category}</td>
+                  <td>{t(`dashboard:metricsPage.categories.${metric.category}` as never)}</td>
                   <td>{formatNumber(getNumericValue(data[metric.key]) ?? 0)}</td>
                   <td>{metric.description}</td>
                 </tr>

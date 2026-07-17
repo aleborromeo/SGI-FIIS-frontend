@@ -1,10 +1,29 @@
 import { fetchApi } from './api';
 
 export interface ThesisPlan {
+  idPlanTesis: number;
+  tituloTesis: string;
+  resumen?: string;
+  idEstudiante: number;
+  idLinea: number;
+  idGrupo: number;
+  idDocumentoActual?: number;
+  estadoPlan: string;
+  fechaCreacion?: string;
+  fechaActualizacion?: string;
+  idTramite?: number;
+  estadoTramite?: string;
+  revisorActual?: string;
+  nombreEstudiante?: string;
+  apellidoEstudiante?: string;
+  nombreGrupo?: string;
+  codigoGrupo?: string;
+  nombreLinea?: string;
+  nombreDocumento?: string;
   id: string;
   title: string;
   status: string;
-  // ...
+  [key: string]: any;
 }
 
 export interface ThesisReport {

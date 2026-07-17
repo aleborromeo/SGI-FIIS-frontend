@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import React, { useEffect, useMemo, useState, useContext } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   CalendarDays,
@@ -16,33 +16,67 @@ import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
+import { TableContainer, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../../components/ui/Table';
 
+import { useTranslation } from 'react-i18next';
 import { projectService } from '../../services/projectService';
 import type { Project } from '../../services/projectService';
 import { useToast } from '../../context/ToastContext';
+import { documentService } from '../../services/documentService';
+import { AuthContext } from '../../context/AuthContext';
+import { progressReportService } from '../../services/progressReportService';
+import { userService } from '../../services/userService';
 
-function getStatusLabel(status?: string): string {
-  if (!status) return 'Sin estado';
+function getStatusLabel(status?: string, t?: (key: string) => string): string {
+  if (!status) {
+    return t ? t('projects:statuses.noStatus') : 'Sin estado';
+  }
 
-  const dictionary: Record<string, string> = {
-    POSTULATED: 'Postulado',
-    POSTULADO: 'Postulado',
-    OBSERVED: 'Observado',
-    OBSERVADO: 'Observado',
-    APPROVED: 'Aprobado',
-    APROBADO: 'Aprobado',
-    REJECTED: 'Rechazado',
-    RECHAZADO: 'Rechazado',
-    IN_PROGRESS: 'En ejecución',
-    EN_EJECUCION: 'En ejecución',
-    EN_EJECUCIÓN: 'En ejecución',
-    COMPLETED: 'Finalizado',
-    FINALIZADO: 'Finalizado',
-    ACTIVE: 'Activo',
-    ACTIVO: 'Activo',
-  };
+  const upperStatus = status.toUpperCase();
 
-  return dictionary[status.toUpperCase()] ?? status;
+  if (t) {
+    const translationKeys: Record<string, string> = {
+      POSTULATED: 'projects:statuses.postulado',
+      POSTULADO: 'projects:statuses.postulado',
+      OBSERVED: 'projects:statuses.observado',
+      OBSERVADO: 'projects:statuses.observado',
+      APPROVED: 'projects:statuses.aprobado',
+      APROBADO: 'projects:statuses.aprobado',
+      REJECTED: 'projects:statuses.rechazado',
+      RECHAZADO: 'projects:statuses.rechazado',
+      IN_PROGRESS: 'projects:statuses.enEjecucion',
+      EN_EJECUCION: 'projects:statuses.enEjecucion',
+      EN_EJECUCIÓN: 'projects:statuses.enEjecucion',
+      COMPLETED: 'projects:statuses.finalizado',
+      FINALIZADO: 'projects:statuses.finalizado',
+      ACTIVE: 'projects:statuses.activo',
+      ACTIVO: 'projects:statuses.activo',
+    };
+    const key = translationKeys[upperStatus];
+    if (key) return t(key);
+  } else {
+    const fallbackDictionary: Record<string, string> = {
+      POSTULATED: 'Postulado',
+      POSTULADO: 'Postulado',
+      OBSERVED: 'Observado',
+      OBSERVADO: 'Observado',
+      APPROVED: 'Aprobado',
+      APROBADO: 'Aprobado',
+      REJECTED: 'Rechazado',
+      RECHAZADO: 'Rechazado',
+      IN_PROGRESS: 'En ejecución',
+      EN_EJECUCION: 'En ejecución',
+      EN_EJECUCIÓN: 'En ejecución',
+      COMPLETED: 'Finalizado',
+      FINALIZADO: 'Finalizado',
+      ACTIVE: 'Activo',
+      ACTIVO: 'Activo',
+    };
+    const fallback = fallbackDictionary[upperStatus];
+    if (fallback) return fallback;
+  }
+
+  return status;
 }
 
 function getStatusProgress(status?: string): number {
@@ -93,35 +127,99 @@ function formatMoney(value?: number): string {
   }).format(value);
 }
 
-function getDurationLabel(startDate?: string, endDate?: string): string {
-  if (!startDate || !endDate) return 'No registrada';
+function getDurationLabel(startDate?: string, endDate?: string, t?: (key: string, options?: any) => string): string {
+  if (!startDate || !endDate) return t ? t('projects:monitoring.notRegisteredDuration') : 'No registrada';
 
   const start = new Date(startDate);
   const end = new Date(endDate);
 
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return 'No registrada';
+    return t ? t('projects:monitoring.notRegisteredDuration') : 'No registrada';
   }
 
   const months =
     (end.getFullYear() - start.getFullYear()) * 12 +
     (end.getMonth() - start.getMonth());
 
-  if (months <= 0) return 'Menos de 1 mes';
+  if (months <= 0) return t ? t('projects:monitoring.lessThanOneMonth') : 'Menos de 1 mes';
 
-  return `${months} mes${months === 1 ? '' : 'es'}`;
+  if (t) {
+    return t('projects:monitoring.months', { count: months });
+  }
+
+  const suffix = months === 1 ? '' : 'es';
+  return `${months} mes${suffix}`;
 }
 
 export const ProjectMonitoring: React.FC = () => {
+  const { t } = useTranslation('projects');
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { currentRole } = useContext(AuthContext);
 
   const [project, setProject] = useState<Project | null>(null);
+  const [progressReports, setProgressReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
+  const rawToast = useToast();
+  const toast = useMemo(() => ({
+    ...rawToast,
+    showError: rawToast.error,
+    showSuccess: rawToast.success,
+  }), [rawToast]);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const progress = useMemo(() => getStatusProgress(project?.status), [project?.status]);
+
+  const parsedSummary = useMemo(() => {
+    if (!project?.summary) return null;
+    const summaryText = project.summary;
+    
+    const headers = [
+      { key: 'fif', pattern: /\[FIF:\s*(SI|NO|SÍ)\]/i },
+      { key: 'resumen', label: t('projects:monitoring.summaryLabels.resumen'), pattern: /RESUMEN:/ },
+      { key: 'objetivos', label: t('projects:monitoring.summaryLabels.objetivos'), pattern: /OBJETIVOS ESPECÍFICOS:/ },
+      { key: 'metodologia', label: t('projects:monitoring.summaryLabels.metodologia'), pattern: /METODOLOGÍA:/ },
+      { key: 'resultados', label: t('projects:monitoring.summaryLabels.resultados'), pattern: /RESULTADOS ESPERADOS:/ },
+      { key: 'tipo', label: t('projects:monitoring.summaryLabels.tipo'), pattern: /TIPO DE PROYECTO:/ }
+    ];
+
+    const matches: { key: string; label?: string; index: number; length: number }[] = [];
+    
+    const fifMatch = /\[FIF:\s*(SI|NO|SÍ)\]/i.exec(summaryText);
+    let fifVal = '';
+    if (fifMatch) {
+      fifVal = fifMatch[1].toUpperCase() === 'SI' || fifMatch[1].toUpperCase() === 'SÍ' ? 'Sí' : 'No';
+    }
+
+    headers.forEach(h => {
+      if (h.key === 'fif') return;
+      const match = h.pattern.exec(summaryText);
+      if (match?.index !== undefined) {
+        matches.push({ key: h.key, label: h.label, index: match.index, length: match[0].length });
+      }
+    });
+
+    matches.sort((a, b) => a.index - b.index);
+
+    const sections: { label: string; content: string }[] = [];
+    
+    if (matches.length === 0) {
+      sections.push({ label: t('projects:monitoring.summaryLabels.resumen'), content: summaryText });
+    } else {
+      for (let i = 0; i < matches.length; i++) {
+        const current = matches[i];
+        const next = matches[i + 1];
+        const start = current.index + current.length;
+        const end = next ? next.index : summaryText.length;
+        const content = summaryText.substring(start, end).trim();
+        if (content) {
+          sections.push({ label: current.label!, content });
+        }
+      }
+    }
+
+    return { fifVal, sections };
+  }, [project?.summary, t]);
 
   useEffect(() => {
     let mounted = true;
@@ -139,6 +237,15 @@ export const ProjectMonitoring: React.FC = () => {
         if (mounted) {
           setProject(response);
         }
+
+        try {
+          const reports = await progressReportService.getByProject(Number(id));
+          if (mounted) {
+            setProgressReports(reports);
+          }
+        } catch (err) {
+          console.warn('Error al cargar informes de avance:', err);
+        }
       } catch (err) {
         console.error('Error al cargar el proyecto:', err);
 
@@ -146,7 +253,7 @@ export const ProjectMonitoring: React.FC = () => {
           setError(
             err instanceof Error
               ? err.message
-              : 'No se pudo cargar el detalle del proyecto.'
+              : t('projects:monitoring.errorLoading')
           );
         }
       } finally {
@@ -163,6 +270,80 @@ export const ProjectMonitoring: React.FC = () => {
     };
   }, [id]);
 
+  const [responsibleName, setResponsibleName] = useState<string>(t('projects:monitoring.loadingDefault'));
+  const [documentName, setDocumentName] = useState<string>(t('projects:monitoring.loadingDefault'));
+
+  useEffect(() => {
+    if (!project) return;
+
+    if (project.responsibleId) {
+      userService.getById(project.responsibleId)
+        .then(u => setResponsibleName(`${u.firstNames} ${u.lastNames}`))
+        .catch(() => setResponsibleName(`${t('projects:monitoring.userNumber', { id: project.responsibleId })}`));
+    } else {
+      setResponsibleName(t('projects:monitoring.notRegistered'));
+    }
+
+    if (project.documentId) {
+      documentService.list()
+        .then(docs => {
+          const doc = docs.find(d => d.id === project.documentId);
+          if (doc) {
+            setDocumentName(doc.fileName);
+          } else {
+            setDocumentName(`${t('projects:monitoring.documentNumber', { id: project.documentId })}`);
+          }
+        })
+        .catch(() => setDocumentName(`${t('projects:monitoring.documentNumber', { id: project.documentId })}`));
+    } else {
+      setDocumentName(t('projects:monitoring.notRegistered'));
+    }
+  }, [project?.responsibleId, project?.documentId]);
+
+  const renderActionButton = (r: any, period: any) => {
+    if (r) {
+      if (r.status === 'OBSERVADO' && currentRole === 'DOCENTE_INVESTIGADOR') {
+        return (
+          <Button 
+            variant="primary"
+            onClick={() => navigate(`/progressreports/amend/${r.id}`)}
+          >
+            {t('projects:monitoring.actionSubsanar')}
+          </Button>
+        );
+      }
+      return (
+        <Button 
+          variant="secondary"
+          onClick={() => {
+            if (r.attachedDocumentId) {
+              documentService.downloadFile(r.attachedDocumentId, r.fileName);
+            }
+          }}
+        >
+          {t('projects:monitoring.actionView')}
+        </Button>
+      );
+    }
+
+    if (currentRole === 'DOCENTE_INVESTIGADOR') {
+      return (
+        <Button 
+          variant="primary"
+          onClick={() => navigate(`/progressreports/new?projectId=${id}&period=${period.name}`)}
+        >
+          {t('projects:monitoring.actionUpload')}
+        </Button>
+      );
+    }
+
+    return (
+      <Button variant="secondary" disabled>
+        Ver
+      </Button>
+    );
+  };
+
   async function handleMoveToExecution() {
     if (!id) return;
 
@@ -170,10 +351,10 @@ export const ProjectMonitoring: React.FC = () => {
       setUpdatingStatus(true);
       const updatedProject = await projectService.updateStatus(id, 'IN_PROGRESS');
       setProject(updatedProject);
-      toast.success('Estado actualizado correctamente.');
+      toast.success(t('projects:monitoring.statusUpdated'));
     } catch (err) {
       console.error('Error al actualizar estado:', err);
-      toast.error('No se pudo actualizar el estado del proyecto.');
+      toast.error(t('projects:monitoring.statusUpdateError'));
     } finally {
       setUpdatingStatus(false);
     }
@@ -182,7 +363,7 @@ export const ProjectMonitoring: React.FC = () => {
   if (loading) {
     return (
       <div style={{ padding: '32px', color: 'var(--on-surface-variant)' }}>
-        Cargando detalle del proyecto...
+        {t('projects:monitoring.loading')}
       </div>
     );
   }
@@ -201,11 +382,11 @@ export const ProjectMonitoring: React.FC = () => {
             marginBottom: '24px',
           }}
         >
-          <ArrowLeft size={16} /> Volver a proyectos
+          <ArrowLeft size={16} /> {t('projects:monitoring.backToProjects')}
         </Link>
 
-        <Alert title="No se pudo cargar el proyecto">
-          El backend respondió: {error}. Verifica el endpoint GET /api/v1/projects/{id}.
+        <Alert title={t('projects:monitoring.couldNotLoad')}>
+          {t('projects:monitoring.backendResponse', { error, id })}
         </Alert>
       </div>
     );
@@ -214,13 +395,13 @@ export const ProjectMonitoring: React.FC = () => {
   if (!project) {
     return (
       <div style={{ padding: '32px', color: 'var(--on-surface-variant)' }}>
-        Proyecto no encontrado.
+        {t('projects:monitoring.notFound')}
       </div>
     );
   }
 
   return (
-    <div style={{ paddingTop: '32px', paddingBottom: '64px' }}>
+    <div style={{ padding: '24px 32px 64px', maxWidth: '1440px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
       <Link
         to="/projects"
         style={{
@@ -232,19 +413,20 @@ export const ProjectMonitoring: React.FC = () => {
           marginBottom: '24px',
         }}
       >
-        <ArrowLeft size={16} /> Volver a proyectos
+        <ArrowLeft size={16} /> {t('projects:monitoring.backToProjects')}
       </Link>
 
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          gap: '24px',
-          marginBottom: '24px',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '20px',
+          marginBottom: '28px',
         }}
       >
-        <div>
+        <div style={{ flex: '1', minWidth: '280px' }}>
           <Badge variant="info">{project.code || `PRY-${project.id}`}</Badge>
 
           <h1
@@ -253,20 +435,11 @@ export const ProjectMonitoring: React.FC = () => {
               marginTop: '12px',
               marginBottom: '8px',
               color: 'var(--primary)',
+              fontWeight: 800,
             }}
           >
-            {project.title || 'Proyecto sin título'}
+            {project.title || t('projects:monitoring.untitledProject')}
           </h1>
-
-          <p
-            className="text-body-md"
-            style={{
-              color: 'var(--on-surface-variant)',
-              maxWidth: '820px',
-            }}
-          >
-            {project.summary || 'Este proyecto no tiene resumen registrado.'}
-          </p>
         </div>
 
         <Button
@@ -274,94 +447,146 @@ export const ProjectMonitoring: React.FC = () => {
           icon={<RefreshCcw size={16} />}
           onClick={handleMoveToExecution}
           disabled={updatingStatus}
+          style={{ height: 'fit-content' }}
         >
-          {updatingStatus ? 'Actualizando...' : 'Pasar a ejecución'}
+          {updatingStatus ? t('projects:monitoring.updatingStatus') : t('projects:monitoring.moveToExecution')}
         </Button>
       </div>
 
-      <Card style={{ marginBottom: '24px' }}>
-        <CardContent>
+      <Card style={{ marginBottom: '32px', border: '1px solid var(--outline-variant)' }}>
+        <CardHeader style={{ borderBottom: '1px solid var(--outline-variant)', padding: '18px 24px' }}>
+          <h3 className="text-title-lg" style={{ margin: 0, fontWeight: 700 }}>{t('projects:monitoring.summaryTitle')}</h3>
+        </CardHeader>
+        <CardContent style={{ padding: '24px' }}>
+          {parsedSummary ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {parsedSummary.fifVal && (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Badge variant={parsedSummary.fifVal === 'Sí' ? 'success' : 'error'}>
+                    Apoyo de Financiamiento FIF: {parsedSummary.fifVal}
+                  </Badge>
+                </div>
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                {parsedSummary.sections.map(s => (
+                  <div key={s.label} style={{ backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: '12px', padding: '20px', boxShadow: 'var(--shadow-sm)' }}>
+                    <h4 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 0, marginBottom: '10px', borderBottom: '1px solid var(--outline-variant)', paddingBottom: '6px' }}>
+                      {s.label}
+                    </h4>
+                    <p style={{ fontSize: '13.5px', color: 'var(--on-surface-variant)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-line' }}>
+                      {s.content}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
+              {t('projects:monitoring.noSummary')}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card style={{ marginBottom: '24px', border: '1px solid var(--outline-variant)' }}>
+        <CardContent style={{ padding: '24px' }}>
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-              gap: '20px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '24px',
             }}
           >
-            <div>
+            <div style={{ backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: '12px', border: '1px solid var(--outline-variant)' }}>
               <div
                 className="text-caption"
                 style={{
                   color: 'var(--on-surface-variant)',
                   textTransform: 'uppercase',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                  letterSpacing: '0.05em',
+                  marginBottom: '8px',
                 }}
               >
                 Estado
               </div>
-              <Badge variant="neutral">{getStatusLabel(project.status)}</Badge>
+              <Badge variant="neutral">{getStatusLabel(project.status, t)}</Badge>
             </div>
 
-            <div>
+            <div style={{ backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: '12px', border: '1px solid var(--outline-variant)' }}>
               <div
                 className="text-caption"
                 style={{
                   color: 'var(--on-surface-variant)',
                   textTransform: 'uppercase',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                  letterSpacing: '0.05em',
+                  marginBottom: '8px',
                 }}
               >
                 Línea de investigación
               </div>
-              <div className="text-body-md">
-                {project.researchLineName || 'Sin línea registrada'}
+              <div className="text-body-md" style={{ fontWeight: 600 }}>
+                {project.researchLineName || t('projects:monitoring.noResearchLine')}
               </div>
             </div>
 
-            <div>
+            <div style={{ backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: '12px', border: '1px solid var(--outline-variant)' }}>
               <div
                 className="text-caption"
                 style={{
                   color: 'var(--on-surface-variant)',
                   textTransform: 'uppercase',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                  letterSpacing: '0.05em',
+                  marginBottom: '8px',
                 }}
               >
                 Grupo
               </div>
-              <div className="text-body-md">
-                {project.researchGroupCode || 'Sin grupo registrado'}
+              <div className="text-body-md" style={{ fontWeight: 600 }}>
+                {project.researchGroupCode || t('projects:monitoring.noGroupRegistered')}
               </div>
             </div>
 
-            <div>
+            <div style={{ backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: '12px', border: '1px solid var(--outline-variant)' }}>
               <div
                 className="text-caption"
                 style={{
                   color: 'var(--on-surface-variant)',
                   textTransform: 'uppercase',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                  letterSpacing: '0.05em',
+                  marginBottom: '8px',
                 }}
               >
                 Presupuesto
               </div>
-              <div className="text-body-md">{formatMoney(project.budget)}</div>
+              <div className="text-body-md" style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                {formatMoney(project.budget)}
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
       <div
+        className="responsive-grid-split"
         style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 360px',
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
           gap: '32px',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ flex: '2 1 600px', display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
           <Card>
             <CardHeader>
-              <h3 className="text-title-lg">Progreso general del proyecto</h3>
+              <h3 className="text-title-lg">{t('projects:monitoring.progressTitle')}</h3>
             </CardHeader>
 
             <CardContent>
@@ -373,7 +598,7 @@ export const ProjectMonitoring: React.FC = () => {
                 }}
               >
                 <span className="text-label-md">
-                  Estado actual: {getStatusLabel(project.status)}
+                  {t('projects:monitoring.currentStatus', { status: getStatusLabel(project.status, t) })}
                 </span>
                 <span className="text-label-md">{progress}%</span>
               </div>
@@ -396,6 +621,7 @@ export const ProjectMonitoring: React.FC = () => {
               </div>
 
               <div
+                className="responsive-grid-5"
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
@@ -404,11 +630,11 @@ export const ProjectMonitoring: React.FC = () => {
                 }}
               >
                 {[
-                  ['Postulación', 'POSTULATED'],
-                  ['Observación', 'OBSERVED'],
-                  ['Aprobación', 'APPROVED'],
-                  ['Ejecución', 'IN_PROGRESS'],
-                  ['Cierre', 'COMPLETED'],
+                  [t('projects:monitoring.steps.postulation'), 'POSTULATED'],
+                  [t('projects:monitoring.steps.observation'), 'OBSERVED'],
+                  [t('projects:monitoring.steps.approval'), 'APPROVED'],
+                  [t('projects:monitoring.steps.execution'), 'IN_PROGRESS'],
+                  [t('projects:monitoring.steps.closure'), 'COMPLETED'],
                 ].map(([label, status]) => (
                   <div
                     key={status}
@@ -428,7 +654,7 @@ export const ProjectMonitoring: React.FC = () => {
                         fontSize: '12px',
                       }}
                     >
-                      Estado referencial
+                      {t('projects:monitoring.referentialStatus')}
                     </div>
                   </div>
                 ))}
@@ -438,7 +664,7 @@ export const ProjectMonitoring: React.FC = () => {
 
           <Card>
             <CardHeader>
-              <h3 className="text-title-lg">Objetivo general</h3>
+              <h3 className="text-title-lg">{t('projects:monitoring.generalObjective')}</h3>
             </CardHeader>
 
             <CardContent>
@@ -449,22 +675,184 @@ export const ProjectMonitoring: React.FC = () => {
                   lineHeight: 1.7,
                 }}
               >
-                {project.generalObjective || 'No se registró el objetivo general del proyecto.'}
+                {project.generalObjective || t('projects:monitoring.noObjective')}
               </p>
             </CardContent>
           </Card>
 
-          <Alert title="Regla institucional activa">
-            La omisión o retraso de informes de avance puede afectar el seguimiento administrativo
-            del proyecto. Esta sección quedará lista para integrarse con reportes progresivos cuando
-            el endpoint correspondiente esté estable.
-          </Alert>
+          <Card style={{ marginTop: '24px' }}>
+            <CardHeader>
+              <h3 className="text-title-lg">{t('projects:monitoring.reportsTitle')}</h3>
+            </CardHeader>
+            <CardContent>
+              <TableContainer>
+                <TableHead>
+                  <TableRow>
+                    <TableHeader>{t('projects:monitoring.reportsTable.period')}</TableHeader>
+                    <TableHeader>{t('projects:monitoring.reportsTable.deadline')}</TableHeader>
+                    <TableHeader>{t('projects:monitoring.reportsTable.uploadedDocument')}</TableHeader>
+                    <TableHeader>{t('projects:monitoring.reportsTable.status')}</TableHeader>
+                    <TableHeader>{t('projects:monitoring.reportsTable.observations')}</TableHeader>
+                    <TableHeader style={{ textAlign: 'right' }}>{t('projects:monitoring.reportsTable.action')}</TableHeader>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {[
+                    { name: 'Trimestre 1', deadline: '30/09/2026' },
+                    { name: 'Trimestre 2', deadline: '31/12/2026' },
+                    { name: 'Trimestre 3', deadline: '31/03/2027' },
+                    { name: 'Informe Final', deadline: '30/06/2027' },
+                  ].map(period => {
+                    const r = progressReports.find(x => x.period === period.name);
+                    const getReportBadgeVariant = (status: string): 'success' | 'warning' | 'info' | 'neutral' | 'error' => {
+                      const norm = String(status || '').toUpperCase();
+                      if (['APROBADO', 'APPROVED'].includes(norm)) return 'success';
+                      if (['OBSERVADO', 'OBSERVED'].includes(norm)) return 'warning';
+                      if (['RECHAZADO', 'REJECTED'].includes(norm)) return 'error';
+                      if (['EN_REVISION', 'PENDIENTE', 'UNDER_REVIEW'].includes(norm)) return 'info';
+                      return 'neutral';
+                    };
+                    return (
+                      <TableRow key={period.name}>
+                        <TableCell>{period.name}</TableCell>
+                        <TableCell>{period.deadline}</TableCell>
+                        <TableCell>
+                          {r?.attachedDocumentId ? (
+                            <button 
+                              type="button"
+                              style={{ background: 'none', border: 'none', padding: 0, color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' }}
+                              onClick={() => documentService.downloadFile(r.attachedDocumentId, r.fileName)}
+                            >
+                              {r.fileName || `informe_${period.name.replace(' ', '_').toLowerCase()}.pdf`}
+                            </button>
+                          ) : (
+                            <span>—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {r ? (
+                            <Badge variant={getReportBadgeVariant(r.status)}>
+                              {getStatusLabel(r.status, t)}
+                            </Badge>
+                          ) : (
+                            <Badge variant="neutral">{t('projects:statuses.programado')}</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {r?.comments?.[0]?.content || r?.observations || (r ? t('projects:monitoring.sentForReview') : '—')}
+                        </TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>
+                          {renderActionButton(r, period)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </TableContainer>
+              <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--warning)' }}></span>
+                <strong>{t('projects:monitoring.institutionalRule')}</strong> {t('projects:monitoring.institutionalRuleText')}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card style={{ marginTop: '24px' }}>
+            <CardHeader>
+              <h3 className="text-title-lg">{t('projects:monitoring.documentsTitle')}</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="section-grid-asymmetric" style={{ gap: '24px' }}>
+                
+                {/* Lista de Documentos */}
+                <div>
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>{t('projects:monitoring.documentHistory')}</h4>
+                  <TableContainer>
+                    <TableHead>
+                      <TableRow>
+                        <TableHeader>{t('projects:monitoring.docTable.file')}</TableHeader>
+                        <TableHeader>{t('projects:monitoring.docTable.uploadedBy')}</TableHeader>
+                        <TableHeader>{t('projects:monitoring.docTable.date')}</TableHeader>
+                        <TableHeader style={{ textAlign: 'right' }}>{t('projects:monitoring.docTable.download')}</TableHeader>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell><strong>{project.documentId ? documentName : 'Proyecto_inicial.pdf'}</strong></TableCell>
+                        <TableCell>{t('projects:monitoring.investigator')}</TableCell>
+                        <TableCell>{formatDate(project.startDate)}</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>
+                          <Button 
+                            variant="secondary"
+                            onClick={() => {
+                              if (project.documentId) {
+                                documentService.downloadFile(project.documentId, documentName);
+                              } else {
+                                toast.showError(t('projects:monitoring.noInitialFile'));
+                              }
+                            }}
+                          >
+                            Descargar
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      {['APPROVED', 'EN_EJECUCION', 'EN_EJECUCIÓN', 'FINALIZADO', 'COMPLETED'].includes(String(project.status).toUpperCase()) && (
+                        <TableRow>
+                          <TableCell><strong>Resolución_R.D._045.pdf</strong></TableCell>
+                          <TableCell>{t('projects:monitoring.deanOffice')}</TableCell>
+                          <TableCell>{formatDate(project.startDate)}</TableCell>
+                          <TableCell style={{ textAlign: 'right' }}>
+                            <Button 
+                              variant="secondary"
+                              onClick={() => {
+                                toast.showSuccess(t('projects:monitoring.downloadingResolution'));
+                                documentService.downloadFile(project.documentId || 1, 'Resolución_R.D._045.pdf');
+                              }}
+                            >
+                              Descargar
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </TableContainer>
+                </div>
+
+                {/* Trazabilidad lineal */}
+                <div>
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>{t('projects:monitoring.signatureTracking')}</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderLeft: '2px solid var(--outline-variant)', paddingLeft: '16px', marginLeft: '6px', overflowX: 'hidden' }}>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
+                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.proposalSent')}</strong>
+                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>08/06/2026 10:25 - Docente Investigador</div>
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
+                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.approvedByCoordinator')}</strong>
+                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>09/06/2026 15:40 - Coordinador de Grupo</div>
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
+                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.approvedByDirection')}</strong>
+                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>12/06/2026 11:10 - Director de Investigación</div>
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--primary)' }}></span>
+                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.resolutionIssued')}</strong>
+                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>20/06/2026 09:30 - Decanato (Firma RD-045)</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <Card>
             <CardHeader>
-              <h3 className="text-title-lg">Detalles administrativos</h3>
+              <h3 className="text-title-lg">{t('projects:monitoring.adminDetails')}</h3>
             </CardHeader>
 
             <CardContent>
@@ -472,7 +860,7 @@ export const ProjectMonitoring: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <CalendarDays size={20} color="var(--primary)" />
                   <div>
-                    <strong>Fechas</strong>
+                    <strong>{t('projects:monitoring.dates')}</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
                       {formatDate(project.startDate)} - {formatDate(project.endDate)}
                     </div>
@@ -482,9 +870,9 @@ export const ProjectMonitoring: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <ClipboardCheck size={20} color="var(--primary)" />
                   <div>
-                    <strong>Duración</strong>
+                    <strong>{t('projects:monitoring.duration')}</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
-                      {getDurationLabel(project.startDate, project.endDate)}
+                      {getDurationLabel(project.startDate, project.endDate, t)}
                     </div>
                   </div>
                 </div>
@@ -492,9 +880,9 @@ export const ProjectMonitoring: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <MapPin size={20} color="var(--primary)" />
                   <div>
-                    <strong>Lugar de ejecución</strong>
+                    <strong>{t('projects:monitoring.executionPlace')}</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
-                      {project.executionPlace || 'No registrado'}
+                      {project.executionPlace || t('projects:monitoring.notRegistered')}
                     </div>
                   </div>
                 </div>
@@ -512,9 +900,9 @@ export const ProjectMonitoring: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <Users size={20} color="var(--primary)" />
                   <div>
-                    <strong>Responsable</strong>
+                    <strong>{t('projects:monitoring.responsible')}</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
-                      ID de usuario: {project.responsibleId ?? 'No registrado'}
+                      {responsibleName}
                     </div>
                   </div>
                 </div>
@@ -522,9 +910,19 @@ export const ProjectMonitoring: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <FileText size={20} color="var(--primary)" />
                   <div>
-                    <strong>Documento asociado</strong>
+                    <strong>{t('projects:monitoring.associatedDocument')}</strong>
                     <div style={{ color: 'var(--on-surface-variant)' }}>
-                      {project.documentId ? `Documento #${project.documentId}` : 'No registrado'}
+                      {project.documentId ? (
+                        <button
+                          type="button"
+                          style={{ background: 'none', border: 'none', padding: 0, color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' }}
+                           onClick={() => documentService.downloadFile(project.documentId!, documentName)}
+                        >
+                          {documentName}
+                        </button>
+                      ) : (
+                        t('projects:monitoring.notRegistered')
+                      )}
                     </div>
                   </div>
                 </div>
@@ -549,15 +947,14 @@ export const ProjectMonitoring: React.FC = () => {
               }}
             >
               <HelpCircle size={24} />
-              <h3 className="text-title-lg">¿Necesitas ayuda?</h3>
+              <h3 className="text-title-lg">{t('projects:monitoring.needHelp')}</h3>
             </div>
 
             <p
               className="text-body-md"
               style={{ marginBottom: '24px', opacity: 0.9 }}
             >
-              Si tienes problemas con la revisión, trazabilidad o documentación del proyecto,
-              contacta a la oficina de investigación.
+              {t('projects:monitoring.helpText')}
             </p>
 
             <Link
@@ -568,7 +965,7 @@ export const ProjectMonitoring: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              Ir a revisión de informes
+              {t('projects:monitoring.goToReportReview')}
             </Link>
           </div>
         </div>

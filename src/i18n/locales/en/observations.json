@@ -1,0 +1,424 @@
+{
+  "title": "Observations Management",
+  "subtitle": "Manage system observations",
+  "panel": {
+    "title": "Observations Panel",
+    "subtitle": "Manage and track observations",
+    "backToDashboard": "Back to dashboard",
+    "myObservations": "My Observations",
+    "description": "View observations associated with a procedure and register the corresponding remedy when necessary.",
+    "requiresRemedy": "Requires remedy",
+    "allCompliant": "All compliant",
+    "registeredObservations": "Registered observations",
+    "pendingRemedy": "Pending remedy",
+    "remediatedOrClosed": "Remediated or closed",
+    "procedure": "Procedure / File",
+    "updating": "Updating...",
+    "update": "Update",
+    "loadErrorTitle": "Could not load observations",
+    "loadErrorDetail": "Could not load observations.",
+    "loadErrorEndpoint": "Backend responded: {{error}}. Verify the endpoint GET /api/observations/procedure/{procedureId}.",
+    "observationDetail": "Observation Details",
+    "loading": "Loading observations...",
+    "noObservations": "No observations registered for this procedure.",
+    "generalObservation": "General observation",
+    "registeredDate": "Registered: {{date}}",
+    "noDetail": "No detail recorded.",
+    "noDate": "No date",
+    "responseRegistered": "Registered response",
+    "sendRemedy": "Submit remedy",
+    "remedyDescription": "Attach the corrected document and register a clear response to the pending observations.",
+    "correctedDocument": "Corrected document",
+    "clickToUpload": "Click to upload file",
+    "fileInfo": "PDF, DOC or DOCX up to 10 MB",
+    "justificationLabel": "Justification or response",
+    "justificationPlaceholder": "Detail how the observations were resolved...",
+    "registering": "Registering...",
+    "registerRemedy": "Register remedy",
+    "tabs": {
+      "pending": "Pending",
+      "inReview": "In Review",
+      "resolved": "Resolved",
+      "all": "All"
+    },
+    "filters": {
+      "status": "Status",
+      "type": "Type",
+      "priority": "Priority",
+      "entityType": "Entity Type",
+      "dateRange": "Date Range",
+      "search": "Search...",
+      "assignedTo": "Assigned To",
+      "createdBy": "Created By"
+    },
+    "columns": {
+      "id": "ID",
+      "title": "Title",
+      "type": "Type",
+      "priority": "Priority",
+      "status": "Status",
+      "entityType": "Entity",
+      "entityName": "Entity Name",
+      "assignedTo": "Assigned To",
+      "createdBy": "Created By",
+      "createdDate": "Created Date",
+      "dueDate": "Due Date",
+      "actions": "Actions"
+    },
+    "pagination": {
+      "showing": "Showing {{start}}-{{end}} of {{total}}",
+      "page": "Page {{page}} of {{pages}}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "emptyState": {
+      "title": "No pending observations",
+      "subtitle": "All observations have been resolved",
+      "viewAll": "View All Observations"
+    },
+    "statuses": {
+      "pending": "Pending",
+      "observed": "Observed",
+      "remediated": "Remedied",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "toast": {
+      "justificationRequired": "You must enter a justification.",
+      "noPendingObservations": "There are no pending observations to remedy.",
+      "remedySuccess": "Remedy registered successfully. The proposal status has been updated.",
+      "remedyError": "Error registering remedy."
+    }
+  },
+  "detail": {
+    "title": "Observation Details",
+    "basicInfo": "Basic Information",
+    "description": "Description",
+    "entityInfo": "Entity Information",
+    "comments": "Comments",
+    "history": "History",
+    "attachments": "Attachments",
+    "status": "Status",
+    "priority": "Priority",
+    "type": "Type",
+    "entityType": "Entity Type",
+    "entityName": "Entity Name",
+    "entityLink": "View Entity",
+    "assignedTo": "Assigned To",
+    "createdBy": "Created By",
+    "createdDate": "Created Date",
+    "dueDate": "Due Date",
+    "resolvedBy": "Resolved By",
+    "resolvedDate": "Resolved Date"
+  },
+  "types": {
+    "comment": "Comment",
+    "request": "Request",
+    "correction": "Correction",
+    "observation": "Observation",
+    "urgent": "Urgent",
+    "suggestion": "Suggestion",
+    "complaint": "Complaint",
+    "inquiry": "Inquiry",
+    "feedback": "Feedback"
+  },
+  "priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "status": {
+    "pending": "Pending",
+    "inReview": "In Review",
+    "resolved": "Resolved",
+    "rejected": "Rejected",
+    "closed": "Closed",
+    "reopened": "Reopened",
+    "overdue": "Overdue"
+  },
+  "entityTypes": {
+    "project": "Project",
+    "thesis": "Thesis",
+    "tramite": "Procedure",
+    "progressReport": "Progress Report",
+    "convocatoria": "Call",
+    "proposal": "Proposal",
+    "resolution": "Resolution",
+    "user": "User",
+    "group": "Group",
+    "line": "Line",
+    "document": "Document"
+  },
+  "new": {
+    "title": "New Observation",
+    "subtitle": "Create a new observation",
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "Enter observation title",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter a detailed description",
+      "type": "Observation Type",
+      "typePlaceholder": "Select type",
+      "priority": "Priority",
+      "priorityPlaceholder": "Select priority",
+      "entityType": "Entity Type",
+      "entityTypePlaceholder": "Select entity type",
+      "entity": "Entity",
+      "entityPlaceholder": "Select entity",
+      "assignedTo": "Assign To",
+      "assignedToPlaceholder": "Select person to assign",
+      "dueDate": "Due Date",
+      "attachments": "Attachments",
+      "submitButton": "Create Observation",
+      "cancel": "Cancel"
+    },
+    "error": {
+      "titleRequired": "Title is required",
+      "descriptionRequired": "Description is required",
+      "typeRequired": "Type is required",
+      "priorityRequired": "Priority is required",
+      "entityTypeRequired": "Entity type is required",
+      "entityRequired": "Entity is required",
+      "invalidDate": "Invalid date",
+      "uploadFailed": "Error uploading file",
+      "saveFailed": "Error saving observation"
+    },
+    "success": {
+      "created": "Observation created successfully"
+    }
+  },
+  "edit": {
+    "title": "Edit Observation",
+    "subtitle": "Modify observation information",
+    "form": {
+      "submitButton": "Save Changes",
+      "cancel": "Cancel"
+    },
+    "error": {
+      "updateFailed": "Error updating observation",
+      "notFound": "Observation not found",
+      "unauthorized": "You don't have permission to edit this observation"
+    },
+    "success": {
+      "updated": "Observation updated successfully"
+    }
+  },
+  "actions": {
+    "create": "Create Observation",
+    "edit": "Edit Observation",
+    "delete": "Delete Observation",
+    "resolve": "Resolve Observation",
+    "reject": "Reject Observation",
+    "close": "Close Observation",
+    "reopen": "Reopen Observation",
+    "assign": "Assign Observation",
+    "reassign": "Reassign Observation",
+    "escalate": "Escalate Observation",
+    "addComment": "Add Comment",
+    "addAttachment": "Add Attachment",
+    "viewEntity": "View Entity",
+    "export": "Export Observation",
+    "print": "Print Observation"
+  },
+  "resolve": {
+    "title": "Resolve Observation",
+    "subtitle": "Mark observation as resolved",
+    "form": {
+      "resolution": "Resolution",
+      "resolutionPlaceholder": "Describe how the observation was resolved",
+      "actions": "Actions Taken",
+      "actionsPlaceholder": "Describe the actions taken",
+      "attachments": "Support Files",
+      "submitButton": "Resolve Observation",
+      "cancel": "Cancel"
+    },
+    "error": {
+      "resolutionRequired": "Resolution is required",
+      "actionsRequired": "Actions taken are required",
+      "saveFailed": "Error resolving observation"
+    },
+    "success": {
+      "resolved": "Observation resolved successfully"
+    }
+  },
+  "reject": {
+    "title": "Reject Observation",
+    "subtitle": "Reject the observation",
+    "form": {
+      "reason": "Rejection Reason",
+      "reasonPlaceholder": "Enter the rejection reason",
+      "submitButton": "Reject Observation",
+      "cancel": "Cancel"
+    },
+    "error": {
+      "reasonRequired": "Rejection reason is required",
+      "saveFailed": "Error rejecting observation"
+    },
+    "success": {
+      "rejected": "Observation rejected successfully"
+    }
+  },
+  "comments": {
+    "title": "Comments",
+    "noComments": "No comments",
+    "addComment": "Add Comment",
+    "commentPlaceholder": "Write your comment...",
+    "submitButton": "Submit Comment",
+    "editComment": "Edit Comment",
+    "deleteComment": "Delete Comment",
+    "reply": "Reply",
+    "commentBy": "Comment by {{name}}",
+    "onDate": "on {{date}}"
+  },
+  "attachments": {
+    "title": "Attachments",
+    "noAttachments": "No attachments",
+    "uploadAttachment": "Upload File",
+    "uploadHint": "Drag and drop files here or click to select",
+    "allowedTypes": "Allowed types: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG",
+    "maxSize": "Maximum size: 10 MB",
+    "uploading": "Uploading...",
+    "uploadSuccess": "File uploaded successfully",
+    "uploadError": "Error uploading file",
+    "deleteAttachment": "Delete File",
+    "deleteConfirm": "Are you sure you want to delete this file?",
+    "downloadAttachment": "Download File",
+    "previewAttachment": "Preview"
+  },
+  "history": {
+    "title": "History",
+    "noHistory": "No history available",
+    "event": "Event",
+    "date": "Date",
+    "user": "User",
+    "details": "Details",
+    "eventTypes": {
+      "created": "Observation created",
+      "assigned": "Observation assigned",
+      "reassigned": "Observation reassigned",
+      "escalated": "Observation escalated",
+      "commentAdded": "Comment added",
+      "attachmentAdded": "Attachment added",
+      "statusChanged": "Status changed",
+      "priorityChanged": "Priority changed",
+      "resolved": "Observation resolved",
+      "rejected": "Observation rejected",
+      "closed": "Observation closed",
+      "reopened": "Observation reopened"
+    }
+  },
+  "notifications": {
+    "newObservation": "New observation: {{title}}",
+    "observationAssigned": "Observation assigned: {{title}}",
+    "observationUpdate": "Observation update: {{title}}",
+    "observationResolved": "Observation resolved: {{title}}",
+    "observationRejected": "Observation rejected: {{title}}",
+    "observationOverdue": "Observation overdue: {{title}}",
+    "commentAdded": "Comment added to observation: {{title}}",
+    "dueDateApproaching": "Due date approaching for observation: {{title}}"
+  },
+  "subsancion": {
+    "title": "Observation Remediation",
+    "subtitle": "Manage observation remediation",
+    "tramiteNotFound": "Procedure not found.",
+    "noTramite": "No procedure was specified for remediation. Go back to the tray and use the \"Remedy\" action.",
+    "backToTray": "Back to tray",
+    "backToDetail": "Back to procedure details",
+    "noPendingTitle": "No pending observations",
+    "noPendingDescription": "This procedure has no pending observations to remedy at this time.",
+    "noObservations": "No observations registered for this procedure.",
+    "yourRemedy": "Your remedy",
+    "newSubsanacion": {
+      "title": "New Remediation",
+      "subtitle": "Register a remediation for an observation",
+      "form": {
+        "observation": "Observation",
+        "observationPlaceholder": "Select observation to remediate",
+        "description": "Remediation Description",
+        "descriptionPlaceholder": "Describe the remediation performed",
+        "documents": "Support Documents",
+        "submitButton": "Submit Remediation",
+        "cancel": "Cancel"
+      }
+    },
+    "list": {
+      "title": "Remediations List",
+      "noSubsanaciones": "No remediations registered",
+      "columns": {
+        "id": "ID",
+        "observation": "Observation",
+        "description": "Description",
+        "status": "Status",
+        "createdBy": "Created By",
+        "createdDate": "Date",
+        "actions": "Actions"
+      }
+    },
+    "status": {
+      "pending": "Pending",
+      "inReview": "In Review",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "actions": {
+      "approve": "Approve Remediation",
+      "reject": "Reject Remediation",
+      "requestInfo": "Request Additional Information"
+    },
+    "form": {
+      "description": "Remediation Description",
+      "descriptionPlaceholder": "Explain how you addressed this observation...",
+      "document": "Attached document (optional)",
+      "descriptionRequired": "The remediation description is required.",
+      "registering": "Registering...",
+      "register": "Register remedy"
+    },
+    "toast": {
+      "loadError": "Error loading observations",
+      "success": "Remedy registered successfully.",
+      "error": "Error registering remedy"
+    }
+  },
+  "stats": {
+    "title": "Observations Statistics",
+    "total": "Total Observations",
+    "pending": "Pending",
+    "inReview": "In Review",
+    "resolved": "Resolved",
+    "overdue": "Overdue",
+    "byType": "By Type",
+    "byPriority": "By Priority",
+    "byStatus": "By Status",
+    "byEntity": "By Entity",
+    "byMonth": "By Month",
+    "averageResolutionTime": "Average Resolution Time",
+    "resolutionRate": "Resolution Rate"
+  },
+  "error": {
+    "notFound": "Observation not found",
+    "unauthorized": "You don't have permission to perform this action",
+    "forbidden": "Access denied",
+    "serverError": "Server error",
+    "networkError": "Connection error",
+    "loadingError": "Error loading data",
+    "savingError": "Error saving",
+    "deletingError": "Error deleting",
+    "updatingError": "Error updating",
+    "creatingError": "Error creating"
+  },
+  "success": {
+    "created": "Observation created successfully",
+    "updated": "Observation updated successfully",
+    "deleted": "Observation deleted successfully",
+    "resolved": "Observation resolved successfully",
+    "rejected": "Observation rejected successfully",
+    "closed": "Observation closed successfully",
+    "reopened": "Observation reopened successfully",
+    "assigned": "Observation assigned successfully",
+    "reassigned": "Observation reassigned successfully",
+    "escalated": "Observation escalated successfully",
+    "commentAdded": "Comment added successfully",
+    "attachmentAdded": "Attachment added successfully"
+  }
+}

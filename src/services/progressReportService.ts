@@ -1,49 +1,207 @@
-import { fetchApi } from './api';
+import { api } from './api';
+
+// ── Tipos ─────────────────────────────────────────────────────────────────────
+
+export type ProgressReportStatus =
+  | 'PENDIENTE'
+  | 'EN_REVISION'
+  | 'OBSERVADO'
+  | 'APROBADO'
+  | 'RECHAZADO';
 
 export interface ProgressReport {
-  id?: number | string;
-  projectId?: number | string;
-  type?: string;
-  status?: string;
-  percentage?: number;
-  achievements?: string;
-  difficulties?: string;
-  recommendations?: string;
-  fileId?: number | string;
-  createdAt?: string;
+  id: number;
+  reportNumber: number;
+  projectId: number;
+  projectTitle?: string;
+  responsibleName: string;
+  reportDate: string;
+  /** Porcentaje de avance físico (0–100), validado por chk_porcentaje */
+  physicalProgress: number;
+  /** Porcentaje de avance financiero (0–100) */
+  financialProgress: number;
+  status: ProgressReportStatus;
+  observations?: string;
+  attachedDocumentId?: number;
+  period?: string;
 }
 
+export interface ProgressReportDetail extends ProgressReport {
+  executedActivities: ExecutedActivity[];
+  evidences: Evidence[];
+  attachments: Attachment[];
+  comments: ReportComment[];
+  changeHistory: ChangeHistoryEntry[];
+}
+
+export interface ExecutedActivity {
+  id: number;
+  description: string;
+  startDate: string;
+  endDate: string;
+  completed: boolean;
+}
+
+export interface Evidence {
+  id: number;
+  title: string;
+  description?: string;
+  url?: string;
+  type: string;
+}
+
+export interface Attachment {
+  id: number;
+  fileName: string;
+  fileType: string;
+  url: string;
+  uploadedAt: string;
+}
+
+export interface ReportComment {
+  id: number;
+  authorName: string;
+  authorRole: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface ChangeHistoryEntry {
+  id: number;
+  field: string;
+  oldValue: string;
+  newValue: string;
+  changedBy: string;
+  changedAt: string;
+}
+
+export interface ProjectSummary {
+  id: number;
+  title: string;
+  status: string;
+}
+
+// ── Mapper Helpers ────────────────────────────────────────────────────────────
+
+function mapResponseToReport(r: any): ProgressReport {
+  return {
+    id: r.id,
+    reportNumber: r.id,
+    projectId: r.projectId,
+    projectTitle: r.projectTitle || `Proyecto #${r.projectId}`,
+    responsibleName: r.responsibleName || 'Docente Investigador',
+    reportDate: r.registrationDate || r.lastUpdatedDate || '',
+    physicalProgress: Number(r.progressPercentage || 0),
+    financialProgress: Number(r.progressPercentage || 0), // Copied from progressPercentage for UI compatibility
+    status: r.reportStatus || 'PENDIENTE',
+    observations: r.achievements ? `Logros: ${r.achievements}. Dificultades: ${r.difficulties}` : undefined,
+    attachedDocumentId: r.attachedDocumentId,
+    period: r.period,
+  };
+}
+
+function mapResponseToDetail(r: any): ProgressReportDetail {
+  const base = mapResponseToReport(r);
+  return {
+    ...base,
+    executedActivities: r.executedActivities || [
+      {
+        id: 1,
+        description: `Avance general de actividades reportadas en periodo ${r.period}`,
+        startDate: r.registrationDate || '',
+        endDate: r.lastUpdatedDate || '',
+        completed: true
+      }
+    ],
+    evidences: r.evidences || [],
+    attachments: r.attachedDocumentId ? [{
+      id: r.attachedDocumentId,
+      fileName: `informe_avance_${r.id}.pdf`,
+      fileType: 'pdf',
+      url: `/api/documents/download/${r.attachedDocumentId}`,
+      uploadedAt: r.registrationDate || ''
+    }] : [],
+    comments: r.observations ? [
+      {
+        id: 1,
+        authorName: 'Sistema de Trazabilidad',
+        authorRole: 'SISTEMA',
+        content: `Últimas observaciones: ${r.observations}`,
+        createdAt: r.lastUpdatedDate || ''
+      }
+    ] : [],
+    changeHistory: r.changeHistory || []
+  };
+}
+
+// ── Servicio ──────────────────────────────────────────────────────────────────
+
 export const progressReportService = {
-  create: (data: any) =>
-    fetchApi<any>('/api/progress-reports', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+  getPendingReports: async (status?: string): Promise<ProgressReport[]> => {
+    const res = await api.get<any>('/api/progress-reports', {
+      params: status ? { status } : undefined
+    });
+    const content = Array.isArray(res.content) ? res.content : Array.isArray(res) ? res : [];
+    return content.map(mapResponseToReport);
+  },
 
-  getById: (id: string | number) =>
-    fetchApi<any>(`/api/progress-reports/${id}`),
+  /**
+   * Obtiene los proyectos disponibles según el rol del usuario autenticado.
+   * - DOCENTE_INVESTIGADOR → solo sus proyectos
+   * - DIRECTOR_INVESTIGACION → todos los proyectos activos
+   */
+  getProjectsByRole: async (): Promise<ProjectSummary[]> => {
+    return api.get<ProjectSummary[]>('/api/progress-reports');
+  },
 
-  getByProject: (projectId: string | number) =>
-    fetchApi<any[]>(`/api/progress-reports/project/${projectId}`),
+  getByProject: async (projectId: number): Promise<ProgressReport[]> => {
+    const raw = await api.get<any[]>(`/api/progress-reports/project/${projectId}`);
+    return raw.map(mapResponseToReport);
+  },
 
-  forward: (id: string | number) =>
-    fetchApi<any>(`/api/progress-reports/${id}/forward`, { method: 'PATCH' }),
+  getDetail: async (reportId: number): Promise<ProgressReportDetail> => {
+    const raw = await api.get<any>(`/api/progress-reports/${reportId}`);
+    return mapResponseToDetail(raw);
+  },
 
-  approve: (id: string | number) =>
-    fetchApi<any>(`/api/progress-reports/${id}/approve`, { method: 'PATCH' }),
+  createReport: async (payload: {
+    projectId: number;
+    reportType: 'PARCIAL' | 'FINAL';
+    period: string;
+    progressPercentage: number;
+    achievements: string;
+    difficulties: string;
+    recommendations: string;
+    attachedDocumentId?: number | null;
+  }): Promise<ProgressReport> => {
+    const raw = await api.post<any>('/api/progress-reports', payload);
+    return mapResponseToReport(raw);
+  },
 
-  observe: (id: string | number, observation: string) =>
-    fetchApi<any>(`/api/progress-reports/${id}/observe`, {
-      method: 'PATCH',
-      body: JSON.stringify({ observation }),
-    }),
+  amendReport: async (reportId: number, payload: {
+    amendmentDocumentId: number;
+  }): Promise<ProgressReport> => {
+    const raw = await api.patch<any>(`/api/progress-reports/${reportId}/amend`, payload);
+    return mapResponseToReport(raw);
+  },
 
-  reject: (id: string | number) =>
-    fetchApi<any>(`/api/progress-reports/${id}/reject`, { method: 'PATCH' }),
+  forwardReport: async (reportId: number): Promise<ProgressReport> => {
+    const raw = await api.patch<any>(`/api/progress-reports/${reportId}/forward`, {});
+    return mapResponseToReport(raw);
+  },
 
-  amend: (id: string | number, data: any) =>
-    fetchApi<any>(`/api/progress-reports/${id}/amend`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    }),
+  approveReport: async (reportId: number): Promise<ProgressReport> => {
+    const raw = await api.patch<any>(`/api/progress-reports/${reportId}/approve`, {});
+    return mapResponseToReport(raw);
+  },
+
+  observeReport: async (reportId: number, observation: string): Promise<ProgressReport> => {
+    const raw = await api.patch<any>(`/api/progress-reports/${reportId}/observe`, { observation });
+    return mapResponseToReport(raw);
+  },
+
+  rejectReport: async (reportId: number): Promise<ProgressReport> => {
+    const raw = await api.patch<any>(`/api/progress-reports/${reportId}/reject`, {});
+    return mapResponseToReport(raw);
+  },
 };

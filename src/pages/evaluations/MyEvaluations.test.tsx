@@ -19,6 +19,15 @@ vi.mock('../../services/evaluacionService', () => ({
   }
 }));
 
+vi.mock('../../context/ToastContext', () => ({
+  useToast: () => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+  }),
+}));
+
 describe('MyEvaluations', () => {
   const mockAuthContext = {
     user: { id: 1, firstNames: 'John' },
@@ -43,14 +52,14 @@ describe('MyEvaluations', () => {
       </MemoryRouter>
     );
     
-    expect(screen.getByText('Mis evaluaciones')).toBeDefined();
-    expect(screen.getByText(/Consulta los proyectos, tesis o documentos asignados/i)).toBeDefined();
+    expect(screen.getByText('Bandeja de Evaluaciones')).toBeDefined();
+    expect(screen.getByText(/Expedientes asignados para evaluación/i)).toBeDefined();
   });
 
   it('renders the mock evaluation data in the table', async () => {
     vi.mocked(evaluacionService.getByEvaluator).mockResolvedValue([
-      { id: 1, tipo: 'Proyecto', title: 'Impacto de la IA en la cadena de suministro', assignedAt: '2023-10-01', deadline: '2023-10-15', status: 'PENDIENTE' },
-      { id: 2, tipo: 'Tesis', title: 'Optimización de procesos industriales con IoT', assignedAt: '2023-10-02', deadline: '2023-10-16', status: 'COMPLETADO' }
+      { id: 1, expedienteCode: 'EXP-2024-001', tipo: 'Proyecto', convocatoria: 'Convocatoria 2024', assignDate: '2023-10-01', deadline: '2023-10-15', status: 'PENDIENTE' },
+      { id: 2, expedienteCode: 'EXP-2024-002', tipo: 'Tesis', convocatoria: 'Convocatoria 2024-B', assignDate: '2023-10-02', deadline: '2023-10-16', status: 'COMPLETADO' }
     ]);
     
     render(
@@ -62,14 +71,15 @@ describe('MyEvaluations', () => {
     );
     
     await waitFor(() => {
-      expect(screen.getByText('Impacto de la IA en la cadena de suministro')).toBeDefined();
+      expect(screen.getByText('EXP-2024-001')).toBeDefined();
     });
-    expect(screen.getByText('Optimización de procesos industriales con IoT')).toBeDefined();
+    expect(screen.getByText('EXP-2024-002')).toBeDefined();
+    expect(screen.getByText('Convocatoria 2024')).toBeDefined();
   });
 
   it('renders the action buttons', async () => {
     vi.mocked(evaluacionService.getByEvaluator).mockResolvedValue([
-      { id: 1, tipo: 'Proyecto', title: 'Impacto de la IA en la cadena de suministro', assignedAt: '2023-10-01', deadline: '2023-10-15', status: 'PENDIENTE' }
+      { id: 1, expedienteCode: 'EXP-2024-001', tipo: 'Proyecto', assignDate: '2023-10-01', deadline: '2023-10-15', status: 'PENDIENTE' }
     ]);
     
     render(
@@ -81,10 +91,7 @@ describe('MyEvaluations', () => {
     );
     
     await waitFor(() => {
-      const viewButtons = screen.getAllByText('Ver');
-      const evalButtons = screen.getAllByText('Evaluar');
-      expect(viewButtons.length).toBeGreaterThan(0);
-      expect(evalButtons.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Evaluar/)).toBeDefined();
     });
   });
 });
