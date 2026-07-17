@@ -16,6 +16,7 @@ import {
   Megaphone,
   Scale,
   ShieldCheck,
+  CheckCircle,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -86,6 +87,20 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         icon: <AlertCircle size={20} />,
         path: '/observations/panel',
         roles: ['ESTUDIANTE', 'DOCENTE_INVESTIGADOR'],
+      },
+      {
+        id: 'subsanacion',
+        label: t('navigation:sidebarSubsanacion'),
+        icon: <CheckCircle size={20} />,
+        path: '/observations/subsanacion',
+        roles: ['ESTUDIANTE', 'DOCENTE_INVESTIGADOR'],
+      },
+      {
+        id: 'progress-reports',
+        label: t('navigation:sidebarMyReports'),
+        icon: <FileSearch size={20} />,
+        path: '/progressreports/history',
+        roles: ['DOCENTE_INVESTIGADOR'],
       },
       {
         id: 'decano-review',
