@@ -474,7 +474,9 @@
     "procedureLabel": "Trámite",
     "observationLabel": "Observación:",
     "loadMore": "Cargar más",
-    "details": "Detalles"
+    "details": "Detalles",
+    "previousData": "Datos Anteriores",
+    "newData": "Datos Nuevos"
   },
   "error": {
     "notFound": "Trámite no encontrado",

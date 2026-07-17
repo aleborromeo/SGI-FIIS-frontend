@@ -474,7 +474,9 @@
     "procedureLabel": "Procedure",
     "observationLabel": "Observation:",
     "loadMore": "Load more",
-    "details": "Details"
+    "details": "Details",
+    "previousData": "Previous Data",
+    "newData": "New Data"
   },
   "error": {
     "notFound": "Procedure not found",

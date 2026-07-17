@@ -352,19 +352,20 @@ export const AuditTrail: React.FC = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--outline-variant)' }}>
+                    <th style={{ ...thStyle, width: '44px' }}>#</th>
                     <th style={thStyle}>{t('tramites:auditTrail.action')}</th>
                     <th style={thStyle}>{t('tramites:auditTrail.table')}</th>
                     <th style={thStyle}>{t('tramites:auditTrail.record')}</th>
+                    <th style={{ ...thStyle, minWidth: '160px' }}>{t('tramites:auditTrail.previousData')}</th>
+                    <th style={{ ...thStyle, minWidth: '160px' }}>{t('tramites:auditTrail.newData')}</th>
                     <th style={thStyle}>{t('tramites:auditTrail.user')}</th>
-                    <th style={thStyle}>{t('tramites:auditTrail.date')}</th>
                     <th style={thStyle}>{t('tramites:auditTrail.ip')}</th>
-                    <th style={{ ...thStyle, minWidth: '200px' }}>{t('tramites:auditTrail.details')}</th>
+                    <th style={thStyle}>{t('tramites:auditTrail.date')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {auditLogs.map((log) => {
                     const meta = getActionMeta(log.accion);
-                    const hasDetails = log.datosAnteriores || log.datosNuevos;
                     return (
                       <tr
                         key={log.id}
@@ -372,6 +373,9 @@ export const AuditTrail: React.FC = () => {
                         onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-container)')}
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
+                        <td style={tdStyle}>
+                          <code style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>{log.id}</code>
+                        </td>
                         <td style={tdStyle}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: meta.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: meta.color, flexShrink: 0 }}>
@@ -391,23 +395,22 @@ export const AuditTrail: React.FC = () => {
                           </code>
                         </td>
                         <td style={tdStyle}>
+                          <AuditDataCell data={log.datosAnteriores} color="#dc2626" />
+                        </td>
+                        <td style={tdStyle}>
+                          <AuditDataCell data={log.datosNuevos} color="#15803d" />
+                        </td>
+                        <td style={tdStyle}>
                           <span style={{ color: 'var(--on-surface-variant)' }}>{log.nombreUsuario || `#${log.idUsuario}`}</span>
+                        </td>
+                        <td style={tdStyle}>
+                          <code style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>{log.ipOrigen || '-'}</code>
                         </td>
                         <td style={tdStyle}>
                           <div>
                             <div style={{ color: 'var(--on-surface)' }}>{formatDate(log.fechaAccion)}</div>
                             <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>{formatRelativeTime(log.fechaAccion)}</div>
                           </div>
-                        </td>
-                        <td style={tdStyle}>
-                          <code style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>{log.ipOrigen || '-'}</code>
-                        </td>
-                        <td style={tdStyle}>
-                          {hasDetails ? (
-                            <AuditDetailsChip anterior={log.datosAnteriores} nuevo={log.datosNuevos} />
-                          ) : (
-                            <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px' }}>-</span>
-                          )}
                         </td>
                       </tr>
                     );
@@ -621,73 +624,29 @@ function MiniStat({ value, label }: { value: string; label: string }) {
   );
 }
 
-function AuditDetailsChip({ anterior, nuevo }: { anterior: string | null; nuevo: string | null }) {
-  const [expanded, setExpanded] = useState(false);
+function AuditDataCell({ data, color }: { data: string | null; color: string }) {
+  if (!data) return <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px' }}>-</span>;
 
-  const parseJson = (s: string | null): Record<string, unknown> | null => {
-    if (!s) return null;
-    try { return JSON.parse(s); } catch { return null; }
-  };
-
-  const anteriorObj = parseJson(anterior);
-  const nuevoObj = parseJson(nuevo);
-
-  if (!anteriorObj && !nuevoObj) {
-    return <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px' }}>-</span>;
+  let entries: [string, string][] = [];
+  try {
+    const obj = JSON.parse(data);
+    entries = Object.entries(obj).map(([k, v]) => [k, v != null ? String(v) : '']);
+  } catch {
+    entries = [['', data]];
   }
 
-  const getChangedKeys = (): string[] => {
-    const keys = new Set<string>();
-    if (anteriorObj) Object.keys(anteriorObj).forEach((k) => keys.add(k));
-    if (nuevoObj) Object.keys(nuevoObj).forEach((k) => keys.add(k));
-    return [...keys].filter((k) => {
-      const a = anteriorObj?.[k];
-      const n = nuevoObj?.[k];
-      return JSON.stringify(a) !== JSON.stringify(n);
-    });
-  };
-
-  const changedKeys = getChangedKeys();
-  const previewKeys = changedKeys.slice(0, 2);
-
   return (
-    <div>
-      <button
-        onClick={() => setExpanded(!expanded)}
-        style={{
-          background: 'var(--surface-container)',
-          border: '1px solid var(--outline-variant)',
-          borderRadius: '6px',
-          padding: '4px 8px',
-          fontSize: '11px',
-          color: 'var(--on-surface)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          maxWidth: '100%',
-          overflow: 'hidden',
-        }}
-      >
-        <FileText size={11} color="var(--on-surface-variant)" />
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {expanded ? 'Ocultar' : `${changedKeys.length} campo${changedKeys.length !== 1 ? 's' : ''}`}
-        </span>
-      </button>
-      {expanded && (
-        <div style={{ marginTop: '6px', fontSize: '11px', lineHeight: '1.4' }}>
-          {(anteriorObj || nuevoObj) && changedKeys.map((key) => (
-            <div key={key} style={{ marginBottom: '4px', display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
-              <span style={{ fontWeight: 600, color: 'var(--on-surface)', minWidth: '60px', flexShrink: 0 }}>{key}:</span>
-              <span style={{ color: '#dc2626', textDecoration: 'line-through', wordBreak: 'break-all' }}>
-                {anteriorObj?.[key] != null ? String(anteriorObj[key]) : '—'}
-              </span>
-              <span style={{ color: '#15803d', wordBreak: 'break-all' }}>
-                {nuevoObj?.[key] != null ? String(nuevoObj[key]) : '—'}
-              </span>
-            </div>
-          ))}
+    <div style={{ fontSize: '11px', lineHeight: '1.35' }}>
+      {entries.slice(0, 4).map(([key, val], i) => (
+        <div key={i} style={{ display: 'flex', gap: '4px', marginBottom: '1px' }}>
+          {key && <span style={{ fontWeight: 600, color: 'var(--on-surface)', minWidth: '50px', flexShrink: 0 }}>{key}:</span>}
+          <span style={{ color, wordBreak: 'break-all' }}>
+            {val.length > 40 ? val.slice(0, 40) + '...' : val || '—'}
+          </span>
         </div>
+      ))}
+      {entries.length > 4 && (
+        <span style={{ color: 'var(--on-surface-variant)', fontSize: '10px' }}>+{entries.length - 4} más</span>
       )}
     </div>
   );
