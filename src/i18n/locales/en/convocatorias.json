@@ -504,5 +504,21 @@
       "updateSuccess": "Call updated successfully.",
       "updateError": "Error updating call."
     }
+  },
+  "dashboard": {
+    "title": "Active Calls",
+    "subtitle": "Research calls open for project proposal submissions.",
+    "errorTitle": "Error loading calls",
+    "errorMessage": "Could not load active calls. Please try again later.",
+    "card": {
+      "targetDocentes": "Faculty",
+      "targetEstudiantes": "Students / Thesis Students",
+      "targetAmbos": "Faculty and Students",
+      "startDate": "Start:",
+      "endDate": "Deadline:",
+      "applyButton": "Apply for Project",
+      "notEligibleTooltip": "Does not belong to an active research group",
+      "statusOpen": "OPEN"
+    }
   }
 }

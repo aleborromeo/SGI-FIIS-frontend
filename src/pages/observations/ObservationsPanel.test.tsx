@@ -42,8 +42,8 @@ describe('ObservationsPanel', () => {
 
   it('renders the mock observations', async () => {
     vi.mocked(observationService.getByProcedureId).mockResolvedValue([
-      { id: 1, procedureId: '1', type: 'Marco Teórico', content: 'Falta citar autores más recientes (2020+).', status: 'PENDIENTE', createdAt: '' },
-      { id: 2, procedureId: '1', type: 'Metodología', content: 'Justificar el tamaño de la muestra.', status: 'PENDIENTE', createdAt: '' }
+      { id: 1, procedureId: 1, type: 'Marco Teórico', description: 'Falta citar autores más recientes (2020+).', status: 'PENDIENTE', createdAt: '' },
+      { id: 2, procedureId: 1, type: 'Metodología', description: 'Justificar el tamaño de la muestra.', status: 'PENDIENTE', createdAt: '' }
     ]);
     render(
       <MemoryRouter>

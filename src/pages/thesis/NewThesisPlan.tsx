@@ -27,11 +27,11 @@ import { documentService } from '../../services/documentService';
 import { AuthContext } from '../../context/AuthContext';
 import type { ResearchLine, ResearchGroup } from '../../services/researchService';
 
-interface Docente {
-  id: number;
-  nombres: string;
-  apellidos: string;
-  correoInstitucional: string;
+interface GroupMemberOption {
+  userId: number;
+  label: string;
+  roleCode?: string;
+  memberRole?: string;
 }
 
 interface CreateThesisPlanPayload {
@@ -40,7 +40,6 @@ interface CreateThesisPlanPayload {
   idLinea: number;
   idGrupo: number;
   idDocumentoActual: number;
-  idAsesor?: number;
 }
 
 export const NewThesisPlan: React.FC = () => {
@@ -53,12 +52,11 @@ export const NewThesisPlan: React.FC = () => {
     resumen: '',
     idLinea: '',
     idGrupo: '',
-    idAsesor: '',
   });
 
   const [lines, setLines] = useState<ResearchLine[]>([]);
   const [groups, setGroups] = useState<ResearchGroup[]>([]);
-  const [docentes, setDocentes] = useState<Docente[]>([]);
+  const [docentes, setDocentes] = useState<GroupMemberOption[]>([]);
 
   const [loadingCatalogs, setLoadingCatalogs] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -81,18 +79,26 @@ export const NewThesisPlan: React.FC = () => {
         console.error('Error cargando catálogos de tesis', err);
       }
 
-      try {
-        const usersData = await api.get<any[]>('/users?role=DOCENTE_INVESTIGADOR');
-        const arr = Array.isArray(usersData) ? usersData : (usersData as any)?.content ?? [];
-        setDocentes(arr);
-      } catch {
-        setDocentes([]);
-      }
-
       setLoadingCatalogs(false);
     };
     fetchAll();
   }, []);
+
+  async function fetchGroupMembers(groupId: number) {
+    try {
+      const members = await researchService.getMembers(groupId);
+      const activeMembers = (members || []).filter(m => m.active);
+      const options: GroupMemberOption[] = activeMembers.map(m => ({
+        userId: m.userId,
+        label: `${m.userFirstNames} ${m.userLastNames}`,
+        roleCode: m.userRoleCode,
+        memberRole: m.memberRole,
+      }));
+      setDocentes(options);
+    } catch {
+      setDocentes([]);
+    }
+  }
 
   function handleChange(field: string, value: string) {
     if (errorMsg) setErrorMsg('');
@@ -100,17 +106,18 @@ export const NewThesisPlan: React.FC = () => {
     if (field === 'idGrupo') {
       setFormData(prev => ({ ...prev, idGrupo: value, idLinea: '' }));
       if (value) {
-        researchService.getGroupLines(Number(value)).then(fetched => {
-          setLines(fetched || []);
+        const gid = Number(value);
+        Promise.all([
+          researchService.getGroupLines(gid),
+          fetchGroupMembers(gid),
+        ]).then(([fetchedLines]) => {
+          setLines(fetchedLines || []);
         }).catch(() => {
           setLines([]);
         });
       } else {
-        researchService.getLines(true).then(fetched => {
-          setLines(fetched || []);
-        }).catch(() => {
-          setLines([]);
-        });
+        setLines([]);
+        setDocentes([]);
       }
       return;
     }
@@ -125,11 +132,11 @@ export const NewThesisPlan: React.FC = () => {
     if (formData.resumen.trim().length < 10) {
       setErrorMsg(t('thesis:planForm.validation.summaryMinLength')); return false;
     }
-    if (!formData.idLinea) {
-      setErrorMsg(t('thesis:planForm.validation.lineRequired')); return false;
-    }
     if (!formData.idGrupo) {
       setErrorMsg(t('thesis:planForm.validation.groupRequired')); return false;
+    }
+    if (!formData.idLinea) {
+      setErrorMsg(t('thesis:planForm.validation.lineRequired')); return false;
     }
     if (!idDocumentoActual) {
       setErrorMsg(t('thesis:planForm.validation.documentRequired')); return false;
@@ -171,7 +178,6 @@ export const NewThesisPlan: React.FC = () => {
         idGrupo: Number(formData.idGrupo),
         idDocumentoActual: idDocumentoActual!,
       };
-      if (formData.idAsesor) payload.idAsesor = Number(formData.idAsesor);
 
       await api.post('/thesis/plans', payload);
       navigate('/thesis/plans');
@@ -181,6 +187,8 @@ export const NewThesisPlan: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const selectedGroup = groups.find(g => String(g.id) === formData.idGrupo);
 
   return (
     <div className="animate-fade-in" style={{ padding: '24px' }}>
@@ -243,15 +251,6 @@ export const NewThesisPlan: React.FC = () => {
               />
               <div className="form-row" style={{ gap: '16px' }}>
                 <Select
-                  label={t('thesis:planForm.researchLine')}
-                  value={formData.idLinea}
-                  onChange={e => handleChange('idLinea', e.target.value)}
-                  options={[
-                    { value: '', label: t('thesis:planForm.selectLine') },
-                    ...lines.map(l => ({ value: String(l.id), label: l.lineName })),
-                  ]}
-                />
-                <Select
                   label={t('thesis:planForm.researchGroup')}
                   value={formData.idGrupo}
                   onChange={e => handleChange('idGrupo', e.target.value)}
@@ -259,6 +258,16 @@ export const NewThesisPlan: React.FC = () => {
                     { value: '', label: t('thesis:planForm.selectGroup') },
                     ...groups.map(g => ({ value: String(g.id), label: g.groupName })),
                   ]}
+                />
+                <Select
+                  label={t('thesis:planForm.researchLine')}
+                  value={formData.idLinea}
+                  onChange={e => handleChange('idLinea', e.target.value)}
+                  options={[
+                    { value: '', label: t('thesis:planForm.selectLine') },
+                    ...lines.map(l => ({ value: String(l.id), label: l.lineName })),
+                  ]}
+                  disabled={!formData.idGrupo}
                 />
               </div>
             </CardContent>
@@ -343,7 +352,7 @@ export const NewThesisPlan: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Asesor */}
+          {/* Asesor / Coordinador del grupo */}
           <Card style={{ marginBottom: '24px' }}>
             <CardHeader>
               <h2 className="text-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -355,45 +364,48 @@ export const NewThesisPlan: React.FC = () => {
               </p>
             </CardHeader>
             <CardContent>
-              {docentes.length === 0 ? (
-                <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)' }}>
-                  {t('thesis:planForm.noDocentes')}
+              {!formData.idGrupo ? (
+                <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>
+                  {t('thesis:planForm.selectGroupFirst', { defaultValue: 'Seleccione un grupo de investigación para ver al coordinador responsable.' })}
                 </p>
-              ) : (
-                <Select
-                  label={t('thesis:planForm.selectAdvisor')}
-                  value={formData.idAsesor}
-                  onChange={e => handleChange('idAsesor', e.target.value)}
-                  options={[
-                    { value: '', label: t('thesis:planForm.noAdvisor') },
-                    ...docentes.map(d => ({
-                      value: String(d.id),
-                      label: `${d.nombres} ${d.apellidos}`,
-                    })),
-                  ]}
-                />
-              )}
-              {formData.idAsesor && (
+              ) : selectedGroup?.currentCoordinatorId ? (
                 <div style={{
-                  marginTop: '12px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
-                  padding: '12px 16px',
-                  borderRadius: 'var(--radius-sm)',
+                  gap: '12px',
+                  padding: '16px',
+                  borderRadius: 'var(--radius-md)',
                   background: 'var(--primary-container)',
                   color: 'var(--on-primary-container)',
                 }}>
-                  <User size={16} />
-                  <span className="text-label-md">
-                    {t('thesis:planForm.selectedAdvisor')}{' '}
-                    <strong>
-                      {docentes.find(d => String(d.id) === formData.idAsesor)
-                        ? `${docentes.find(d => String(d.id) === formData.idAsesor)!.nombres} ${docentes.find(d => String(d.id) === formData.idAsesor)!.apellidos}`
-                        : '—'}
-                    </strong>
-                  </span>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: 'var(--radius-full)',
+                    backgroundColor: 'var(--primary)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <User size={20} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', opacity: 0.7 }}>
+                      {t('thesis:planForm.advisorRole', { defaultValue: 'Asesor (Coordinador del Grupo)' })}
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: 600 }}>
+                      {selectedGroup.coordinatorFirstNames && selectedGroup.coordinatorLastNames
+                        ? `${selectedGroup.coordinatorFirstNames} ${selectedGroup.coordinatorLastNames}`
+                        : `ID: ${selectedGroup.currentCoordinatorId}`}
+                    </div>
+                  </div>
                 </div>
+              ) : (
+                <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)' }}>
+                  {t('thesis:planForm.noCoordinator', { defaultValue: 'Este grupo no tiene coordinador asignado. Asigne un coordinador primero.' })}
+                </p>
               )}
             </CardContent>
           </Card>

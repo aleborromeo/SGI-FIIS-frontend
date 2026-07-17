@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Typography,
   Grid,
@@ -19,6 +20,7 @@ import { EligibilityWarning } from '../components/EligibilityWarning';
 import type { Convocatoria } from '../types/convocatoria.types';
 
 export function ConvocatoriasDashboard() {
+  const { t } = useTranslation('convocatorias');
   const { currentRole } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -31,19 +33,21 @@ export function ConvocatoriasDashboard() {
 
   if (currentRole !== 'DOCENTE_INVESTIGADOR' && currentRole !== 'ESTUDIANTE') return null;
 
-  const eligible = eligibility?.valid ?? false;
+  const eligible = currentRole === 'ESTUDIANTE'
+    ? (eligibility?.hasActiveGroup ?? false)
+    : (eligibility?.valid ?? false);
 
   return (
     <Box sx={{ mb: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
         <Megaphone style={{ color: 'var(--primary)' }} />
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Convocatorias Vigentes
+          {t('dashboard.title')}
         </Typography>
       </Box>
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Convocatorias de investigación abiertas para postulación de proyectos.
+        {t('dashboard.subtitle')}
       </Typography>
 
       {!loadingEligibility && (
@@ -57,8 +61,8 @@ export function ConvocatoriasDashboard() {
         <ConvocatoriasSkeleton />
       ) : errorCalls ? (
         <Alert severity="error" sx={{ borderRadius: 2 }}>
-          <AlertTitle>Error al cargar convocatorias</AlertTitle>
-          No se pudieron cargar las convocatorias vigentes. Intente de nuevo más tarde.
+          <AlertTitle>{t('dashboard.errorTitle')}</AlertTitle>
+          {t('dashboard.errorMessage')}
         </Alert>
       ) : !convocatorias || convocatorias.length === 0 ? (
         <ConvocatoriasEmpty />

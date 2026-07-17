@@ -52,6 +52,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         label: t('navigation:sidebarMetrics'),
         icon: <BarChart2 size={20} />,
         path: '/metrics',
+        roles: ['ADMIN', 'DIRECTOR_INVESTIGACION'],
       },
     ],
   },
@@ -77,12 +78,14 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         label: t('navigation:sidebarTramites'),
         icon: <Inbox size={20} />,
         path: '/tramites',
+        roles: ['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO'],
       },
       {
         id: 'observations',
         label: t('navigation:sidebarMyObservations'),
         icon: <AlertCircle size={20} />,
         path: '/observations/panel',
+        roles: ['ESTUDIANTE', 'DOCENTE_INVESTIGADOR'],
       },
       {
         id: 'decano-review',
@@ -103,7 +106,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         label: t('navigation:convocatorias'),
         icon: <Megaphone size={20} />,
         path: '/convocatorias',
-        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
+        roles: ['DIRECTOR_INVESTIGACION'],
       },
     ],
   },
@@ -122,13 +125,14 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         label: t('navigation:sidebarReviewReports'),
         icon: <FileSearch size={20} />,
         path: '/progressreports/review',
+        roles: ['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION'],
       },
       {
         id: 'director-evaluations',
         label: t('navigation:sidebarMonitorEvaluations'),
         icon: <ClipboardCheck size={20} />,
         path: '/evaluations/director',
-        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
+        roles: ['DIRECTOR_INVESTIGACION'],
       },
       {
         id: 'audit',
@@ -145,7 +149,6 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
     items: [
       { id: 'create-user', label: t('navigation:sidebarAddUsers'), icon: <Users size={20} />, path: '/users/create' },
       { id: 'users', label: t('navigation:sidebarManageUsers'), icon: <Users size={20} />, path: '/users' },
-      { id: 'documents', label: t('navigation:sidebarDocumentRepo'), icon: <FileText size={20} />, path: '/documents' },
       { id: 'groups', label: t('navigation:sidebarResearchGroups'), icon: <Users size={20} />, path: '/groups' },
       { id: 'lines', label: t('navigation:sidebarResearchLines'), icon: <BookOpen size={20} />, path: '/lines' },
     ],
@@ -279,26 +282,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               }
               return true;
             })
-            .map((group) => (
-              <div key={group.title}>
-                <h3 className="sidebar-group-title">
-                  {group.title}
-                </h3>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px',
-                  }}
-                >
-                  {group.items
-                    .filter((item) => {
-                      if (item.roles && currentRole) {
-                        return item.roles.includes(currentRole);
-                      }
-                      return true;
-                    })
-                    .map((item) => {
+            .map((group) => {
+              const visibleItems = group.items.filter((item) => {
+                if (item.roles && currentRole) {
+                  return item.roles.includes(currentRole);
+                }
+                return true;
+              });
+
+              if (visibleItems.length === 0) {
+                return null;
+              }
+
+              return (
+                <div key={group.title}>
+                  <h3 className="sidebar-group-title">
+                    {group.title}
+                  </h3>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                    }}
+                  >
+                    {visibleItems.map((item) => {
                       const isActive = isItemActive(item.id, item.path);
 
                       return (
@@ -313,9 +321,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                         </Link>
                       );
                     })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
         </nav>
 
         <div className="sidebar-user-footer">

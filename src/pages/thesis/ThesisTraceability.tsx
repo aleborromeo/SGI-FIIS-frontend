@@ -23,6 +23,7 @@ import { Timeline, TimelineItem } from '../../components/ui/Timeline';
 
 import { thesisService } from '../../services/thesisService';
 import type { ThesisPlan } from '../../services/thesisService';
+import { researchService } from '../../services/researchService';
 import { useToast } from '../../context/ToastContext';
 import { AuthContext } from '../../context/AuthContext';
 import { documentService } from '../../services/documentService';
@@ -132,6 +133,7 @@ export const ThesisTraceability: React.FC = () => {
   const [observeText, setObserveText] = useState('');
   const [rectifyFile, setRectifyFile] = useState<File | null>(null);
   const [rectifying, setRectifying] = useState(false);
+  const [coordinatorName, setCoordinatorName] = useState<string | null>(null);
 
   const steps = useMemo(() => {
     const [studentStatus, coordinatorStatus, directorStatus, currentStatus] =
@@ -178,7 +180,15 @@ export const ThesisTraceability: React.FC = () => {
         const response = await thesisService.getPlanById(id);
 
         if (mounted) {
-          setPlan(response);
+            setPlan(response);
+        }
+
+        if (response.idGrupo) {
+            researchService.getGroupById(response.idGrupo).then(group => {
+                if (mounted && group.coordinatorFirstNames && group.coordinatorLastNames) {
+                    setCoordinatorName(`${group.coordinatorFirstNames} ${group.coordinatorLastNames}`);
+                }
+            }).catch(() => {});
         }
 
         try {
@@ -408,9 +418,10 @@ export const ThesisTraceability: React.FC = () => {
   const group = readValue(plan, ['nombreGrupo', 'groupCode', 'grupo'], t('thesis:traceability.notRegistered'));
   const groupCode = readValue(plan, ['codigoGrupo', 'groupCode'], '');
   const researchLine = readValue(plan, ['nombreLinea', 'lineaInvestigacion', 'line'], t('thesis:traceability.notRegisteredLine'));
-  const advisor = readValue(plan, ['advisorName', 'asesor', 'advisor'], t('thesis:traceability.notRegistered'));
+  const advisor = coordinatorName || t('thesis:traceability.notRegistered');
 
   const revisor = plan.revisorActual || '';
+  const observationText = readValue(plan, ['observacion', 'observaciones', 'observacionActual', 'comentario', 'comentarios', 'comentarioSubsanacion'], '');
 
   const showReviewActions = 
     (currentRole === 'COORDINADOR_GRUPO' && revisor === 'COORDINADOR_GRUPO') ||
@@ -859,7 +870,7 @@ export const ThesisTraceability: React.FC = () => {
                 id="revision"
                 title={t('thesis:traceability.timeline.academicReview')}
                 time={t('thesis:traceability.timeline.currentStage')}
-                status="active"
+                status={observationText ? 'success' : 'active'}
               >
                 <div
                   style={{
@@ -874,25 +885,43 @@ export const ThesisTraceability: React.FC = () => {
                     {t('thesis:traceability.timeline.planAvailable')}
                   </p>
 
-                  <textarea
-                    style={{
-                      width: '100%',
-                      minHeight: '96px',
-                      padding: '12px',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--outline-variant)',
-                      fontFamily: 'inherit',
-                      resize: 'vertical',
-                    }}
-                    defaultValue={t('thesis:traceability.timeline.registerGuide')}
-                  />
+                  {observationText ? (
+                    <div
+                      style={{
+                        backgroundColor: '#fffbeb',
+                        border: '1px solid #fde68a',
+                        padding: '12px 16px',
+                        borderRadius: 'var(--radius-sm)',
+                        color: '#78350f',
+                        fontSize: '14px',
+                      }}
+                    >
+                      <strong style={{ display: 'block', marginBottom: '6px', color: '#b45309' }}>
+                        {t('thesis:traceability.timeline.observationTitle', { defaultValue: 'Observaciones del Revisor:' })}
+                      </strong>
+                      <p style={{ margin: 0, whiteSpace: 'pre-wrap', fontStyle: 'italic' }}>{observationText}</p>
+                    </div>
+                  ) : (
+                    <textarea
+                      style={{
+                        width: '100%',
+                        minHeight: '96px',
+                        padding: '12px',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--outline-variant)',
+                        fontFamily: 'inherit',
+                        resize: 'vertical',
+                      }}
+                      defaultValue={t('thesis:traceability.timeline.registerGuide')}
+                    />
+                  )}
                 </div>
               </TimelineItem>
 
               <TimelineItem
                 id="resultado"
                 title={t('thesis:traceability.timeline.processResult')}
-                status="pending"
+                status={['APPROVED', 'APROBADO'].includes(String(plan.estadoPlan || plan.status).toUpperCase()) ? 'success' : 'pending'}
                 isLast
               >
                 <div
@@ -903,7 +932,27 @@ export const ThesisTraceability: React.FC = () => {
                     border: '1px solid var(--outline-variant)',
                   }}
                 >
-                  {t('thesis:traceability.timeline.currentPlanStatus')} <strong>{statusLabel}</strong>
+                  <div>
+                    {t('thesis:traceability.timeline.currentPlanStatus')} <strong>{statusLabel}</strong>
+                  </div>
+                  {observationText && (
+                    <div
+                      style={{
+                        marginTop: '12px',
+                        padding: '12px 16px',
+                        backgroundColor: '#fef3c7',
+                        borderLeft: '4px solid #d97706',
+                        color: '#78350f',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '14px',
+                      }}
+                    >
+                      <strong style={{ display: 'block', marginBottom: '4px' }}>
+                        {t('thesis:traceability.timeline.observationLabel', { defaultValue: 'Comentario del asesor/revisor:' })}
+                      </strong>
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{observationText}</div>
+                    </div>
+                  )}
                 </div>
               </TimelineItem>
             </Timeline>

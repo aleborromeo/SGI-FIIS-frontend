@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { Calendar, ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { Convocatoria } from '../types/convocatoria.types';
 
 interface ConvocatoriaCardProps {
@@ -19,10 +20,11 @@ interface ConvocatoriaCardProps {
 }
 
 export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: ConvocatoriaCardProps) {
+  const { t } = useTranslation('convocatorias');
   const audienceLabel: Record<string, string> = {
-    DOCENTES: 'Docentes',
-    ESTUDIANTES: 'Estudiantes / Tesistas',
-    AMBOS: 'Docentes y Estudiantes',
+    DOCENTES: t('dashboard.card.targetDocentes'),
+    ESTUDIANTES: t('dashboard.card.targetEstudiantes'),
+    AMBOS: t('dashboard.card.targetAmbos'),
   };
   return (
     <Card
@@ -71,7 +73,7 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
             CONV-{convocatoria.id}
           </Box>
           <Chip 
-            label="ABIERTA" 
+            label={t('dashboard.card.statusOpen')} 
             size="small" 
             sx={{ 
               fontWeight: 700, 
@@ -144,7 +146,7 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
             <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
               <Calendar size={14} style={{ color: '#455f88' }} />
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-                Inicio:
+                {t('dashboard.card.startDate')}
               </Typography>
             </Stack>
             <Typography variant="caption" sx={{ fontWeight: 600 }} color="text.primary">
@@ -155,7 +157,7 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
             <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
               <Calendar size={14} style={{ color: '#ba1a1a' }} />
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-                Cierre:
+                {t('dashboard.card.endDate')}
               </Typography>
             </Stack>
             <Typography variant="caption" sx={{ fontWeight: 600 }} color="#ba1a1a">
@@ -187,10 +189,10 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
               }
             }}
           >
-            Postular Proyecto
+            {t('dashboard.card.applyButton')}
           </Button>
         ) : (
-          <Tooltip title="No pertenece a un grupo de investigación activo">
+          <Tooltip title={t('dashboard.card.notEligibleTooltip')}>
             <span style={{ width: '100%' }}>
               <Button 
                 fullWidth 
@@ -203,7 +205,7 @@ export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: Convoca
                   py: 1,
                 }}
               >
-                Postular Proyecto
+                {t('dashboard.card.applyButton')}
               </Button>
             </span>
           </Tooltip>

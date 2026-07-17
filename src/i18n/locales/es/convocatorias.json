@@ -504,5 +504,21 @@
       "updateSuccess": "Convocatoria actualizada exitosamente.",
       "updateError": "Error al actualizar la convocatoria."
     }
+  },
+  "dashboard": {
+    "title": "Convocatorias Vigentes",
+    "subtitle": "Convocatorias de investigación abiertas para postulación de proyectos.",
+    "errorTitle": "Error al cargar convocatorias",
+    "errorMessage": "No se pudieron cargar las convocatorias vigentes. Intente de nuevo más tarde.",
+    "card": {
+      "targetDocentes": "Docentes",
+      "targetEstudiantes": "Estudiantes / Tesistas",
+      "targetAmbos": "Docentes y Estudiantes",
+      "startDate": "Inicio:",
+      "endDate": "Cierre:",
+      "applyButton": "Postular Proyecto",
+      "notEligibleTooltip": "No pertenece a un grupo de investigación activo",
+      "statusOpen": "ABIERTA"
+    }
   }
 }
