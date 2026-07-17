@@ -49,6 +49,12 @@ import { TramitesInbox } from './pages/tramites/TramitesInbox.tsx';
 import { TramiteDetail } from './pages/tramites/TramiteDetail.tsx';
 import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
 
+// Views del módulo Gestión Documental y Resoluciones
+import { DocumentsPanel } from './pages/documents/DocumentsPanel.tsx';
+import { ResolutionsInbox } from './pages/resolutions/ResolutionsInbox.tsx';
+import { IssueResolution } from './pages/resolutions/IssueResolution.tsx';
+import { ReportsInbox } from './pages/reports/ReportsInbox.tsx';
+
 // Admin Views
 import { CreateUser } from './pages/users/CreateUser';
 import { UserManagement } from './pages/admin/UserManagement.tsx';
@@ -197,12 +203,18 @@ function App() {
                   <Route path="/tramites/legacy" element={<TramitesList />} />
                   <Route path="/observations/subsanacion" element={<SubsanacionPanel />} />
                   <Route path="/decano/review" element={<DecanoReview />} />
-                  <Route path="/resolutions/new" element={<NewResolutionForm />} />
+
+                  {/* Gestión Documental y Resoluciones */}
+                  <Route path="/resolutions" element={<ResolutionsInbox />} />
+                  <Route path="/resolutions/new" element={<IssueResolution />} />
+                  <Route path="/resolutions/new-legacy" element={<NewResolutionForm />} />
+                  <Route path="/reports" element={<ReportsInbox />} />
 
                   {/* Administración */}
                   <Route path="/users/create" element={<CreateUser />} />
                   <Route path="/users" element={<UserManagement />} />
-                  <Route path="/documents" element={<DocumentRepository />} />
+                  <Route path="/documents" element={<DocumentsPanel />} />
+                  <Route path="/admin/documents" element={<DocumentRepository />} />
                   <Route path="/audit" element={<AuditTrail />} />
                   <Route path="/lines" element={<ResearchLines />} />
                   <Route path="/lines/new" element={<NewResearchLine />} />

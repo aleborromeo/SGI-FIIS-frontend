@@ -16,6 +16,8 @@ import {
   Megaphone,
   Scale,
   ShieldCheck,
+  FolderOpen,
+  ClipboardList,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -133,12 +135,39 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
     ],
   },
   {
+    title: 'Gestión Documental y Resoluciones',
+    items: [
+      {
+        id: 'documents',
+        label: 'Documentos',
+        icon: <FolderOpen size={20} />,
+        path: '/documents',
+      },
+      {
+        id: 'resolutions',
+        label: 'Resoluciones',
+        icon: <Scale size={20} />,
+        path: '/resolutions',
+        // Mismos roles que acepta GET /api/reports/resolutions (ROLES_VISTA de la bandeja)
+        roles: ['DECANO', 'DIRECTOR_INVESTIGACION', 'COORDINADOR_GRUPO', 'ADMIN'],
+      },
+      {
+        id: 'reports',
+        label: 'Reportes Institucionales',
+        icon: <ClipboardList size={20} />,
+        path: '/reports',
+        // La vista se reserva a Director y Admin (RF-94/RF-95)
+        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
+      },
+    ],
+  },
+  {
     title: t('navigation:groupAdministracion'),
     roles: ['ADMIN'],
     items: [
       { id: 'create-user', label: t('navigation:sidebarAddUsers'), icon: <Users size={20} />, path: '/users/create' },
       { id: 'users', label: t('navigation:sidebarManageUsers'), icon: <Users size={20} />, path: '/users' },
-      { id: 'documents', label: t('navigation:sidebarDocumentRepo'), icon: <FileText size={20} />, path: '/documents' },
+      { id: 'admin-documents', label: t('navigation:sidebarDocumentRepo'), icon: <FileText size={20} />, path: '/admin/documents' },
       { id: 'groups', label: t('navigation:sidebarResearchGroups'), icon: <Users size={20} />, path: '/groups' },
       { id: 'lines', label: t('navigation:sidebarResearchLines'), icon: <BookOpen size={20} />, path: '/lines' },
     ],
