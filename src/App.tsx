@@ -282,12 +282,12 @@ function App() {
 
                   {/* Trámites y Resoluciones Decanato */}
                   <Route path="/tramites" element={
-                    <RoleProtectedRoute allowedRoles={['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO']}>
+                    <RoleProtectedRoute allowedRoles={['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'DOCENTE_INVESTIGADOR', 'ESTUDIANTE']}>
                       <TramitesInbox />
                     </RoleProtectedRoute>
                   } />
                   <Route path="/tramites/:id" element={
-                    <RoleProtectedRoute allowedRoles={['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO']}>
+                    <RoleProtectedRoute allowedRoles={['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'DOCENTE_INVESTIGADOR', 'ESTUDIANTE']}>
                       <TramiteDetail />
                     </RoleProtectedRoute>
                   } />
@@ -324,7 +324,7 @@ function App() {
                     </RoleProtectedRoute>
                   } />
                   <Route path="/audit" element={
-                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION']}>
+                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION', 'COORDINADOR_GRUPO', 'DECANO']}>
                       <AuditTrail />
                     </RoleProtectedRoute>
                   } />

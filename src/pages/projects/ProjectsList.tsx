@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import {
   Search,
   Filter,
@@ -41,7 +42,10 @@ function normalizeProjects(response: ProjectResponse): Project[] {
 }
 
 function normalizeText(value: unknown): string {
-  return String(value ?? '').toLowerCase().trim();
+  if (value !== null && value !== undefined && (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')) {
+    return String(value).toLowerCase().trim();
+  }
+  return '';
 }
 
 function getStatusLabel(status: string | undefined, t: (key: string) => string): string {
@@ -118,6 +122,7 @@ const tabButtonStyle = (active: boolean): React.CSSProperties => ({
 const PAGE_SIZE = 10;
 
 export const ProjectsList: React.FC = () => {
+  const { user } = useContext(AuthContext);
   const { t } = useTranslation('projects');
   const [activeTab, setActiveTab] = useState<'proposals' | 'drafts'>('proposals');
 
@@ -192,6 +197,12 @@ export const ProjectsList: React.FC = () => {
   const filteredProjects = useMemo(() => {
     const search = normalizeText(searchTerm);
     return projects.filter((project) => {
+      // Drafts should only be visible to the user who created them
+      const isDraft = ['DRAFT', 'BORRADOR'].includes(String(project.status).toUpperCase());
+      if (isDraft && String(project.responsibleId) !== String(user?.id)) {
+        return false;
+      }
+
       const matchesSearch =
         !search ||
         normalizeText(project.id).includes(search) ||
@@ -204,7 +215,7 @@ export const ProjectsList: React.FC = () => {
       const matchesStatus = statusFilter === 'TODOS' || project.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [projects, searchTerm, statusFilter]);
+  }, [projects, searchTerm, statusFilter, user]);
 
   const totalProposalsPages = Math.ceil(filteredProjects.length / PAGE_SIZE);
   const paginatedProjects = filteredProjects.slice(
@@ -242,6 +253,167 @@ export const ProjectsList: React.FC = () => {
   const postulatedCount = projects.filter((p) => isStatus(p, ['POSTULATED', 'POSTULADO'])).length;
   const inProgressCount = projects.filter((p) => isStatus(p, ['IN_PROGRESS', 'EN_EJECUCION', 'EN_EJECUCIÓN', 'ACTIVE', 'ACTIVO'])).length;
   const observedCount = projects.filter((p) => isStatus(p, ['OBSERVED', 'OBSERVADO', 'REJECTED', 'RECHAZADO'])).length;
+
+  const renderProposalsTableBody = () => {
+    if (error) {
+      return (
+        <TableRow>
+          <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--error)' }}>
+            {error}
+          </td>
+        </TableRow>
+      );
+    }
+    if (loadingProposals) {
+      return (
+        <TableRow>
+          <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
+            {t('projects:list.loadingProjects')}
+          </td>
+        </TableRow>
+      );
+    }
+    if (filteredProjects.length === 0) {
+      return (
+        <TableRow>
+          <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
+            {t('projects:list.noResults')}
+          </td>
+        </TableRow>
+      );
+    }
+    return paginatedProjects.map((item) => (
+      <TableRow key={item.id}>
+        <TableCell style={{ fontWeight: 700 }}>
+          {item.code || `PRY-${item.id}`}
+        </TableCell>
+        <TableCell>
+          <div style={{ fontWeight: 600 }}>{item.title || t('projects:list.noTitle')}</div>
+          {item.summary && (
+            <div
+              style={{
+                marginTop: '4px',
+                color: 'var(--on-surface-variant)',
+                fontSize: '12px',
+                maxWidth: '600px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {item.summary}
+            </div>
+          )}
+        </TableCell>
+        <TableCell>
+          <Badge variant="info">{item.researchGroupCode || t('projects:list.noGroup')}</Badge>
+        </TableCell>
+        <TableCell>{item.researchLineName || t('projects:list.noLine')}</TableCell>
+        <TableCell>
+          <Badge variant={getStatusVariant(item.status)}>
+            {getStatusLabel(item.status, t)}
+          </Badge>
+        </TableCell>
+        <TableCell style={{ textAlign: 'right' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <Link to={`/projects/${item.id}`}>
+              <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
+                {t('projects:list.viewDetail')}
+              </Button>
+            </Link>
+            <Link to={`/projects/assign?projectId=${item.id}`}>
+              <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
+                {t('projects:list.reviewers')}
+              </Button>
+            </Link>
+          </div>
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
+  const renderDraftsTableBody = () => {
+    if (error && !loadingDrafts) {
+      return (
+        <TableRow>
+          <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--error)' }}>
+            {error}
+          </td>
+        </TableRow>
+      );
+    }
+    if (loadingDrafts) {
+      return (
+        <TableRow>
+          <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
+            {t('projects:list.loadingDrafts')}
+          </td>
+        </TableRow>
+      );
+    }
+    if (filteredDrafts.length === 0) {
+      return (
+        <TableRow>
+          <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
+            {t('projects:list.noDrafts')}
+          </td>
+        </TableRow>
+      );
+    }
+    return paginatedDrafts.map((item) => (
+      <TableRow key={item.id}>
+        <TableCell style={{ fontWeight: 700 }}>
+          {item.code || `BOR-${item.id}`}
+        </TableCell>
+        <TableCell>
+          <div style={{ fontWeight: 600 }}>{item.title || t('projects:list.noTitle')}</div>
+          {item.summary && (
+            <div
+              style={{
+                marginTop: '4px',
+                color: 'var(--on-surface-variant)',
+                fontSize: '12px',
+                maxWidth: '600px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {item.summary}
+            </div>
+          )}
+        </TableCell>
+        <TableCell>
+          <Badge variant="info">{item.researchGroupCode || t('projects:list.noGroup')}</Badge>
+        </TableCell>
+        <TableCell>{item.researchLineName || t('projects:list.noLine')}</TableCell>
+        <TableCell>
+          <Badge variant="neutral">{t('projects:list.editDraft')}</Badge>
+        </TableCell>
+        <TableCell style={{ textAlign: 'right' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <Link to={`/projects/new?editDraft=${item.id}`}>
+              <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
+                {t('projects:list.editDraft')}
+              </Button>
+            </Link>
+            <Button
+              variant="secondary"
+              style={{
+                padding: '4px 12px',
+                fontSize: '12px',
+                color: 'var(--error)',
+              }}
+              icon={<Trash2 size={14} />}
+              onClick={() => handleDeleteDraft(item.id)}
+            >
+              {t('projects:list.deleteDraft')}
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    ));
+  };
 
   return (
     <div className="animate-fade-in" style={{ padding: '24px' }}>
@@ -458,74 +630,7 @@ export const ProjectsList: React.FC = () => {
               </TableHead>
 
               <TableBody>
-                {error ? (
-                  <TableRow>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--error)' }}>
-                      {error}
-                    </td>
-                  </TableRow>
-                ) : loadingProposals ? (
-                  <TableRow>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
-                      {t('projects:list.loadingProjects')}
-                    </td>
-                  </TableRow>
-                ) : filteredProjects.length === 0 ? (
-                  <TableRow>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
-                      {t('projects:list.noResults')}
-                    </td>
-                  </TableRow>
-                ) : (
-                  paginatedProjects.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell style={{ fontWeight: 700 }}>
-                        {item.code || `PRY-${item.id}`}
-                      </TableCell>
-                      <TableCell>
-                        <div style={{ fontWeight: 600 }}>{item.title || t('projects:list.noTitle')}</div>
-                        {item.summary && (
-                          <div
-                            style={{
-                              marginTop: '4px',
-                              color: 'var(--on-surface-variant)',
-                              fontSize: '12px',
-                              maxWidth: '600px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {item.summary}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="info">{item.researchGroupCode || t('projects:list.noGroup')}</Badge>
-                      </TableCell>
-                      <TableCell>{item.researchLineName || t('projects:list.noLine')}</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusVariant(item.status)}>
-                          {getStatusLabel(item.status, t)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                          <Link to={`/projects/${item.id}`}>
-                            <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
-                              {t('projects:list.viewDetail')}
-                            </Button>
-                          </Link>
-                          <Link to={`/projects/assign?projectId=${item.id}`}>
-                            <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
-                              {t('projects:list.reviewers')}
-                            </Button>
-                          </Link>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                {renderProposalsTableBody()}
               </TableBody>
             </TableContainer>
             <Pagination
@@ -551,79 +656,7 @@ export const ProjectsList: React.FC = () => {
               </TableHead>
 
               <TableBody>
-                {error && !loadingDrafts ? (
-                  <TableRow>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--error)' }}>
-                      {error}
-                    </td>
-                  </TableRow>
-                ) : loadingDrafts ? (
-                  <TableRow>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
-                      {t('projects:list.loadingDrafts')}
-                    </td>
-                  </TableRow>
-                ) : filteredDrafts.length === 0 ? (
-                  <TableRow>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--on-surface-variant)' }}>
-                      {t('projects:list.noDrafts')}
-                    </td>
-                  </TableRow>
-                ) : (
-                  paginatedDrafts.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell style={{ fontWeight: 700 }}>
-                        {item.code || `BOR-${item.id}`}
-                      </TableCell>
-                      <TableCell>
-                        <div style={{ fontWeight: 600 }}>{item.title || t('projects:list.noTitle')}</div>
-                        {item.summary && (
-                          <div
-                            style={{
-                              marginTop: '4px',
-                              color: 'var(--on-surface-variant)',
-                              fontSize: '12px',
-                              maxWidth: '600px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {item.summary}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="info">{item.researchGroupCode || t('projects:list.noGroup')}</Badge>
-                      </TableCell>
-                      <TableCell>{item.researchLineName || t('projects:list.noLine')}</TableCell>
-                      <TableCell>
-                        <Badge variant="neutral">{t('projects:list.editDraft')}</Badge>
-                      </TableCell>
-                      <TableCell style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                          <Link to={`/projects/new?editDraft=${item.id}`}>
-                            <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
-                              {t('projects:list.editDraft')}
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="secondary"
-                            style={{
-                              padding: '4px 12px',
-                              fontSize: '12px',
-                              color: 'var(--error)',
-                            }}
-                            icon={<Trash2 size={14} />}
-                            onClick={() => handleDeleteDraft(item.id)}
-                          >
-                            {t('projects:list.deleteDraft')}
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                {renderDraftsTableBody()}
               </TableBody>
             </TableContainer>
             <Pagination

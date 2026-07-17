@@ -37,6 +37,36 @@ export function ConvocatoriasDashboard() {
     ? (eligibility?.hasActiveGroup ?? false)
     : (eligibility?.valid ?? false);
 
+  const renderContent = () => {
+    if (loadingCalls) {
+      return <ConvocatoriasSkeleton />;
+    }
+    if (errorCalls) {
+      return (
+        <Alert severity="error" sx={{ borderRadius: 2 }}>
+          <AlertTitle>{t('dashboard.errorTitle')}</AlertTitle>
+          {t('dashboard.errorMessage')}
+        </Alert>
+      );
+    }
+    if (!convocatorias || convocatorias.length === 0) {
+      return <ConvocatoriasEmpty />;
+    }
+    return (
+      <Grid container spacing={3}>
+        {convocatorias.map((convocatoria) => (
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={convocatoria.id}>
+            <ConvocatoriaCard
+              convocatoria={convocatoria}
+              eligible={eligible}
+              onPostular={handlePostular}
+            />
+          </Grid>
+        ))}
+      </Grid>
+    );
+  };
+
   return (
     <Box sx={{ mb: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -57,28 +87,7 @@ export function ConvocatoriasDashboard() {
         />
       )}
 
-      {loadingCalls ? (
-        <ConvocatoriasSkeleton />
-      ) : errorCalls ? (
-        <Alert severity="error" sx={{ borderRadius: 2 }}>
-          <AlertTitle>{t('dashboard.errorTitle')}</AlertTitle>
-          {t('dashboard.errorMessage')}
-        </Alert>
-      ) : !convocatorias || convocatorias.length === 0 ? (
-        <ConvocatoriasEmpty />
-      ) : (
-        <Grid container spacing={3}>
-          {convocatorias.map((convocatoria) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={convocatoria.id}>
-              <ConvocatoriaCard
-                convocatoria={convocatoria}
-                eligible={eligible}
-                onPostular={handlePostular}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
+      {renderContent()}
     </Box>
   );
 }

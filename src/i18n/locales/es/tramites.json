@@ -73,6 +73,7 @@
     "pendingYourReview": "Pendiente de tu revisión",
     "actions": {
       "verDetalle": "Ver detalle",
+      "verHistorial": "Ver historial",
       "subsanar": "Subsanar"
     }
   },

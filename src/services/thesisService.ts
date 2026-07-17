@@ -29,7 +29,12 @@ export interface ThesisPlan {
 export interface ThesisReport {
   id: string;
   status: string;
-  // ...
+  idInformeTesis: number;
+  tituloFinal?: string;
+  fechaPresentacion?: string;
+  estadoInforme?: string;
+  idDocumentoTesis: number;
+  [key: string]: any;
 }
 
 export const thesisService = {
@@ -39,7 +44,7 @@ export const thesisService = {
   getPlansByStudent: (id: string) => fetchApi<ThesisPlan[]>(`/thesis/plans/student/${id}`),
   getPlansByGroup: (id: string) => fetchApi<ThesisPlan[]>(`/thesis/plans/group/${id}`),
   getPendingPlans: (revisor: string) => fetchApi<ThesisPlan[]>(`/thesis/plans/pending?revisor=${revisor}`),
-  
+
   // Plan Approvals
   approveCoordinator: (id: string) => fetchApi(`/thesis/plans/${id}/coordinator/approve`, { method: 'PATCH' }),
   observeCoordinator: (id: string, notes: string) => fetchApi(`/thesis/plans/${id}/coordinator/observe`, { method: 'PATCH', body: JSON.stringify({ observacion: notes }) }),

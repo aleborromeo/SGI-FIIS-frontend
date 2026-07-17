@@ -8,7 +8,7 @@ import { TableContainer, TableHead, TableBody, TableRow, TableHeader, TableCell 
 import { Spinner } from '../../components/common/Spinner';
 import { TramiteStatusBadge } from '../../components/business/TramiteStatusBadge';
 import { getEstadoTramiteLabel, getRolLabel, getTipoTramiteLabel } from '../../utils/tramiteLabels';
-import { Search, Eye, PenLine, Inbox } from 'lucide-react';
+import { Search, Eye, PenLine, Inbox, ShieldCheck } from 'lucide-react';
 import Pagination from '../../components/ui/Pagination';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
@@ -222,6 +222,13 @@ React.useEffect(() => {
                               {t('tramites:inboxPage.actions.verDetalle')}
                             </Button>
                           </Link>
+                          {(currentRole === 'ADMIN' || currentRole === 'DIRECTOR_INVESTIGACION' || currentRole === 'COORDINADOR_GRUPO') && (
+                            <Link to={`/audit?tramiteId=${tramite.id}`}>
+                              <Button variant="secondary" style={{ padding: '4px 12px' }} icon={<ShieldCheck size={16} />}>
+                                {t('tramites:inboxPage.actions.verHistorial')}
+                              </Button>
+                            </Link>
+                          )}
                           {!isRevisor && tramite.estadoActual === 'OBSERVADO' && (
                             <Link to={`/observations/subsanacion?tramiteId=${tramite.id}`}>
                               <Button variant="primary" style={{ padding: '4px 12px' }} icon={<PenLine size={16} />}>

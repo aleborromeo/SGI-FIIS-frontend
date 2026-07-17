@@ -73,6 +73,7 @@
     "pendingYourReview": "Pending your review",
     "actions": {
       "verDetalle": "View details",
+      "verHistorial": "View history",
       "subsanar": "Remedy"
     }
   },

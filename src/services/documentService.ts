@@ -32,8 +32,17 @@ export interface DocumentUploadResponse {
 
 export const documentService = {
   list: async (): Promise<Document[]> => {
-    const res = await api.get<Document[]>('/api/documents');
-    return Array.isArray(res) ? res : [];
+    const res = await api.get<any[]>('/api/documents');
+    return Array.isArray(res) ? res.map(d => ({
+      id: d.id,
+      fileName: d.originalName || d.fileName || `documento_${d.id}`,
+      fileUrl: d.fileUrl || '',
+      fileType: d.extension || d.fileType || '',
+      fileSize: d.sizeBytes || d.fileSize,
+      uploadedBy: d.uploadedById || d.uploadedBy,
+      uploadedAt: d.uploadDate || d.uploadedAt,
+      active: d.active
+    })) : [];
   },
 
   upload: async (file: File): Promise<DocumentUploadResponse> => {

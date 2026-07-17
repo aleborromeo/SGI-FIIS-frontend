@@ -14,9 +14,9 @@ import { useTranslation } from 'react-i18next';
 import type { Convocatoria } from '../types/convocatoria.types';
 
 interface ConvocatoriaCardProps {
-  convocatoria: Convocatoria;
-  eligible: boolean;
-  onPostular: (convocatoria: Convocatoria) => void;
+  readonly convocatoria: Convocatoria;
+  readonly eligible: boolean;
+  readonly onPostular: (convocatoria: Convocatoria) => void;
 }
 
 export function ConvocatoriaCard({ convocatoria, eligible, onPostular }: ConvocatoriaCardProps) {

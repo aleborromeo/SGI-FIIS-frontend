@@ -61,6 +61,20 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
     title: t('navigation:groupGestionAcademica'),
     items: [
       {
+        id: 'convocatorias-activas',
+        label: t('navigation:convocatoriasVigentes'),
+        icon: <Megaphone size={20} />,
+        path: '/convocatorias/activas',
+        roles: ['ESTUDIANTE', 'DOCENTE_INVESTIGADOR'],
+      },
+      {
+        id: 'convocatorias',
+        label: t('navigation:convocatorias'),
+        icon: <Megaphone size={20} />,
+        path: '/convocatorias',
+        roles: ['DIRECTOR_INVESTIGACION'],
+      },
+      {
         id: 'proposals',
         label: t('navigation:projects'),
         icon: <FileText size={20} />,
@@ -79,7 +93,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         label: t('navigation:sidebarTramites'),
         icon: <Inbox size={20} />,
         path: '/tramites',
-        roles: ['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO'],
+        roles: ['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'DOCENTE_INVESTIGADOR', 'ESTUDIANTE'],
       },
       {
         id: 'observations',
@@ -109,20 +123,6 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         path: '/decano/review',
         roles: ['DECANO'],
       },
-      {
-        id: 'convocatorias-activas',
-        label: t('navigation:convocatoriasVigentes'),
-        icon: <Megaphone size={20} />,
-        path: '/convocatorias/activas',
-        roles: ['ESTUDIANTE', 'DOCENTE_INVESTIGADOR'],
-      },
-      {
-        id: 'convocatorias',
-        label: t('navigation:convocatorias'),
-        icon: <Megaphone size={20} />,
-        path: '/convocatorias',
-        roles: ['DIRECTOR_INVESTIGACION'],
-      },
     ],
   },
   {
@@ -143,18 +143,11 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         roles: ['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION'],
       },
       {
-        id: 'director-evaluations',
-        label: t('navigation:sidebarMonitorEvaluations'),
-        icon: <ClipboardCheck size={20} />,
-        path: '/evaluations/director',
-        roles: ['DIRECTOR_INVESTIGACION'],
-      },
-      {
         id: 'audit',
         label: t('navigation:sidebarTraceability'),
         icon: <ShieldCheck size={20} />,
         path: '/audit',
-        roles: ['ADMIN', 'DIRECTOR_INVESTIGACION'],
+        roles: ['ADMIN', 'DIRECTOR_INVESTIGACION', 'COORDINADOR_GRUPO'],
       },
     ],
   },
