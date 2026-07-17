@@ -19,6 +19,8 @@ export interface AuditLogEntry {
   accion: string;
   idUsuario: number;
   nombreUsuario: string;
+  datosAnteriores: string | null;
+  datosNuevos: string | null;
   ipOrigen: string;
   fechaAccion: string;
 }

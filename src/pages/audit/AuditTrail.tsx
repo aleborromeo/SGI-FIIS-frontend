@@ -358,11 +358,13 @@ export const AuditTrail: React.FC = () => {
                     <th style={thStyle}>{t('tramites:auditTrail.user')}</th>
                     <th style={thStyle}>{t('tramites:auditTrail.date')}</th>
                     <th style={thStyle}>{t('tramites:auditTrail.ip')}</th>
+                    <th style={{ ...thStyle, minWidth: '200px' }}>{t('tramites:auditTrail.details')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {auditLogs.map((log) => {
                     const meta = getActionMeta(log.accion);
+                    const hasDetails = log.datosAnteriores || log.datosNuevos;
                     return (
                       <tr
                         key={log.id}
@@ -399,6 +401,13 @@ export const AuditTrail: React.FC = () => {
                         </td>
                         <td style={tdStyle}>
                           <code style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>{log.ipOrigen || '-'}</code>
+                        </td>
+                        <td style={tdStyle}>
+                          {hasDetails ? (
+                            <AuditDetailsChip anterior={log.datosAnteriores} nuevo={log.datosNuevos} />
+                          ) : (
+                            <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px' }}>-</span>
+                          )}
                         </td>
                       </tr>
                     );
@@ -608,6 +617,78 @@ function MiniStat({ value, label }: { value: string; label: string }) {
     <div style={{ background: 'var(--surface-container)', borderRadius: '8px', padding: '10px 12px', textAlign: 'center' }}>
       <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--on-surface)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
       <div style={{ fontSize: '10px', color: 'var(--on-surface-variant)', marginTop: '2px' }}>{label}</div>
+    </div>
+  );
+}
+
+function AuditDetailsChip({ anterior, nuevo }: { anterior: string | null; nuevo: string | null }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const parseJson = (s: string | null): Record<string, unknown> | null => {
+    if (!s) return null;
+    try { return JSON.parse(s); } catch { return null; }
+  };
+
+  const anteriorObj = parseJson(anterior);
+  const nuevoObj = parseJson(nuevo);
+
+  if (!anteriorObj && !nuevoObj) {
+    return <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px' }}>-</span>;
+  }
+
+  const getChangedKeys = (): string[] => {
+    const keys = new Set<string>();
+    if (anteriorObj) Object.keys(anteriorObj).forEach((k) => keys.add(k));
+    if (nuevoObj) Object.keys(nuevoObj).forEach((k) => keys.add(k));
+    return [...keys].filter((k) => {
+      const a = anteriorObj?.[k];
+      const n = nuevoObj?.[k];
+      return JSON.stringify(a) !== JSON.stringify(n);
+    });
+  };
+
+  const changedKeys = getChangedKeys();
+  const previewKeys = changedKeys.slice(0, 2);
+
+  return (
+    <div>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          background: 'var(--surface-container)',
+          border: '1px solid var(--outline-variant)',
+          borderRadius: '6px',
+          padding: '4px 8px',
+          fontSize: '11px',
+          color: 'var(--on-surface)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          maxWidth: '100%',
+          overflow: 'hidden',
+        }}
+      >
+        <FileText size={11} color="var(--on-surface-variant)" />
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {expanded ? 'Ocultar' : `${changedKeys.length} campo${changedKeys.length !== 1 ? 's' : ''}`}
+        </span>
+      </button>
+      {expanded && (
+        <div style={{ marginTop: '6px', fontSize: '11px', lineHeight: '1.4' }}>
+          {(anteriorObj || nuevoObj) && changedKeys.map((key) => (
+            <div key={key} style={{ marginBottom: '4px', display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
+              <span style={{ fontWeight: 600, color: 'var(--on-surface)', minWidth: '60px', flexShrink: 0 }}>{key}:</span>
+              <span style={{ color: '#dc2626', textDecoration: 'line-through', wordBreak: 'break-all' }}>
+                {anteriorObj?.[key] != null ? String(anteriorObj[key]) : '—'}
+              </span>
+              <span style={{ color: '#15803d', wordBreak: 'break-all' }}>
+                {nuevoObj?.[key] != null ? String(nuevoObj[key]) : '—'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

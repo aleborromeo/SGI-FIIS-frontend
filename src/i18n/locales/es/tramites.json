@@ -473,7 +473,8 @@
     "timelineTitle": "Línea de Tiempo de Auditoría",
     "procedureLabel": "Trámite",
     "observationLabel": "Observación:",
-    "loadMore": "Cargar más"
+    "loadMore": "Cargar más",
+    "details": "Detalles"
   },
   "error": {
     "notFound": "Trámite no encontrado",

@@ -473,7 +473,8 @@
     "timelineTitle": "Audit Timeline",
     "procedureLabel": "Procedure",
     "observationLabel": "Observation:",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "details": "Details"
   },
   "error": {
     "notFound": "Procedure not found",
