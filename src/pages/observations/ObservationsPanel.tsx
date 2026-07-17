@@ -402,7 +402,7 @@ export const ObservationsPanel: React.FC = () => {
                           marginBottom: observation.remedy ? '14px' : 0,
                         }}
                       >
-                        {observation.content || t('panel.noDetail')}
+                        {observation.description || t('panel.noDetail')}
                       </p>
 
                       {observation.remedy && (

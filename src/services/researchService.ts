@@ -151,7 +151,7 @@ export const researchService = {
 
   /** Desactiva la membresía de un miembro (baja lógica, no eliminación) */
   removeMember: async (id: number, userId: number): Promise<GroupMember> => {
-    return api.patch<GroupMember>(`/research-groups/${id}/members/${userId}/deactivate`, {});
+    return api.delete<GroupMember>(`/research-groups/${id}/members/${userId}`);
   },
 
   /**

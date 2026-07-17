@@ -79,15 +79,31 @@ export const tramiteService = {
   getObservacionesByTramite: async (idTramite: number): Promise<ObservacionTramite[]> => {
     const res = await api.get<any[]>(`/api/observations/procedure/${idTramite}`);
     if (!Array.isArray(res)) return [];
-    return res.map((o) => ({
-      id: o.id,
-      idTramite: o.procedureId,
-      tipoObservacion: o.type,
-      descripcion: o.description,
-      estadoObservacion: o.status,
-      rolRevisor: o.reviewerRole,
-      fechaRegistro: o.createdAt,
-      subsanaciones: [],
+    return Promise.all(res.map(async (o) => {
+      let subsanaciones: any[] = [];
+      try {
+        const remedies = await api.get<any[]>(`/api/observations/${o.id}/remedies`);
+        if (Array.isArray(remedies)) {
+          subsanaciones = remedies.map((r: any) => ({
+            id: r.id,
+            idObservacion: r.observationId,
+            idSolicitante: r.applicantId,
+            descripcion: r.description,
+            nombreDocumentoAdjunto: r.attachedDocumentId ?? null,
+            fechaRegistro: r.createdAt,
+          }));
+        }
+      } catch { /* ignore */ }
+      return {
+        id: o.id,
+        idTramite: o.procedureId,
+        tipoObservacion: o.type,
+        descripcion: o.description,
+        estadoObservacion: o.status,
+        rolRevisor: o.reviewerRole,
+        fechaRegistro: o.createdAt,
+        subsanaciones,
+      };
     }));
   },
 
