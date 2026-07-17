@@ -8,6 +8,10 @@ import {
   CheckCircle,
   ArrowRight,
   Hash,
+  FileText,
+  User,
+  Calendar,
+  Lock,
 } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -30,6 +34,18 @@ const STATUS_COLORS: Record<string, string> = {
   APROBADO_CON_RESOLUCION: '#15803d',
   FINALIZADO: '#059669',
   RECHAZADO: '#dc2626',
+};
+
+const STATUS_BG: Record<string, string> = {
+  REGISTRADO: 'rgba(99,102,241,0.12)',
+  PENDIENTE_COORDINADOR: 'rgba(245,158,11,0.12)',
+  PENDIENTE_DIRECCION: 'rgba(59,130,246,0.12)',
+  PENDIENTE_DECANATO: 'rgba(139,92,246,0.12)',
+  OBSERVADO: 'rgba(239,68,68,0.12)',
+  SUBSANADO: 'rgba(34,197,94,0.12)',
+  APROBADO_CON_RESOLUCION: 'rgba(21,128,61,0.12)',
+  FINALIZADO: 'rgba(5,150,105,0.12)',
+  RECHAZADO: 'rgba(220,38,38,0.12)',
 };
 
 function getStatusLabel(status: string, t: (key: string) => string): string {
@@ -59,21 +75,23 @@ function formatTime(dateStr: string): string {
   });
 }
 
-function getActionColor(action: string): string {
-  if (action.includes('APROBADO') || action.includes('FINALIZADO') || action.includes('RESOLUCION'))
-    return '#15803d';
-  if (action.includes('OBSERVADO') || action.includes('RECHAZADO')) return '#dc2626';
-  if (action.includes('SUBSANADO')) return '#059669';
-  if (action.includes('PRESENTADO') || action.includes('REGISTRADO')) return '#6366f1';
-  return '#3b82f6';
+function formatDateTime(dateStr: string): string {
+  if (!dateStr) return '-';
+  return `${formatDate(dateStr)} · ${formatTime(dateStr)}`;
 }
 
-function getActionIcon(action: string) {
-  if (action.includes('APROBADO') || action.includes('FINALIZADO'))
-    return <CheckCircle size={16} />;
-  if (action.includes('OBSERVADO') || action.includes('RECHAZADO'))
-    return <AlertTriangle size={16} />;
-  return <ArrowRight size={16} />;
+function getActionMeta(action: string) {
+  if (action.includes('APROBADO') || action.includes('FINALIZADO') || action.includes('RESOLUCION'))
+    return { color: '#15803d', bg: 'rgba(21,128,61,0.1)', icon: <CheckCircle size={14} />, label: 'Aprobación' };
+  if (action.includes('OBSERVADO'))
+    return { color: '#dc2626', bg: 'rgba(220,38,38,0.1)', icon: <AlertTriangle size={14} />, label: 'Observación' };
+  if (action.includes('RECHAZADO'))
+    return { color: '#dc2626', bg: 'rgba(220,38,38,0.1)', icon: <AlertTriangle size={14} />, label: 'Rechazo' };
+  if (action.includes('SUBSANADO'))
+    return { color: '#059669', bg: 'rgba(5,150,105,0.1)', icon: <CheckCircle size={14} />, label: 'Subsanación' };
+  if (action.includes('PRESENTADO') || action.includes('REGISTRADO'))
+    return { color: '#6366f1', bg: 'rgba(99,102,241,0.1)', icon: <FileText size={14} />, label: 'Registro' };
+  return { color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', icon: <ArrowRight size={14} />, label: 'Movimiento' };
 }
 
 export const AuditTrail: React.FC = () => {
@@ -88,7 +106,7 @@ export const AuditTrail: React.FC = () => {
   const handleSearch = async () => {
     const id = Number.parseInt(procedureId, 10);
     if (Number.isNaN(id) || id <= 0) {
-      toast.error('Ingrese un ID de tramite valido (numero entero positivo).');
+      toast.error('Ingrese un ID de trámite válido (número entero positivo).');
       return;
     }
 
@@ -100,7 +118,7 @@ export const AuditTrail: React.FC = () => {
       setSearched(true);
     } catch (err: any) {
       console.error('Error al cargar trazabilidad:', err);
-      setError(err?.message || 'No se pudo cargar la trazabilidad del tramite.');
+      setError(err?.message || 'No se pudo cargar la trazabilidad del trámite.');
       setMovements([]);
       setSearched(true);
     } finally {
@@ -108,69 +126,75 @@ export const AuditTrail: React.FC = () => {
     }
   };
 
+  const totalWithObs = movements.filter((m) => m.observation).length;
+  const currentState = movements.length > 0 ? movements.at(-1) : null;
+
   return (
-    <div className="animate-fade-in" style={{ padding: '24px' }}>
+    <div className="animate-fade-in" style={{ padding: '24px', maxWidth: '960px', margin: '0 auto' }}>
+      {/* Header */}
       <div
         style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          gap: '16px',
-          marginBottom: '28px',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          borderRadius: '16px',
+          padding: '32px',
+          marginBottom: '24px',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
-                background: 'var(--primary-container)',
-                color: 'var(--on-primary-container)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <ShieldCheck size={24} />
-            </div>
-            <h1 className="text-headline-lg">{t('tramites:auditTrail.title')}</h1>
-          </div>
-          <p
-            className="text-body-md"
-            style={{ color: 'var(--on-surface-variant)', marginTop: '8px' }}
+        <div
+          style={{
+            position: 'absolute',
+            top: '-20px',
+            right: '-20px',
+            width: '120px',
+            height: '120px',
+            borderRadius: '50%',
+            background: 'rgba(99,102,241,0.08)',
+          }}
+        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: 'rgba(99,102,241,0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px solid rgba(99,102,241,0.2)',
+            }}
           >
-            {t('tramites:auditTrail.subtitle')}
-          </p>
+            <ShieldCheck size={24} color="#818cf8" />
+          </div>
+          <div>
+            <h1 style={{ color: '#f1f5f9', fontSize: '22px', fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>
+              {t('tramites:auditTrail.title')}
+            </h1>
+            <p style={{ color: '#94a3b8', fontSize: '13px', margin: '4px 0 0', lineHeight: '1.4' }}>
+              {t('tramites:auditTrail.subtitle')}
+            </p>
+          </div>
         </div>
       </div>
 
-      <Card style={{ marginBottom: '28px', maxWidth: '600px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)' }}>
+      {/* Search */}
+      <Card style={{ marginBottom: '24px', border: '1px solid var(--outline-variant)' }}>
         <CardContent style={{ padding: '24px' }}>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--on-surface)', marginBottom: '6px' }}>
-            {t('tramites:auditTrail.searchTitle')}
-          </h3>
-          <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', marginBottom: '18px', lineHeight: '1.4' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+            <Search size={18} color="var(--primary)" />
+            <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--on-surface)', margin: 0 }}>
+              {t('tramites:auditTrail.searchTitle')}
+            </h3>
+          </div>
+          <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', marginBottom: '16px', lineHeight: '1.5' }}>
             {t('tramites:auditTrail.searchDescription')}
           </p>
-          <div
-            className="search-card-input"
-            style={{
-              display: 'flex',
-              gap: '12px',
-              alignItems: 'center',
-            }}
-          >
-            <style>{`
-              .search-card-input .input-group {
-                margin-bottom: 0 !important;
-              }
-            `}</style>
-            <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div style={{ flex: 1, maxWidth: '320px' }}>
               <Input
-                placeholder="Ej: 1, 2, 3..."
+                placeholder={t('tramites:auditTrail.inputPlaceholder')}
                 value={procedureId}
                 onChange={(e) => setProcedureId(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -181,14 +205,7 @@ export const AuditTrail: React.FC = () => {
               icon={<Search size={16} />}
               onClick={handleSearch}
               disabled={loading}
-              style={{
-                height: '46px',
-                padding: '0 24px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxSizing: 'border-box'
-              }}
+              style={{ height: '42px', padding: '0 20px', whiteSpace: 'nowrap' }}
             >
               {loading ? t('common:searching') : t('tramites:auditTrail.searchButton')}
             </Button>
@@ -196,9 +213,10 @@ export const AuditTrail: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Error */}
       {error && (
         <div style={{ marginBottom: '24px' }}>
-            <Alert title={t('common:error')}>
+          <Alert title={t('common:error')}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <AlertTriangle size={18} />
               <span>{error}</span>
@@ -207,126 +225,140 @@ export const AuditTrail: React.FC = () => {
         </div>
       )}
 
+      {/* Empty */}
       {searched && !loading && movements.length === 0 && !error && (
-        <Card>
+        <Card style={{ border: '1px solid var(--outline-variant)' }}>
           <CardContent>
-            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--on-surface-variant)' }}>
-              <ShieldCheck size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
-              <p>{t('tramites:auditTrail.noMovements', { id: procedureId })}</p>
+            <div style={{ textAlign: 'center', padding: '56px 24px', color: 'var(--on-surface-variant)' }}>
+              <div
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '16px',
+                  background: 'var(--surface-container)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
+                }}
+              >
+                <Lock size={28} style={{ opacity: 0.3 }} />
+              </div>
+              <p style={{ fontSize: '15px', fontWeight: 500, marginBottom: '4px' }}>
+                {t('tramites:auditTrail.noMovements', { id: procedureId })}
+              </p>
+              <p style={{ fontSize: '13px', opacity: 0.6 }}>
+                Verifique el identificador e intente nuevamente.
+              </p>
             </div>
           </CardContent>
         </Card>
       )}
 
+      {/* Results */}
       {movements.length > 0 && (
         <>
+          {/* Summary cards */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '16px',
-              marginBottom: '28px',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '12px',
+              marginBottom: '24px',
             }}
           >
-            <Card>
-              <CardContent>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Hash size={24} color="var(--primary)" />
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '20px' }}>
-                      {movements[0]?.procedureCode || `#${procedureId}`}
-                    </strong>
-                    <span style={{ color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-                      {t('tramites:auditTrail.procedureCode')}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Clock size={24} color="#6366f1" />
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '20px' }}>
-                      {movements.length}
-                    </strong>
-                    <span style={{ color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-                      {t('tramites:auditTrail.totalMovements')}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <CheckCircle size={24} color="#15803d" />
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '20px' }}>
-                      {getStatusLabel(movements.at(-1)?.newStatus || '', t) || '-'}
-                    </strong>
-                    <span style={{ color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-                      {t('tramites:auditTrail.currentStatus')}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <AlertTriangle size={24} color="#f59e0b" />
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '20px' }}>
-                      {movements.filter((m) => m.observation).length}
-                    </strong>
-                    <span style={{ color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-                      {t('tramites:auditTrail.withObservation')}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <SummaryCard
+              icon={<Hash size={18} />}
+              value={movements[0]?.procedureCode || `#${procedureId}`}
+              label={t('tramites:auditTrail.procedureCode')}
+              color="#6366f1"
+            />
+            <SummaryCard
+              icon={<Clock size={18} />}
+              value={String(movements.length)}
+              label={t('tramites:auditTrail.totalMovements')}
+              color="#3b82f6"
+            />
+            <SummaryCard
+              icon={<CheckCircle size={18} />}
+              value={getStatusLabel(currentState?.newStatus || '', t) || '-'}
+              label={t('tramites:auditTrail.currentStatus')}
+              color="#15803d"
+            />
+            <SummaryCard
+              icon={<AlertTriangle size={18} />}
+              value={String(totalWithObs)}
+              label={t('tramites:auditTrail.withObservation')}
+              color="#f59e0b"
+            />
           </div>
 
-          <Card style={{ overflow: 'hidden' }}>
+          {/* Timeline */}
+          <div
+            style={{
+              background: '#0f172a',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              border: '1px solid #1e293b',
+            }}
+          >
+            {/* Timeline header */}
             <div
               style={{
-                backgroundColor: '#111827',
-                color: 'white',
                 padding: '20px 24px',
+                borderBottom: '1px solid #1e293b',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}
             >
-              <h2
-                className="text-title-lg"
-                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    background: 'rgba(99,102,241,0.12)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <ShieldCheck size={16} color="#818cf8" />
+                </div>
+                <div>
+                  <h2 style={{ color: '#f1f5f9', fontSize: '15px', fontWeight: 600, margin: 0 }}>
+                    {t('tramites:auditTrail.timelineTitle')}
+                  </h2>
+                  <p style={{ color: '#64748b', fontSize: '12px', margin: '2px 0 0' }}>
+                    {t('tramites:auditTrail.procedureLabel')} {movements[0]?.procedureCode || `#${procedureId}`}
+                  </p>
+                </div>
+              </div>
+              <Badge
+                variant="info"
+                style={{ backgroundColor: 'rgba(99,102,241,0.12)', color: '#818cf8', fontSize: '11px' }}
               >
-                <ShieldCheck size={20} />
-                {t('tramites:auditTrail.timelineTitle')}
-              </h2>
-              <p style={{ color: '#9ca3af', fontSize: '0.85rem', marginTop: '4px' }}>
-                {t('tramites:auditTrail.procedureLabel')} {movements[0]?.procedureCode || `#${procedureId}`}
-              </p>
+                Solo lectura
+              </Badge>
             </div>
 
-            <div
-              style={{
-                backgroundColor: '#111827',
-                color: '#e5e7eb',
-                padding: '24px',
-              }}
-            >
-              <div style={{ display: 'grid', gap: '0' }}>
-                {[...movements].reverse().map((m, idx) => (
+            {/* Timeline items */}
+            <div style={{ padding: '24px' }}>
+              {[...movements].reverse().map((m, idx) => {
+                const meta = getActionMeta(m.action);
+                const isFirst = idx === 0;
+                return (
                   <div
                     key={m.movementId || idx}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: '24px 1fr',
+                      gridTemplateColumns: '32px 1fr',
                       gap: '16px',
+                      position: 'relative',
                     }}
                   >
+                    {/* Vertical line + dot */}
                     <div
                       style={{
                         display: 'flex',
@@ -336,129 +368,201 @@ export const AuditTrail: React.FC = () => {
                     >
                       <div
                         style={{
-                          width: '12px',
-                          height: '12px',
-                          borderRadius: '999px',
-                          backgroundColor: getActionColor(m.action),
+                          width: isFirst ? '14px' : '10px',
+                          height: isFirst ? '14px' : '10px',
+                          borderRadius: '50%',
+                          backgroundColor: meta.color,
+                          border: isFirst ? `3px solid ${meta.bg}` : 'none',
                           flexShrink: 0,
-                          marginTop: '6px',
+                          marginTop: '5px',
+                          boxShadow: isFirst ? `0 0 0 4px ${meta.bg}` : 'none',
                         }}
                       />
                       {idx < movements.length - 1 && (
                         <div
                           style={{
-                            width: '2px',
+                            width: '1px',
                             flex: 1,
-                            backgroundColor: 'rgba(255,255,255,0.15)',
-                            marginTop: '4px',
+                            backgroundColor: '#1e293b',
+                            marginTop: '6px',
                           }}
                         />
                       )}
                     </div>
 
+                    {/* Content */}
                     <div
                       style={{
-                        paddingBottom: '24px',
-                        borderBottom:
-                          idx < movements.length - 1
-                            ? '1px solid rgba(255,255,255,0.08)'
-                            : 'none',
+                        paddingBottom: idx < movements.length - 1 ? '28px' : '0',
                       }}
                     >
+                      {/* Action + status badges */}
                       <div
                         style={{
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'flex-start',
                           gap: '12px',
-                          marginBottom: '8px',
+                          marginBottom: '6px',
                         }}
                       >
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            color: getActionColor(m.action),
-                          }}
-                        >
-                          {getActionIcon(m.action)}
-                          <strong style={{ color: 'white', fontSize: '0.95rem' }}>
-                            {m.action.replaceAll('_', ' ')}
-                          </strong>
-                        </div>
-                        <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                          {m.previousStatus && (
-                            <>
-                              <Badge
-                                variant="neutral"
-                                style={{
-                                  backgroundColor: STATUS_COLORS[m.previousStatus] || '#6b7280',
-                                  color: 'white',
-                                  fontSize: '0.7rem',
-                                }}
-                              >
-                                 {getStatusLabel(m.previousStatus, t) || m.previousStatus}
-                              </Badge>
-                              <span style={{ color: '#6b7280', alignSelf: 'center' }}>→</span>
-                            </>
-                          )}
-                          <Badge
-                            variant="neutral"
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div
                             style={{
-                              backgroundColor: STATUS_COLORS[m.newStatus] || '#6b7280',
-                              color: 'white',
-                              fontSize: '0.7rem',
+                              width: '24px',
+                              height: '24px',
+                              borderRadius: '6px',
+                              background: meta.bg,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: meta.color,
                             }}
                           >
-                             {getStatusLabel(m.newStatus, t) || m.newStatus}
-                          </Badge>
+                            {meta.icon}
+                          </div>
+                          <span style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 600 }}>
+                            {m.action.replaceAll('_', ' ')}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', flexShrink: 0, alignItems: 'center' }}>
+                          {m.previousStatus && (
+                            <>
+                              <span
+                                style={{
+                                  fontSize: '11px',
+                                  fontWeight: 500,
+                                  padding: '3px 10px',
+                                  borderRadius: '6px',
+                                  backgroundColor: STATUS_BG[m.previousStatus] || 'rgba(107,114,128,0.12)',
+                                  color: STATUS_COLORS[m.previousStatus] || '#9ca3af',
+                                }}
+                              >
+                                {getStatusLabel(m.previousStatus, t) || m.previousStatus}
+                              </span>
+                              <ArrowRight size={12} color="#475569" />
+                            </>
+                          )}
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              padding: '3px 10px',
+                              borderRadius: '6px',
+                              backgroundColor: STATUS_BG[m.newStatus] || 'rgba(107,114,128,0.12)',
+                              color: STATUS_COLORS[m.newStatus] || '#9ca3af',
+                            }}
+                          >
+                            {getStatusLabel(m.newStatus, t) || m.newStatus}
+                          </span>
                         </div>
                       </div>
 
+                      {/* Observation */}
                       {m.observation && (
                         <div
                           style={{
-                            backgroundColor: 'rgba(239,68,68,0.1)',
-                            border: '1px solid rgba(239,68,68,0.3)',
+                            backgroundColor: 'rgba(239,68,68,0.06)',
+                            border: '1px solid rgba(239,68,68,0.15)',
                             borderRadius: '8px',
-                            padding: '10px 14px',
-                            marginBottom: '8px',
+                            padding: '12px 14px',
+                            marginBottom: '10px',
                           }}
                         >
-                          <span style={{ color: '#fca5a5', fontSize: '0.8rem', fontWeight: 600 }}>
-                            {t('tramites:auditTrail.observationLabel')}
-                          </span>
-                          <p style={{ color: '#e5e7eb', margin: '4px 0 0', lineHeight: 1.5, fontSize: '0.875rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                            <AlertTriangle size={12} color="#f87171" />
+                            <span style={{ color: '#f87171', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                              {t('tramites:auditTrail.observationLabel')}
+                            </span>
+                          </div>
+                          <p style={{ color: '#cbd5e1', margin: 0, lineHeight: 1.5, fontSize: '13px' }}>
                             {m.observation}
                           </p>
                         </div>
                       )}
 
+                      {/* Meta row */}
                       <div
                         style={{
                           display: 'flex',
                           alignItems: 'center',
                           gap: '12px',
-                          color: '#9ca3af',
-                          fontSize: '0.8rem',
+                          color: '#64748b',
+                          fontSize: '12px',
                         }}
                       >
-                        <Clock size={13} />
-                        <span>
-                          {formatDate(m.movementDate)} {formatTime(m.movementDate)}
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Calendar size={12} />
+                          {formatDateTime(m.movementDate)}
                         </span>
-                        <span style={{ color: '#6b7280' }}>|</span>
-                        <span>{m.actionUserName}</span>
+                        <span style={{ color: '#334155' }}>|</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <User size={12} />
+                          {m.actionUserName}
+                        </span>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          </Card>
+          </div>
         </>
       )}
     </div>
   );
 };
+
+/* ── Summary card sub-component ── */
+function SummaryCard({
+  icon,
+  value,
+  label,
+  color,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+  color: string;
+}) {
+  return (
+    <Card style={{ border: '1px solid var(--outline-variant)' }}>
+      <CardContent style={{ padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: `${color}12`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color,
+              flexShrink: 0,
+            }}
+          >
+            {icon}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: '15px',
+                fontWeight: 700,
+                color: 'var(--on-surface)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {value}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)', marginTop: '2px' }}>
+              {label}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
