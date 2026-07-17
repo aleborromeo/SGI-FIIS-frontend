@@ -104,17 +104,21 @@ function formatRelativeTime(dateStr: string): string {
 
 function getActionMeta(action: string) {
   const a = action.toUpperCase();
-  if (a.includes('INSERT') || a.includes('CREATE') || a.includes('REGISTRADO'))
+  if (a === 'CREAR' || a.includes('CREATE') || a.includes('REGISTRAR') || a.includes('POSTULAR'))
     return { color: '#6366f1', bg: 'rgba(99,102,241,0.1)', icon: <FileText size={13} />, label: 'Creación' };
-  if (a.includes('UPDATE') || a.includes('MODIFICADO') || a.includes('EDITADO'))
-    return { color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', icon: <RefreshCw size={13} />, label: 'Modificación' };
-  if (a.includes('DELETE') || a.includes('ELIMINADO'))
+  if (a === 'EDITAR' || a.includes('UPDATE') || a.includes('MODIFICAR'))
+    return { color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', icon: <RefreshCw size={13} />, label: 'Edición' };
+  if (a === 'ELIMINAR' || a.includes('DELETE') || a.includes('ELIMINAR') || a.includes('REJECT'))
     return { color: '#dc2626', bg: 'rgba(220,38,38,0.1)', icon: <AlertTriangle size={13} />, label: 'Eliminación' };
-  if (a.includes('APROBADO') || a.includes('FINALIZADO') || a.includes('RESOLUCION'))
-    return { color: '#15803d', bg: 'rgba(21,128,61,0.1)', icon: <CheckCircle size={13} />, label: 'Aprobación' };
-  if (a.includes('OBSERVADO') || a.includes('RECHAZADO'))
-    return { color: '#dc2626', bg: 'rgba(220,38,38,0.1)', icon: <AlertTriangle size={13} />, label: 'Observación' };
-  return { color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', icon: <ArrowRight size={13} />, label: 'Movimiento' };
+  if (a === 'DESACTIVAR' || a.includes('DEACTIVATE'))
+    return { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', icon: <AlertTriangle size={13} />, label: 'Desactivación' };
+  if (a === 'ACTIVAR' || a.includes('ACTIVATE'))
+    return { color: '#22c55e', bg: 'rgba(34,197,94,0.1)', icon: <CheckCircle size={13} />, label: 'Activación' };
+  if (a === 'LOGIN')
+    return { color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)', icon: <User size={13} />, label: 'Inicio de sesión' };
+  if (a === 'LOGOUT')
+    return { color: '#64748b', bg: 'rgba(100,116,139,0.1)', icon: <User size={13} />, label: 'Cierre de sesión' };
+  return { color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', icon: <ArrowRight size={13} />, label: action };
 }
 
 function getTimelineActionMeta(action: string) {
@@ -132,16 +136,51 @@ function getTimelineActionMeta(action: string) {
 }
 
 const TABLE_LABELS: Record<string, string> = {
+  createcall: 'Convocatorias',
+  call: 'Convocatorias',
+  updatecall: 'Convocatorias',
+  deletecall: 'Convocatorias',
+  createproject: 'Proyectos',
+  project: 'Proyectos',
+  updateproject: 'Proyectos',
+  deleteproject: 'Proyectos',
+  createtramite: 'Trámites',
+  tramite: 'Trámites',
+  updatetramite: 'Trámites',
   tramites: 'Trámites',
+  createuser: 'Usuarios',
+  user: 'Usuarios',
+  updateuser: 'Usuarios',
+  deleteuser: 'Usuarios',
   usuarios: 'Usuarios',
   convocatorias: 'Convocatorias',
-  grupos_investigacion: 'Grupos',
-  lineas_investigacion: 'Líneas',
+  grupos: 'Grupos de Investigación',
+  grupos_investigacion: 'Grupos de Investigación',
+  group: 'Grupos de Investigación',
+  creategroup: 'Grupos de Investigación',
+  line: 'Líneas de Investigación',
+  lineas: 'Líneas de Investigación',
+  lineas_investigacion: 'Líneas de Investigación',
+  createline: 'Líneas de Investigación',
+  observacion: 'Observaciones',
   observaciones: 'Observaciones',
+  observation: 'Observaciones',
+  proyecto: 'Proyectos',
   proyectos: 'Proyectos',
+  resolucion: 'Resoluciones',
   resoluciones: 'Resoluciones',
+  documento: 'Documentos',
   documentos: 'Documentos',
+  document: 'Documentos',
   auditoria_general: 'Auditoría',
+  login: 'Sesiones',
+  logout: 'Sesiones',
+  thesis: 'Planes de Tesis',
+  thesisplan: 'Planes de Tesis',
+  createplan: 'Planes de Tesis',
+  progressreport: 'Informes de Avance',
+  evaluacion: 'Evaluaciones',
+  evaluation: 'Evaluaciones',
 };
 
 export const AuditTrail: React.FC = () => {
@@ -215,7 +254,7 @@ export const AuditTrail: React.FC = () => {
 
   // ── Stats ──
   const totalRecords = auditLogs.length;
-  const tablesSet = new Set(auditLogs.map((l) => l.tablaAfectada));
+  const tablesSet = new Set(auditLogs.map((l) => TABLE_LABELS[l.tablaAfectada.toLowerCase()] || l.tablaAfectada));
   const usersSet = new Set(auditLogs.filter((l) => l.idUsuario).map((l) => l.idUsuario));
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayCount = auditLogs.filter((l) => l.fechaAccion?.startsWith(todayStr)).length;
@@ -336,12 +375,12 @@ export const AuditTrail: React.FC = () => {
                             <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: meta.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: meta.color, flexShrink: 0 }}>
                               {meta.icon}
                             </div>
-                            <span style={{ fontWeight: 500, color: meta.color }}>{log.accion}</span>
+                            <span style={{ fontWeight: 500, color: meta.color }}>{meta.label}</span>
                           </div>
                         </td>
                         <td style={tdStyle}>
                           <span style={{ fontWeight: 500 }}>
-                            {TABLE_LABELS[log.tablaAfectada] || log.tablaAfectada}
+                            {TABLE_LABELS[log.tablaAfectada.toLowerCase()] || log.tablaAfectada}
                           </span>
                         </td>
                         <td style={tdStyle}>
