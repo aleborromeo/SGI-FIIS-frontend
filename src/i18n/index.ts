@@ -67,6 +67,9 @@ i18n
       },
     },
     fallbackLng: 'es',
+    supportedLngs: ['es', 'en'],
+    nonExplicitSupportedLngs: true,
+    load: 'languageOnly',
     defaultNS: 'common',
     ns: [
       'common', 'navigation', 'auth', 'dashboard', 'projects',
@@ -77,7 +80,9 @@ i18n
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      // Keep Spanish as the default language unless the user has already
+      // chosen a different one.
+      order: ['localStorage'],
       caches: ['localStorage'],
       lookupLocalStorage: 'sgi_lang',
     },

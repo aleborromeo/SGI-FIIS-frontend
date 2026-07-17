@@ -364,7 +364,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)' }}>
                 Idioma / Language
               </span>
-              <LanguageSwitcher variant="button" />
+              <LanguageSwitcher variant="button" className="sidebar-language-switcher sidebar-language-switcher--compact" />
             </div>
           </div>
         </div>
@@ -432,3 +432,4 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     </>
   );
 };
+

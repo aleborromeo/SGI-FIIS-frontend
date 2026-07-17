@@ -2,15 +2,25 @@
   "nav": {
     "home": "Inicio",
     "news": "Novedades",
+    "announcements": "Anuncios",
     "convocatorias": "Convocatorias",
     "reconocimiento": "Reconocimiento",
+    "recognition": "Reconocimiento",
     "congresos": "Congresos",
+    "congresses": "Congresos",
     "aboutUs": "Sobre nosotros",
+    "about": "Sobre nosotros",
     "quienesSomos": "Quiénes somos",
+    "whoWeAre": "Quiénes somos",
     "lineasInvestigacion": "Líneas de investigación",
-    "grupos": "Grupos",
+    "researchLines": "Líneas de investigación",
+    "researchGroups": "Grupos de investigación",
+    "grupos": "Grupos de investigación",
+    "groups": "Grupos de investigación",
     "contacto": "Contacto",
+    "contact": "Contacto",
     "correo": "Correo",
+    "email": "Correo",
     "whatsapp": "WhatsApp",
     "submitResearch": "Envía tu investigación",
     "login": "Iniciar sesión",
@@ -40,6 +50,49 @@
     "groupsTitle": "Grupos de Investigación",
     "groupsSubtitle": "Conoce las agrupaciones científicas que impulsan la innovación y desarrollo en la FIIS",
     "viewAllGroups": "Ver todos los grupos de investigación"
+  },
+  "welcomePage": {
+    "ui": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "groupMembers": "Investigadores / Miembros",
+      "groupPublications": "Publicaciones / Proyectos"
+    },
+    "researchLines": {
+      "computacion": {
+        "title": "Computación",
+        "description": "Fundamentos teóricos, computación científica y algorítmica avanzada."
+      },
+      "software": {
+        "title": "Ingeniería de Software",
+        "description": "Metodologías, procesos y patrones para construir software de calidad mundial."
+      },
+      "ai": {
+        "title": "Inteligencia Artificial",
+        "description": "Redes neuronales, procesamiento de lenguaje natural y visión artificial."
+      },
+      "dataScience": {
+        "title": "Ciencia de Datos",
+        "description": "Minería de datos masiva, analítica predictiva e inteligencia de negocios."
+      },
+      "networks": {
+        "title": "Redes y Telecomunicaciones",
+        "description": "Arquitectura de redes, computación en la nube y protocolos de conectividad."
+      },
+      "cybersecurity": {
+        "title": "Ciberseguridad",
+        "description": "Auditoría informática, hacking ético, protección de datos e infraestructura crítica."
+      }
+    },
+    "groups": {
+      "ginsoft": "Grupo de Investigación en Ingeniería de Software",
+      "resegti": "Red de Seguridad y Gestión de TI",
+      "gisi": "Grupo de Investigación en Sistemas de Información",
+      "cico": "Círculo de Computación",
+      "eap": "Estadística Aplicada",
+      "map": "Matemática Aplicada",
+      "eu": "Emprendimiento Universitario"
+    }
   },
   "home": {
     "title": "Sistema de Gestión de Investigación",
@@ -102,7 +155,21 @@
     "team": {
       "title": "Equipo de Desarrollo",
       "description": "Desarrollado por el equipo de tecnología de la Facultad de Ingeniería en Industria y Sistemas"
-    }
+    },
+    "breadcrumbs": "Inicio » Sobre SGI » Quiénes somos",
+    "pageTitleWhoWeAre": "Quiénes somos",
+    "pageTitleResearchLines": "Líneas de investigación",
+    "pageTitleResearchGroups": "Grupos de investigación",
+    "whereItAllBegan": "Dónde comenzó todo",
+    "history1": "El Sistema de Gestión de Investigación de la FIIS nació para fortalecer la organización, trazabilidad y acceso a los procesos de investigación académica de la facultad.",
+    "history2": "Con el tiempo, la plataforma integró módulos de proyectos, tesis, trámites, reportes y seguimiento para ofrecer una experiencia centralizada y más eficiente.",
+    "history3": "Actualmente, el SGI acompaña a estudiantes, docentes y gestores en sus actividades de investigación con una interfaz clara, institucional y orientada a resultados.",
+    "researchLinesDescription": "Estas líneas orientan el desarrollo científico y tecnológico de la facultad.",
+    "badgeLine": "Línea",
+    "basedOn": "Basado en:",
+    "priorityAreas": "Áreas prioritarias",
+    "researchGroupsDescription": "Los grupos de investigación impulsan proyectos colaborativos, publicaciones y la formación científica.",
+    "associatedLine": "Línea asociada:"
   },
   "contact": {
     "title": "Contacto",
@@ -146,6 +213,29 @@
     "success": {
       "messageSent": "Mensaje enviado exitosamente",
       "willRespond": "Responderemos a la brevedad"
+    },
+    "page": {
+      "breadcrumbs": "Inicio » Contacto",
+      "formTitle": "Formulario de contacto",
+      "formDescription": "Escribe tu consulta y selecciona el área o departamento que debe atenderla.",
+      "userEmail": "Correo del remitente",
+      "sendToDepartment": "Enviar al departamento",
+      "deptDecanato": "Decanato FIIS",
+      "deptInvestigacion": "Unidad de Investigación",
+      "deptSoporte": "Soporte Técnico",
+      "messageType": "Tipo de mensaje",
+      "complaint": "Queja",
+      "comment": "Comentario",
+      "inquiry": "Consulta",
+      "messageLabel": "Mensaje",
+      "messagePlaceholder": "Escribe tu mensaje con claridad y detalle.",
+      "sendButton": "Enviar mensaje",
+      "whatsappTitle": "Contacto por WhatsApp",
+      "whatsappDescription": "Comunícate directamente con el equipo de atención mediante WhatsApp.",
+      "openWhatsApp": "Abrir WhatsApp",
+      "directWhatsApp": "WhatsApp directo",
+      "sidebarTitle": "Secciones de contacto",
+      "backToTop": "Volver arriba"
     }
   },
   "help": {
@@ -253,6 +343,7 @@
     "duration": "Vigencia:",
     "to": "al",
     "status": "Estado:",
+    "fallbackDate": "02 de Julio, 2026",
     "open": "Abierta",
     "closed": "Cerrada",
     "finished": "Finalizada",
@@ -324,34 +415,121 @@
     "version": "Versión {{version}}",
     "backToTop": "Volver arriba",
     "faculty": "Facultad",
+    "facultyTitle": "Facultad",
+    "decanato": "Decanato FIIS",
     "decanatoFiis": "Decanato FIIS",
+    "departments": "Departamentos Académicos",
+    "departmentsAcademics": "Departamentos Académicos",
     "departamentosAcademicos": "Departamentos Académicos",
+    "academicDepartments": "Departamentos Académicos",
+    "legal": "Legal",
+    "universityLabel": "Universidad",
     "research": "Investigación",
+    "researchTitle": "Investigación",
+    "generalDirection": "Dirección General",
     "direccionGeneral": "Dirección General",
+    "regulatoryDocuments": "Documentos Normativos",
     "documentosNormativos": "Documentos Normativos",
     "support": "Soporte",
+    "supportTitle": "Soporte",
     "faq": "Preguntas Frecuentes",
     "userManual": "Manual de Usuario",
+    "privacyPolicy": "Política de Privacidad",
+    "copyrightSGI": "© 2026 SGI - Facultad de Ingeniería en Informática y Sistemas - UNAS. Todos los derechos reservados.",
     "copyrightFull": "© 2026 SGI - Facultad de Ingeniería en Informática y Sistemas - UNAS. Todos los derechos reservados.",
     "facultyTitle": "Facultad",
     "universityTitle": "Universidad",
+    "universityLabel": "Universidad",
     "contactTitle": "Contacto",
+    "legal": "Legal",
     "normativasTitle": "Normativas",
+    "commission": "Comisión de Grados y Títulos",
     "comisionGradosTitulos": "Comisión de Grados y Títulos",
+    "researchUnit": "Unidad de Investigación FIIS",
     "unidadInvestigacion": "Unidad de Investigación FIIS",
+    "portalUNAS": "Portal Principal UNAS",
     "portalPrincipalUnas": "Portal Principal UNAS",
+    "vicerrectorado": "Vicerrectorado de Investigación",
     "vicerrectoradoInvestigacion": "Vicerrectorado de Investigación",
+    "library": "Biblioteca Central",
     "bibliotecaCentral": "Biblioteca Central",
+    "repository": "Repositorio Institucional",
     "repositorioInstitucional": "Repositorio Institucional",
     "soporteTecnico": "Soporte Técnico",
+    "supportTitle": "Soporte",
     "mesaPartesVirtual": "Mesa de Partes Virtual UNAS",
     "ubicacion": "Ubicación",
     "directorioTelefonico": "Directorio Telefónico",
+    "privacyPolicy": "Política de Privacidad",
     "politicaPrivacidad": "Política de Privacidad",
+    "termsOfUse": "Términos de Uso",
     "terminosUso": "Términos de Uso",
+    "researchRegulations": "Reglamento de Investigación",
     "reglamentoInvestigacion": "Reglamento de Investigación",
     "donaASgi": "Dona a SGI",
     "donaASgiDesc": "Escanea el código QR con tu celular Yape para colaborar con el mantenimiento de la plataforma",
     "donaASgiBadge": "¡DONA A SGI!"
+  },
+  "privacyPage": {
+    "updatedAt": "Última actualización: 15 de julio de 2026",
+    "footer": {
+      "copyright": "© 2026 SGI - Facultad de Ingeniería en Informática y Sistemas - UNAS. Todos los derechos reservados."
+    },
+    "sidebar": {
+      "terms": "Términos y condiciones",
+      "privacy": "Política de privacidad",
+      "copyright": "Declaración de derechos de autor",
+      "cookies": "Política de cookies",
+      "changes": "Resumen de cambios",
+      "events": "Términos de eventos"
+    },
+    "terms": {
+      "title": "Términos y condiciones de uso",
+      "items": {
+        "a": "Aceptación de los términos. Al acceder y utilizar la plataforma del Sistema de Gestión de Investigación (SGI-FIIS), usted acepta estar sujeto a los presentes términos y condiciones en su totalidad. Si no está de acuerdo, le instamos a abstenerse de usar el sistema.",
+        "b": "Uso de la plataforma. El SGI-FIIS está destinado de forma exclusiva para el registro, revisión, aprobación y seguimiento de proyectos de investigación científica, planes de tesis e informes académicos de la Facultad de Ingeniería en Informática y Sistemas de la UNAS.",
+        "c": "Responsabilidad de la cuenta. Cada usuario es responsable de mantener la confidencialidad de sus credenciales de acceso y de todas las actividades realizadas bajo su cuenta. Las credenciales de acceso son de carácter personal e intransferible."
+      }
+    },
+    "privacy": {
+      "title": "Política de privacidad",
+      "intro": "La Facultad de Ingeniería en Informática y Sistemas (FIIS) de la Universidad Nacional Agraria de la Selva se compromete con la protección y el tratamiento seguro de los datos de todos los usuarios de la plataforma SGI-FIIS. A continuación, detallamos la base formal de recopilación y procesamiento de información:",
+      "items": {
+        "a": "Datos recopilados por el sistema. Recopilamos información de identificación básica como nombres, apellidos, Documento Nacional de Identidad (DNI), dirección de correo institucional (@unas.edu.pe) y credenciales de acceso cifradas. Adicionalmente, se procesa información de avance académico, asignaciones de líneas de investigación, registros de proyectos de tesis y observaciones de evaluación.",
+        "b": "Finalidad del uso de datos. La información obtenida se destina exclusivamente para la administración y validación de las investigaciones, la asignación automática de docentes evaluadores basada en líneas de investigación específicas, el control de flujo de trámites y el envío de notificaciones automáticas tales como códigos de verificación y restablecimiento de claves.",
+        "c": "Destinatarios y acceso a la información. El acceso está limitado al personal autorizado según el control de accesos por roles (RBAC) del sistema, que incluye administradores de TI, la Unidad de Investigación de la FIIS, decanatura, docentes asesores y jurados evaluadores asignados. Bajo ninguna circunstancia compartimos o vendemos datos personales a entidades externas.",
+        "d": "Medidas de seguridad de la información. Las contraseñas de usuario se almacenan de manera irreversible mediante cifrado fuerte BCrypt con sal (salt) aleatoria. Las transacciones de datos entre el cliente y el servidor backend se realizan cifradas mediante el protocolo HTTPS. Adicionalmente, el almacenamiento de datos está aislado de redes públicas directas.",
+        "e": "Derechos ARCO y contacto del responsable. Los usuarios tienen derecho a acceder, rectificar, cancelar u oponerse al tratamiento de su información. Para cualquier consulta sobre la privacidad de sus datos, puede comunicarse directamente con la Unidad de Investigación de la FIIS a través del correo institucional:"
+      }
+    },
+    "copyright": {
+      "title": "Declaración de derechos de autor",
+      "items": {
+        "a": "Propiedad intelectual de las tesis. Los derechos de autor morales e intelectuales sobre los proyectos y trabajos finales de investigación registrados en el SGI-FIIS pertenecen de forma exclusiva a los autores firmantes (estudiantes y egresados de la UNAS), conforme a las normativas vigentes en la legislación peruana.",
+        "b": "Uso con fines académicos. La Facultad de Ingeniería en Informática y Sistemas se reserva el derecho de conservar copia digital de los proyectos aprobados en su repositorio institucional con el único fin de divulgación científica y consulta académica sin fines de lucro."
+      }
+    },
+    "cookies": {
+      "title": "Política de cookies",
+      "items": {
+        "a": "Uso de tecnologías de almacenamiento. La plataforma SGI-FIIS utiliza cookies de sesión y almacenamiento en el navegador (localStorage) para mantener la sesión del usuario activa de forma segura una vez que se realiza la autenticación exitosa mediante tokens JWT.",
+        "b": "Cookies técnicas obligatorias. No empleamos cookies para rastreo comercial ni publicidad dirigida. Todas las cookies y datos almacenados localmente son estrictamente técnicos y necesarios para asegurar el correcto flujo de autorización y seguridad del sistema."
+      }
+    },
+    "changes": {
+      "title": "Resumen de cambios legales",
+      "items": {
+        "a": "Versión 1.0 (Julio 2026). Se publica la primera versión oficial del pliego normativo y políticas de protección de datos para la plataforma SGI-FIIS de la UNAS. Se define el flujo de autenticación mediante roles académicos y se integran los canales de contacto de la Unidad de Investigación de la Facultad."
+      }
+    },
+    "events": {
+      "title": "Términos y condiciones de eventos",
+      "items": {
+        "a": "Participación en eventos científicos. Los términos contenidos en esta sección aplican para las ponencias, congresos y webinars organizados por los grupos de investigación de la FIIS a través del sistema. Los participantes aceptan que el material didáctico expuesto es de uso académico."
+      }
+    },
+    "contact": {
+      "email": "sgifiisunas@gmail.com"
+    }
   }
 }

@@ -1,15 +1,30 @@
 import { useTranslation } from 'react-i18next';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
+
+const normalizeLanguage = (lang?: string): 'es' | 'en' =>
+  lang?.toLowerCase().startsWith('en') ? 'en' : 'es';
 
 export function useLanguage() {
   const { i18n } = useTranslation();
 
-  const language = i18n.language as 'es' | 'en';
+  const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language;
+    }
+  }, [language]);
 
   const setLanguage = useCallback(
-    (lang: 'es' | 'en') => {
-      i18n.changeLanguage(lang);
-      localStorage.setItem('sgi_lang', lang);
+    async (lang: 'es' | 'en') => {
+      const normalized = normalizeLanguage(lang);
+
+      await i18n.changeLanguage(normalized);
+      localStorage.setItem('sgi_lang', normalized);
+
+      if (typeof document !== 'undefined') {
+        document.documentElement.lang = normalized;
+      }
     },
     [i18n],
   );
