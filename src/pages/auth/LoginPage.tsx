@@ -113,6 +113,10 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const openPrivacyPolicy = (tab: 'privacidad' | 'terminos' = 'privacidad') => {
+    navigate(tab === 'terminos' ? '/privacy-policy?tab=terminos' : '/privacy-policy');
+  };
+
   const validateForm = (): boolean => {
     if (!email) {
       setValidationError(t('auth:login.validation.emailRequired'));
@@ -376,7 +380,20 @@ export const LoginPage: React.FC = () => {
                   }}
                   disabled={isSubmitting}
                 />
-                <span>{t('auth:login.acceptPolicies')}</span>
+                <span>
+                  {t('auth:login.acceptPolicies')}{' '}
+                  <a
+                    href="/privacy-policy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`policies-link ${isSubmitting ? 'disabled-link' : ''}`}
+                    onClick={(e) => {
+                      if (isSubmitting) e.preventDefault();
+                    }}
+                  >
+                    {t('auth:login.policiesAndPrivacy')}
+                  </a>
+                </span>
               </label>
               <div className="forgot-password-container">
                 <button 

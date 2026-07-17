@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import React, { useContext, useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -19,6 +19,7 @@ import cienciaDatosImg from '../assets/images/ciencia de datos.png';
 import redesImg from '../assets/images/redes.jpg';
 import ciberseguridadImg from '../assets/images/ciberseguridad.jpg';
 import yapeLogo from '../assets/images/logoyape.png';
+import qrYape from '../assets/images/QR-Yape.jpeg';
 import sedeUnasImage from '../assets/images/sede-unas.jpg';
 import scivalLogo from '../assets/images/scival.jpg';
 import scopusLogo from '../assets/images/scopus.png';
@@ -33,11 +34,15 @@ export const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation('public');
-  useLanguage();
+  const { language } = useLanguage();
   const [activeIndex, setActiveIndex] = useState(3);
   const [activeLink, setActiveLink] = useState<'inicio' | 'convocatorias'>('inicio');
   const [latestCall, setLatestCall] = useState<any>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  const openLegalPage = (tab: 'privacidad' | 'terminos' = 'privacidad') => {
+    navigate(tab === 'terminos' ? '/privacy-policy?tab=terminos' : '/privacy-policy');
+  };
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -145,44 +150,54 @@ export const WelcomePage: React.FC = () => {
     { codigo: 'EU', nombre: 'Emprendimiento Universitario', investigaciones: 6, miembros: 1, publicaciones: 6 }
   ]);
 
-  const researchLines = [
+  const researchLines = useMemo(() => ([
     {
-      title: 'Computación',
+      title: t('welcomePage.researchLines.computacion.title'),
       image: computacionImg,
-      description: 'Fundamentos teóricos, computación científica y algorítmica avanzada.',
-      theme: 'dark'
+      description: t('welcomePage.researchLines.computacion.description'),
+      theme: 'dark' as const,
     },
     {
-      title: 'Ingeniería de Software',
+      title: t('welcomePage.researchLines.software.title'),
       image: softwareImg,
-      description: 'Metodologías, procesos y patrones para construir software de calidad mundial.',
-      theme: 'light'
+      description: t('welcomePage.researchLines.software.description'),
+      theme: 'light' as const,
     },
     {
-      title: 'Inteligencia Artificial',
+      title: t('welcomePage.researchLines.ai.title'),
       image: aiImg,
-      description: 'Redes neuronales, procesamiento de lenguaje natural y visión artificial.',
-      theme: 'light'
+      description: t('welcomePage.researchLines.ai.description'),
+      theme: 'light' as const,
     },
     {
-      title: 'Ciencia de Datos',
+      title: t('welcomePage.researchLines.dataScience.title'),
       image: cienciaDatosImg,
-      description: 'Minería de datos masiva, analítica predictiva e inteligencia de negocios.',
-      theme: 'dark'
+      description: t('welcomePage.researchLines.dataScience.description'),
+      theme: 'dark' as const,
     },
     {
-      title: 'Redes y Telecomunicaciones',
+      title: t('welcomePage.researchLines.networks.title'),
       image: redesImg,
-      description: 'Arquitectura de redes, computación en la nube y protocolos de conectividad.',
-      theme: 'dark'
+      description: t('welcomePage.researchLines.networks.description'),
+      theme: 'dark' as const,
     },
     {
-      title: 'Ciberseguridad',
+      title: t('welcomePage.researchLines.cybersecurity.title'),
       image: ciberseguridadImg,
-      description: 'Auditoría informática, hacking ético, protección de datos e infraestructura crítica.',
-      theme: 'light'
+      description: t('welcomePage.researchLines.cybersecurity.description'),
+      theme: 'light' as const,
     }
-  ];
+  ]), [language, t]);
+
+  const groupNameByCode = useMemo<Record<string, string>>(() => ({
+    GINSOFT: t('welcomePage.groups.ginsoft'),
+    RESEGTI: t('welcomePage.groups.resegti'),
+    GISI: t('welcomePage.groups.gisi'),
+    CICO: t('welcomePage.groups.cico'),
+    EAP: t('welcomePage.groups.eap'),
+    MAP: t('welcomePage.groups.map'),
+    EU: t('welcomePage.groups.eu'),
+  }), [language, t]);
 
   useEffect(() => {
     api.get<any>('/auth/public-stats')
@@ -322,21 +337,21 @@ export const WelcomePage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-convocatorias' } }); }}
                 className="dropdown-item"
               >
-                {t('nav.convocatorias')}
+                {t('nav.announcements')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-reconocimientos' } }); }}
                 className="dropdown-item"
               >
-                {t('nav.reconocimiento')}
+                {t('nav.recognition')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/novedades', { state: { scrollToHash: 'novedades-congresos' } }); }}
                 className="dropdown-item"
               >
-                {t('nav.congresos')}
+                {t('nav.congresses')}
               </a>
             </div>
           </div>
@@ -357,21 +372,21 @@ export const WelcomePage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'quienes-somos' } }); }}
                 className="dropdown-item"
               >
-                {t('nav.quienesSomos')}
+                {t('nav.whoWeAre')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'lineas-investigacion' } }); }}
                 className="dropdown-item"
               >
-                {t('nav.lineasInvestigacion')}
+                {t('nav.researchLines')}
               </a>
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); navigate('/sobre-sgi', { state: { scrollToHash: 'grupos-investigacion' } }); }}
                 className="dropdown-item"
               >
-                {t('nav.grupos')}
+                {t('nav.groups')}
               </a>
             </div>
           </div>
@@ -392,7 +407,7 @@ export const WelcomePage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/contacto', { state: { scrollToHash: 'contacto-form-section' } }); }}
                 className="dropdown-item"
               >
-                {t('nav.correo')}
+                {t('nav.email')}
               </a>
               <a
                 href="#"
@@ -632,16 +647,16 @@ export const WelcomePage: React.FC = () => {
                     }}
                   >
                     <div className="group-card-badge">{group.codigo}</div>
-                    <div className="group-card-name">{group.nombre}</div>
+                    <div className="group-card-name">{groupNameByCode[group.codigo] ?? group.nombre}</div>
 
                     <div className="group-card-stats">
-                      <div className="group-stat-item" title="Investigadores / Miembros">
+                      <div className="group-stat-item" title={t('welcomePage.ui.groupMembers')}>
                         <svg className="group-stat-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         <span className="group-stat-number">{group.miembros ?? 0}</span>
                       </div>
-                      <div className="group-stat-item" title="Publicaciones / Proyectos">
+                      <div className="group-stat-item" title={t('welcomePage.ui.groupPublications')}>
                         <svg className="group-stat-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
@@ -662,7 +677,7 @@ export const WelcomePage: React.FC = () => {
           <button
             className="carousel-control-btn-bottom"
             onClick={() => setActiveIndex((prev) => (prev - 1 + groups.length) % groups.length)}
-            title="Anterior"
+            title={t('welcomePage.ui.previous')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -672,7 +687,7 @@ export const WelcomePage: React.FC = () => {
           <button
             className="carousel-control-btn-bottom"
             onClick={() => setActiveIndex((prev) => (prev + 1) % groups.length)}
-            title="Siguiente"
+            title={t('welcomePage.ui.next')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -725,7 +740,7 @@ export const WelcomePage: React.FC = () => {
                 <span className="news-card-date">
                   {latestCall 
                     ? `${t('news.deadline')} ${latestCall.endDate}` 
-                    : '02 de Julio, 2026'}
+                    : t('news.fallbackDate')}
                 </span>
                 <button onClick={() => navigate('/novedades', { state: { scrollToHash: 'novedades-convocatorias' } })} className="news-card-action-btn">
                   <span>{t('news.view')}</span>
@@ -890,12 +905,20 @@ export const WelcomePage: React.FC = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" onClick={(e) => e.preventDefault()}>
+                  <a
+                    href="/privacy-policy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {t('footer.politicaPrivacidad')}
                   </a>
                 </li>
                 <li>
-                  <a href="#" onClick={(e) => e.preventDefault()}>
+                  <a
+                    href="/privacy-policy?tab=terminos"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {t('footer.terminosUso')}
                   </a>
                 </li>
@@ -914,37 +937,7 @@ export const WelcomePage: React.FC = () => {
             <p>{t('footer.donaASgiDesc')}</p>
             <div className="yape-qr-box">
               <div className="yape-qr-wrapper">
-                <svg className="yape-qr-svg" viewBox="0 0 100 100">
-                  <rect x="0" y="0" width="25" height="25" fill="#1a365d" />
-                  <rect x="5" y="5" width="15" height="15" fill="#ffffff" />
-                  <rect x="8" y="8" width="9" height="9" fill="#1a365d" />
-
-                  <rect x="75" y="0" width="25" height="25" fill="#1a365d" />
-                  <rect x="80" y="5" width="15" height="15" fill="#ffffff" />
-                  <rect x="83" y="8" width="9" height="9" fill="#1a365d" />
-
-                  <rect x="0" y="75" width="25" height="25" fill="#1a365d" />
-                  <rect x="5" y="80" width="15" height="15" fill="#ffffff" />
-                  <rect x="8" y="83" width="9" height="9" fill="#1a365d" />
-
-                  <rect x="35" y="10" width="5" height="15" fill="#1a365d" />
-                  <rect x="45" y="5" width="10" height="5" fill="#1a365d" />
-                  <rect x="60" y="15" width="5" height="20" fill="#1a365d" />
-                  <rect x="10" y="35" width="15" height="5" fill="#1a365d" />
-                  <rect x="5" y="45" width="5" height="15" fill="#1a365d" />
-                  <rect x="20" y="55" width="10" height="5" fill="#1a365d" />
-
-                  <rect x="75" y="35" width="10" height="10" fill="#1a365d" />
-                  <rect x="90" y="45" width="5" height="15" fill="#1a365d" />
-                  <rect x="80" y="65" width="15" height="5" fill="#1a365d" />
-
-                  <rect x="35" y="75" width="5" height="15" fill="#1a365d" />
-                  <rect x="45" y="85" width="15" height="5" fill="#1a365d" />
-                  <rect x="65" y="75" width="5" height="10" fill="#1a365d" />
-
-                  <rect x="35" y="35" width="30" height="30" rx="4" fill="#ffffff" stroke="#1a365d" strokeWidth="2" />
-                </svg>
-                <img src={yapeLogo} alt="Yape Logo" className="yape-center-logo" />
+                <img src={qrYape} alt="Yape QR Code" className="yape-qr-img" />
               </div>
             </div>
             <div className="yape-badge-tag">

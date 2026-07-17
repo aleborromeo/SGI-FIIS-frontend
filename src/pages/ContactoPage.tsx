@@ -140,7 +140,7 @@ export const ContactoPage: React.FC = () => {
               onClick={(e) => e.preventDefault()}
               className="nav-link dropdown-toggle active"
             >
-              <span>{t('nav.contact')}</span>
+              <span>{t('nav.contacto')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">

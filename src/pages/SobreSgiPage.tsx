@@ -171,7 +171,7 @@ export const SobreSgiPage: React.FC = () => {
               onClick={(e) => e.preventDefault()}
               className="nav-link dropdown-toggle active"
             >
-              <span>{t('nav.about')}</span>
+              <span>{t('nav.aboutUs')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -206,7 +206,7 @@ export const SobreSgiPage: React.FC = () => {
               onClick={(e) => { e.preventDefault(); navigate('/contacto'); }}
               className="nav-link dropdown-toggle"
             >
-              <span>{t('nav.contact')}</span>
+              <span>{t('nav.contacto')}</span>
               <ChevronDown size={14} className="dropdown-caret" />
             </a>
             <div className="dropdown-menu">
@@ -215,7 +215,7 @@ export const SobreSgiPage: React.FC = () => {
                 onClick={(e) => { e.preventDefault(); navigate('/contacto', { state: { scrollToHash: 'contacto-form-section' } }); }}
                 className="dropdown-item"
               >
-                {t('nav.email')}
+                {t('nav.correo')}
               </a>
               <a
                 href="#"
@@ -379,7 +379,7 @@ export const SobreSgiPage: React.FC = () => {
                   onClick={(e) => { e.preventDefault(); handleScrollToSection('lineas-investigacion'); }} 
                   className={`sidebar-link ${activeSection === 'lineas-investigacion' ? 'active' : ''}`}
                 >
-                  {t('nav.researchLines')}
+                  {t('nav.lineasInvestigacion')}
                 </a>
               </li>
               <li>
@@ -388,7 +388,7 @@ export const SobreSgiPage: React.FC = () => {
                   onClick={(e) => { e.preventDefault(); handleScrollToSection('grupos-investigacion'); }} 
                   className={`sidebar-link ${activeSection === 'grupos-investigacion' ? 'active' : ''}`}
                 >
-                  {t('nav.researchGroups')}
+                  {t('nav.grupos')}
                 </a>
               </li>
             </ul>

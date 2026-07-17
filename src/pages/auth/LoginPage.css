@@ -231,6 +231,32 @@
   font-size: 0.88rem;
 }
 
+.policies-label span {
+  line-height: 1.35;
+}
+
+.policies-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #0284c7; /* Celeste / Sky Blue */
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.policies-link:hover:not(:disabled) {
+  color: #0369a1;
+}
+
+.policies-link:disabled,
+.policies-link.disabled-link {
+  cursor: not-allowed;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
 .policies-checkbox {
   width: 16px;
   height: 16px;
