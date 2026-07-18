@@ -271,15 +271,13 @@ export const TramiteDetail: React.FC = () => {
               {thesisPlan.idDocumentoActual && (
                 <div>
                   <strong>{t('tramites:detailPage.fields.document', { defaultValue: 'Documento' })}:</strong>{' '}
-                  <a
-                    href={documentService.getViewUrl(thesisPlan.idDocumentoActual)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}
+                  <span
+                    onClick={() => documentService.downloadFile(thesisPlan.idDocumentoActual!, thesisPlan.nombreDocumento)}
+                    style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}
                   >
                     <Download size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
                     {thesisPlan.nombreDocumento || t('tramites:detailPage.viewDocument', { defaultValue: 'Ver documento' })}
-                  </a>
+                  </span>
                 </div>
               )}
             </div>
