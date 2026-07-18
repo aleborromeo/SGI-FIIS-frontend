@@ -31,6 +31,15 @@ export interface DocumentUploadResponse {
 }
 
 export const documentService = {
+  uploadDocument: async (file: File): Promise<DocumentUploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return fetchApi<DocumentUploadResponse>('/api/documents/upload', {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
   list: async (): Promise<Document[]> => {
     const res = await api.get<any[]>('/api/documents');
     return Array.isArray(res) ? res.map(d => ({

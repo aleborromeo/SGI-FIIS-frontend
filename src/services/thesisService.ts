@@ -56,8 +56,8 @@ export const thesisService = {
 
   // Reports
   createReport: (data: Partial<ThesisReport>) => fetchApi<ThesisReport>('/thesis/reports', { method: 'POST', body: JSON.stringify(data) }),
-  getReportById: (id: string) => fetchApi<ThesisReport>(`/thesis/reports/${id}`),
-  getReportByPlanId: (planId: string) => fetchApi<ThesisReport>(`/thesis/reports/plan/${planId}`),
-  approveReport: (id: string) => fetchApi(`/thesis/reports/${id}/approve`, { method: 'PATCH' }),
-  observeReport: (id: string, notes: string) => fetchApi(`/thesis/reports/${id}/observe?observacion=${encodeURIComponent(notes)}`, { method: 'PATCH' }),
+  getReportById: (id: string | number) => fetchApi<ThesisReport>(`/thesis/reports/${id}`),
+  getReportByPlanId: (planId: string | number) => fetchApi<ThesisReport>(`/thesis/reports/plan/${planId}`),
+  approveReport: (id: string | number) => fetchApi(`/thesis/reports/${id}/approve`, { method: 'PATCH' }),
+  observeReport: (id: string | number, notes: string) => fetchApi(`/thesis/reports/${id}/observe?observacion=${encodeURIComponent(notes)}`, { method: 'PATCH' }),
 };

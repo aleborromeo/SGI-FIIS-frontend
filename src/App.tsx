@@ -63,6 +63,7 @@ import { ResearchGroups } from './pages/admin/ResearchGroups.tsx';
 import { NewResearchGroup } from './pages/admin/NewResearchGroup.tsx';
 import { EditResearchGroup } from './pages/admin/EditResearchGroup.tsx';
 import { ResearchGroupDetail } from './pages/admin/ResearchGroupDetail.tsx';
+import { DocumentRepository } from './pages/admin/DocumentRepository.tsx';
 
 // Auditoría
 import { AuditTrail } from './pages/audit/AuditTrail.tsx';
