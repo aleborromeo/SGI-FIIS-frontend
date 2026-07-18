@@ -17,10 +17,13 @@ import {
   getTipoObservacionLabel,
   getTipoTramiteLabel,
 } from '../../utils/tramiteLabels';
-import { ArrowLeft, CheckCircle, FileCheck, PenLine, ThumbsUp, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Download, FileCheck, FileText, PenLine, Send, ThumbsUp, XCircle } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { tramiteService, PENDING_STATE_BY_ROLE } from '../../services/tramiteService';
+import { documentService } from '../../services/documentService';
+import { thesisService, type ThesisPlan } from '../../services/thesisService';
+import { projectService, type Project } from '../../services/projectService';
 import type { EstadoTramite, MovimientoTramite, ObservacionTramite, Tramite } from '../../types/tramites';
 
 const formatFechaHora = (iso: string): string =>
@@ -100,7 +103,10 @@ export const TramiteDetail: React.FC = () => {
   const [showObservarForm, setShowObservarForm] = useState(false);
   const [textoObservacion, setTextoObservacion] = useState('');
   const [observacionError, setObservacionError] = useState<string | undefined>(undefined);
+  const [observationFile, setObservationFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [thesisPlan, setThesisPlan] = useState<ThesisPlan | null>(null);
+  const [project, setProject] = useState<Project | null>(null);
 
   const tramiteId = Number(id);
 
@@ -120,6 +126,16 @@ export const TramiteDetail: React.FC = () => {
         setTramite(dataTramite);
         setMovimientos(dataMovimientos);
         setObservaciones(dataObservaciones);
+        if (dataTramite.thesisReferenceId) {
+          thesisService.getPlanById(String(dataTramite.thesisReferenceId)).then(setThesisPlan).catch(() => {});
+        } else {
+          setThesisPlan(null);
+        }
+        if (dataTramite.projectReferenceId) {
+          projectService.getById(Number(dataTramite.projectReferenceId)).then(setProject).catch(() => {});
+        } else {
+          setProject(null);
+        }
       })
       .catch((err: Error) => setError(err.message || t('tramites:detailPage.errors.loadingTramite')));
   }, [tramiteId, t]);
@@ -148,13 +164,23 @@ export const TramiteDetail: React.FC = () => {
       .finally(() => setSubmitting(false));
   };
 
-  const handleObservar = () => {
+  const handleObservar = async () => {
     if (!textoObservacion.trim()) {
       setObservacionError(t('tramites:detailPage.observationForm.requiredError'));
       return;
     }
+    let attachedDocumentId: number | undefined;
+    if (observationFile) {
+      try {
+        const uploaded = await documentService.upload(observationFile);
+        attachedDocumentId = uploaded.id;
+      } catch {
+        setObservacionError(t('tramites:detailPage.observationForm.uploadError', { defaultValue: 'Error al subir el archivo adjunto.' }));
+        return;
+      }
+    }
     ejecutarAccion(
-      () => tramiteService.flag(tramiteId, textoObservacion.trim()),
+      () => tramiteService.flag(tramiteId, textoObservacion.trim(), attachedDocumentId),
       t('tramites:detailPage.feedback.observed'),
     );
   };
@@ -228,6 +254,49 @@ export const TramiteDetail: React.FC = () => {
             {tramite.observacionActual}
           </Alert>
         </div>
+      )}
+
+      {thesisPlan && (
+        <Card style={{ marginBottom: '24px' }}>
+          <CardContent>
+            <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>{t('tramites:detailPage.thesisPlanData', { defaultValue: 'Datos del Plan de Tesis' })}</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div><strong>{t('tramites:detailPage.fields.title', { defaultValue: 'Título' })}:</strong> {thesisPlan.tituloTesis}</div>
+              {thesisPlan.resumen && <div><strong>{t('tramites:detailPage.fields.abstract', { defaultValue: 'Resumen' })}:</strong> {thesisPlan.resumen}</div>}
+              {thesisPlan.nombreEstudiante && (
+                <div><strong>{t('tramites:detailPage.fields.student', { defaultValue: 'Estudiante' })}:</strong> {thesisPlan.nombreEstudiante} {thesisPlan.apellidoEstudiante || ''}</div>
+              )}
+              {thesisPlan.nombreLinea && <div><strong>{t('tramites:detailPage.fields.researchLine', { defaultValue: 'Línea' })}:</strong> {thesisPlan.nombreLinea}</div>}
+              {thesisPlan.nombreGrupo && <div><strong>{t('tramites:detailPage.fields.researchGroup', { defaultValue: 'Grupo' })}:</strong> {thesisPlan.nombreGrupo}</div>}
+              {thesisPlan.idDocumentoActual && (
+                <div>
+                  <strong>{t('tramites:detailPage.fields.document', { defaultValue: 'Documento' })}:</strong>{' '}
+                  <span
+                    onClick={() => documentService.downloadFile(thesisPlan.idDocumentoActual!, thesisPlan.nombreDocumento)}
+                    style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}
+                  >
+                    <Download size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                    {thesisPlan.nombreDocumento || t('tramites:detailPage.viewDocument', { defaultValue: 'Ver documento' })}
+                  </span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {project && (
+        <Card style={{ marginBottom: '24px' }}>
+          <CardContent>
+            <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>{t('tramites:detailPage.projectData', { defaultValue: 'Datos del Proyecto' })}</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div><strong>{t('tramites:detailPage.fields.title')}:</strong> {project.title || project.code}</div>
+              {project.summary && <div><strong>{t('tramites:detailPage.fields.abstract')}:</strong> {project.summary}</div>}
+              {project.researchLineName && <div><strong>{t('tramites:detailPage.fields.researchLine')}:</strong> {project.researchLineName}</div>}
+              {project.researchGroupCode && <div><strong>{t('tramites:detailPage.fields.researchGroup')}:</strong> {project.researchGroupCode}</div>}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '24px' }}>
@@ -305,6 +374,22 @@ export const TramiteDetail: React.FC = () => {
                         setObservacionError(undefined);
                       }}
                     />
+                    <div>
+                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px', color: 'var(--on-surface)' }}>
+                        {t('tramites:detailPage.observationForm.attachmentLabel', { defaultValue: 'Archivo adjunto (opcional)' })}
+                      </label>
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        onChange={(e) => setObservationFile(e.target.files?.[0] ?? null)}
+                        style={{ display: 'block', width: '100%', padding: '8px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '13px' }}
+                      />
+                      {observationFile && (
+                        <span style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '4px', display: 'block' }}>
+                          {observationFile.name}
+                        </span>
+                      )}
+                    </div>
                     <Button variant="secondary" disabled={submitting} onClick={handleObservar}>
                       {t('tramites:detailPage.buttons.confirmObservation')}
                     </Button>
@@ -324,12 +409,16 @@ export const TramiteDetail: React.FC = () => {
                   </Button>
                 )}
                 {puedeSubsanar && (
-                  <Button
-                    icon={<PenLine size={16} />}
-                    onClick={() => navigate(`/observations/subsanacion?tramiteId=${tramite.id}`)}
-                  >
-                    {t('tramites:detailPage.buttons.subsanar')}
-                  </Button>
+                  <div style={{ borderTop: '1px solid var(--outline-variant)', paddingTop: '16px', textAlign: 'center' }}>
+                    <Link
+                      to={`/observations/subsanacion?tramiteId=${tramite.id}`}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', padding: '8px 0' }}
+                      className="text-label-md"
+                    >
+                      <FileText size={16} />
+                      {t('tramites:detailPage.irSubsanacion', { defaultValue: 'Ir a subsanación' })}
+                    </Link>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -391,7 +480,7 @@ export const TramiteDetail: React.FC = () => {
                 const isLast = index === movimientos.length - 1;
                 return (
                   <TimelineItem
-                    key={mov.id}
+                    key={`mov-${index}`}
                     id={String(mov.id)}
                     title={getAccionLabel(mov.accion)}
                     time={formatFechaHora(mov.fechaMovimiento)}

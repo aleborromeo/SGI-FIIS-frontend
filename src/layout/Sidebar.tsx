@@ -16,6 +16,7 @@ import {
   Megaphone,
   Scale,
   ShieldCheck,
+  CheckCircle,
   FolderOpen,
   ClipboardList,
 } from 'lucide-react';
@@ -50,16 +51,37 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         path: '/dashboard',
       },
       {
+        id: 'notifications',
+        label: t('navigation:notifications', 'Notificaciones'),
+        icon: <Inbox size={20} />,
+        path: '/notifications',
+      },
+      {
         id: 'metrics',
         label: t('navigation:sidebarMetrics'),
         icon: <BarChart2 size={20} />,
         path: '/metrics',
+        roles: ['ADMIN', 'DIRECTOR_INVESTIGACION'],
       },
     ],
   },
   {
     title: t('navigation:groupGestionAcademica'),
     items: [
+      {
+        id: 'convocatorias-activas',
+        label: t('navigation:convocatoriasVigentes'),
+        icon: <Megaphone size={20} />,
+        path: '/convocatorias/activas',
+        roles: ['ESTUDIANTE', 'DOCENTE_INVESTIGADOR'],
+      },
+      {
+        id: 'convocatorias',
+        label: t('navigation:convocatorias'),
+        icon: <Megaphone size={20} />,
+        path: '/convocatorias',
+        roles: ['DIRECTOR_INVESTIGACION'],
+      },
       {
         id: 'proposals',
         label: t('navigation:projects'),
@@ -79,12 +101,21 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         label: t('navigation:sidebarTramites'),
         icon: <Inbox size={20} />,
         path: '/tramites',
+        roles: ['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'DOCENTE_INVESTIGADOR', 'ESTUDIANTE'],
       },
       {
         id: 'observations',
         label: t('navigation:sidebarMyObservations'),
         icon: <AlertCircle size={20} />,
         path: '/observations/panel',
+        roles: ['ESTUDIANTE', 'DOCENTE_INVESTIGADOR'],
+      },
+      {
+        id: 'progress-reports',
+        label: t('navigation:sidebarMyReports'),
+        icon: <FileSearch size={20} />,
+        path: '/progressreports/history',
+        roles: ['DOCENTE_INVESTIGADOR'],
       },
       {
         id: 'decano-review',
@@ -92,13 +123,6 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         icon: <Scale size={20} />,
         path: '/decano/review',
         roles: ['DECANO'],
-      },
-      {
-        id: 'convocatorias',
-        label: t('navigation:convocatorias'),
-        icon: <Megaphone size={20} />,
-        path: '/convocatorias',
-        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
       },
     ],
   },
@@ -117,50 +141,32 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         label: t('navigation:sidebarReviewReports'),
         icon: <FileSearch size={20} />,
         path: '/progressreports/review',
+        roles: ['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION'],
       },
       {
         id: 'director-evaluations',
-        label: t('navigation:sidebarMonitorEvaluations'),
+        label: t('navigation:sidebarDirectorEvaluations'),
         icon: <ClipboardCheck size={20} />,
         path: '/evaluations/director',
-        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
+        roles: ['DIRECTOR_INVESTIGACION'],
+      },
+      {
+        id: 'assign-reviewers',
+        label: t('navigation:sidebarAssignReviewers'),
+        icon: <Users size={20} />,
+        path: '/projects/assign',
+        roles: ['DIRECTOR_INVESTIGACION'],
       },
       {
         id: 'audit',
         label: t('navigation:sidebarTraceability'),
         icon: <ShieldCheck size={20} />,
         path: '/audit',
-        roles: ['ADMIN', 'DIRECTOR_INVESTIGACION'],
+        roles: ['ADMIN', 'DIRECTOR_INVESTIGACION', 'COORDINADOR_GRUPO'],
       },
     ],
   },
-  {
-    title: 'Gestión Documental y Resoluciones',
-    items: [
-      {
-        id: 'documents',
-        label: 'Documentos',
-        icon: <FolderOpen size={20} />,
-        path: '/documents',
-      },
-      {
-        id: 'resolutions',
-        label: 'Resoluciones',
-        icon: <Scale size={20} />,
-        path: '/resolutions',
-        // Mismos roles que acepta GET /api/reports/resolutions (ROLES_VISTA de la bandeja)
-        roles: ['DECANO', 'DIRECTOR_INVESTIGACION', 'COORDINADOR_GRUPO', 'ADMIN'],
-      },
-      {
-        id: 'reports',
-        label: 'Reportes Institucionales',
-        icon: <ClipboardList size={20} />,
-        path: '/reports',
-        // La vista se reserva a Director y Admin (RF-94/RF-95)
-        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
-      },
-    ],
-  },
+
   {
     title: t('navigation:groupAdministracion'),
     roles: ['ADMIN'],
@@ -200,6 +206,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
     if (itemId === 'traceability') {
       return location.pathname.startsWith('/thesis/plan');
+    }
+
+    if (itemId === 'convocatorias-activas') {
+      return location.pathname === '/convocatorias/activas';
     }
 
     return location.pathname === path;
@@ -297,26 +307,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               }
               return true;
             })
-            .map((group) => (
-              <div key={group.title}>
-                <h3 className="sidebar-group-title">
-                  {group.title}
-                </h3>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px',
-                  }}
-                >
-                  {group.items
-                    .filter((item) => {
-                      if (item.roles && currentRole) {
-                        return item.roles.includes(currentRole);
-                      }
-                      return true;
-                    })
-                    .map((item) => {
+            .map((group) => {
+              const visibleItems = group.items.filter((item) => {
+                if (item.roles && currentRole) {
+                  return item.roles.includes(currentRole);
+                }
+                return true;
+              });
+
+              if (visibleItems.length === 0) {
+                return null;
+              }
+
+              return (
+                <div key={group.title}>
+                  <h3 className="sidebar-group-title">
+                    {group.title}
+                  </h3>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                    }}
+                  >
+                    {visibleItems.map((item) => {
                       const isActive = isItemActive(item.id, item.path);
 
                       return (
@@ -331,9 +346,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                         </Link>
                       );
                     })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
         </nav>
 
         <div className="sidebar-user-footer">

@@ -20,6 +20,7 @@ import {
   observationService,
   type Observation,
 } from '../../services/observationService';
+import { documentService } from '../../services/documentService';
 
 function getStatusLabel(status?: string, t?: (key: string) => string): string {
   if (!status) return t ? t('panel.statuses.pending') : 'Pendiente';
@@ -74,6 +75,7 @@ export const ObservationsPanel: React.FC = () => {
   const procedureId = queryParams.get('procedureId') || '1';
 
   const [justification, setJustification] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [observations, setObservations] = useState<Observation[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -131,16 +133,23 @@ export const ObservationsPanel: React.FC = () => {
 
     setSubmitting(true);
     try {
+      let attachedDocumentId: number | undefined;
+      if (selectedFile) {
+        const uploaded = await documentService.upload(selectedFile);
+        attachedDocumentId = uploaded.id;
+      }
       for (const obs of pendingObs) {
         const userStr = localStorage.getItem('sgi_user');
         const user = userStr ? JSON.parse(userStr) : { id: 1 };
         await observationService.addRemedy(obs.id, {
           applicantId: user.id,
-          description: justification
+          description: justification,
+          attachedDocumentId,
         });
       }
       toast.success(t('panel.toast.remedySuccess'));
       setJustification('');
+      setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -393,7 +402,7 @@ export const ObservationsPanel: React.FC = () => {
                           marginBottom: observation.remedy ? '14px' : 0,
                         }}
                       >
-                        {observation.content || t('panel.noDetail')}
+                        {observation.description || t('panel.noDetail')}
                       </p>
 
                       {observation.remedy && (
@@ -466,6 +475,7 @@ export const ObservationsPanel: React.FC = () => {
                   style={{ display: 'none' }}
                   accept=".pdf,.doc,.docx"
                   disabled={!hasPendingObservations}
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
                 />
 
                 <button

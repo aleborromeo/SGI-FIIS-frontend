@@ -354,7 +354,8 @@
     "action": {
       "forward": "Forward",
       "approve": "Approve",
-      "observe": "Observe"
+      "observe": "Observe",
+      "reject": "Reject"
     },
     "stats": {
       "totalInTray": "Total in Tray",

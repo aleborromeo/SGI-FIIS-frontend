@@ -173,7 +173,7 @@ export const ProjectMonitoring: React.FC = () => {
   const parsedSummary = useMemo(() => {
     if (!project?.summary) return null;
     const summaryText = project.summary;
-    
+
     const headers = [
       { key: 'fif', pattern: /\[FIF:\s*(SI|NO|SÍ)\]/i },
       { key: 'resumen', label: t('projects:monitoring.summaryLabels.resumen'), pattern: /RESUMEN:/ },
@@ -184,7 +184,7 @@ export const ProjectMonitoring: React.FC = () => {
     ];
 
     const matches: { key: string; label?: string; index: number; length: number }[] = [];
-    
+
     const fifMatch = /\[FIF:\s*(SI|NO|SÍ)\]/i.exec(summaryText);
     let fifVal = '';
     if (fifMatch) {
@@ -202,7 +202,7 @@ export const ProjectMonitoring: React.FC = () => {
     matches.sort((a, b) => a.index - b.index);
 
     const sections: { label: string; content: string }[] = [];
-    
+
     if (matches.length === 0) {
       sections.push({ label: t('projects:monitoring.summaryLabels.resumen'), content: summaryText });
     } else {
@@ -304,7 +304,7 @@ export const ProjectMonitoring: React.FC = () => {
     if (r) {
       if (r.status === 'OBSERVADO' && currentRole === 'DOCENTE_INVESTIGADOR') {
         return (
-          <Button 
+          <Button
             variant="primary"
             onClick={() => navigate(`/progressreports/amend/${r.id}`)}
           >
@@ -313,7 +313,7 @@ export const ProjectMonitoring: React.FC = () => {
         );
       }
       return (
-        <Button 
+        <Button
           variant="secondary"
           onClick={() => {
             if (r.attachedDocumentId) {
@@ -328,7 +328,7 @@ export const ProjectMonitoring: React.FC = () => {
 
     if (currentRole === 'DOCENTE_INVESTIGADOR') {
       return (
-        <Button 
+        <Button
           variant="primary"
           onClick={() => navigate(`/progressreports/new?projectId=${id}&period=${period.name}`)}
         >
@@ -718,7 +718,7 @@ export const ProjectMonitoring: React.FC = () => {
                         <TableCell>{period.deadline}</TableCell>
                         <TableCell>
                           {r?.attachedDocumentId ? (
-                            <button 
+                            <button
                               type="button"
                               style={{ background: 'none', border: 'none', padding: 0, color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' }}
                               onClick={() => documentService.downloadFile(r.attachedDocumentId, r.fileName)}
@@ -757,89 +757,228 @@ export const ProjectMonitoring: React.FC = () => {
           </Card>
 
           <Card style={{ marginTop: '24px' }}>
-            <CardHeader>
-              <h3 className="text-title-lg">{t('projects:monitoring.documentsTitle')}</h3>
+            <CardHeader style={{ borderBottom: '1px solid var(--outline-variant)', padding: '18px 24px' }}>
+              <h3 className="text-title-lg" style={{ margin: 0, fontWeight: 700 }}>{t('projects:monitoring.documentsTitle')}</h3>
             </CardHeader>
-            <CardContent>
-              <div className="section-grid-asymmetric" style={{ gap: '24px' }}>
-                
-                {/* Lista de Documentos */}
-                <div>
-                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>{t('projects:monitoring.documentHistory')}</h4>
-                  <TableContainer>
-                    <TableHead>
-                      <TableRow>
-                        <TableHeader>{t('projects:monitoring.docTable.file')}</TableHeader>
-                        <TableHeader>{t('projects:monitoring.docTable.uploadedBy')}</TableHeader>
-                        <TableHeader>{t('projects:monitoring.docTable.date')}</TableHeader>
-                        <TableHeader style={{ textAlign: 'right' }}>{t('projects:monitoring.docTable.download')}</TableHeader>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell><strong>{project.documentId ? documentName : 'Proyecto_inicial.pdf'}</strong></TableCell>
-                        <TableCell>{t('projects:monitoring.investigator')}</TableCell>
-                        <TableCell>{formatDate(project.startDate)}</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}>
-                          <Button 
-                            variant="secondary"
-                            onClick={() => {
-                              if (project.documentId) {
-                                documentService.downloadFile(project.documentId, documentName);
-                              } else {
-                                toast.showError(t('projects:monitoring.noInitialFile'));
-                              }
-                            }}
-                          >
-                            Descargar
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                      {['APPROVED', 'EN_EJECUCION', 'EN_EJECUCIÓN', 'FINALIZADO', 'COMPLETED'].includes(String(project.status).toUpperCase()) && (
-                        <TableRow>
-                          <TableCell><strong>Resolución_R.D._045.pdf</strong></TableCell>
-                          <TableCell>{t('projects:monitoring.deanOffice')}</TableCell>
-                          <TableCell>{formatDate(project.startDate)}</TableCell>
-                          <TableCell style={{ textAlign: 'right' }}>
-                            <Button 
-                              variant="secondary"
-                              onClick={() => {
-                                toast.showSuccess(t('projects:monitoring.downloadingResolution'));
-                                documentService.downloadFile(project.documentId || 1, 'Resolución_R.D._045.pdf');
-                              }}
-                            >
-                              Descargar
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </TableContainer>
+            <CardContent style={{ padding: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+
+                {/* Historial Documental */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--primary)', marginBottom: '4px', borderBottom: '1px solid var(--outline-variant)', paddingBottom: '8px' }}>
+                    {t('projects:monitoring.documentHistory')}
+                  </h4>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {/* Document 1: Initial Proposal */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '14px 16px',
+                      borderRadius: '12px',
+                      backgroundColor: 'var(--surface-container-lowest)',
+                      border: '1px solid var(--outline-variant)',
+                      transition: 'all 0.2s',
+                      boxShadow: 'var(--shadow-sm)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '8px',
+                          backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#ef4444',
+                          flexShrink: 0
+                        }}>
+                          <FileText size={20} />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {project.documentId ? documentName : 'Proyecto_inicial.pdf'}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>{t('projects:monitoring.investigator')}</span>
+                            <span style={{ color: 'var(--outline-variant)' }}>•</span>
+                            <span>{formatDate(project.startDate)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          if (project.documentId) {
+                            documentService.downloadFile(project.documentId, documentName);
+                          } else {
+                            toast.showError(t('projects:monitoring.noInitialFile'));
+                          }
+                        }}
+                        style={{ padding: '6px 12px', fontSize: '12.5px', borderRadius: '8px', flexShrink: 0 }}
+                      >
+                        Descargar
+                      </Button>
+                    </div>
+
+                    {/* Document 2: Resolution (conditional) */}
+                    {['APPROVED', 'EN_EJECUCION', 'EN_EJECUCIÓN', 'FINALIZADO', 'COMPLETED'].includes(String(project.status).toUpperCase()) && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '14px 16px',
+                        borderRadius: '12px',
+                        backgroundColor: 'var(--surface-container-lowest)',
+                        border: '1px solid var(--outline-variant)',
+                        transition: 'all 0.2s',
+                        boxShadow: 'var(--shadow-sm)'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
+                          <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '8px',
+                            backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#3b82f6',
+                            flexShrink: 0
+                          }}>
+                            <FileText size={20} />
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              Resolución_R.D._045.pdf
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span>{t('projects:monitoring.deanOffice')}</span>
+                              <span style={{ color: 'var(--outline-variant)' }}>•</span>
+                              <span>{formatDate(project.startDate)}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          variant="secondary"
+                          onClick={() => {
+                            toast.showSuccess(t('projects:monitoring.downloadingResolution'));
+                            documentService.downloadFile(project.documentId || 1, 'Resolución_R.D._045.pdf');
+                          }}
+                          style={{ padding: '6px 12px', fontSize: '12.5px', borderRadius: '8px', flexShrink: 0 }}
+                        >
+                          Descargar
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Trazabilidad lineal */}
-                <div>
-                  <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>{t('projects:monitoring.signatureTracking')}</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderLeft: '2px solid var(--outline-variant)', paddingLeft: '16px', marginLeft: '6px', overflowX: 'hidden' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--primary)', marginBottom: '4px', borderBottom: '1px solid var(--outline-variant)', paddingBottom: '8px' }}>
+                    {t('projects:monitoring.signatureTracking')}
+                  </h4>
+                  <div style={{
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '24px',
+                    paddingLeft: '24px',
+                    marginLeft: '12px',
+                    borderLeft: '2px dashed var(--outline-variant)',
+                  }}>
+                    {/* Paso 1 */}
                     <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
-                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.proposalSent')}</strong>
-                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>08/06/2026 10:25 - Docente Investigador</div>
+                      <div style={{
+                        position: 'absolute',
+                        left: '-31px',
+                        top: '2px',
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        backgroundColor: '#22c55e',
+                        border: '3px solid var(--surface)',
+                        boxShadow: '0 0 0 2px rgba(34, 197, 94, 0.2)'
+                      }} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--on-surface)' }}>
+                          {t('projects:monitoring.traceSteps.proposalSent')}
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--on-surface-variant)', fontWeight: 500 }}>
+                          08/06/2026 10:25 — Docente Investigador
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Paso 2 */}
                     <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
-                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.approvedByCoordinator')}</strong>
-                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>09/06/2026 15:40 - Coordinador de Grupo</div>
+                      <div style={{
+                        position: 'absolute',
+                        left: '-31px',
+                        top: '2px',
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        backgroundColor: '#22c55e',
+                        border: '3px solid var(--surface)',
+                        boxShadow: '0 0 0 2px rgba(34, 197, 94, 0.2)'
+                      }} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--on-surface)' }}>
+                          {t('projects:monitoring.traceSteps.approvedByCoordinator')}
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--on-surface-variant)', fontWeight: 500 }}>
+                          09/06/2026 15:40 — Coordinador de Grupo
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Paso 3 */}
                     <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
-                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.approvedByDirection')}</strong>
-                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>12/06/2026 11:10 - Director de Investigación</div>
+                      <div style={{
+                        position: 'absolute',
+                        left: '-31px',
+                        top: '2px',
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        backgroundColor: '#22c55e',
+                        border: '3px solid var(--surface)',
+                        boxShadow: '0 0 0 2px rgba(34, 197, 94, 0.2)'
+                      }} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--on-surface)' }}>
+                          {t('projects:monitoring.traceSteps.approvedByDirection')}
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--on-surface-variant)', fontWeight: 500 }}>
+                          12/06/2026 11:10 — Director de Investigación
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Paso 4 */}
                     <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '-22px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--primary)' }}></span>
-                      <strong style={{ fontSize: '13px' }}>{t('projects:monitoring.traceSteps.resolutionIssued')}</strong>
-                      <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)' }}>20/06/2026 09:30 - Decanato (Firma RD-045)</div>
+                      <div style={{
+                        position: 'absolute',
+                        left: '-31px',
+                        top: '2px',
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--primary)',
+                        border: '3px solid var(--surface)',
+                        boxShadow: '0 0 0 2px rgba(26, 54, 93, 0.2)'
+                      }} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--primary)' }}>
+                          {t('projects:monitoring.traceSteps.resolutionIssued')}
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--on-surface-variant)', fontWeight: 600 }}>
+                          20/06/2026 09:30 — Decanato (Firma RD-045)
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -916,7 +1055,7 @@ export const ProjectMonitoring: React.FC = () => {
                         <button
                           type="button"
                           style={{ background: 'none', border: 'none', padding: 0, color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' }}
-                           onClick={() => documentService.downloadFile(project.documentId!, documentName)}
+                          onClick={() => documentService.downloadFile(project.documentId!, documentName)}
                         >
                           {documentName}
                         </button>

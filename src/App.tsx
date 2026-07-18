@@ -38,6 +38,7 @@ import { ConvocatoriasList } from './pages/convocatorias/ConvocatoriasList.tsx';
 import { NewConvocatoria } from './pages/convocatorias/NewConvocatoria.tsx';
 import { EditConvocatoria } from './pages/convocatorias/EditConvocatoria.tsx';
 
+import { NotificationsPage } from './pages/notifications/NotificationsPage.tsx';
 import { ConvocatoriasDashboard } from './modules/convocatorias/pages/ConvocatoriasDashboard.tsx';
 import { NewProposalForm } from './modules/convocatorias/pages/NewProposalForm.tsx';
 import { TramitesList } from './pages/tramites/TramitesList.tsx';
@@ -50,24 +51,24 @@ import { TramiteDetail } from './pages/tramites/TramiteDetail.tsx';
 import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
 
 // Views del módulo Gestión Documental y Resoluciones
-import { DocumentsPanel } from './pages/documents/DocumentsPanel.tsx';
-import { ResolutionsInbox } from './pages/resolutions/ResolutionsInbox.tsx';
-import { IssueResolution } from './pages/resolutions/IssueResolution.tsx';
-import { ReportsInbox } from './pages/reports/ReportsInbox.tsx';
+import { DocumentsPage } from './pages/documents/DocumentsPage.tsx';
+import { ResolutionsPage } from './pages/resolutions/ResolutionsPage.tsx';
 
 // Admin Views
 import { CreateUser } from './pages/users/CreateUser';
 import { UserManagement } from './pages/admin/UserManagement.tsx';
-import { DocumentRepository } from './pages/admin/DocumentRepository.tsx';
 import { ResearchLines } from './pages/admin/ResearchLines.tsx';
 import { NewResearchLine } from './pages/admin/NewResearchLine.tsx';
 import { ResearchLineDetail } from './pages/admin/ResearchLineDetail.tsx';
 import { ResearchGroups } from './pages/admin/ResearchGroups.tsx';
 import { NewResearchGroup } from './pages/admin/NewResearchGroup.tsx';
+import { EditResearchGroup } from './pages/admin/EditResearchGroup.tsx';
 import { ResearchGroupDetail } from './pages/admin/ResearchGroupDetail.tsx';
+import { DocumentRepository } from './pages/admin/DocumentRepository.tsx';
 
 // Auditoría
 import { AuditTrail } from './pages/audit/AuditTrail.tsx';
+import RoleProtectedRoute from './components/RoleProtectedRoute.tsx';
 
 const queryClient = new QueryClient();
 
@@ -166,62 +167,226 @@ function App() {
                 {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
                 <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
                   <Route path="/dashboard" element={<RoleDashboards />} />
-                  <Route path="/metrics" element={<MetricsReportsPage />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/metrics" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION']}>
+                      <MetricsReportsPage />
+                    </RoleProtectedRoute>
+                  } />
 
                   {/* Tesis */}
-                  <Route path="/thesis/plans" element={<ThesisPlansList />} />
-                  <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
-                  <Route path="/thesis/new" element={<NewThesisPlan />} />
-                  <Route path="/thesis/report/new/:planId" element={<NewThesisReport />} />
+                  <Route path="/thesis/plans" element={
+                    <RoleProtectedRoute allowedRoles={['ESTUDIANTE', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO']}>
+                      <ThesisPlansList />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/thesis/plan/:id" element={
+                    <RoleProtectedRoute allowedRoles={['ESTUDIANTE', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO']}>
+                      <ThesisTraceability />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/thesis/new" element={
+                    <RoleProtectedRoute allowedRoles={['ESTUDIANTE']}>
+                      <NewThesisPlan />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/thesis/report/new/:planId" element={
+                    <RoleProtectedRoute allowedRoles={['ESTUDIANTE']}>
+                      <NewThesisReport />
+                    </RoleProtectedRoute>
+                  } />
 
                   {/* Proyectos */}
-                  <Route path="/projects" element={<ProjectsList />} />
-                  <Route path="/projects/new" element={<NewProposalForm />} />
-                  <Route path="/projects/assign" element={<AssignReviewers />} />
-                  <Route path="/projects/evaluate" element={<EvaluationForm />} />
-                  <Route path="/projects/:id" element={<ProjectMonitoring />} />
-                  <Route path="/projects/audit" element={<ProjectAudit />} />
+                  <Route path="/projects" element={
+                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'EVALUADOR']}>
+                      <ProjectsList />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/projects/new" element={
+                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'ESTUDIANTE']}>
+                      <NewProposalForm />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/projects/assign" element={
+                    <RoleProtectedRoute allowedRoles={['DIRECTOR_INVESTIGACION']}>
+                      <AssignReviewers />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/projects/evaluate" element={
+                    <RoleProtectedRoute allowedRoles={['EVALUADOR']}>
+                      <EvaluationForm />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/projects/:id" element={
+                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'EVALUADOR']}>
+                      <ProjectMonitoring />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/projects/audit" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION', 'DECANO']}>
+                      <ProjectAudit />
+                    </RoleProtectedRoute>
+                  } />
 
                   {/* Convocatorias */}
-                  <Route path="/convocatorias" element={<ConvocatoriasList />} />
-                  <Route path="/convocatorias/activas" element={<ConvocatoriasDashboard />} />
-                  <Route path="/convocatorias/new" element={<NewConvocatoria />} />
-                  <Route path="/convocatorias/:id/edit" element={<EditConvocatoria />} />
+                  <Route path="/convocatorias" element={
+                    <RoleProtectedRoute allowedRoles={['DIRECTOR_INVESTIGACION']}>
+                      <ConvocatoriasList />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/convocatorias/activas" element={
+                    <RoleProtectedRoute allowedRoles={['ESTUDIANTE', 'DOCENTE_INVESTIGADOR']}>
+                      <ConvocatoriasDashboard />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/convocatorias/new" element={
+                    <RoleProtectedRoute allowedRoles={['DIRECTOR_INVESTIGACION']}>
+                      <NewConvocatoria />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/convocatorias/:id/edit" element={
+                    <RoleProtectedRoute allowedRoles={['DIRECTOR_INVESTIGACION']}>
+                      <EditConvocatoria />
+                    </RoleProtectedRoute>
+                  } />
 
                   {/* Evaluaciones y observaciones */}
-                  <Route path="/evaluations/my-evaluations" element={<MyEvaluations />} />
-                  <Route path="/evaluations/director" element={<DirectorEvaluations />} />
-                  <Route path="/observations/panel" element={<ObservationsPanel />} />
-                  <Route path="/progressreports/review" element={<ReviewProgressReports />} />
-                  <Route path="/progressreports/history" element={<ProgressReportHistory />} />
-                  <Route path="/progressreports/new" element={<NewProgressReport />} />
-                  <Route path="/progressreports/amend/:id" element={<AmendProgressReport />} />
+                  <Route path="/evaluations/my-evaluations" element={
+                    <RoleProtectedRoute allowedRoles={['EVALUADOR']}>
+                      <MyEvaluations />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/evaluations/director" element={
+                    <RoleProtectedRoute allowedRoles={['DIRECTOR_INVESTIGACION']}>
+                      <DirectorEvaluations />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/observations/panel" element={
+                    <RoleProtectedRoute allowedRoles={['ESTUDIANTE', 'DOCENTE_INVESTIGADOR']}>
+                      <ObservationsPanel />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/progressreports/review" element={
+                    <RoleProtectedRoute allowedRoles={['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION']}>
+                      <ReviewProgressReports />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/progressreports/history" element={
+                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR']}>
+                      <ProgressReportHistory />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/progressreports/new" element={
+                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'ESTUDIANTE']}>
+                      <NewProgressReport />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/progressreports/amend/:id" element={
+                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'ESTUDIANTE']}>
+                      <AmendProgressReport />
+                    </RoleProtectedRoute>
+                  } />
 
                   {/* Trámites y Resoluciones Decanato */}
-                  <Route path="/tramites" element={<TramitesInbox />} />
-                  <Route path="/tramites/:id" element={<TramiteDetail />} />
-                  <Route path="/tramites/legacy" element={<TramitesList />} />
-                  <Route path="/observations/subsanacion" element={<SubsanacionPanel />} />
-                  <Route path="/decano/review" element={<DecanoReview />} />
+                  <Route path="/tramites" element={
+                    <RoleProtectedRoute allowedRoles={['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'DOCENTE_INVESTIGADOR', 'ESTUDIANTE']}>
+                      <TramitesInbox />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/tramites/:id" element={
+                    <RoleProtectedRoute allowedRoles={['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'DOCENTE_INVESTIGADOR', 'ESTUDIANTE']}>
+                      <TramiteDetail />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/tramites/legacy" element={
+                    <RoleProtectedRoute allowedRoles={['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO']}>
+                      <TramitesList />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/observations/subsanacion" element={
+                    <RoleProtectedRoute allowedRoles={['ESTUDIANTE', 'DOCENTE_INVESTIGADOR']}>
+                      <SubsanacionPanel />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/decano/review" element={
+                    <RoleProtectedRoute allowedRoles={['DECANO']}>
+                      <DecanoReview />
+                    </RoleProtectedRoute>
+                  } />
 
                   {/* Gestión Documental y Resoluciones */}
-                  <Route path="/resolutions" element={<ResolutionsInbox />} />
-                  <Route path="/resolutions/new" element={<IssueResolution />} />
-                  <Route path="/resolutions/new-legacy" element={<NewResolutionForm />} />
-                  <Route path="/reports" element={<ReportsInbox />} />
+                  <Route path="/resolutions" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION', 'DECANO']}>
+                      <ResolutionsPage />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/resolutions/new-legacy" element={
+                    <RoleProtectedRoute allowedRoles={['DECANO']}>
+                      <NewResolutionForm />
+                    </RoleProtectedRoute>
+                  } />
 
                   {/* Administración */}
-                  <Route path="/users/create" element={<CreateUser />} />
-                  <Route path="/users" element={<UserManagement />} />
-                  <Route path="/documents" element={<DocumentsPanel />} />
-                  <Route path="/admin/documents" element={<DocumentRepository />} />
-                  <Route path="/audit" element={<AuditTrail />} />
-                  <Route path="/lines" element={<ResearchLines />} />
-                  <Route path="/lines/new" element={<NewResearchLine />} />
-                  <Route path="/lines/:id" element={<ResearchLineDetail />} />
-                  <Route path="/groups" element={<ResearchGroups />} />
-                  <Route path="/groups/new" element={<NewResearchGroup />} />
-                  <Route path="/groups/:id" element={<ResearchGroupDetail />} />
+                  <Route path="/users/create" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <CreateUser />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/users" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <UserManagement />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/documents" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION', 'COORDINADOR_GRUPO', 'DECANO', 'DOCENTE_INVESTIGADOR', 'ESTUDIANTE', 'EVALUADOR']}>
+                      <DocumentsPage />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/admin/documents" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <DocumentRepository />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/audit" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION', 'COORDINADOR_GRUPO', 'DECANO']}>
+                      <AuditTrail />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/lines" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <ResearchLines />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/lines/new" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <NewResearchLine />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/lines/:id" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <ResearchLineDetail />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/groups" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <ResearchGroups />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/groups/new" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <NewResearchGroup />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/groups/:id" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <ResearchGroupDetail />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/groups/:id/edit" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <EditResearchGroup />
+                    </RoleProtectedRoute>
+                  } />
 
                   {/* Rutas no implementadas dentro del Dashboard redirigen silenciosamente sin parpadear */}
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -2,9 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
-  Scale,
   PenTool,
-  X,
+  Scale,
 } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -32,7 +31,6 @@ export const DecanoReview: React.FC = () => {
   const [tramites, setTramites] = useState<Tramite[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTramite, setSelectedTramite] = useState<Tramite | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const loadTramites = async () => {
@@ -56,23 +54,18 @@ export const DecanoReview: React.FC = () => {
     const resolutionNum = window.prompt(t('decanoReview.prompt.resolutionNumber'));
     if (resolutionNum === null) return;
     if (!resolutionNum.trim()) {
-      toast.error(t('decanoReview.toast.resolutionNumberRequired'));
+      toast.error(t('decanoReview.prompt.resolutionNumberRequired'));
       return;
     }
     const asunto = window.prompt(t('decanoReview.prompt.resolutionSubject'));
     if (asunto === null) return;
 
-    try {
-      setSubmitting(true);
-      await tramiteService.registerResolution(tramite.id);
-      toast.success(t('decanoReview.toast.approved', { code: tramite.codigoTramite, resolution: resolutionNum }));
-      setSelectedTramite(null);
-      await loadTramites();
-    } catch (err: any) {
-      toast.error(err.message || t('decanoReview.toast.approveError'));
-    } finally {
-      setSubmitting(false);
-    }
+    const params = new URLSearchParams({
+      procedureId: String(tramite.id),
+      number: resolutionNum.trim(),
+      title: asunto.trim() || tramite.tituloReferencia,
+    });
+    navigate(`/resolutions/new-legacy?${params.toString()}`);
   };
 
   const handleObserve = async (tramite: Tramite) => {
@@ -87,7 +80,6 @@ export const DecanoReview: React.FC = () => {
       setSubmitting(true);
       await tramiteService.flag(tramite.id, obs.trim());
       toast.success(t('decanoReview.toast.observed', { code: tramite.codigoTramite }));
-      setSelectedTramite(null);
       await loadTramites();
     } catch (err: any) {
       toast.error(err.message || t('decanoReview.toast.observeError'));
@@ -103,7 +95,6 @@ export const DecanoReview: React.FC = () => {
       setSubmitting(true);
       await tramiteService.reject(tramite.id);
       toast.success(t('decanoReview.toast.rejected', { code: tramite.codigoTramite }));
-      setSelectedTramite(null);
       await loadTramites();
     } catch (err: any) {
       toast.error(err.message || t('decanoReview.toast.rejectError'));

@@ -2,12 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FileText,
-  Calendar,
-  DollarSign,
-  ShieldAlert,
   ArrowLeft,
   Save,
-  CheckCircle,
 } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -15,23 +11,23 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { useToast } from '../../context/ToastContext';
 import { useTranslation } from 'react-i18next';
+import { resolutionService } from '../../services/resolutionService';
 
 export const NewResolutionForm: React.FC = () => {
   const { t } = useTranslation('resolutions');
   const navigate = useNavigate();
   const toast = useToast();
   const [searchParams] = useSearchParams();
-  const projectId = searchParams.get('projectId') || '1';
-  const projectTitle = searchParams.get('title') || 'Sistema de detección automática de enfermedades en hojas de banana usando CNN';
+  const procedureId = Number(searchParams.get('procedureId'));
+  const presetNumber = searchParams.get('number') || '';
+  const presetTitle = searchParams.get('title') || '';
 
-  // Resolution details states
-  const [resNumber, setResNumber] = useState('R.D. N.° 045-2026-FIIS');
+  const [resNumber, setResNumber] = useState(presetNumber);
   const [emissionDate, setEmissionDate] = useState(new Date().toISOString().split('T')[0]);
-  const [resTitle, setResTitle] = useState(`Aprobar el proyecto de investigación titulado "${projectTitle}"`);
+  const [resTitle, setResTitle] = useState(presetTitle);
   const [issuer, setIssuer] = useState('Decanato FIIS');
   const [fileSelected, setFileSelected] = useState<File | null>(null);
 
-  // Execution states
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState('');
   const [duration, setDuration] = useState('12');
@@ -41,20 +37,15 @@ export const NewResolutionForm: React.FC = () => {
 
   const [submitting, setSubmitting] = useState(false);
 
-  // Auto calculate duration in months when dates change
   useEffect(() => {
     if (!startDate || !endDate) return;
     const start = new Date(startDate);
     const end = new Date(endDate);
     if (isNaN(start.getTime()) || isNaN(end.getTime())) return;
-
     const diffMonths = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-    if (diffMonths > 0) {
-      setDuration(String(diffMonths));
-    }
+    if (diffMonths > 0) setDuration(String(diffMonths));
   }, [startDate, endDate]);
 
-  // Set default end date to start date + 12 months on load
   useEffect(() => {
     if (!startDate) return;
     const start = new Date(startDate);
@@ -64,18 +55,35 @@ export const NewResolutionForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!procedureId) {
+      toast.error(t('new.error.saveFailed'));
+      return;
+    }
     setSubmitting(true);
-
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      if (!fileSelected) {
+        toast.error(t('new.error.saveFailed'));
+        setSubmitting(false);
+        return;
+      }
+      await resolutionService.issueResolution({
+        numeroResolucion: resNumber,
+        fechaEmision: emissionDate,
+        asunto: resTitle,
+        idTramite: procedureId,
+        file: fileSelected,
+      });
       toast.success(t('new.toast.success'));
-      navigate('/projects');
-    }, 1000);
+      navigate('/decano/review');
+    } catch (err: any) {
+      toast.error(err.message || t('new.error.saveFailed'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className="animate-fade-in" style={{ padding: '28px', maxWidth: '900px', margin: '0 auto' }}>
-      {/* Return button */}
       <button
         onClick={() => navigate('/decano/review')}
         style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', fontWeight: 600, marginBottom: '20px' }}
@@ -83,7 +91,6 @@ export const NewResolutionForm: React.FC = () => {
         <ArrowLeft size={16} /> {t('new.backToDecanoReview')}
       </button>
 
-      {/* Header */}
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--primary)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -96,15 +103,19 @@ export const NewResolutionForm: React.FC = () => {
         </p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px 20px', background: '#eef5ff', borderRadius: '12px', borderLeft: '4px solid var(--primary)', marginBottom: '24px' }}>
-        <strong style={{ color: '#1e3a8a', fontSize: '14px' }}>{t('new.referenceProject')}</strong>
-        <span style={{ fontSize: '14px', color: '#1e40af' }}>{projectTitle} (ID: EXP-{projectId})</span>
-      </div>
+      {procedureId ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px 20px', background: '#eef5ff', borderRadius: '12px', borderLeft: '4px solid var(--primary)', marginBottom: '24px' }}>
+          <strong style={{ color: '#1e3a8a', fontSize: '14px' }}>{t('new.referenceProject')}</strong>
+          <span style={{ fontSize: '14px', color: '#1e40af' }}>Trámite ID: {procedureId}</span>
+        </div>
+      ) : (
+        <div style={{ padding: '14px 20px', background: '#fef3cd', borderRadius: '12px', borderLeft: '4px solid #f59e0b', marginBottom: '24px' }}>
+          <span style={{ fontSize: '14px', color: '#92400e' }}>{t('new.error.saveFailed')}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
-          {/* Card 1: Resolution Details */}
           <Card>
             <CardHeader>
               <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--primary)' }}>
@@ -113,7 +124,6 @@ export const NewResolutionForm: React.FC = () => {
             </CardHeader>
             <CardContent style={{ padding: '20px' }}>
               <div className="form-row" style={{ gap: '20px' }}>
-                
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.resolutionNumber')} *
@@ -125,7 +135,6 @@ export const NewResolutionForm: React.FC = () => {
                     onChange={(e) => setResNumber(e.target.value)}
                   />
                 </div>
-
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.emissionDate')} *
@@ -137,7 +146,6 @@ export const NewResolutionForm: React.FC = () => {
                     onChange={(e) => setEmissionDate(e.target.value)}
                   />
                 </div>
-
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.resolutionTitle')} *
@@ -149,7 +157,6 @@ export const NewResolutionForm: React.FC = () => {
                     onChange={(e) => setResTitle(e.target.value)}
                   />
                 </div>
-
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.issuingBody')}
@@ -159,7 +166,6 @@ export const NewResolutionForm: React.FC = () => {
                     onChange={(e) => setIssuer(e.target.value)}
                   />
                 </div>
-
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.attachPdf')}
@@ -171,12 +177,10 @@ export const NewResolutionForm: React.FC = () => {
                     style={{ display: 'block', width: '100%', padding: '8px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)' }}
                   />
                 </div>
-
               </div>
             </CardContent>
           </Card>
 
-          {/* Card 2: Project Execution Details */}
           <Card>
             <CardHeader>
               <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--primary)' }}>
@@ -185,7 +189,6 @@ export const NewResolutionForm: React.FC = () => {
             </CardHeader>
             <CardContent style={{ padding: '20px' }}>
               <div className="form-row-3" style={{ gap: '20px' }}>
-                
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.executionStart')} *
@@ -197,7 +200,6 @@ export const NewResolutionForm: React.FC = () => {
                     onChange={(e) => setStartDate(e.target.value)}
                   />
                 </div>
-
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.executionEnd')} *
@@ -209,18 +211,12 @@ export const NewResolutionForm: React.FC = () => {
                     onChange={(e) => setEndDate(e.target.value)}
                   />
                 </div>
-
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.estimatedDuration')}
                   </label>
-                  <Input
-                    disabled
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                  />
+                  <Input disabled value={duration} onChange={(e) => setDuration(e.target.value)} />
                 </div>
-
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.receivesFif')} *
@@ -230,11 +226,10 @@ export const NewResolutionForm: React.FC = () => {
                     onChange={(e) => setReceivesFif(e.target.value)}
                     options={[
                       { value: 'SI', label: t('new.form.yes') },
-                      { value: 'NO', label: t('new.form.no') }
+                      { value: 'NO', label: t('new.form.no') },
                     ]}
                   />
                 </div>
-
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.fifStatus')}
@@ -246,11 +241,10 @@ export const NewResolutionForm: React.FC = () => {
                     options={[
                       { value: 'ACTIVO', label: t('new.form.fifActive') },
                       { value: 'SUSPENDIDO', label: t('new.form.fifSuspended') },
-                      { value: 'NO_APLICA', label: t('new.form.fifNotApplicable') }
+                      { value: 'NO_APLICA', label: t('new.form.fifNotApplicable') },
                     ]}
                   />
                 </div>
-
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                     {t('new.form.requiresArticle')} *
@@ -260,34 +254,22 @@ export const NewResolutionForm: React.FC = () => {
                     onChange={(e) => setRequiresArticle(e.target.value)}
                     options={[
                       { value: 'SI', label: t('new.form.yesFifRequired') },
-                      { value: 'NO', label: t('new.form.no') }
+                      { value: 'NO', label: t('new.form.no') },
                     ]}
                   />
                 </div>
-
               </div>
             </CardContent>
           </Card>
 
-          {/* Form Actions */}
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => navigate('/decano/review')}
-            >
+            <Button type="button" variant="secondary" onClick={() => navigate('/decano/review')}>
               {t('new.form.cancel')}
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={submitting}
-              icon={<Save size={16} />}
-            >
+            <Button type="submit" variant="primary" disabled={submitting || !procedureId} icon={<Save size={16} />}>
               {submitting ? t('new.form.saving') : t('new.form.submit')}
             </Button>
           </div>
-
         </div>
       </form>
     </div>

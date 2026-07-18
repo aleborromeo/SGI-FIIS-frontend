@@ -617,16 +617,17 @@
     "evaluationSubmitted": "Evaluation submitted successfully",
     "evaluationSubmitError": "Error submitting evaluation",
     "criteria": {
-      "problem": "Problem statement",
-      "framework": "Theoretical framework and background",
-      "methodology": "Proposed methodology",
-      "schedule": "Schedule and budget",
-      "writing": "Format and writing"
+      "pertinencia": "Pertinence",
+      "marco_teorico": "Theoretical framework",
+      "objetivos": "Objectives",
+      "viabilidad": "Feasibility",
+      "impacto": "Impact"
     },
     "verdicts": {
       "approved": "Approved",
       "withObservations": "With observations",
-      "rejected": "Rejected"
-    }
+      "rejected": "Disapproved"
+    },
+    "anonymousNotice": "Your identity will be confidential to the applicant."
   }
 }

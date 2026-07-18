@@ -2,9 +2,9 @@ import { fetchApi } from './api';
 
 export interface Observation {
   id: number;
-  procedureId?: string;
+  procedureId?: number;
   type?: string;
-  content?: string;
+  description?: string;
   status?: string;
   createdAt?: string;
   remedy?: string;

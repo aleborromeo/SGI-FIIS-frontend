@@ -18,6 +18,7 @@ import { progressReportService, type ProgressReport } from '../../services/progr
 import { documentService } from '../../services/documentService';
 import { useToast } from '../../context/ToastContext';
 import { useTranslation } from 'react-i18next';
+import Pagination from '../../components/ui/Pagination';
 
 // Helper formatting functions
 function getStatusLabel(status: string, t: (key: string) => string): string {
@@ -69,6 +70,8 @@ export const ReviewProgressReports: React.FC = () => {
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
   const [reportDetail, setReportDetail] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   const fetchReports = async () => {
     try {
@@ -85,8 +88,11 @@ export const ReviewProgressReports: React.FC = () => {
 
   useEffect(() => {
     fetchReports();
-    console.debug('loadingDetailState:', loadingDetail);
-  }, [filterStatus, loadingDetail]);
+  }, [filterStatus]);
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [filterStatus]);
 
   // Contadores basados en el estado actual de los reportes en la bandeja
   const pendingCount = useMemo(() => reports.filter(r => r.status === 'PENDIENTE').length, [reports]);
@@ -188,9 +194,16 @@ export const ReviewProgressReports: React.FC = () => {
       );
     }
 
+    const totalPages = Math.ceil(reports.length / PAGE_SIZE);
+    const pagedReports = reports.slice(
+      (page - 1) * PAGE_SIZE,
+      page * PAGE_SIZE
+    );
+
     return (
+      <>
       <div style={{ display: 'grid', gap: '16px' }}>
-        {reports.map(report => (
+        {pagedReports.map(report => (
           <Card key={report.id}>
             <CardContent
               style={{
@@ -314,6 +327,17 @@ export const ReviewProgressReports: React.FC = () => {
                       >
                         {t('review.action.observe')}
                       </Button>
+
+                      {currentRole === 'DIRECTOR_INVESTIGACION' && (
+                        <Button
+                          variant="danger"
+                          style={{ padding: '8px 16px' }}
+                          icon={<X size={18} />}
+                          onClick={() => handleAction(report.id, 'reject')}
+                        >
+                          {t('review.action.reject')}
+                        </Button>
+                      )}
                     </>
                   )}
                 </div>
@@ -322,6 +346,14 @@ export const ReviewProgressReports: React.FC = () => {
           </Card>
         ))}
       </div>
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={reports.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+      />
+      </>
     );
   };
 

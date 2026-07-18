@@ -1,14 +1,16 @@
-import type { ReactNode } from 'react';
+import { useContext, type ReactNode } from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
 import { ShieldAlert } from 'lucide-react';
 import { useEligibility } from '../hooks/useEligibility';
 import { useConvocatorias } from '../hooks/useConvocatorias';
+import { AuthContext } from '../../../context/AuthContext';
 
 interface EligibilityGateProps {
   children: ReactNode;
 }
 
 export function EligibilityGate({ children }: EligibilityGateProps) {
+  const { currentRole } = useContext(AuthContext);
   const { data: eligibility, isLoading: loadingElig } = useEligibility();
   const { data: convocatorias, isLoading: loadingCalls } = useConvocatorias();
 
@@ -28,8 +30,9 @@ export function EligibilityGate({ children }: EligibilityGateProps) {
   const hasActiveGroup = eligibility?.hasActiveGroup ?? false;
   const hasVigentCalls = (convocatorias?.length ?? 0) > 0;
   const isDocente = eligibility?.docente ?? false;
+  const isEligibleRole = isDocente || currentRole === 'ESTUDIANTE';
 
-  if (!hasActiveGroup || !hasVigentCalls || !isDocente) {
+  if (!hasActiveGroup || !hasVigentCalls || !isEligibleRole) {
     return (
       <Box
         sx={{
@@ -52,9 +55,9 @@ export function EligibilityGate({ children }: EligibilityGateProps) {
           No cumple con los requisitos necesarios para registrar un proyecto de investigación.
         </Typography>
         <Box component="ul" sx={{ textAlign: 'left', maxWidth: 400, mx: 'auto', mt: 2, pl: 2 }}>
-          {!isDocente && (
+          {!isEligibleRole && (
             <Typography component="li" variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-              Solo los docentes investigadores pueden registrar proyectos.
+              Solo los docentes investigadores o estudiantes/tesistas pueden registrar proyectos.
             </Typography>
           )}
           {!hasActiveGroup && (

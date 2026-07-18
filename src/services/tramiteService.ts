@@ -1,4 +1,5 @@
 import { api } from './api';
+import { documentService } from './documentService';
 import type {
   EstadoTramite,
   MovimientoTramite,
@@ -27,6 +28,9 @@ function mapProcedureToTramite(dto: ProcedureResponseDto): Tramite {
     observacionActual: dto.currentObservation,
     fechaCreacion: dto.sentAt || '',
     fechaActualizacion: dto.updatedAt || '',
+    thesisReferenceId: dto.thesisReferenceId ?? null,
+    projectReferenceId: dto.projectReferenceId ?? null,
+    reportReferenceId: dto.reportReferenceId ?? null,
   };
 }
 
@@ -78,15 +82,31 @@ export const tramiteService = {
   getObservacionesByTramite: async (idTramite: number): Promise<ObservacionTramite[]> => {
     const res = await api.get<any[]>(`/api/observations/procedure/${idTramite}`);
     if (!Array.isArray(res)) return [];
-    return res.map((o) => ({
-      id: o.id,
-      idTramite: o.procedureId,
-      tipoObservacion: o.type,
-      descripcion: o.description,
-      estadoObservacion: o.status,
-      rolRevisor: o.reviewerRole,
-      fechaRegistro: o.createdAt,
-      subsanaciones: [],
+    return Promise.all(res.map(async (o) => {
+      let subsanaciones: any[] = [];
+      try {
+        const remedies = await api.get<any[]>(`/api/observations/${o.id}/remedies`);
+        if (Array.isArray(remedies)) {
+          subsanaciones = remedies.map((r: any) => ({
+            id: r.id,
+            idObservacion: r.observationId,
+            idSolicitante: r.applicantId,
+            descripcion: r.description,
+            nombreDocumentoAdjunto: r.attachedDocumentId ?? null,
+            fechaRegistro: r.createdAt,
+          }));
+        }
+      } catch { /* ignore */ }
+      return {
+        id: o.id,
+        idTramite: o.procedureId,
+        tipoObservacion: o.type,
+        descripcion: o.description,
+        estadoObservacion: o.status,
+        rolRevisor: o.reviewerRole,
+        fechaRegistro: o.createdAt,
+        subsanaciones,
+      };
     }));
   },
 
@@ -95,9 +115,10 @@ export const tramiteService = {
     return mapProcedureToTramite(res);
   },
 
-  flag: async (id: number, textoObservacion: string): Promise<Tramite> => {
+  flag: async (id: number, textoObservacion: string, attachedDocumentId?: number): Promise<Tramite> => {
     const res = await api.put<ProcedureResponseDto>(`/api/v1/procedures/${id}/flag`, {
       textoObservacion,
+      ...(attachedDocumentId ? { attachedDocumentId } : {}),
     });
     return mapProcedureToTramite(res);
   },
@@ -119,11 +140,18 @@ export const tramiteService = {
     return mapProcedureToTramite(res);
   },
 
-  subsanarObservacion: async (idObservacion: number, descripcion: string, attachedDocumentName: string | null): Promise<void> => {
+  subsanarObservacion: async (idObservacion: number, descripcion: string, file: File | null): Promise<void> => {
+    let attachedDocumentId: number | undefined;
+    if (file) {
+      const uploaded = await documentService.upload(file);
+      attachedDocumentId = uploaded.id;
+    }
+    const userStr = localStorage.getItem('sgi_user');
+    const user = userStr ? JSON.parse(userStr) : null;
     return api.post<void>(`/api/observations/${idObservacion}/remedy`, {
-      applicantId: 1,
+      applicantId: user?.id ?? 1,
       description: descripcion,
-      attachedDocumentId: attachedDocumentName ? 1 : undefined
+      attachedDocumentId,
     });
   },
 };

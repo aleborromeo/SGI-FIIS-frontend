@@ -8,6 +8,7 @@ import {
   Upload,
   AlertCircle,
   File,
+  Search,
 } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -24,6 +25,7 @@ import {
 import { documentService, type Document } from '../../services/documentService';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
+import Pagination from '../../components/ui/Pagination';
 
 function getFileIcon(fileType: string) {
   if (fileType?.includes('pdf')) return <FileText size={20} color="#ba1a1a" />;
@@ -47,10 +49,27 @@ export const DocumentRepository: React.FC = () => {
   const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
   const [uploading, setUploading] = useState(false);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
 
   const toast = useToast();
   const confirm = useConfirm();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const filteredDocuments = documents.filter((doc) => {
+    const search = searchTerm.toLowerCase();
+    return (
+      doc.fileName.toLowerCase().includes(search) ||
+      (doc.fileType && doc.fileType.toLowerCase().includes(search))
+    );
+  });
+
+  const totalPages = Math.ceil(filteredDocuments.length / PAGE_SIZE);
+  const pagedDocuments = filteredDocuments.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
 
   const loadDocuments = async () => {
     try {
@@ -245,6 +264,21 @@ export const DocumentRepository: React.FC = () => {
         </div>
       )}
 
+      <div style={{ position: 'relative', marginBottom: '20px', maxWidth: '400px' }}>
+        <Search
+          size={18}
+          style={{ position: 'absolute', left: '12px', top: '11px', color: 'var(--on-surface-variant)' }}
+        />
+        <input
+          type="text"
+          placeholder="Buscar documentos..."
+          className="input"
+          value={searchTerm}
+          onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+          style={{ paddingLeft: '36px' }}
+        />
+      </div>
+
       <TableContainer>
         <TableHead>
           <TableRow>
@@ -269,7 +303,7 @@ export const DocumentRepository: React.FC = () => {
               </td>
             </TableRow>
           ) : (
-            documents.map((doc) => (
+            pagedDocuments.map((doc) => (
               <TableRow key={doc.id}>
                 <TableCell>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -321,6 +355,14 @@ export const DocumentRepository: React.FC = () => {
           )}
         </TableBody>
       </TableContainer>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={filteredDocuments.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+      />
 
       {previewDoc && (
         <div

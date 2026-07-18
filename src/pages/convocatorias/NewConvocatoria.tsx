@@ -1,31 +1,30 @@
 /**
  * NewConvocatoria.tsx
  * Formulario de creación de convocatoria (DIRECTOR_INVESTIGACION / ADMIN).
- * Diseño premium con pasos visuales, validación en tiempo real, selector de líneas interactivo.
  */
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
-  Save, ArrowLeft, AlertCircle, Calendar, BookOpen,
+  Save, ArrowLeft, AlertCircle, Calendar,
   Megaphone, FileText, ChevronRight,
-  Check, Loader,
+  Check, Loader, Users, GraduationCap, UserCheck, BookOpen,
 } from 'lucide-react';
 
-import { Spinner } from '../../components/common/Spinner';
 import { useToast } from '../../context/ToastContext';
 import { callService } from '../../services/callService';
-import { researchService } from '../../services/researchService';
-import type { ResearchLine } from '../../services/researchService';
+import { researchService, type ResearchLine } from '../../services/researchService';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
+
+type TargetAudience = 'DOCENTES' | 'ESTUDIANTES' | 'AMBOS';
 
 interface FormErrors {
   title?: string;
   description?: string;
   startDate?: string;
   endDate?: string;
-  lines?: string;
+  targetAudience?: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -43,6 +42,12 @@ const inputStyle: React.CSSProperties = {
   fontFamily: 'inherit',
 };
 
+const AUDIENCE_OPTIONS: { value: TargetAudience; label: string; description: string; icon: React.ReactNode }[] = [
+  { value: 'DOCENTES', label: 'Solo Docentes', description: 'Docentes investigadores', icon: <Users size={18} /> },
+  { value: 'ESTUDIANTES', label: 'Solo Estudiantes', description: 'Estudiantes / Tesistas', icon: <GraduationCap size={18} /> },
+  { value: 'AMBOS', label: 'Docentes y Estudiantes', description: 'Ambos pueden postular', icon: <UserCheck size={18} /> },
+];
+
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export const NewConvocatoria: React.FC = () => {
@@ -56,18 +61,15 @@ export const NewConvocatoria: React.FC = () => {
     startDate: '',
     endDate: '',
   });
-  const [selectedLineIds, setSelectedLineIds] = useState<number[]>([]);
-  const [lines, setLines] = useState<ResearchLine[]>([]);
-  const [loadingLines, setLoadingLines] = useState(true);
+  const [targetAudience, setTargetAudience] = useState<TargetAudience>('AMBOS');
+  const [selectedLines, setSelectedLines] = useState<number[]>([]);
+  const [availableLines, setAvailableLines] = useState<ResearchLine[]>([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    researchService.getLines(true)
-      .then(data => setLines(data || []))
-      .catch(() => toast.error(t('pages.newPage.linesLoadError')))
-      .finally(() => setLoadingLines(false));
+    researchService.getLines(true).then(setAvailableLines).catch(() => {});
   }, []);
 
   const validateTitle = (value: string): string | undefined => {
@@ -112,13 +114,6 @@ export const NewConvocatoria: React.FC = () => {
     setErrors(prev => ({ ...prev, [field]: err }));
   };
 
-  const toggleLine = (id: number) => {
-    setSelectedLineIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-    setErrors(prev => ({ ...prev, lines: undefined }));
-  };
-
   const validate = (): boolean => {
     const e: FormErrors = {};
     const titleErr = validateField('title', formData.title);
@@ -129,7 +124,7 @@ export const NewConvocatoria: React.FC = () => {
     if (descErr) e.description = descErr;
     if (startErr) e.startDate = startErr;
     if (endErr) e.endDate = endErr;
-    if (selectedLineIds.length === 0) e.lines = t('pages.newPage.linesRequired');
+    if (!targetAudience) e.targetAudience = 'Selecciona una opción';
     setErrors(e);
     setTouched({ title: true, description: true, startDate: true, endDate: true });
     return Object.keys(e).length === 0;
@@ -147,7 +142,8 @@ export const NewConvocatoria: React.FC = () => {
         description: formData.description.trim(),
         startDate: formData.startDate,
         endDate: formData.endDate,
-        researchLineIds: selectedLineIds,
+        targetAudience,
+        researchLineIds: selectedLines,
       });
       toast.success(t('pages.newPage.createSuccess'));
       navigate('/convocatorias');
@@ -164,57 +160,11 @@ export const NewConvocatoria: React.FC = () => {
     formData.description.trim().length >= 20,
     !!formData.startDate,
     !!formData.endDate,
-    selectedLineIds.length > 0,
+    !!targetAudience,
   ].filter(Boolean).length;
-
-  const renderResearchLines = () => {
-    if (loadingLines) {
-      return <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}><Spinner size="medium" /></div>;
-    }
-
-    if (lines.length === 0) {
-      return (
-        <div style={{ padding: '24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '14px' }}>
-          {t('pages.newPage.noActiveLines')}
-        </div>
-      );
-    }
-
-    return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
-        {lines.map(line => {
-          const selected = selectedLineIds.includes(line.id);
-          return (
-            <button
-              key={line.id}
-              id={`line-${line.id}`}
-              type="button"
-              onClick={() => toggleLine(line.id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '10px', padding: '13px 16px',
-                border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`,
-                borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.18s ease',
-                backgroundColor: selected ? 'var(--primary-container)' : 'var(--surface)',
-                color: selected ? 'var(--on-primary-container)' : 'var(--on-surface)',
-                boxShadow: selected ? '0 0 0 3px var(--primary-fixed)' : 'none',
-              }}
-            >
-              <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', backgroundColor: selected ? 'var(--primary)' : 'transparent', border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`, transition: 'all 0.15s' }}>
-                {selected && <Check size={12} style={{ color: 'white', strokeWidth: 3 }} />}
-              </span>
-              <span style={{ fontSize: '13px', fontWeight: selected ? 700 : 500, lineHeight: 1.3 }}>
-                {line.lineName}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    );
-  };
 
   return (
     <div className="animate-fade-in" style={{ padding: '28px', maxWidth: '860px' }}>
-      {/* Breadcrumb / Volver */}
       <button
         type="button"
         onClick={() => navigate('/convocatorias')}
@@ -223,7 +173,6 @@ export const NewConvocatoria: React.FC = () => {
         <ArrowLeft size={18} /> {t('pages.newPage.backToCalls')}
       </button>
 
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '32px', flexWrap: 'wrap' }}>
         <div style={{ width: '52px', height: '52px', borderRadius: 'var(--radius-xl)', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Megaphone size={24} style={{ color: 'white' }} />
@@ -237,7 +186,6 @@ export const NewConvocatoria: React.FC = () => {
           </p>
         </div>
 
-        {/* Barra de completitud */}
         <div style={{ backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', padding: '12px 16px', textAlign: 'center', minWidth: '110px' }}>
           <div style={{ fontSize: '22px', fontWeight: 900, color: completionScore === 5 ? '#059669' : 'var(--primary)', lineHeight: 1 }}>
             {completionScore}/5
@@ -249,7 +197,7 @@ export const NewConvocatoria: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Sección 1: Datos generales ── */}
+      {/* Seccion 1: Datos generales */}
       <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-xl)', padding: '28px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
           <span style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: 'var(--primary-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -260,7 +208,6 @@ export const NewConvocatoria: React.FC = () => {
           </h2>
         </div>
 
-        {/* Título */}
         <div style={{ marginBottom: '20px' }}>
           <label htmlFor="conv-title" style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
             Título <span style={{ color: 'var(--error)' }}>*</span>
@@ -279,7 +226,6 @@ export const NewConvocatoria: React.FC = () => {
           {errors.title && <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '4px' }}><AlertCircle size={12} /> {errors.title}</p>}
         </div>
 
-        {/* Descripción */}
         <div style={{ marginBottom: '20px' }}>
           <label htmlFor="conv-description" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
             <span>Descripción <span style={{ color: 'var(--error)' }}>*</span></span>
@@ -301,7 +247,6 @@ export const NewConvocatoria: React.FC = () => {
           {errors.description && <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '4px' }}><AlertCircle size={12} /> {errors.description}</p>}
         </div>
 
-        {/* Fechas */}
         <div className="form-row" style={{ gap: '20px' }}>
           <div>
             <label htmlFor="conv-start-date" style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
@@ -341,38 +286,115 @@ export const NewConvocatoria: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Sección 2: Líneas de investigación ── */}
-      <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: `1px solid ${errors.lines ? 'var(--error)' : 'var(--outline-variant)'}`, borderRadius: 'var(--radius-xl)', padding: '28px', marginBottom: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+      {/* Seccion 2: Poblacion objetivo */}
+      <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: `1px solid ${errors.targetAudience ? 'var(--error)' : 'var(--outline-variant)'}`, borderRadius: 'var(--radius-xl)', padding: '28px', marginBottom: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: 'var(--secondary-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <BookOpen size={16} style={{ color: 'var(--on-secondary-container)' }} />
+              <Users size={16} style={{ color: 'var(--on-secondary-container)' }} />
             </span>
             <div>
               <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-                Líneas de Investigación <span style={{ color: 'var(--error)' }}>*</span>
+                Población Objetivo <span style={{ color: 'var(--error)' }}>*</span>
               </h2>
               <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0 }}>
-                {t('pages.newPage.researchLinesHint')}
+                Selecciona quiénes pueden postular a esta convocatoria.
               </p>
             </div>
           </div>
-          {selectedLineIds.length > 0 && (
-            <span style={{ padding: '5px 14px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--primary-container)', color: 'var(--on-primary-container)', fontSize: '13px', fontWeight: 700 }}>
-              {t('pages.newPage.selectedCount', { count: selectedLineIds.length })}
-            </span>
-          )}
         </div>
 
-        {renderResearchLines()}
-        {errors.lines && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
+          {AUDIENCE_OPTIONS.map(option => {
+            const selected = targetAudience === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setTargetAudience(option.value)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '13px 16px',
+                  border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`,
+                  borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.18s ease',
+                  backgroundColor: selected ? 'var(--primary-container)' : 'var(--surface)',
+                  color: selected ? 'var(--on-primary-container)' : 'var(--on-surface)',
+                  boxShadow: selected ? '0 0 0 3px var(--primary-fixed)' : 'none',
+                }}
+              >
+                <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', backgroundColor: selected ? 'var(--primary)' : 'transparent', border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`, transition: 'all 0.15s' }}>
+                  {selected && <Check size={12} style={{ color: 'white', strokeWidth: 3 }} />}
+                </span>
+                <span style={{ color: selected ? 'var(--primary)' : 'var(--on-surface-variant)' }}>
+                  {option.icon}
+                </span>
+                <span style={{ fontSize: '13px', fontWeight: selected ? 700 : 500, lineHeight: 1.3 }}>
+                  <span style={{ display: 'block' }}>{option.label}</span>
+                  <span style={{ fontSize: '11px', fontWeight: 400, opacity: 0.7 }}>{option.description}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {errors.targetAudience && (
           <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <AlertCircle size={13} /> {errors.lines}
+            <AlertCircle size={13} /> {errors.targetAudience}
           </p>
         )}
       </div>
 
-      {/* ── Footer de acciones ── */}
+      {/* Seccion 3: Lineas de Investigacion */}
+      <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-xl)', padding: '28px', marginBottom: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+          <span style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: 'var(--secondary-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <BookOpen size={16} style={{ color: 'var(--on-secondary-container)' }} />
+          </span>
+          <div>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
+              {t('pages.newPage.linesTitle', { defaultValue: 'Líneas de Investigación' })}
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0 }}>
+              {t('pages.newPage.linesDescription', { defaultValue: 'Selecciona las líneas asociadas a esta convocatoria (opcional).' })}
+            </p>
+          </div>
+        </div>
+        {availableLines.length === 0 ? (
+          <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>
+            {t('pages.newPage.noLinesAvailable', { defaultValue: 'No hay líneas disponibles.' })}
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {availableLines.map(line => {
+              const selected = selectedLines.includes(line.id);
+              return (
+                <button
+                  key={line.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedLines(prev =>
+                      selected ? prev.filter(id => id !== line.id) : [...prev, line.id]
+                    );
+                  }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px',
+                    border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`,
+                    borderRadius: 'var(--radius-full)', cursor: 'pointer', fontSize: '13px', fontWeight: selected ? 700 : 500,
+                    backgroundColor: selected ? 'var(--primary-container)' : 'var(--surface)',
+                    color: selected ? 'var(--on-primary-container)' : 'var(--on-surface)',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <span style={{ width: '16px', height: '16px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', backgroundColor: selected ? 'var(--primary)' : 'transparent', border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}` }}>
+                    {selected && <Check size={10} style={{ color: 'white', strokeWidth: 3 }} />}
+                  </span>
+                  {line.lineName}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Footer de acciones */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px', flexWrap: 'wrap', gap: '12px' }}>
         <button
           type="button"

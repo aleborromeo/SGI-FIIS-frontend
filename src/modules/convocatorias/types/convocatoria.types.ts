@@ -5,6 +5,7 @@ export interface Convocatoria {
   startDate: string;
   endDate: string;
   status: 'ABIERTA' | 'CERRADA' | 'FINALIZADA';
+  targetAudience: 'DOCENTES' | 'ESTUDIANTES' | 'AMBOS';
   researchLineIds: number[];
   documentId?: number;
 }

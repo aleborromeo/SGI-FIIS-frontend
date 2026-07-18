@@ -12,8 +12,6 @@ export interface User {
   active: boolean;
   mustChangePassword?: boolean;
   createdAt?: string;
-  active?: boolean;
-  phone?: string;
   updatedAt?: string;
 }
 
@@ -69,10 +67,7 @@ export const userService = {
   },
 
   rejectUser: async (id: number): Promise<void> => {
-    return fetchApi<void>(`/users/${id}/status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ active: false }),
-    });
+    return api.patch<void>(`/users/${id}/status`, { active: false });
   },
 
   createUser: async (user: {
@@ -83,10 +78,7 @@ export const userService = {
     phone?: string;
     roleCode: string;
   }): Promise<User & { temporaryPassword?: string }> => {
-    return fetchApi<User & { temporaryPassword?: string }>('/users', {
-      method: 'POST',
-      body: JSON.stringify(user),
-    });
+    return api.post<User & { temporaryPassword?: string }>('/users', user);
   },
 
   updateUser: async (id: number, user: {
@@ -96,10 +88,7 @@ export const userService = {
     phone?: string;
     roleCode: string;
   }): Promise<User> => {
-    return fetchApi<User>(`/users/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(user),
-    });
+    return api.put<User>(`/users/${id}`, user);
   },
 
   resetPassword: async (id: number): Promise<{ message: string }> => {

@@ -151,35 +151,39 @@
 
 /* Colores de las métricas con soporte de luz interna */
 .bg-blue {
-  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-  color: #0369a1;
+  background: linear-gradient(135deg, var(--primary-fixed) 0%, var(--primary-fixed-dim) 100%);
+  color: var(--on-primary-fixed);
 }
 .bg-blue .metric-icon {
-  background-color: rgba(3, 105, 161, 0.1);
+  background-color: rgba(0, 32, 69, 0.12);
+  color: var(--primary);
 }
 
 .bg-green {
-  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-  color: #15803d;
+  background: linear-gradient(135deg, #e2f9eb 0%, #bbf7d0 100%);
+  color: #14532d;
 }
 .bg-green .metric-icon {
-  background-color: rgba(21, 128, 61, 0.1);
+  background-color: rgba(21, 128, 61, 0.12);
+  color: #166534;
 }
 
 .bg-purple {
   background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
-  color: #6b21a8;
+  color: #581c87;
 }
 .bg-purple .metric-icon {
-  background-color: rgba(107, 33, 168, 0.1);
+  background-color: rgba(107, 33, 168, 0.12);
+  color: #701a75;
 }
 
 .bg-orange {
   background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
-  color: #c2410c;
+  color: #7c2d12;
 }
 .bg-orange .metric-icon {
-  background-color: rgba(194, 65, 12, 0.1);
+  background-color: rgba(194, 65, 12, 0.12);
+  color: #9a3412;
 }
 
 /* Layout de detalles divididos */
@@ -325,11 +329,18 @@
 }
 
 .alert-card-item {
-  border-radius: 10px;
-  padding: 1rem;
+  border-radius: 12px;
+  padding: 1.15rem;
+  border: 1px solid #e2e8f0;
   border-left: 4px solid #cbd5e1;
   background-color: #f8fafc;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s ease;
+}
+
+.alert-card-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
 }
 
 .alert-item-header {
@@ -363,39 +374,43 @@
 
 /* Alertas especificadas por tipo */
 .alert-type-info {
-  border-left-color: #3b82f6;
-  background-color: #eff6ff;
+  border-left-color: var(--primary);
+  background-color: rgba(0, 32, 69, 0.02);
+  border-color: rgba(0, 32, 69, 0.08);
 }
 .alert-type-info .alert-badge {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: var(--primary-fixed);
+  color: var(--primary);
 }
 
 .alert-type-warning {
   border-left-color: #f59e0b;
-  background-color: #fffbeb;
+  background-color: rgba(245, 158, 11, 0.03);
+  border-color: rgba(245, 158, 11, 0.1);
 }
 .alert-type-warning .alert-badge {
   background-color: #fef3c7;
-  color: #92400e;
+  color: #b45309;
 }
 
 .alert-type-error {
   border-left-color: #ef4444;
-  background-color: #fef2f2;
+  background-color: rgba(239, 68, 68, 0.03);
+  border-color: rgba(239, 68, 68, 0.1);
 }
 .alert-type-error .alert-badge {
   background-color: #fee2e2;
-  color: #991b1b;
+  color: #b91c1c;
 }
 
 .alert-type-success {
   border-left-color: #10b981;
-  background-color: #ecfdf5;
+  background-color: rgba(16, 185, 129, 0.03);
+  border-color: rgba(16, 185, 129, 0.1);
 }
 .alert-type-success .alert-badge {
   background-color: #d1fae5;
-  color: #065f46;
+  color: #047857;
 }
 
 /* Unsupported role view */
@@ -530,11 +545,11 @@
 }
 
 .bg-blue {
-  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  background: linear-gradient(135deg, var(--primary-fixed) 0%, var(--primary-fixed-dim) 100%);
 }
 
 .bg-green {
-  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  background: linear-gradient(135deg, #e2f9eb 0%, #bbf7d0 100%);
 }
 
 .bg-purple {
@@ -594,11 +609,11 @@
 }
 
 .alert-card-item {
-  padding: 1rem;
-  border-radius: 1rem;
+  padding: 1.15rem;
+  border-radius: 12px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-left: 5px solid #2563eb;
+  border-left: 4px solid var(--primary);
 }
 
 .alert-badge {
@@ -705,8 +720,8 @@
 }
 
 .quick-action-blue .quick-action-icon {
-  color: #1d4ed8;
-  background: #dbeafe;
+  color: var(--primary);
+  background: var(--primary-fixed);
 }
 
 .quick-action-green .quick-action-icon {

@@ -14,6 +14,7 @@ import {
 
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import Pagination from '../../components/ui/Pagination';
 import { Spinner } from '../../components/common/Spinner';
 import { AuthContext } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -597,24 +598,13 @@ export const MyEvaluations: React.FC = () => {
         </div>
 
         {totalPages > 1 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface-container-low)', flexWrap: 'wrap', gap: '12px' }}>
-            <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>
-              {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
-            </span>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <button type="button" disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface)', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1 }}>
-                <ChevronLeft size={16} />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button key={p} type="button" onClick={() => setPage(p)} style={{ padding: '6px 12px', borderRadius: 'var(--radius-md)', border: `1px solid ${page === p ? 'var(--primary)' : 'var(--outline-variant)'}`, backgroundColor: page === p ? 'var(--primary)' : 'var(--surface)', color: page === p ? 'var(--on-primary)' : 'var(--on-surface)', fontWeight: page === p ? 700 : 400, cursor: 'pointer', fontSize: '13px' }}>
-                  {p}
-                </button>
-              ))}
-              <button type="button" disabled={page === totalPages} onClick={() => setPage(p => p + 1)} style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)', backgroundColor: 'var(--surface)', cursor: page === totalPages ? 'not-allowed' : 'pointer', opacity: page === totalPages ? 0.4 : 1 }}>
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
         )}
       </div>
     );

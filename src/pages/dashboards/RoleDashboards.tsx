@@ -196,8 +196,32 @@ function getQuickActions(role: string | null, t: TFunction): QuickAction[] {
         },
       ];
 
-    case 'DIRECTOR_INVESTIGACION':
     case 'DECANO':
+      return [
+        {
+          to: '/decano/review',
+          label: t('dashboard:quickActions.dean.pendingResolutions', 'Resolver Trámites'),
+          description: t('dashboard:quickActions.dean.pendingResolutionsDesc', 'Revisar y firmar resoluciones pendientes'),
+          icon: Scale,
+          tone: 'blue',
+        },
+        {
+          to: '/resolutions',
+          label: t('dashboard:quickActions.dean.resolutionsList', 'Resoluciones Emitidas'),
+          description: t('dashboard:quickActions.dean.resolutionsListDesc', 'Ver todas las resoluciones emitidas'),
+          icon: FileText,
+          tone: 'purple',
+        },
+        {
+          to: '/projects',
+          label: t('dashboard:quickActions.director.institutionalProjects'),
+          description: t('dashboard:quickActions.director.institutionalProjectsDesc'),
+          icon: Building2,
+          tone: 'green',
+        },
+      ];
+
+    case 'DIRECTOR_INVESTIGACION':
       return [
         {
           to: '/projects',
@@ -306,11 +330,26 @@ function translateAlertTitle(title: string, t: TFunction): string {
   if (normalized.includes('pending procedures')) return t('dashboard:alertTitles.pendingProcedures');
   if (normalized.includes('pending')) return t('dashboard:alertTitles.pendingAttention');
   if (normalized.includes('review')) return t('dashboard:alertTitles.reviewPending');
+  if (normalized.includes('active call for applications') || normalized.includes('active call')) return 'Convocatorias activas';
 
   return title;
 }
 
 function translateAlertDescription(description: string): string {
+  const normalized = description.toLowerCase();
+
+  if (normalized.includes('there are') && normalized.includes('open call(s) for applications')) {
+    const match = description.match(/\d+/);
+    const count = match ? match[0] : '0';
+    return `Hay ${count} convocatoria(s) abierta(s).`;
+  }
+  if (normalized.includes('procedures in progress')) {
+    return 'Trámites en progreso';
+  }
+  if (normalized.includes('under review')) {
+    return description.replace(/under review/gi, 'en revisión');
+  }
+
   const translated = description
     .replace(/procedure\(s\)/gi, 'trámites')
     .replace(/procedures/gi, 'trámites')
@@ -651,6 +690,28 @@ export const RoleDashboards = () => {
   }
 
   function renderStudent(studentData: DashboardStudentResponse) {
+    const extraAlerts: AlertItem[] = [];
+    const planStatus = (studentData.currentPlanStatus || '').toUpperCase();
+    if (planStatus === 'APROBADO') {
+      extraAlerts.push({
+        type: 'SUCCESS',
+        title: 'dashboard.alert.thesis-plan-approved.title',
+        description: t('dashboard:alert.thesisPlanApproved', { defaultValue: 'Tu plan de tesis fue aprobado. Revisa el estado en la bandeja de trámites.' }),
+      });
+    } else if (planStatus === 'RECHAZADO') {
+      extraAlerts.push({
+        type: 'ERROR',
+        title: 'dashboard.alert.thesis-plan-rejected.title',
+        description: t('dashboard:alert.thesisPlanRejected', { defaultValue: 'Tu plan de tesis fue rechazado. Revisa las observaciones y vuelve a presentarlo.' }),
+      });
+    } else if (planStatus === 'OBSERVADO') {
+      extraAlerts.push({
+        type: 'WARNING',
+        title: 'dashboard.alert.thesis-plan-observed.title',
+        description: t('dashboard:alert.thesisPlanObserved', { defaultValue: 'Tu plan de tesis tiene observaciones pendientes. Ingresa a subsanación para corregirlas.' }),
+      });
+    }
+    const allAlerts = [...extraAlerts, ...(studentData.alerts || [])];
     return (
       <DashboardLayout
         viewClassName="student-view"
@@ -706,7 +767,7 @@ export const RoleDashboards = () => {
           </div>
         }
         alertsTitle={t('dashboard:student.sections.notifications')}
-        alerts={studentData.alerts}
+        alerts={allAlerts}
       />
     );
   }
@@ -955,10 +1016,10 @@ export const RoleDashboards = () => {
             tone: 'blue',
           },
           {
-            icon: Users,
-            value: 'Global',
-            label: t('dashboard:director.metrics.researchGroups'),
-            sublabel: t('dashboard:director.metrics.researchGroupsSublabel'),
+            icon: ScrollText,
+            value: directorData.issuedResolutions ?? 0,
+            label: t('dashboard:director.metrics.issuedResolutions'),
+            sublabel: t('dashboard:director.metrics.issuedResolutionsSublabel', 'Resoluciones emitidas'),
             tone: 'green',
           },
           {

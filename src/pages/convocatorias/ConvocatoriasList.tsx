@@ -18,6 +18,7 @@ import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
 import { callService } from '../../services/callService';
 import type { CallResponse } from '../../services/callService';
+import Pagination from '../../components/ui/Pagination';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -65,6 +66,8 @@ function getTransitions(t: (key: string) => string): Record<string, { next: stri
     CERRADA: { next: 'FINALIZADA', label: t('pages.callCard.finishProcess'),   confirmMsg: t('pages.callCard.finishProcessConfirm'), danger: true },
   };
 }
+
+const PAGE_SIZE = 9;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -263,6 +266,7 @@ export const ConvocatoriasList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('');
+  const [page, setPage] = React.useState(1);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   const fetchCalls = useCallback(async () => {
@@ -314,6 +318,16 @@ export const ConvocatoriasList: React.FC = () => {
     return r;
   }, [calls, search, filterStatus]);
 
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginatedCalls = filtered.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search, filterStatus]);
+
   // Stats
   const stats: { status: CallStatus; count: number }[] = (['ABIERTA', 'CERRADA', 'FINALIZADA'] as CallStatus[]).map(s => ({
     status: s,
@@ -353,16 +367,25 @@ export const ConvocatoriasList: React.FC = () => {
     }
 
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(420px, 100%), 1fr))', gap: '20px' }}>
-        {filtered.map(call => (
-          <CallCard
-            key={call.id}
-            call={call}
-            updating={updatingId === call.id}
-            onStatusChange={handleStatusChange}
-          />
-        ))}
-      </div>
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(420px, 100%), 1fr))', gap: '20px' }}>
+          {paginatedCalls.map(call => (
+            <CallCard
+              key={call.id}
+              call={call}
+              updating={updatingId === call.id}
+              onStatusChange={handleStatusChange}
+            />
+          ))}
+        </div>
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={filtered.length}
+          pageSize={PAGE_SIZE}
+          onPageChange={setPage}
+        />
+      </>
     );
   };
 

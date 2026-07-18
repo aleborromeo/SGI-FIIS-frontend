@@ -7,23 +7,25 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  Save, ArrowLeft, AlertCircle, Calendar, BookOpen,
+  Save, ArrowLeft, AlertCircle, Calendar,
   Megaphone, FileText, ChevronRight, Check, Loader, Lock,
+  Users, GraduationCap, UserCheck, BookOpen,
 } from 'lucide-react';
 
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/common/Spinner';
 import { useToast } from '../../context/ToastContext';
 import { callService } from '../../services/callService';
-import { researchService } from '../../services/researchService';
-import type { ResearchLine } from '../../services/researchService';
+import { researchService, type ResearchLine } from '../../services/researchService';
+
+type TargetAudience = 'DOCENTES' | 'ESTUDIANTES' | 'AMBOS';
 
 interface FormErrors {
   title?: string;
   description?: string;
   startDate?: string;
   endDate?: string;
-  lines?: string;
+  targetAudience?: string;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -39,6 +41,12 @@ const inputStyle: React.CSSProperties = {
   fontFamily: 'inherit',
 };
 
+const AUDIENCE_OPTIONS: { value: TargetAudience; label: string; description: string; icon: React.ReactNode }[] = [
+  { value: 'DOCENTES', label: 'Solo Docentes', description: 'Docentes investigadores', icon: <Users size={18} /> },
+  { value: 'ESTUDIANTES', label: 'Solo Estudiantes', description: 'Estudiantes / Tesistas', icon: <GraduationCap size={18} /> },
+  { value: 'AMBOS', label: 'Docentes y Estudiantes', description: 'Ambos pueden postular', icon: <UserCheck size={18} /> },
+];
+
 export const EditConvocatoria: React.FC = () => {
   const { t } = useTranslation('convocatorias');
   const { id } = useParams<{ id: string }>();
@@ -51,9 +59,9 @@ export const EditConvocatoria: React.FC = () => {
     startDate: '',
     endDate: '',
   });
-  const [selectedLineIds, setSelectedLineIds] = useState<number[]>([]);
-  const [lines, setLines] = useState<ResearchLine[]>([]);
-  const [loadingLines, setLoadingLines] = useState(true);
+  const [targetAudience, setTargetAudience] = useState<TargetAudience>('AMBOS');
+  const [selectedLines, setSelectedLines] = useState<number[]>([]);
+  const [availableLines, setAvailableLines] = useState<ResearchLine[]>([]);
   const [loadingCall, setLoadingCall] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -62,15 +70,16 @@ export const EditConvocatoria: React.FC = () => {
   const [callStatus, setCallStatus] = useState('');
 
   useEffect(() => {
+    researchService.getLines(true).then(setAvailableLines).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (!id) return;
     const callId = parseInt(id, 10);
     if (isNaN(callId)) { setCallNotFound(true); setLoadingCall(false); return; }
 
-    Promise.all([
-      callService.getById(callId),
-      researchService.getLines(true),
-    ])
-      .then(([call, allLines]) => {
+    callService.getById(callId)
+      .then(call => {
         if (!call || !call.id) { setCallNotFound(true); return; }
         setCallStatus(call.status);
         if (call.status !== 'ABIERTA') return;
@@ -80,11 +89,11 @@ export const EditConvocatoria: React.FC = () => {
           startDate: call.startDate || '',
           endDate: call.endDate || '',
         });
-        setSelectedLineIds(call.researchLineIds || []);
-        setLines(allLines || []);
+        setTargetAudience((call.targetAudience as TargetAudience) || 'AMBOS');
+        setSelectedLines(call.researchLineIds || []);
       })
       .catch(() => setCallNotFound(true))
-      .finally(() => { setLoadingCall(false); setLoadingLines(false); });
+      .finally(() => setLoadingCall(false));
   }, [id]);
 
   const validateField = (field: string, value: string): string | undefined => {
@@ -123,13 +132,6 @@ export const EditConvocatoria: React.FC = () => {
     setErrors(prev => ({ ...prev, [field]: err }));
   };
 
-  const toggleLine = (lineId: number) => {
-    setSelectedLineIds(prev =>
-      prev.includes(lineId) ? prev.filter(x => x !== lineId) : [...prev, lineId]
-    );
-    setErrors(prev => ({ ...prev, lines: undefined }));
-  };
-
   const validate = (): boolean => {
     const e: FormErrors = {};
     const titleErr = validateField('title', formData.title);
@@ -140,7 +142,7 @@ export const EditConvocatoria: React.FC = () => {
     if (descErr) e.description = descErr;
     if (startErr) e.startDate = startErr;
     if (endErr) e.endDate = endErr;
-    if (selectedLineIds.length === 0) e.lines = t('pages.editPage.linesRequired');
+    if (!targetAudience) e.targetAudience = 'Selecciona una opción';
     setErrors(e);
     setTouched({ title: true, description: true, startDate: true, endDate: true });
     return Object.keys(e).length === 0;
@@ -158,7 +160,8 @@ export const EditConvocatoria: React.FC = () => {
         description: formData.description.trim(),
         startDate: formData.startDate,
         endDate: formData.endDate,
-        researchLineIds: selectedLineIds,
+        targetAudience,
+        researchLineIds: selectedLines,
       });
       toast.success(t('pages.editPage.updateSuccess'));
       navigate('/convocatorias');
@@ -175,7 +178,7 @@ export const EditConvocatoria: React.FC = () => {
     formData.description.trim().length >= 20,
     !!formData.startDate,
     !!formData.endDate,
-    selectedLineIds.length > 0,
+    !!targetAudience,
   ].filter(Boolean).length;
 
   if (loadingCall) {
@@ -216,7 +219,6 @@ export const EditConvocatoria: React.FC = () => {
 
   return (
     <div className="animate-fade-in" style={{ padding: '28px', maxWidth: '860px' }}>
-      {/* Breadcrumb */}
       <button
         type="button"
         onClick={() => navigate('/convocatorias')}
@@ -225,7 +227,6 @@ export const EditConvocatoria: React.FC = () => {
         <ArrowLeft size={18} /> {t('pages.editPage.backToCalls')}
       </button>
 
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '32px', flexWrap: 'wrap' }}>
         <div style={{ width: '52px', height: '52px', borderRadius: 'var(--radius-xl)', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Megaphone size={24} style={{ color: 'white' }} />
@@ -294,7 +295,7 @@ export const EditConvocatoria: React.FC = () => {
             onChange={e => handleChange('description', e.target.value)}
             onBlur={e => handleBlur('description', e.target.value)}
             style={{ ...inputStyle, resize: 'vertical', borderColor: errors.description ? 'var(--error)' : 'var(--outline-variant)' }}
-            onFocus={e => { if (!errors.description) e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px var(--primary-fixed)'; }}
+            onFocus={e => { if (!errors.description) { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px var(--primary-fixed)'; } }}
             onBlurCapture={e => { e.target.style.borderColor = errors.description ? 'var(--error)' : 'var(--outline-variant)'; e.target.style.boxShadow = 'none'; }}
           />
           {errors.description && <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '4px' }}><AlertCircle size={12} /> {errors.description}</p>}
@@ -339,69 +340,111 @@ export const EditConvocatoria: React.FC = () => {
         </div>
       </div>
 
-      {/* Seccion 2: Lineas de investigacion */}
-      <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: `1px solid ${errors.lines ? 'var(--error)' : 'var(--outline-variant)'}`, borderRadius: 'var(--radius-xl)', padding: '28px', marginBottom: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+      {/* Seccion 2: Poblacion objetivo */}
+      <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: `1px solid ${errors.targetAudience ? 'var(--error)' : 'var(--outline-variant)'}`, borderRadius: 'var(--radius-xl)', padding: '28px', marginBottom: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: 'var(--secondary-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <BookOpen size={16} style={{ color: 'var(--on-secondary-container)' }} />
+              <Users size={16} style={{ color: 'var(--on-secondary-container)' }} />
             </span>
             <div>
               <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-                Lineas de Investigacion <span style={{ color: 'var(--error)' }}>*</span>
+                Poblacion Objetivo <span style={{ color: 'var(--error)' }}>*</span>
               </h2>
               <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0 }}>
-                {t('pages.editPage.researchLinesHint')}
+                Selecciona quienes pueden postular a esta convocatoria.
               </p>
             </div>
           </div>
-          {selectedLineIds.length > 0 && (
-            <span style={{ padding: '5px 14px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--primary-container)', color: 'var(--on-primary-container)', fontSize: '13px', fontWeight: 700 }}>
-              {t('pages.editPage.selectedCount', { count: selectedLineIds.length })}
-            </span>
-          )}
         </div>
 
-        {loadingLines ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}><Spinner size="medium" /></div>
-        ) : lines.length === 0 ? (
-          <div style={{ padding: '24px', backgroundColor: 'var(--surface-container)', borderRadius: 'var(--radius-lg)', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '14px' }}>
-            {t('pages.editPage.noActiveLines')}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
+          {AUDIENCE_OPTIONS.map(option => {
+            const selected = targetAudience === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setTargetAudience(option.value)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '13px 16px',
+                  border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`,
+                  borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.18s ease',
+                  backgroundColor: selected ? 'var(--primary-container)' : 'var(--surface)',
+                  color: selected ? 'var(--on-primary-container)' : 'var(--on-surface)',
+                  boxShadow: selected ? '0 0 0 3px var(--primary-fixed)' : 'none',
+                }}
+              >
+                <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', backgroundColor: selected ? 'var(--primary)' : 'transparent', border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`, transition: 'all 0.15s' }}>
+                  {selected && <Check size={12} style={{ color: 'white', strokeWidth: 3 }} />}
+                </span>
+                <span style={{ color: selected ? 'var(--primary)' : 'var(--on-surface-variant)' }}>
+                  {option.icon}
+                </span>
+                <span style={{ fontSize: '13px', fontWeight: selected ? 700 : 500, lineHeight: 1.3 }}>
+                  <span style={{ display: 'block' }}>{option.label}</span>
+                  <span style={{ fontSize: '11px', fontWeight: 400, opacity: 0.7 }}>{option.description}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {errors.targetAudience && (
+          <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <AlertCircle size={13} /> {errors.targetAudience}
+          </p>
+        )}
+      </div>
+
+      {/* Seccion 3: Lineas de Investigacion */}
+      <div style={{ backgroundColor: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-xl)', padding: '28px', marginBottom: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+          <span style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: 'var(--secondary-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <BookOpen size={16} style={{ color: 'var(--on-secondary-container)' }} />
+          </span>
+          <div>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
+              {t('pages.editPage.linesTitle', { defaultValue: 'Líneas de Investigación' })}
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0 }}>
+              {t('pages.editPage.linesDescription', { defaultValue: 'Selecciona las líneas asociadas a esta convocatoria (opcional).' })}
+            </p>
           </div>
+        </div>
+        {availableLines.length === 0 ? (
+          <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>
+            {t('pages.editPage.noLinesAvailable', { defaultValue: 'No hay líneas disponibles.' })}
+          </p>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
-            {lines.map(line => {
-              const selected = selectedLineIds.includes(line.id);
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {availableLines.map(line => {
+              const selected = selectedLines.includes(line.id);
               return (
                 <button
                   key={line.id}
-                  id={`line-${line.id}`}
                   type="button"
-                  onClick={() => toggleLine(line.id)}
+                  onClick={() => {
+                    setSelectedLines(prev =>
+                      selected ? prev.filter(id => id !== line.id) : [...prev, line.id]
+                    );
+                  }}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: '10px', padding: '13px 16px',
+                    display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px',
                     border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`,
-                    borderRadius: 'var(--radius-lg)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.18s ease',
+                    borderRadius: 'var(--radius-full)', cursor: 'pointer', fontSize: '13px', fontWeight: selected ? 700 : 500,
                     backgroundColor: selected ? 'var(--primary-container)' : 'var(--surface)',
                     color: selected ? 'var(--on-primary-container)' : 'var(--on-surface)',
-                    boxShadow: selected ? '0 0 0 3px var(--primary-fixed)' : 'none',
+                    transition: 'all 0.15s',
                   }}
                 >
-                  <span style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', backgroundColor: selected ? 'var(--primary)' : 'transparent', border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}`, transition: 'all 0.15s' }}>
-                    {selected && <Check size={12} style={{ color: 'white', strokeWidth: 3 }} />}
+                  <span style={{ width: '16px', height: '16px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', backgroundColor: selected ? 'var(--primary)' : 'transparent', border: `2px solid ${selected ? 'var(--primary)' : 'var(--outline-variant)'}` }}>
+                    {selected && <Check size={10} style={{ color: 'white', strokeWidth: 3 }} />}
                   </span>
-                  <span style={{ fontSize: '13px', fontWeight: selected ? 700 : 500, lineHeight: 1.3 }}>
-                    {line.lineName}
-                  </span>
+                  {line.lineName}
                 </button>
               );
             })}
           </div>
-        )}
-        {errors.lines && (
-          <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <AlertCircle size={13} /> {errors.lines}
-          </p>
         )}
       </div>
 

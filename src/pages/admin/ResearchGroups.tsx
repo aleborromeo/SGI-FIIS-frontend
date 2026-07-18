@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import Pagination from '../../components/ui/Pagination';
 import { researchService, type ResearchGroup } from '../../services/researchService';
 import { Spinner } from '../../components/common/Spinner';
 import { useToast } from '../../context/ToastContext';
@@ -456,70 +457,13 @@ export const ResearchGroups: React.FC = () => {
           </div>
 
           {/* ── Paginación ── */}
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '14px 20px', borderTop: '1px solid var(--outline-variant)',
-            backgroundColor: 'var(--surface-container-low)', flexWrap: 'wrap', gap: '12px'
-          }}>
-            <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>
-              {t('groups.pagination.showing', {
-                from: (page - 1) * PAGE_SIZE + 1,
-                to: Math.min(page * PAGE_SIZE, filtered.length),
-                total: filtered.length
-              })}
-            </span>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-              <button
-                type="button"
-                disabled={page === 1}
-                onClick={() => setPage(p => p - 1)}
-                style={{
-                  padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)',
-                  backgroundColor: 'var(--surface)', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1
-                }}
-              >
-                <ChevronLeft size={16} />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-                .reduce<(number | 'ellipsis')[]>((acc, p, idx, arr) => {
-                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('ellipsis');
-                  acc.push(p);
-                  return acc;
-                }, [])
-                .map((p, idx) =>
-                  p === 'ellipsis' ? (
-                    <span key={`e${idx}`} style={{ padding: '0 4px', color: 'var(--on-surface-variant)' }}>…</span>
-                  ) : (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPage(p as number)}
-                      style={{
-                        padding: '6px 12px', borderRadius: 'var(--radius-md)',
-                        border: `1px solid ${page === p ? 'var(--primary)' : 'var(--outline-variant)'}`,
-                        backgroundColor: page === p ? 'var(--primary)' : 'var(--surface)',
-                        color: page === p ? 'var(--on-primary)' : 'var(--on-surface)',
-                        fontWeight: page === p ? 700 : 400, cursor: 'pointer', fontSize: '13px'
-                      }}
-                    >
-                      {p}
-                    </button>
-                  )
-                )}
-              <button
-                type="button"
-                disabled={page === totalPages}
-                onClick={() => setPage(p => p + 1)}
-                style={{
-                  padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)',
-                  backgroundColor: 'var(--surface)', cursor: page === totalPages ? 'not-allowed' : 'pointer', opacity: page === totalPages ? 0.4 : 1
-                }}
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
         </div>
       )}
     </div>

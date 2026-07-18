@@ -80,25 +80,27 @@ function parseSummary(raw: string): ParsedSummary {
 
   if (!raw) return result;
 
-  const fifMatch = raw.match(/\[FIF:\s*(S[IÍ]|NO)\]/i);
+  const fifRegex = /\[FIF:\s*(S[IÍ]|NO)\]/i;
+  const fifMatch = fifRegex.exec(raw);
   if (fifMatch) {
     result.recibeApoyoFif = fifMatch[1].toUpperCase().includes('S') ? 'SI' : 'NO';
   }
 
-  const sectionRegex = /^(RESUMEN|OBJETIVOS?\s+ESPEC[IÍ]FICOS?|METODOLOG[IÍ]A|RESULTADOS?\s+ESPERADOS?|TIPO\s+DE\s+PROYECTO)\s*:\s*/gim;
+  const sectionRegex = /^(RESUMEN|OBJETIVOS ESPECÍFICOS|OBJETIVOS ESPECIFICOS|METODOLOGÍA|METODOLOGIA|RESULTADOS ESPERADOS|TIPO DE PROYECTO)\s*:\s*/gim;
   const sections: { key: string; start: number; labelEnd: number }[] = [];
 
-  let match: RegExpExecArray | null;
-  while ((match = sectionRegex.exec(raw)) !== null) {
+  let match: RegExpExecArray | null = sectionRegex.exec(raw);
+  while (match !== null) {
     const label = match[1].toUpperCase();
     let key = '';
     if (label.startsWith('RESUMEN')) key = 'abstract';
-    else if (label.includes('ESPEC')) key = 'specificObjectives';
-    else if (label.startsWith('METODOLOG')) key = 'methodology';
-    else if (label.includes('RESULTADOS')) key = 'expectedResults';
-    else if (label.includes('TIPO')) key = 'projectType';
+    else if (label.startsWith('OBJETIVO')) key = 'specificObjectives';
+    else if (label.startsWith('METODOLO')) key = 'methodology';
+    else if (label.startsWith('RESULTADO')) key = 'expectedResults';
+    else if (label.startsWith('TIPO')) key = 'projectType';
 
     sections.push({ key, start: match.index, labelEnd: match.index + match[0].length });
+    match = sectionRegex.exec(raw);
   }
 
   for (let i = 0; i < sections.length; i++) {
@@ -140,6 +142,606 @@ function EmptyField() {
     >
       Sin datos
     </Typography>
+  );
+}
+
+interface ProposalReviewStepProps {
+  readonly watchedValues: ProposalFormData;
+  readonly activeConvocatorias: any[];
+  readonly groups: ResearchGroup[];
+  readonly filteredLines: ResearchLine[];
+  readonly recibeApoyoContent: React.ReactNode;
+  readonly members: ProposalMember[];
+  readonly documentName: string | null;
+  readonly documentId: number | null;
+}
+
+function ProposalReviewStep({
+  watchedValues,
+  activeConvocatorias,
+  groups,
+  filteredLines,
+  recibeApoyoContent,
+  members,
+  documentName,
+  documentId,
+}: ProposalReviewStepProps) {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {/* Page Header */}
+      <Box sx={{ mb: 1 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>
+          Revisión de la Propuesta
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+          Verifica la información antes de enviar al Coordinador de grupo
+        </Typography>
+      </Box>
+
+      {/* ── SECCIÓN 1: Datos Generales ── */}
+      <Card
+        elevation={0}
+        sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+      >
+        <Box
+          sx={{
+            px: 3, py: 2,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+          }}
+        >
+          <Box
+            sx={{
+              width: 36, height: 36, borderRadius: 1.5,
+              bgcolor: 'primary.main', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Info size={18} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Datos Generales</Typography>
+            <Typography variant="caption" color="text.secondary">Identificación y clasificación del proyecto</Typography>
+          </Box>
+        </Box>
+
+        <CardContent sx={{ p: 3 }}>
+          {/* Row: Status + Code */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            {/* Status Badge */}
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 2,
+                py: 1,
+                borderRadius: 1.5,
+                bgcolor: 'rgba(245, 158, 11, 0.08)',
+                border: '1px solid rgba(245, 158, 11, 0.25)',
+              }}
+            >
+              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#f59e0b' }} />
+              <Typography variant="body2" color="#b45309" sx={{ fontWeight: 600 }}>
+                Pendiente de Coordinador
+              </Typography>
+            </Box>
+
+            {/* Auto-generated Code */}
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 2,
+                py: 1,
+                borderRadius: 1.5,
+                bgcolor: 'grey.50',
+                border: '1px dashed',
+                borderColor: 'grey.300',
+              }}
+            >
+              <Lock size={14} color="var(--on-surface-variant, #666)" />
+              <Typography variant="body2" color="text.secondary">
+                PRJ-YYYY-XXXX
+              </Typography>
+              <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>
+                (autogenerado)
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Grid: metadata fields */}
+          <Grid container spacing={2.5}>
+            {[
+              {
+                label: 'Convocatoria',
+                value: activeConvocatorias.find((c) => String(c.id) === watchedValues.convocatoriaId)?.title,
+              },
+              {
+                label: 'Línea de Investigación',
+                value: filteredLines.find((l) => String(l.id) === watchedValues.researchLineId)?.lineName,
+              },
+              {
+                label: 'Tipo de Proyecto',
+                value: PROJECT_TYPES.find((t) => t.value === watchedValues.projectType)?.label,
+              },
+            ].map((item) => (
+              <Grid size={{ xs: 12, sm: 6 }} key={item.label}>
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                  {item.label}
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 0.25, lineHeight: 1.6, wordBreak: 'break-word', fontWeight: 600 }}>
+                  {item.value || <EmptyField />}
+                </Typography>
+              </Grid>
+            ))}
+
+            {/* FIF - special display */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                Recibe Apoyo FIF
+              </Typography>
+              <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                {recibeApoyoContent}
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* ── SECCIÓN 2: Detalles del Proyecto ── */}
+      <Card
+        elevation={0}
+        sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+      >
+        <Box
+          sx={{
+            px: 3, py: 2,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+          }}
+        >
+          <Box
+            sx={{
+              width: 36, height: 36, borderRadius: 1.5,
+              bgcolor: 'info.main', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <FileText size={18} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Detalles del Proyecto</Typography>
+            <Typography variant="caption" color="text.secondary">Contenido técnico y académico de la propuesta</Typography>
+          </Box>
+        </Box>
+
+        <CardContent sx={{ p: 3 }}>
+          {/* Title */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+              Título del Proyecto
+            </Typography>
+            <Typography variant="body1" sx={{ mt: 0.5, lineHeight: 1.6, wordBreak: 'break-word', fontWeight: 600 }}>
+              {watchedValues.title || <EmptyField />}
+            </Typography>
+          </Box>
+
+          <Divider sx={{ mb: 3 }} />
+
+          {/* Abstract */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+              Resumen Ejecutivo
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 0.75,
+                lineHeight: 1.8,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                color: 'text.primary',
+                p: 2,
+                borderRadius: 1.5,
+                bgcolor: 'grey.50',
+                border: '1px solid',
+                borderColor: 'grey.200',
+              }}
+            >
+              {watchedValues.abstract || <EmptyField />}
+            </Typography>
+          </Box>
+
+          {/* Objectives - side by side on desktop */}
+          <Grid container spacing={2.5} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                Objetivo General
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ mt: 0.75, lineHeight: 1.8, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+              >
+                {watchedValues.generalObjective || <EmptyField />}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                Objetivos Específicos
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ mt: 0.75, lineHeight: 1.8, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+              >
+                {watchedValues.specificObjectives || <EmptyField />}
+              </Typography>
+            </Grid>
+          </Grid>
+
+          <Divider sx={{ mb: 3 }} />
+
+          {/* Methodology - separate section below */}
+          <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Box
+                sx={{
+                  width: 6, height: 6, borderRadius: '50%',
+                  bgcolor: 'primary.main',
+                }}
+              />
+              <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                Metodología
+              </Typography>
+            </Box>
+            <Typography
+              variant="body2"
+              sx={{
+                lineHeight: 1.8,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                p: 2,
+                borderRadius: 1.5,
+                bgcolor: 'rgba(25, 118, 210, 0.03)',
+                border: '1px solid',
+                borderColor: 'rgba(25, 118, 210, 0.12)',
+              }}
+            >
+              {watchedValues.methodology || <EmptyField />}
+            </Typography>
+          </Box>
+
+          {/* Expected Results */}
+          <Box>
+            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+              Resultados Esperados
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 0.75,
+                lineHeight: 1.8,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                p: 2,
+                borderRadius: 1.5,
+                bgcolor: 'grey.50',
+                border: '1px solid',
+                borderColor: 'grey.200',
+              }}
+            >
+              {watchedValues.expectedResults || <EmptyField />}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* ── SECCIÓN 3: Finanzas y Cronograma ── */}
+      <Card
+        elevation={0}
+        sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+      >
+        <Box
+          sx={{
+            px: 3, py: 2,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+          }}
+        >
+          <Box
+            sx={{
+              width: 36, height: 36, borderRadius: 1.5,
+              bgcolor: 'success.main', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <DollarSign size={18} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Finanzas y Cronograma</Typography>
+            <Typography variant="caption" color="text.secondary">Presupuesto, lugar y fechas de ejecución</Typography>
+          </Box>
+        </Box>
+
+        <CardContent sx={{ p: 3 }}>
+          {/* Budget - highlighted card */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              p: 2.5,
+              borderRadius: 2,
+              bgcolor: 'rgba(22, 163, 74, 0.04)',
+              border: '1px solid',
+              borderColor: 'rgba(22, 163, 74, 0.2)',
+              mb: 3,
+            }}
+          >
+            <Box
+              sx={{
+                width: 48, height: 48, borderRadius: 2,
+                bgcolor: 'rgba(22, 163, 74, 0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <DollarSign size={24} color="#16a34a" />
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                Presupuesto Total
+              </Typography>
+              <Typography variant="h5" color="#16a34a" sx={{ lineHeight: 1.2, fontWeight: 700 }}>
+                S/ {Number(watchedValues.budget || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Place + Dates grid */}
+          <Grid container spacing={2.5}>
+            <Grid size={{ xs: 12 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                <MapPin size={13} color="var(--on-surface-variant, #666)" />
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                  Lugar de Ejecución
+                </Typography>
+              </Box>
+              <Typography variant="body2" sx={{ lineHeight: 1.6, wordBreak: 'break-word', fontWeight: 600 }}>
+                {watchedValues.executionPlace || <EmptyField />}
+              </Typography>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                <Calendar size={13} color="var(--on-surface-variant, #666)" />
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                  Fecha de Inicio
+                </Typography>
+              </Box>
+              <Typography variant="body2" sx={{ lineHeight: 1.6, fontWeight: 600 }}>
+                {watchedValues.startDate
+                  ? new Date(watchedValues.startDate + 'T00:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
+                  : <EmptyField />}
+              </Typography>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                <Calendar size={13} color="var(--on-surface-variant, #666)" />
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+                  Fecha de Fin
+                </Typography>
+              </Box>
+              <Typography variant="body2" sx={{ lineHeight: 1.6, fontWeight: 600 }}>
+                {watchedValues.endDate
+                  ? new Date(watchedValues.endDate + 'T00:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
+                  : <EmptyField />}
+              </Typography>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* ── SECCIÓN 4: Equipo y Archivos ── */}
+      <Card
+        elevation={0}
+        sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+      >
+        <Box
+          sx={{
+            px: 3, py: 2,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+          }}
+        >
+          <Box
+            sx={{
+              width: 36, height: 36, borderRadius: 1.5,
+              bgcolor: '#7c3aed', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Users size={18} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Equipo y Archivos</Typography>
+            <Typography variant="caption" color="text.secondary">Miembros del equipo y documento adjunto</Typography>
+          </Box>
+        </Box>
+
+        <CardContent sx={{ p: 3 }}>
+          {/* Team Members */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+              Equipo de Investigación
+            </Typography>
+
+            {members.length > 0 ? (
+              <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {members.map((member) => (
+                  <Box
+                    key={member.userId}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1.5,
+                      p: 1.5,
+                      borderRadius: 1.5,
+                      bgcolor: 'grey.50',
+                      border: '1px solid',
+                      borderColor: 'grey.200',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 32, height: 32, borderRadius: '50%',
+                        bgcolor: 'primary.main', color: '#fff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '0.75rem', fontWeight: 700,
+                      }}
+                    >
+                      {member.userFirstNames?.[0]}{member.userLastNames?.[0]}
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                      <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
+                        {member.userFirstNames} {member.userLastNames}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                        {member.userEmail}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={member.role}
+                      size="small"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.7rem',
+                        bgcolor: 'rgba(124, 58, 237, 0.08)',
+                        color: '#7c3aed',
+                        border: '1px solid rgba(124, 58, 237, 0.2)',
+                      }}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Sin miembros adicionales
+              </Typography>
+            )}
+
+            <Button
+              variant="text"
+              size="small"
+              startIcon={<UserPlus size={15} />}
+              disabled
+              sx={{
+                mt: 1.5,
+                textTransform: 'none',
+                color: 'primary.main',
+                fontWeight: 600,
+                '&.Mui-disabled': { color: 'text.disabled' },
+              }}
+            >
+              Añadir otro miembro
+            </Button>
+          </Box>
+
+          <Divider sx={{ my: 2 }} />
+
+          {/* Attached Document */}
+          <Box>
+            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
+              Documento Adjunto
+            </Typography>
+
+            {documentName || documentId ? (
+              <Box
+                sx={{
+                  mt: 1.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  p: 2,
+                  borderRadius: 1.5,
+                  bgcolor: 'grey.50',
+                  border: '1px solid',
+                  borderColor: 'grey.200',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 40, height: 40, borderRadius: 1.5,
+                    bgcolor: 'rgba(220, 38, 38, 0.08)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <File size={20} color="#dc2626" />
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                  <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
+                    {documentName || 'Documento cargado'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Anteproyecto · PDF
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <Chip
+                    label="Cargado"
+                    size="small"
+                    color="success"
+                    sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                  />
+                </Box>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  mt: 1.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  p: 2,
+                  borderRadius: 1.5,
+                  border: '1px dashed',
+                  borderColor: 'grey.300',
+                  bgcolor: 'grey.50',
+                }}
+              >
+                <Paperclip size={16} color="var(--on-surface-variant, #999)" />
+                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                  Sin documento adjunto
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }
 
@@ -227,25 +829,26 @@ function NewProposalFormInner() {
     fetchCatalogs();
   }, []);
 
+  const watchedLineId = watch('researchLineId');
+
   useEffect(() => {
-    if (!watchedGroupId) {
-      setFilteredLines(lines);
+    if (!watchedLineId) {
       setIsGinsoft(false);
       return;
     }
-    const selectedGroup = groups.find((g) => String(g.id) === watchedGroupId);
-    setIsGinsoft(selectedGroup?.groupCode === GINSOFT_CODE);
 
-    let cancelled = false;
-    researchService.getGroupLines(Number(watchedGroupId)).then((groupLines) => {
-      if (!cancelled) {
-        setFilteredLines(groupLines && groupLines.length > 0 ? groupLines : lines);
-      }
-    }).catch(() => {
-      if (!cancelled) setFilteredLines(lines);
-    });
-    return () => { cancelled = true; };
-  }, [watchedGroupId, groups, lines]);
+    researchService.getGroupsByLine(Number(watchedLineId))
+      .then((groupData) => {
+        if (groupData && groupData.length > 0) {
+          const matchedGroup = groupData[0];
+          setValue('researchGroupId', String(matchedGroup.id), { shouldDirty: true, shouldValidate: true });
+          setIsGinsoft(matchedGroup.groupCode === GINSOFT_CODE);
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching group for selected line:', err);
+      });
+  }, [watchedLineId, setValue]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -565,26 +1168,7 @@ function NewProposalFormInner() {
               </Box>
 
               <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Controller
-                    name="researchGroupId"
-                    control={control}
-                    rules={{ required: 'Selecciona un grupo de investigación' }}
-                    render={({ field, fieldState }) => (
-                      <FormControl fullWidth error={!!fieldState.error}>
-                        <InputLabel>Grupo de Investigación *</InputLabel>
-                        <Select label="Grupo de Investigación *" {...field}>
-                          <MenuItem value=""><em>Selecciona un grupo...</em></MenuItem>
-                          {groups.map((g) => (
-                            <MenuItem key={g.id} value={String(g.id)}>{g.groupName}</MenuItem>
-                          ))}
-                        </Select>
-                        {fieldState.error && <FormHelperText>{fieldState.error.message}</FormHelperText>}
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12, sm: 12 }}>
                   <Controller
                     name="researchLineId"
                     control={control}
@@ -594,7 +1178,7 @@ function NewProposalFormInner() {
                         <InputLabel>Línea de Investigación *</InputLabel>
                         <Select label="Línea de Investigación *" {...field}>
                           <MenuItem value=""><em>Selecciona una línea...</em></MenuItem>
-                          {filteredLines.map((l) => (
+                          {lines.map((l) => (
                             <MenuItem key={l.id} value={String(l.id)}>{l.lineName}</MenuItem>
                           ))}
                         </Select>
@@ -605,11 +1189,7 @@ function NewProposalFormInner() {
                 </Grid>
               </Grid>
 
-              {isGinsoft && (
-                <Alert severity="info" icon={<Info />} sx={{ mb: 2, borderRadius: 1.5 }}>
-                  <strong>Grupo GINSOFT detectado:</strong> Las líneas de investigación disponibles están restringidas a <strong>Computación</strong> e <strong>Ingeniería de Software</strong>.
-                </Alert>
-              )}
+
 
               <Controller
                 name="title"
@@ -902,591 +1482,16 @@ function NewProposalFormInner() {
 
         {/* STEP 4: Revisión */}
         {activeStep === 4 && (
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-
-            {/* Page Header */}
-            <Box sx={{ mb: 1 }}>
-              <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>
-                Revisión de la Propuesta
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                Verifica la información antes de enviar al Coordinador de grupo
-              </Typography>
-            </Box>
-
-            {/* ── SECCIÓN 1: Datos Generales ── */}
-            <Card
-              elevation={0}
-              sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
-            >
-              <Box
-                sx={{
-                  px: 3, py: 2,
-                  borderBottom: '1px solid',
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 36, height: 36, borderRadius: 1.5,
-                    bgcolor: 'primary.main', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  <Info size={18} />
-                </Box>
-                <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Datos Generales</Typography>
-                  <Typography variant="caption" color="text.secondary">Identificación y clasificación del proyecto</Typography>
-                </Box>
-              </Box>
-
-              <CardContent sx={{ p: 3 }}>
-                {/* Row: Status + Code */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 2,
-                    mb: 3,
-                  }}
-                >
-                  {/* Status Badge */}
-                  <Box
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      px: 2,
-                      py: 1,
-                      borderRadius: 1.5,
-                      bgcolor: 'rgba(245, 158, 11, 0.08)',
-                      border: '1px solid rgba(245, 158, 11, 0.25)',
-                    }}
-                  >
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#f59e0b' }} />
-                    <Typography variant="body2" color="#b45309" sx={{ fontWeight: 600 }}>
-                      Pendiente de Coordinador
-                    </Typography>
-                  </Box>
-
-                  {/* Auto-generated Code */}
-                  <Box
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      px: 2,
-                      py: 1,
-                      borderRadius: 1.5,
-                      bgcolor: 'grey.50',
-                      border: '1px dashed',
-                      borderColor: 'grey.300',
-                    }}
-                  >
-                    <Lock size={14} color="var(--on-surface-variant, #666)" />
-                    <Typography variant="body2" color="text.secondary">
-                      PRJ-YYYY-XXXX
-                    </Typography>
-                    <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>
-                      (autogenerado)
-                    </Typography>
-                  </Box>
-                </Box>
-
-                {/* Grid: metadata fields */}
-                <Grid container spacing={2.5}>
-                  {[
-                    {
-                      label: 'Convocatoria',
-                      value: activeConvocatorias.find((c) => String(c.id) === watchedValues.convocatoriaId)?.title,
-                    },
-                    {
-                      label: 'Grupo de Investigación',
-                      value: groups.find((g) => String(g.id) === watchedValues.researchGroupId)?.groupName,
-                    },
-                    {
-                      label: 'Línea de Investigación',
-                      value: filteredLines.find((l) => String(l.id) === watchedValues.researchLineId)?.lineName,
-                    },
-                    {
-                      label: 'Tipo de Proyecto',
-                      value: PROJECT_TYPES.find((t) => t.value === watchedValues.projectType)?.label,
-                    },
-                  ].map((item) => (
-                    <Grid size={{ xs: 12, sm: 6 }} key={item.label}>
-                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                        {item.label}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mt: 0.25, lineHeight: 1.6, wordBreak: 'break-word', fontWeight: 600 }}>
-                        {item.value || <EmptyField />}
-                      </Typography>
-                    </Grid>
-                  ))}
-
-                  {/* FIF - special display */}
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                      Recibe Apoyo FIF
-                    </Typography>
-                    <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      {recibeApoyoContent}
-                    </Box>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-
-            {/* ── SECCIÓN 2: Detalles del Proyecto ── */}
-            <Card
-              elevation={0}
-              sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
-            >
-              <Box
-                sx={{
-                  px: 3, py: 2,
-                  borderBottom: '1px solid',
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 36, height: 36, borderRadius: 1.5,
-                    bgcolor: 'info.main', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  <FileText size={18} />
-                </Box>
-                <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Detalles del Proyecto</Typography>
-                  <Typography variant="caption" color="text.secondary">Contenido técnico y académico de la propuesta</Typography>
-                </Box>
-              </Box>
-
-              <CardContent sx={{ p: 3 }}>
-                {/* Title */}
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                    Título del Proyecto
-                  </Typography>
-                  <Typography variant="body1" sx={{ mt: 0.5, lineHeight: 1.6, wordBreak: 'break-word', fontWeight: 600 }}>
-                    {watchedValues.title || <EmptyField />}
-                  </Typography>
-                </Box>
-
-                <Divider sx={{ mb: 3 }} />
-
-                {/* Abstract */}
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                    Resumen Ejecutivo
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 0.75,
-                      lineHeight: 1.8,
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      overflowWrap: 'break-word',
-                      color: 'text.primary',
-                      p: 2,
-                      borderRadius: 1.5,
-                      bgcolor: 'grey.50',
-                      border: '1px solid',
-                      borderColor: 'grey.200',
-                    }}
-                  >
-                    {watchedValues.abstract || <EmptyField />}
-
-                  </Typography>
-                </Box>
-
-                {/* Objectives - side by side on desktop */}
-                <Grid container spacing={2.5} sx={{ mb: 3 }}>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                      Objetivo General
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ mt: 0.75, lineHeight: 1.8, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word' }}
-                    >
-                      {watchedValues.generalObjective || <EmptyField />}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                      Objetivos Específicos
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ mt: 0.75, lineHeight: 1.8, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word' }}
-                    >
-                      {watchedValues.specificObjectives || <EmptyField />}
-                    </Typography>
-                  </Grid>
-                </Grid>
-
-                <Divider sx={{ mb: 3 }} />
-
-
-                {/* Methodology - separate section below */}
-                <Box sx={{ mb: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Box
-                      sx={{
-                        width: 6, height: 6, borderRadius: '50%',
-                        bgcolor: 'primary.main',
-                      }}
-                    />
-                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                      Metodología
-                    </Typography>
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      lineHeight: 1.8,
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      overflowWrap: 'break-word',
-                      p: 2,
-                      borderRadius: 1.5,
-                      bgcolor: 'rgba(25, 118, 210, 0.03)',
-                      border: '1px solid',
-                      borderColor: 'rgba(25, 118, 210, 0.12)',
-                    }}
-                  >
-                    {watchedValues.methodology || <EmptyField />}
-                  </Typography>
-                </Box>
-
-                {/* Expected Results */}
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                    Resultados Esperados
-
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 0.75,
-                      lineHeight: 1.8,
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      overflowWrap: 'break-word',
-                      p: 2,
-                      borderRadius: 1.5,
-                      bgcolor: 'grey.50',
-                      border: '1px solid',
-                      borderColor: 'grey.200',
-                    }}
-                  >
-                    {watchedValues.expectedResults || <EmptyField />}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-
-            {/* ── SECCIÓN 3: Finanzas y Cronograma ── */}
-            <Card
-              elevation={0}
-              sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
-            >
-              <Box
-                sx={{
-                  px: 3, py: 2,
-                  borderBottom: '1px solid',
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 36, height: 36, borderRadius: 1.5,
-                    bgcolor: 'success.main', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  <DollarSign size={18} />
-                </Box>
-                <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Finanzas y Cronograma</Typography>
-                  <Typography variant="caption" color="text.secondary">Presupuesto, lugar y fechas de ejecución</Typography>
-                </Box>
-              </Box>
-
-              <CardContent sx={{ p: 3 }}>
-                {/* Budget - highlighted card */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 2,
-                    p: 2.5,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(22, 163, 74, 0.04)',
-                    border: '1px solid',
-                    borderColor: 'rgba(22, 163, 74, 0.2)',
-                    mb: 3,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 48, height: 48, borderRadius: 2,
-                      bgcolor: 'rgba(22, 163, 74, 0.1)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                  >
-                    <DollarSign size={24} color="#16a34a" />
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                      Presupuesto Total
-                    </Typography>
-                    <Typography variant="h5" color="#16a34a" sx={{ lineHeight: 1.2, fontWeight: 700 }}>
-                      S/ {Number(watchedValues.budget || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                {/* Place + Dates grid */}
-                <Grid container spacing={2.5}>
-                  <Grid size={{ xs: 12 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
-                      <MapPin size={13} color="var(--on-surface-variant, #666)" />
-                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                        Lugar de Ejecución
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" sx={{ lineHeight: 1.6, wordBreak: 'break-word', fontWeight: 600 }}>
-                      {watchedValues.executionPlace || <EmptyField />}
-                    </Typography>
-                  </Grid>
-
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
-                      <Calendar size={13} color="var(--on-surface-variant, #666)" />
-                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                        Fecha de Inicio
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" sx={{ lineHeight: 1.6, fontWeight: 600 }}>
-                      {watchedValues.startDate
-                        ? new Date(watchedValues.startDate + 'T00:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
-                        : <EmptyField />}
-                    </Typography>
-                  </Grid>
-
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
-                      <Calendar size={13} color="var(--on-surface-variant, #666)" />
-                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                        Fecha de Fin
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" sx={{ lineHeight: 1.6, fontWeight: 600 }}>
-                      {watchedValues.endDate
-                        ? new Date(watchedValues.endDate + 'T00:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
-                        : <EmptyField />}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-
-            {/* ── SECCIÓN 4: Equipo y Archivos ── */}
-            <Card
-              elevation={0}
-              sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
-            >
-              <Box
-                sx={{
-                  px: 3, py: 2,
-                  borderBottom: '1px solid',
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 36, height: 36, borderRadius: 1.5,
-                    bgcolor: '#7c3aed', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  <Users size={18} />
-                </Box>
-                <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Equipo y Archivos</Typography>
-                  <Typography variant="caption" color="text.secondary">Miembros del equipo y documento adjunto</Typography>
-                </Box>
-              </Box>
-
-              <CardContent sx={{ p: 3 }}>
-                {/* Team Members */}
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                    Equipo de Investigación
-                  </Typography>
-
-                  {members.length > 0 ? (
-                    <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      {members.map((member) => (
-                        <Box
-                          key={member.userId}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                            p: 1.5,
-                            borderRadius: 1.5,
-                            bgcolor: 'grey.50',
-                            border: '1px solid',
-                            borderColor: 'grey.200',
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 32, height: 32, borderRadius: '50%',
-                              bgcolor: 'primary.main', color: '#fff',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              fontSize: '0.75rem', fontWeight: 700,
-                            }}
-                          >
-                            {member.userFirstNames?.[0]}{member.userLastNames?.[0]}
-                          </Box>
-                          <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                            <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
-                              {member.userFirstNames} {member.userLastNames}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                              {member.userEmail}
-                            </Typography>
-                          </Box>
-                          <Chip
-                            label={member.role}
-                            size="small"
-                            sx={{
-                              fontWeight: 600,
-                              fontSize: '0.7rem',
-                              bgcolor: 'rgba(124, 58, 237, 0.08)',
-                              color: '#7c3aed',
-                              border: '1px solid rgba(124, 58, 237, 0.2)',
-                            }}
-                          />
-                        </Box>
-                      ))}
-                    </Box>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Sin miembros adicionales
-                    </Typography>
-                  )}
-
-                  <Button
-                    variant="text"
-                    size="small"
-                    startIcon={<UserPlus size={15} />}
-                    disabled
-                    sx={{
-                      mt: 1.5,
-                      textTransform: 'none',
-                      color: 'primary.main',
-                      fontWeight: 600,
-                      '&.Mui-disabled': { color: 'text.disabled' },
-                    }}
-                  >
-                    Añadir otro miembro
-                  </Button>
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
-
-                {/* Attached Document */}
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                    Documento Adjunto
-                  </Typography>
-
-                  {documentName || documentId ? (
-                    <Box
-                      sx={{
-                        mt: 1.5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        p: 2,
-                        borderRadius: 1.5,
-                        bgcolor: 'grey.50',
-                        border: '1px solid',
-                        borderColor: 'grey.200',
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: 40, height: 40, borderRadius: 1.5,
-                          bgcolor: 'rgba(220, 38, 38, 0.08)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}
-                      >
-                        <File size={20} color="#dc2626" />
-                      </Box>
-                      <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                        <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
-                          {documentName || 'Documento cargado'}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Anteproyecto · PDF
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Chip
-                          label="Cargado"
-                          size="small"
-                          color="success"
-                          sx={{ fontWeight: 600, fontSize: '0.7rem' }}
-                        />
-                      </Box>
-                    </Box>
-                  ) : (
-                    <Box
-                      sx={{
-                        mt: 1.5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        p: 2,
-                        borderRadius: 1.5,
-                        border: '1px dashed',
-                        borderColor: 'grey.300',
-                        bgcolor: 'grey.50',
-                      }}
-                    >
-                      <Paperclip size={16} color="var(--on-surface-variant, #999)" />
-                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                        Sin documento adjunto
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
-
-          </Box>
+          <ProposalReviewStep
+            watchedValues={watchedValues}
+            activeConvocatorias={activeConvocatorias}
+            groups={groups}
+            filteredLines={filteredLines}
+            recibeApoyoContent={recibeApoyoContent}
+            members={members}
+            documentName={documentName}
+            documentId={documentId}
+          />
         )}
 
         {/* Navigation buttons */}

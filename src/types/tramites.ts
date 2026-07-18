@@ -27,6 +27,9 @@ export interface Tramite {
   observacionActual: string | null;
   fechaCreacion: string;
   fechaActualizacion: string;
+  thesisReferenceId: number | null;
+  projectReferenceId: number | null;
+  reportReferenceId: number | null;
 }
 
 export interface MovimientoTramite {

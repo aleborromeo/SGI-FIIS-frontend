@@ -1,4 +1,37 @@
-import { fetchApi } from './api';
+import { api } from './api';
+import { documentService } from './documentService';
+
+export interface ResolutionPayload {
+  procedureId: number;
+  number: string;
+  title: string;
+  emissionDate: string;
+  issuer: string;
+  startDate: string;
+  endDate: string;
+  duration: number;
+  receivesFif: boolean;
+  fifStatus: string;
+  requiresArticle: boolean;
+  attachedDocumentId?: number;
+}
+
+export interface Resolution {
+  id: number;
+  procedureId: number;
+  number: string;
+  title: string;
+  emissionDate: string;
+  issuer: string;
+  startDate: string;
+  endDate: string;
+  duration: number;
+  receivesFif: boolean;
+  fifStatus: string;
+  requiresArticle: boolean;
+  attachedDocumentId?: number;
+  createdAt: string;
+}
 
 export interface ResolutionResponse {
   success: boolean;
@@ -8,6 +41,19 @@ export interface ResolutionResponse {
 }
 
 export const resolutionService = {
+  getByProcedureId: async (procedureId: number): Promise<Resolution | null> => {
+    try {
+      return await api.get<Resolution>(`/api/v1/resolutions/procedure/${procedureId}`);
+    } catch {
+      return null;
+    }
+  },
+
+  uploadAttachment: async (file: File): Promise<number> => {
+    const result = await documentService.upload(file);
+    return result.id;
+  },
+
   issueResolution: (data: {
     numeroResolucion: string;
     fechaEmision: string;
@@ -20,11 +66,8 @@ export const resolutionService = {
     formData.append('fechaEmision', data.fechaEmision);
     formData.append('asunto', data.asunto);
     formData.append('idTramite', String(data.idTramite));
-    formData.append('fileBytes', data.file); // The PDF uses 'fileBytes' in the DTO
+    formData.append('archivo', data.file);
 
-    return fetchApi<ResolutionResponse>('/resolutions', {
-      method: 'POST',
-      body: formData,
-    });
+    return api.post<ResolutionResponse>('/api/v1/resolutions', formData);
   },
 };

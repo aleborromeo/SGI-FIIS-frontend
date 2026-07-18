@@ -15,6 +15,9 @@ import {
   TableHeader,
   TableCell,
 } from '../../components/ui/Table';
+import Pagination from '../../components/ui/Pagination';
+
+const PAGE_SIZE = 10;
 
 function getStatusLabel(status?: string, t?: (key: string) => string): string {
   if (!status) return t ? t('evaluations.statusPending') : 'Pendiente';
@@ -62,6 +65,7 @@ export const DirectorEvaluations: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
 
   const [selectedEval, setSelectedEval] = useState<any | null>(null);
   const [_loadingDetail, setLoadingDetail] = useState(false);
@@ -88,7 +92,10 @@ export const DirectorEvaluations: React.FC = () => {
 
   const filteredEvaluations = useMemo(() => {
     return evaluations.filter(e => {
-      const matchesStatus = filterStatus ? String(e.estado || e.status || '').toUpperCase() === filterStatus.toUpperCase() : true;
+      const matchesStatus = filterStatus ? (
+        String(e.estado || e.status || '').toUpperCase() === filterStatus.toUpperCase() ||
+        String(e.resultado || e.result || '').toUpperCase() === filterStatus.toUpperCase()
+      ) : true;
       const idStr = String(e.id || e.evaluationId || e.idEvaluacion || '').toLowerCase();
       const codeStr = String(e.expedienteCode || '').toLowerCase();
       const matchesSearch = searchQuery
@@ -97,6 +104,16 @@ export const DirectorEvaluations: React.FC = () => {
       return matchesStatus && matchesSearch;
     });
   }, [evaluations, filterStatus, searchQuery]);
+
+  const totalPages = Math.ceil(filteredEvaluations.length / PAGE_SIZE);
+  const paginatedEvaluations = filteredEvaluations.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [filterStatus, searchQuery]);
 
   const handleViewDetail = async (id: number | string) => {
     setLoadingDetail(true);
@@ -217,6 +234,7 @@ export const DirectorEvaluations: React.FC = () => {
           </p>
         </div>
       ) : (
+        <>
         <TableContainer>
           <TableHead>
             <TableRow>
@@ -229,7 +247,7 @@ export const DirectorEvaluations: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredEvaluations.map(e => {
+            {paginatedEvaluations.map(e => {
               const evalId = e.id || e.evaluationId || e.idEvaluacion;
               const result = e.resultado || e.result || 'PENDIENTE';
               const score = e.puntaje !== undefined && e.puntaje !== null ? e.puntaje : e.score;
@@ -261,6 +279,15 @@ export const DirectorEvaluations: React.FC = () => {
             })}
           </TableBody>
         </TableContainer>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={filteredEvaluations.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+      />
+      </>
       )}
 
       {/* Modal de Detalle */}

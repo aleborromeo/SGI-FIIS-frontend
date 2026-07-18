@@ -123,33 +123,20 @@ export const NewProposal: React.FC = () => {
     fetchAll();
   }, []);
 
-  // Apply GINSOFT line filter whenever group changes
+  // Auto-assign researchGroupId based on selected researchLineId
   useEffect(() => {
-    if (!formData.researchGroupId) {
-      setFilteredLines(lines);
-      setIsGinsoft(false);
-      setUserGroupCode(null);
-      return;
-    }
-    const selectedGroup = groups.find(g => String(g.id) === formData.researchGroupId);
-    if (selectedGroup && selectedGroup.groupCode === GINSOFT_CODE) {
-      setIsGinsoft(true);
-      setUserGroupCode(GINSOFT_CODE);
-      const restricted = lines.filter(l => isGinsoftLine(l.lineName));
-      setFilteredLines(restricted);
-      // If currently selected line is not in restricted, reset it
-      if (formData.researchLineId) {
-        const currentLine = lines.find(l => String(l.id) === formData.researchLineId);
-        if (currentLine && !isGinsoftLine(currentLine.lineName)) {
-          setFormData(prev => ({ ...prev, researchLineId: '' }));
+    if (!formData.researchLineId) return;
+
+    researchService.getGroupsByLine(Number(formData.researchLineId))
+      .then((groupData) => {
+        if (groupData && groupData.length > 0) {
+          setFormData(prev => ({ ...prev, researchGroupId: String(groupData[0].id) }));
         }
-      }
-    } else {
-      setIsGinsoft(false);
-      setUserGroupCode(selectedGroup?.groupCode ?? null);
-      setFilteredLines(lines);
-    }
-  }, [formData.researchGroupId, groups, lines]);
+      })
+      .catch((err) => {
+        console.error('Error fetching group for selected line:', err);
+      });
+  }, [formData.researchLineId]);
 
   function handleChange(field: string, value: string) {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -243,9 +230,9 @@ export const NewProposal: React.FC = () => {
   }
 
   function validate(): boolean {
-    if (!formData.researchGroupId) { setErrorMsg('Selecciona un grupo de investigación.'); return false; }
-    if (!formData.callId) { setErrorMsg('Selecciona una convocatoria obligatoria.'); return false; }
     if (!formData.researchLineId) { setErrorMsg('Selecciona una línea de investigación.'); return false; }
+    if (!formData.researchGroupId) { setErrorMsg('La línea seleccionada no está asociada a ningún grupo de investigación.'); return false; }
+    if (!formData.callId) { setErrorMsg('Selecciona una convocatoria obligatoria.'); return false; }
     if (formData.title.trim().length < 5) { setErrorMsg('El título debe tener al menos 5 caracteres.'); return false; }
     if (formData.abstract.trim().length < 10) { setErrorMsg('El resumen debe tener al menos 10 caracteres.'); return false; }
     if (formData.generalObjective.trim().length < 10) { setErrorMsg('El objetivo general debe tener al menos 10 caracteres.'); return false; }
@@ -324,20 +311,7 @@ export const NewProposal: React.FC = () => {
         </div>
       )}
 
-      {isGinsoft && (
-        <div style={{
-          display: 'flex', alignItems: 'flex-start', gap: '10px',
-          padding: '12px 16px', borderRadius: 'var(--radius-sm)',
-          background: 'var(--secondary-container)', color: 'var(--on-secondary-container)',
-          marginBottom: '20px', fontSize: '0.875rem',
-        }}>
-          <Info size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
-          <span>
-            <strong>Grupo GINSOFT detectado:</strong> Las líneas de investigación disponibles están restringidas
-            a <strong>Computación</strong> e <strong>Ingeniería de Software</strong>.
-          </span>
-        </div>
-      )}
+
 
       {loadingCatalogs ? (
         <div style={{ textAlign: 'center', padding: '60px', color: 'var(--on-surface-variant)' }}>
@@ -351,24 +325,15 @@ export const NewProposal: React.FC = () => {
               <h2 className="text-title-lg">Datos Generales</h2>
             </CardHeader>
             <CardContent>
-              {/* Grupo (first, triggers GINSOFT filter) */}
-              <div className="form-row" style={{ gap: '16px', marginBottom: '16px' }}>
+              {/* Línea de Investigación */}
+              <div className="form-row" style={{ marginBottom: '16px' }}>
                 <Select
-                  label="Grupo de Investigación"
-                  value={formData.researchGroupId}
-                  onChange={e => handleChange('researchGroupId', e.target.value)}
-                  options={[
-                    { value: '', label: 'Selecciona un grupo...' },
-                    ...groups.map(g => ({ value: String(g.id), label: g.groupName })),
-                  ]}
-                />
-                <Select
-                  label={isGinsoft ? 'Línea de Investigación (restringida por GINSOFT)' : 'Línea de Investigación'}
+                  label="Línea de Investigación"
                   value={formData.researchLineId}
                   onChange={e => handleChange('researchLineId', e.target.value)}
                   options={[
                     { value: '', label: 'Selecciona una línea...' },
-                    ...filteredLines.map(l => ({ value: String(l.id), label: l.lineName })),
+                    ...lines.map(l => ({ value: String(l.id), label: l.lineName })),
                   ]}
                 />
               </div>

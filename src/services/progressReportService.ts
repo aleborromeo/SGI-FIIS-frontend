@@ -9,6 +9,32 @@ export type ProgressReportStatus =
   | 'APROBADO'
   | 'RECHAZADO';
 
+// Mapping: backend English → frontend Spanish
+const STATUS_BE_TO_FE: Record<string, ProgressReportStatus> = {
+  PENDING: 'PENDIENTE',
+  UNDER_REVIEW: 'EN_REVISION',
+  OBSERVED: 'OBSERVADO',
+  APPROVED: 'APROBADO',
+  REJECTED: 'RECHAZADO',
+};
+
+// Mapping: frontend Spanish → backend English
+const STATUS_FE_TO_BE: Record<string, string> = {
+  PENDIENTE: 'PENDING',
+  EN_REVISION: 'UNDER_REVIEW',
+  OBSERVADO: 'OBSERVED',
+  APROBADO: 'APPROVED',
+  RECHAZADO: 'REJECTED',
+};
+
+function toFrontendStatus(backendStatus: string): ProgressReportStatus {
+  return STATUS_BE_TO_FE[backendStatus] ?? 'PENDIENTE';
+}
+
+function toBackendStatus(frontendStatus: string): string {
+  return STATUS_FE_TO_BE[frontendStatus] ?? frontendStatus;
+}
+
 export interface ProgressReport {
   id: number;
   reportNumber: number;
@@ -93,7 +119,7 @@ function mapResponseToReport(r: any): ProgressReport {
     reportDate: r.registrationDate || r.lastUpdatedDate || '',
     physicalProgress: Number(r.progressPercentage || 0),
     financialProgress: Number(r.progressPercentage || 0), // Copied from progressPercentage for UI compatibility
-    status: r.reportStatus || 'PENDIENTE',
+    status: toFrontendStatus(r.reportStatus || r.status || 'PENDING'),
     observations: r.achievements ? `Logros: ${r.achievements}. Dificultades: ${r.difficulties}` : undefined,
     attachedDocumentId: r.attachedDocumentId,
     period: r.period,
@@ -138,8 +164,9 @@ function mapResponseToDetail(r: any): ProgressReportDetail {
 
 export const progressReportService = {
   getPendingReports: async (status?: string): Promise<ProgressReport[]> => {
+    const backendStatus = status ? toBackendStatus(status) : undefined;
     const res = await api.get<any>('/api/progress-reports', {
-      params: status ? { status } : undefined
+      params: backendStatus ? { status: backendStatus } : undefined
     });
     const content = Array.isArray(res.content) ? res.content : Array.isArray(res) ? res : [];
     return content.map(mapResponseToReport);

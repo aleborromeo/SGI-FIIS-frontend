@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Typography,
   Grid,
@@ -19,6 +20,7 @@ import { EligibilityWarning } from '../components/EligibilityWarning';
 import type { Convocatoria } from '../types/convocatoria.types';
 
 export function ConvocatoriasDashboard() {
+  const { t } = useTranslation('convocatorias');
   const { currentRole } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -29,21 +31,53 @@ export function ConvocatoriasDashboard() {
     navigate(`/projects/new?callId=${convocatoria.id}`);
   };
 
-  if (currentRole !== 'DOCENTE_INVESTIGADOR') return null;
+  if (currentRole !== 'DOCENTE_INVESTIGADOR' && currentRole !== 'ESTUDIANTE') return null;
 
-  const eligible = eligibility?.valid ?? false;
+  const eligible = currentRole === 'ESTUDIANTE'
+    ? (eligibility?.hasActiveGroup ?? false)
+    : (eligibility?.valid ?? false);
+
+  const renderContent = () => {
+    if (loadingCalls) {
+      return <ConvocatoriasSkeleton />;
+    }
+    if (errorCalls) {
+      return (
+        <Alert severity="error" sx={{ borderRadius: 2 }}>
+          <AlertTitle>{t('dashboard.errorTitle')}</AlertTitle>
+          {t('dashboard.errorMessage')}
+        </Alert>
+      );
+    }
+    if (!convocatorias || convocatorias.length === 0) {
+      return <ConvocatoriasEmpty />;
+    }
+    return (
+      <Grid container spacing={3}>
+        {convocatorias.map((convocatoria) => (
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={convocatoria.id}>
+            <ConvocatoriaCard
+              convocatoria={convocatoria}
+              eligible={eligible}
+              onPostular={handlePostular}
+            />
+          </Grid>
+        ))}
+      </Grid>
+    );
+  };
 
   return (
     <Box sx={{ mb: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
         <Megaphone style={{ color: 'var(--primary)' }} />
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Convocatorias Vigentes
+          {t('dashboard.title')}
         </Typography>
       </Box>
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Convocatorias de investigación abiertas para postulación de proyectos.
+        {t('dashboard.subtitle')}
       </Typography>
 
       {!loadingEligibility && (
@@ -53,28 +87,7 @@ export function ConvocatoriasDashboard() {
         />
       )}
 
-      {loadingCalls ? (
-        <ConvocatoriasSkeleton />
-      ) : errorCalls ? (
-        <Alert severity="error" sx={{ borderRadius: 2 }}>
-          <AlertTitle>Error al cargar convocatorias</AlertTitle>
-          No se pudieron cargar las convocatorias vigentes. Intente de nuevo más tarde.
-        </Alert>
-      ) : !convocatorias || convocatorias.length === 0 ? (
-        <ConvocatoriasEmpty />
-      ) : (
-        <Grid container spacing={3}>
-          {convocatorias.map((convocatoria) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={convocatoria.id}>
-              <ConvocatoriaCard
-                convocatoria={convocatoria}
-                eligible={eligible}
-                onPostular={handlePostular}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
+      {renderContent()}
     </Box>
   );
 }

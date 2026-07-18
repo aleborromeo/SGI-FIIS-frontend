@@ -24,7 +24,7 @@ const formatFechaHora = (iso: string): string =>
 
 interface FormularioSubsanacion {
   descripcion: string;
-  nombreArchivo: string | null;
+  archivo: File | null;
   error?: string;
 }
 
@@ -64,7 +64,7 @@ export const SubsanacionPanel: React.FC = () => {
 
   const actualizarFormulario = (idObservacion: number, cambios: Partial<FormularioSubsanacion>) => {
     setFormularios((prev) => {
-      const actual = prev[idObservacion] ?? { descripcion: '', nombreArchivo: null };
+      const actual = prev[idObservacion] ?? { descripcion: '', archivo: null };
       return { ...prev, [idObservacion]: { ...actual, ...cambios } };
     });
   };
@@ -78,7 +78,7 @@ export const SubsanacionPanel: React.FC = () => {
     }
     setEnviandoId(idObservacion);
     setFeedback(null);
-    tramiteService.subsanarObservacion(idObservacion, descripcion, formulario?.nombreArchivo ?? null)
+    tramiteService.subsanarObservacion(idObservacion, descripcion, formulario?.archivo ?? null)
       .then(() => cargarDatos())
       .then(() => {
         setFeedback(t('subsancion.toast.success'));
@@ -207,7 +207,7 @@ export const SubsanacionPanel: React.FC = () => {
                           type="file"
                           accept=".pdf,.doc,.docx"
                           className="input"
-                          onChange={(e) => actualizarFormulario(obs.id, { nombreArchivo: e.target.files?.[0]?.name ?? null })}
+                          onChange={(e) => actualizarFormulario(obs.id, { archivo: e.target.files?.[0] ?? null })}
                         />
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

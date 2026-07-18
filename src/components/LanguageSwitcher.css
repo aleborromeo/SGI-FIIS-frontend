@@ -148,3 +148,21 @@
     min-width: 12rem;
   }
 }
+
+.sidebar-language-switcher .language-switcher__trigger {
+  min-height: 2rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  box-shadow: none;
+  font-weight: 600;
+}
+
+.sidebar-language-switcher .language-switcher__trigger:hover {
+  background: #e2e8f0;
+  box-shadow: none;
+  transform: none;
+}

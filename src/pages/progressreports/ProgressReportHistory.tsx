@@ -23,6 +23,7 @@ import {
   type ProgressReportStatus,
   type ProjectSummary,
 } from '../../services/progressReportService';
+import Pagination from '../../components/ui/Pagination';
 import { useTranslation } from 'react-i18next';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -425,6 +426,8 @@ export const ProgressReportHistory: React.FC = () => {
   const [errorReports, setErrorReports] = useState<string | null>(null);
 
   const [detailReport, setDetailReport] = useState<ProgressReport | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   // Cargar proyectos según rol
   const fetchProjects = useCallback(async () => {
@@ -460,6 +463,10 @@ export const ProgressReportHistory: React.FC = () => {
 
   useEffect(() => { fetchReports(); }, [fetchReports]);
 
+  React.useEffect(() => {
+    setPage(1);
+  }, [selectedProjectId]);
+
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
   // Estadísticas de progreso general
@@ -469,6 +476,12 @@ export const ProgressReportHistory: React.FC = () => {
     avgFinancial: Math.round(reports.reduce((s, r) => s + r.financialProgress, 0) / reports.length),
     approved: reports.filter(r => r.status === 'APROBADO').length,
   } : null;
+
+  const totalPages = Math.ceil(reports.length / PAGE_SIZE);
+  const pagedReports = [...reports].reverse().slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
 
   return (
     <div className="animate-fade-in" style={{ padding: '28px' }}>
@@ -588,7 +601,7 @@ export const ProgressReportHistory: React.FC = () => {
                     <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>— {t('history.timeline.order')}</span>
                   </div>
                   <div>
-                    {[...reports].reverse().map((report, idx) => (
+                    {pagedReports.map((report, idx) => (
                       <TimelineNode
                         key={report.id}
                         report={report}
@@ -597,6 +610,13 @@ export const ProgressReportHistory: React.FC = () => {
                       />
                     ))}
                   </div>
+                  <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    totalItems={reports.length}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={setPage}
+                  />
                 </div>
               )}
             </>

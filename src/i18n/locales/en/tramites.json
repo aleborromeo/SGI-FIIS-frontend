@@ -73,6 +73,7 @@
     "pendingYourReview": "Pending your review",
     "actions": {
       "verDetalle": "View details",
+      "verHistorial": "View history",
       "subsanar": "Remedy"
     }
   },
@@ -448,18 +449,35 @@
   "auditTrail": {
     "title": "Traceability & Audit",
     "subtitle": "Immutable timeline of procedure movements. Read-only for Research Director and Administrator.",
+    "recentActivity": "Recent Activity",
+    "recentActivityDesc": "Latest system audit records",
+    "totalRecords": "Total records",
+    "tablesAffected": "Tables affected",
+    "activeUsers": "Active users",
+    "todayActions": "Actions today",
+    "table": "Table",
+    "record": "Record",
+    "action": "Action",
+    "user": "User",
+    "date": "Date",
+    "ip": "IP",
     "searchTitle": "Search Procedure for Audit",
     "searchDescription": "Enter the unique procedure identifier to view its complete history and audit timeline.",
     "inputPlaceholder": "E.g.: 1, 2, 3...",
     "searchButton": "Search Traceability",
     "noMovements": "No movements found for procedure #{{id}}.",
+    "noAuditData": "No audit records available.",
     "procedureCode": "Procedure code",
     "totalMovements": "Total movements",
     "currentStatus": "Current status",
     "withObservation": "With observation",
     "timelineTitle": "Audit Timeline",
     "procedureLabel": "Procedure",
-    "observationLabel": "Observation:"
+    "observationLabel": "Observation:",
+    "loadMore": "Load more",
+    "details": "Details",
+    "previousData": "Previous Data",
+    "newData": "New Data"
   },
   "error": {
     "notFound": "Procedure not found",
