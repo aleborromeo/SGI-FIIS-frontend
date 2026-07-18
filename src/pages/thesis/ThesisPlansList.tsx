@@ -332,9 +332,9 @@ export const ThesisPlansList: React.FC = () => {
                     </TableCell>
 
                     <TableCell>
-                      <Badge variant="info">{t('thesis:plansList.lineId')} {plan.idLinea}</Badge>
+                      <Badge variant="info">{plan.nombreLinea || plan.lineName || `${t('thesis:plansList.lineId')} ${plan.idLinea}`}</Badge>
                       <div style={{ fontSize: '11px', marginTop: '4px', color: 'var(--on-surface-variant)' }}>
-                        {t('thesis:plansList.groupId')} {plan.idGrupo}
+                        {plan.nombreGrupo || plan.codigoGrupo || plan.groupCode || `${t('thesis:plansList.groupId')} ${plan.idGrupo}`}
                       </div>
                     </TableCell>
 
