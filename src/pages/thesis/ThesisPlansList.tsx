@@ -50,6 +50,9 @@ interface ThesisPlanItem {
   studentName?: string;
   groupCode?: string;
   lineName?: string;
+  nombreLinea?: string;
+  nombreGrupo?: string;
+  codigoGrupo?: string;
 }
 
 export const ThesisPlansList: React.FC = () => {

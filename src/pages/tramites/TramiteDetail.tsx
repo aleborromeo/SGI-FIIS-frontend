@@ -423,7 +423,7 @@ export const TramiteDetail: React.FC = () => {
                 const isLast = index === movimientos.length - 1;
                 return (
                   <TimelineItem
-                    key={mov.id}
+                    key={`mov-${index}`}
                     id={String(mov.id)}
                     title={getAccionLabel(mov.accion)}
                     time={formatFechaHora(mov.fechaMovimiento)}
