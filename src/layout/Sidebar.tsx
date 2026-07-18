@@ -105,13 +105,6 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         roles: ['ESTUDIANTE', 'DOCENTE_INVESTIGADOR'],
       },
       {
-        id: 'subsanacion',
-        label: t('navigation:sidebarSubsanacion'),
-        icon: <CheckCircle size={20} />,
-        path: '/observations/subsanacion',
-        roles: ['ESTUDIANTE', 'DOCENTE_INVESTIGADOR'],
-      },
-      {
         id: 'progress-reports',
         label: t('navigation:sidebarMyReports'),
         icon: <FileSearch size={20} />,
@@ -153,33 +146,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
       },
     ],
   },
-  {
-    title: 'Gestión Documental y Resoluciones',
-    items: [
-      {
-        id: 'documents',
-        label: 'Documentos',
-        icon: <FolderOpen size={20} />,
-        path: '/documents',
-      },
-      {
-        id: 'resolutions',
-        label: 'Resoluciones',
-        icon: <Scale size={20} />,
-        path: '/resolutions',
-        // Mismos roles que acepta GET /api/reports/resolutions (ROLES_VISTA de la bandeja)
-        roles: ['DECANO', 'DIRECTOR_INVESTIGACION', 'COORDINADOR_GRUPO', 'ADMIN'],
-      },
-      {
-        id: 'reports',
-        label: 'Reportes Institucionales',
-        icon: <ClipboardList size={20} />,
-        path: '/reports',
-        // La vista se reserva a Director y Admin (RF-94/RF-95)
-        roles: ['DIRECTOR_INVESTIGACION', 'ADMIN'],
-      },
-    ],
-  },
+
   {
     title: t('navigation:groupAdministracion'),
     roles: ['ADMIN'],
