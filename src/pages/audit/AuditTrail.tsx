@@ -34,7 +34,6 @@ import {
   type ProcedureRecentActivity,
   type AuditLogEntry,
 } from '../../services/auditService';
-import { tramiteService } from '../../services/tramiteService';
 import { useToast } from '../../context/ToastContext';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -249,12 +248,9 @@ export const AuditTrail: React.FC = () => {
     let id = idOverride ?? Number.parseInt(procedureId, 10);
     if (Number.isNaN(id) || id <= 0) {
       const code = procedureId.trim().toUpperCase();
-      try {
-        const tramites = await tramiteService.getMyProcedures();
-        const found = tramites.find((t) => t.codigoTramite === code);
-        if (found) { id = found.id; }
-        else { toast.error('Ingrese un ID o código de trámite válido.'); return; }
-      } catch { toast.error('Ingrese un ID o código de trámite válido.'); return; }
+      const fromRecent = recentActivities.find((a) => a.procedureCode === code);
+      if (fromRecent) { id = fromRecent.procedureId; }
+      else { toast.error('Ingrese un ID o código de trámite válido.'); return; }
     }
     try {
       setLoading(true); setError(null);
