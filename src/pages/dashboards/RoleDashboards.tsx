@@ -666,6 +666,28 @@ export const RoleDashboards = () => {
   }
 
   function renderStudent(studentData: DashboardStudentResponse) {
+    const extraAlerts: AlertItem[] = [];
+    const planStatus = (studentData.currentPlanStatus || '').toUpperCase();
+    if (planStatus === 'APROBADO') {
+      extraAlerts.push({
+        type: 'SUCCESS',
+        title: 'dashboard.alert.thesis-plan-approved.title',
+        description: t('dashboard:alert.thesisPlanApproved', { defaultValue: 'Tu plan de tesis fue aprobado. Revisa el estado en la bandeja de trámites.' }),
+      });
+    } else if (planStatus === 'RECHAZADO') {
+      extraAlerts.push({
+        type: 'ERROR',
+        title: 'dashboard.alert.thesis-plan-rejected.title',
+        description: t('dashboard:alert.thesisPlanRejected', { defaultValue: 'Tu plan de tesis fue rechazado. Revisa las observaciones y vuelve a presentarlo.' }),
+      });
+    } else if (planStatus === 'OBSERVADO') {
+      extraAlerts.push({
+        type: 'WARNING',
+        title: 'dashboard.alert.thesis-plan-observed.title',
+        description: t('dashboard:alert.thesisPlanObserved', { defaultValue: 'Tu plan de tesis tiene observaciones pendientes. Ingresa a subsanación para corregirlas.' }),
+      });
+    }
+    const allAlerts = [...extraAlerts, ...(studentData.alerts || [])];
     return (
       <DashboardLayout
         viewClassName="student-view"
@@ -721,7 +743,7 @@ export const RoleDashboards = () => {
           </div>
         }
         alertsTitle={t('dashboard:student.sections.notifications')}
-        alerts={studentData.alerts}
+        alerts={allAlerts}
       />
     );
   }
