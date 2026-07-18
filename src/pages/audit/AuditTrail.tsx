@@ -27,7 +27,6 @@ import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Alert } from '../../components/ui/Alert';
-import { Input } from '../../components/ui/Input';
 import {
   auditService,
   type TraceabilityMovement,
@@ -517,22 +516,6 @@ export const AuditTrail: React.FC = () => {
 
         {/* Right: Traceability */}
         <div>
-          <Card style={{ border: '1px solid var(--outline-variant)', marginBottom: '20px' }}>
-            <CardContent style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Search size={16} color="#3b82f6" />
-                </div>
-                <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--on-surface)', margin: 0 }}>{t('tramites:auditTrail.searchTitle')}</h3>
-              </div>
-              <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', marginBottom: '16px', lineHeight: '1.5' }}>{t('tramites:auditTrail.searchDescription')}</p>
-              <Input placeholder={t('tramites:auditTrail.inputPlaceholder')} value={procedureId} onChange={(e) => setProcedureId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch()} />
-              <Button variant="primary" icon={<Search size={16} />} onClick={handleSearch} disabled={loading} style={{ width: '100%', marginTop: '12px', height: '40px' }}>
-                {loading ? t('common:searching') : t('tramites:auditTrail.searchButton')}
-              </Button>
-            </CardContent>
-          </Card>
-
           {error && (
             <Alert title={t('common:error')} style={{ marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><AlertTriangle size={16} /><span style={{ fontSize: '13px' }}>{error}</span></div>
