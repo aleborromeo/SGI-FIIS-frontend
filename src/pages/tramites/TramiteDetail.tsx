@@ -376,44 +376,91 @@ export const TramiteDetail: React.FC = () => {
                     {t('tramites:detailPage.buttons.reject')}
                   </Button>
                 )}
-                {puedeSubsanar && observaciones.filter((o) => o.estadoObservacion === 'PENDIENTE').length > 0 && (
+                {puedeSubsanar && (
                   <div style={{ borderTop: '1px solid var(--outline-variant)', paddingTop: '16px' }}>
-                    <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '12px' }}>
-                      {t('tramites:detailPage.subsanarInstructions', { defaultValue: 'Corrija los aspectos señalados y adjunte el documento corregido:' })}
-                    </p>
-                    {observaciones.filter((o) => o.estadoObservacion === 'PENDIENTE').map((obs) => (
-                      <div key={obs.id} style={{ marginBottom: '16px', padding: '12px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                          <Badge variant="neutral">{getTipoObservacionLabel(obs.tipoObservacion, t)}</Badge>
-                          <span className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>
-                            {getRolLabel(obs.rolRevisor, t)} · {formatFechaHora(obs.fechaRegistro)}
-                          </span>
-                        </div>
-                        <p className="text-body-md" style={{ marginBottom: '12px', padding: '8px 12px', background: 'rgba(239,68,68,0.04)', borderRadius: '6px', borderLeft: '3px solid #ef4444' }}>
-                          {obs.descripcion}
+                    {observaciones.filter((o) => o.estadoObservacion === 'PENDIENTE').length > 0 ? (
+                      <>
+                        <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '12px' }}>
+                          {t('tramites:detailPage.subsanarInstructions', { defaultValue: 'Corrija los aspectos señalados y adjunte el documento corregido:' })}
                         </p>
-                        {obs.subsanaciones.length > 0 && obs.subsanaciones.map((sub) => (
-                          <div key={sub.id} style={{ backgroundColor: 'var(--surface-container-low)', borderRadius: '6px', padding: '8px 12px', marginBottom: '12px' }}>
-                            <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>
-                              {t('tramites:detailPage.subsancionPrefix')} {formatFechaHora(sub.fechaRegistro)}
+                        {observaciones.filter((o) => o.estadoObservacion === 'PENDIENTE').map((obs) => (
+                          <div key={obs.id} style={{ marginBottom: '16px', padding: '12px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                              <Badge variant="neutral">{getTipoObservacionLabel(obs.tipoObservacion, t)}</Badge>
+                              <span className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>
+                                {getRolLabel(obs.rolRevisor, t)} · {formatFechaHora(obs.fechaRegistro)}
+                              </span>
                             </div>
-                            <p className="text-body-md" style={{ margin: '4px 0 0' }}>{sub.descripcion}</p>
+                            <p className="text-body-md" style={{ marginBottom: '12px', padding: '8px 12px', background: 'rgba(239,68,68,0.04)', borderRadius: '6px', borderLeft: '3px solid #ef4444' }}>
+                              {obs.descripcion}
+                            </p>
+                            {obs.subsanaciones.length > 0 && obs.subsanaciones.map((sub) => (
+                              <div key={sub.id} style={{ backgroundColor: 'var(--surface-container-low)', borderRadius: '6px', padding: '8px 12px', marginBottom: '12px' }}>
+                                <div className="text-caption" style={{ color: 'var(--on-surface-variant)' }}>
+                                  {t('tramites:detailPage.subsancionPrefix')} {formatFechaHora(sub.fechaRegistro)}
+                                </div>
+                                <p className="text-body-md" style={{ margin: '4px 0 0' }}>{sub.descripcion}</p>
+                              </div>
+                            ))}
+                            <Textarea
+                              label={t('tramites:detailPage.observationForm.label')}
+                              rows={2}
+                              value={subsanacionTextos[obs.id] ?? ''}
+                              error={subsanacionErrors[obs.id]}
+                              placeholder={t('tramites:detailPage.subsanarPlaceholder', { defaultValue: 'Describa cómo corrigió la observación...' })}
+                              onChange={(e) => {
+                                setSubsanacionTextos((prev) => ({ ...prev, [obs.id]: e.target.value }));
+                                setSubsanacionErrors((prev) => ({ ...prev, [obs.id]: undefined }));
+                              }}
+                            />
+                            <div style={{ marginTop: '8px' }}>
+                              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '4px', color: 'var(--on-surface-variant)' }}>
+                                {t('tramites:detailPage.observationForm.attachmentLabel', { defaultValue: 'Documento corregido (PDF, DOC, DOCX)' })}
+                              </label>
+                              <input
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                onChange={(e) => setSubsanacionFiles((prev) => ({ ...prev, [obs.id]: e.target.files?.[0] ?? null }))}
+                                style={{ display: 'block', width: '100%', padding: '6px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '13px' }}
+                              />
+                              {subsanacionFiles[obs.id] && (
+                                <span style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '4px', display: 'block' }}>
+                                  {subsanacionFiles[obs.id]?.name}
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+                              <Button
+                                icon={<Send size={14} />}
+                                disabled={subsanandoId === obs.id}
+                                onClick={() => handleSubsanarObservacion(obs.id)}
+                                style={{ fontSize: '13px', padding: '6px 12px' }}
+                              >
+                                {subsanandoId === obs.id
+                                  ? t('tramites:detailPage.subsanando', { defaultValue: 'Enviando...' })
+                                  : t('tramites:detailPage.buttons.subsanar')}
+                              </Button>
+                            </div>
                           </div>
                         ))}
-                        {obs.subsanaciones.length > 0 && (
-                          <div className="text-caption" style={{ color: 'var(--primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <CheckCircle size={12} /> {t('tramites:detailPage.subsanadoPrevio', { defaultValue: 'Ya enviaste una subsanación para esta observación' })}
-                          </div>
-                        )}
+                      </>
+                    ) : tramite.observacionActual ? (
+                      <>
+                        <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '12px' }}>
+                          {t('tramites:detailPage.subsanarInstructions', { defaultValue: 'Describa la corrección realizada y adjunte el documento corregido:' })}
+                        </p>
+                        <div style={{ marginBottom: '12px', padding: '8px 12px', background: 'rgba(239,68,68,0.04)', borderRadius: '6px', borderLeft: '3px solid #ef4444' }}>
+                          <p className="text-body-md" style={{ margin: 0 }}>{tramite.observacionActual}</p>
+                        </div>
                         <Textarea
                           label={t('tramites:detailPage.observationForm.label')}
                           rows={2}
-                          value={subsanacionTextos[obs.id] ?? ''}
-                          error={subsanacionErrors[obs.id]}
+                          value={subsanacionTextos[-1] ?? ''}
+                          error={subsanacionErrors[-1]}
                           placeholder={t('tramites:detailPage.subsanarPlaceholder', { defaultValue: 'Describa cómo corrigió la observación...' })}
                           onChange={(e) => {
-                            setSubsanacionTextos((prev) => ({ ...prev, [obs.id]: e.target.value }));
-                            setSubsanacionErrors((prev) => ({ ...prev, [obs.id]: undefined }));
+                            setSubsanacionTextos((prev) => ({ ...prev, [-1]: e.target.value }));
+                            setSubsanacionErrors((prev) => ({ ...prev, [-1]: undefined }));
                           }}
                         />
                         <div style={{ marginTop: '8px' }}>
@@ -423,29 +470,44 @@ export const TramiteDetail: React.FC = () => {
                           <input
                             type="file"
                             accept=".pdf,.doc,.docx"
-                            onChange={(e) => setSubsanacionFiles((prev) => ({ ...prev, [obs.id]: e.target.files?.[0] ?? null }))}
+                            onChange={(e) => setSubsanacionFiles((prev) => ({ ...prev, [-1]: e.target.files?.[0] ?? null }))}
                             style={{ display: 'block', width: '100%', padding: '6px', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', fontSize: '13px' }}
                           />
-                          {subsanacionFiles[obs.id] && (
+                          {subsanacionFiles[-1] && (
                             <span style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '4px', display: 'block' }}>
-                              {subsanacionFiles[obs.id]?.name}
+                              {subsanacionFiles[-1]?.name}
                             </span>
                           )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
                           <Button
                             icon={<Send size={14} />}
-                            disabled={subsanandoId === obs.id}
-                            onClick={() => handleSubsanarObservacion(obs.id)}
+                            disabled={subsanandoId === -1}
+                            onClick={async () => {
+                              const descripcion = (subsanacionTextos[-1] ?? '').trim();
+                              if (!descripcion) { setSubsanacionErrors((prev) => ({ ...prev, [-1]: t('tramites:detailPage.observationForm.requiredError') })); return; }
+                              setSubsanandoId(-1);
+                              try {
+                                await tramiteService.remediate(tramiteId, descripcion);
+                                await cargarDatos();
+                                setFeedback(t('tramites:detailPage.feedback.subsanado', { defaultValue: 'Subsanación registrada correctamente' }));
+                                setSubsanacionTextos((prev) => { const n = { ...prev }; delete n[-1]; return n; });
+                                setSubsanacionFiles((prev) => { const n = { ...prev }; delete n[-1]; return n; });
+                              } catch (err: any) {
+                                setError(err.message || t('tramites:detailPage.errors.executingAction'));
+                              } finally { setSubsanandoId(null); }
+                            }}
                             style={{ fontSize: '13px', padding: '6px 12px' }}
                           >
-                            {subsanandoId === obs.id
-                              ? t('tramites:detailPage.subsanando', { defaultValue: 'Enviando...' })
-                              : t('tramites:detailPage.buttons.subsanar')}
+                            {subsanandoId === -1 ? t('tramites:detailPage.subsanando', { defaultValue: 'Enviando...' }) : t('tramites:detailPage.buttons.subsanar')}
                           </Button>
                         </div>
-                      </div>
-                    ))}
+                      </>
+                    ) : (
+                      <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', textAlign: 'center', padding: '8px' }}>
+                        {t('tramites:detailPage.sinObservaciones', { defaultValue: 'No hay observaciones pendientes para subsanar.' })}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
