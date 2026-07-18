@@ -306,11 +306,26 @@ function translateAlertTitle(title: string, t: TFunction): string {
   if (normalized.includes('pending procedures')) return t('dashboard:alertTitles.pendingProcedures');
   if (normalized.includes('pending')) return t('dashboard:alertTitles.pendingAttention');
   if (normalized.includes('review')) return t('dashboard:alertTitles.reviewPending');
+  if (normalized.includes('active call for applications') || normalized.includes('active call')) return 'Convocatorias activas';
 
   return title;
 }
 
 function translateAlertDescription(description: string): string {
+  const normalized = description.toLowerCase();
+
+  if (normalized.includes('there are') && normalized.includes('open call(s) for applications')) {
+    const match = description.match(/\d+/);
+    const count = match ? match[0] : '0';
+    return `Hay ${count} convocatoria(s) abierta(s).`;
+  }
+  if (normalized.includes('procedures in progress')) {
+    return 'Trámites en progreso';
+  }
+  if (normalized.includes('under review')) {
+    return description.replace(/under review/gi, 'en revisión');
+  }
+
   const translated = description
     .replace(/procedure\(s\)/gi, 'trámites')
     .replace(/procedures/gi, 'trámites')

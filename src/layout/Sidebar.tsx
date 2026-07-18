@@ -51,6 +51,12 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         path: '/dashboard',
       },
       {
+        id: 'notifications',
+        label: t('navigation:notifications', 'Notificaciones'),
+        icon: <Inbox size={20} />,
+        path: '/dashboard',
+      },
+      {
         id: 'metrics',
         label: t('navigation:sidebarMetrics'),
         icon: <BarChart2 size={20} />,
