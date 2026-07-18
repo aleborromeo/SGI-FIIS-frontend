@@ -1,5 +1,5 @@
-import { useContext, type ReactNode } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import React, { useContext, type ReactNode } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, AuthContext } from './context/AuthContext.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
@@ -47,7 +47,11 @@ import { NewResolutionForm } from './pages/resolutions/NewResolutionForm.tsx';
 // Views del módulo Bandeja Lógica de Trámites y Subsanaciones
 import { TramitesInbox } from './pages/tramites/TramitesInbox.tsx';
 import { TramiteDetail } from './pages/tramites/TramiteDetail.tsx';
-import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
+const RedirectToTramiteDetail: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const tramiteId = searchParams.get('tramiteId');
+  return <Navigate to={tramiteId ? `/tramites/${tramiteId}` : '/tramites'} replace />;
+};
 
 // Views del módulo Gestión Documental y Resoluciones
 import { DocumentsPage } from './pages/documents/DocumentsPage.tsx';
@@ -303,7 +307,7 @@ function App() {
                   } />
                   <Route path="/observations/subsanacion" element={
                     <RoleProtectedRoute allowedRoles={['ESTUDIANTE', 'DOCENTE_INVESTIGADOR']}>
-                      <SubsanacionPanel />
+                      <RedirectToTramiteDetail />
                     </RoleProtectedRoute>
                   } />
                   <Route path="/decano/review" element={
