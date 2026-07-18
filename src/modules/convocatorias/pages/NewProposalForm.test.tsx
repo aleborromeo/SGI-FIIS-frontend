@@ -145,23 +145,13 @@ describe('NewProposalForm', () => {
     });
   });
 
-  it('shows GINSOFT restriction when GINSOFT group is selected', async () => {
+  it('does not show GINSOFT restriction alert (feature removed in refactor)', async () => {
     renderForm();
     await waitFor(() => {
       expect(screen.getByText('Siguiente')).toBeDefined();
     });
 
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.mouseDown(selects[1]);
-
-    await waitFor(() => {
-      const ginsoftOption = screen.getByText('GINSOFT');
-      fireEvent.click(ginsoftOption);
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(/Grupo GINSOFT detectado/)).toBeDefined();
-    });
+    expect(screen.queryByText(/Grupo GINSOFT detectado/)).toBeNull();
   });
 
   it('renders the ConvocatoriaSelect component', async () => {
