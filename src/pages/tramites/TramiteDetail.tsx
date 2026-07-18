@@ -444,13 +444,13 @@ export const TramiteDetail: React.FC = () => {
                           </div>
                         ))}
                       </>
-                    ) : tramite.observacionActual ? (
-                      <>
-                        <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '12px' }}>
+                    ) : (() => {
+                      const ultimaObs = tramite.observacionActual || movimientos.findLast((m) => m.observacion)?.observacion;
+                      return ultimaObs ? <>                        <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '12px' }}>
                           {t('tramites:detailPage.subsanarInstructions', { defaultValue: 'Describa la corrección realizada y adjunte el documento corregido:' })}
                         </p>
                         <div style={{ marginBottom: '12px', padding: '8px 12px', background: 'rgba(239,68,68,0.04)', borderRadius: '6px', borderLeft: '3px solid #ef4444' }}>
-                          <p className="text-body-md" style={{ margin: 0 }}>{tramite.observacionActual}</p>
+                          <p className="text-body-md" style={{ margin: 0 }}>{ultimaObs}</p>
                         </div>
                         <Textarea
                           label={t('tramites:detailPage.observationForm.label')}
@@ -502,12 +502,12 @@ export const TramiteDetail: React.FC = () => {
                             {subsanandoId === -1 ? t('tramites:detailPage.subsanando', { defaultValue: 'Enviando...' }) : t('tramites:detailPage.buttons.subsanar')}
                           </Button>
                         </div>
-                      </>
-                    ) : (
+                      </> : (
                       <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', textAlign: 'center', padding: '8px' }}>
                         {t('tramites:detailPage.sinObservaciones', { defaultValue: 'No hay observaciones pendientes para subsanar.' })}
                       </p>
-                    )}
+                    );
+                    })()}
                   </div>
                 )}
               </div>
