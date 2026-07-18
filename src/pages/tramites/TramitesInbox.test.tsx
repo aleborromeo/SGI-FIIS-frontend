@@ -31,6 +31,9 @@ const mockTramites: Tramite[] = [
     observacionActual: null,
     fechaCreacion: '2026-06-20T09:15:00',
     fechaActualizacion: '2026-06-20T09:15:00',
+    thesisReferenceId: null,
+    projectReferenceId: null,
+    reportReferenceId: null,
   },
   {
     id: 2,
@@ -44,6 +47,9 @@ const mockTramites: Tramite[] = [
     observacionActual: 'Falta la firma del asesor.',
     fechaCreacion: '2026-06-15T10:00:00',
     fechaActualizacion: '2026-06-28T16:40:00',
+    thesisReferenceId: null,
+    projectReferenceId: null,
+    reportReferenceId: null,
   },
 ];
 

@@ -22,6 +22,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { tramiteService, PENDING_STATE_BY_ROLE } from '../../services/tramiteService';
 import { documentService } from '../../services/documentService';
+import { thesisService, type ThesisPlan } from '../../services/thesisService';
+import { projectService, type Project } from '../../services/projectService';
 import type { EstadoTramite, MovimientoTramite, ObservacionTramite, Tramite } from '../../types/tramites';
 
 const formatFechaHora = (iso: string): string =>
@@ -103,6 +105,8 @@ export const TramiteDetail: React.FC = () => {
   const [observacionError, setObservacionError] = useState<string | undefined>(undefined);
   const [observationFile, setObservationFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [thesisPlan, setThesisPlan] = useState<ThesisPlan | null>(null);
+  const [project, setProject] = useState<Project | null>(null);
 
   const tramiteId = Number(id);
 
@@ -122,6 +126,16 @@ export const TramiteDetail: React.FC = () => {
         setTramite(dataTramite);
         setMovimientos(dataMovimientos);
         setObservaciones(dataObservaciones);
+        if (dataTramite.thesisReferenceId) {
+          thesisService.getPlanById(String(dataTramite.thesisReferenceId)).then(setThesisPlan).catch(() => {});
+        } else {
+          setThesisPlan(null);
+        }
+        if (dataTramite.projectReferenceId) {
+          projectService.getById(Number(dataTramite.projectReferenceId)).then(setProject).catch(() => {});
+        } else {
+          setProject(null);
+        }
       })
       .catch((err: Error) => setError(err.message || t('tramites:detailPage.errors.loadingTramite')));
   }, [tramiteId, t]);
@@ -240,6 +254,37 @@ export const TramiteDetail: React.FC = () => {
             {tramite.observacionActual}
           </Alert>
         </div>
+      )}
+
+      {thesisPlan && (
+        <Card style={{ marginBottom: '24px' }}>
+          <CardContent>
+            <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>{t('tramites:detailPage.thesisPlanData', { defaultValue: 'Datos del Plan de Tesis' })}</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div><strong>{t('tramites:detailPage.fields.title', { defaultValue: 'Título' })}:</strong> {thesisPlan.tituloTesis}</div>
+              {thesisPlan.resumen && <div><strong>{t('tramites:detailPage.fields.abstract', { defaultValue: 'Resumen' })}:</strong> {thesisPlan.resumen}</div>}
+              {thesisPlan.nombreEstudiante && (
+                <div><strong>{t('tramites:detailPage.fields.student', { defaultValue: 'Estudiante' })}:</strong> {thesisPlan.nombreEstudiante} {thesisPlan.apellidoEstudiante || ''}</div>
+              )}
+              {thesisPlan.nombreLinea && <div><strong>{t('tramites:detailPage.fields.researchLine', { defaultValue: 'Línea' })}:</strong> {thesisPlan.nombreLinea}</div>}
+              {thesisPlan.nombreGrupo && <div><strong>{t('tramites:detailPage.fields.researchGroup', { defaultValue: 'Grupo' })}:</strong> {thesisPlan.nombreGrupo}</div>}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {project && (
+        <Card style={{ marginBottom: '24px' }}>
+          <CardContent>
+            <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>{t('tramites:detailPage.projectData', { defaultValue: 'Datos del Proyecto' })}</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div><strong>{t('tramites:detailPage.fields.title')}:</strong> {project.title || project.code}</div>
+              {project.summary && <div><strong>{t('tramites:detailPage.fields.abstract')}:</strong> {project.summary}</div>}
+              {project.researchLineName && <div><strong>{t('tramites:detailPage.fields.researchLine')}:</strong> {project.researchLineName}</div>}
+              {project.researchGroupCode && <div><strong>{t('tramites:detailPage.fields.researchGroup')}:</strong> {project.researchGroupCode}</div>}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '24px' }}>

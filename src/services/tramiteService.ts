@@ -28,6 +28,9 @@ function mapProcedureToTramite(dto: ProcedureResponseDto): Tramite {
     observacionActual: dto.currentObservation,
     fechaCreacion: dto.sentAt || '',
     fechaActualizacion: dto.updatedAt || '',
+    thesisReferenceId: dto.thesisReferenceId ?? null,
+    projectReferenceId: dto.projectReferenceId ?? null,
+    reportReferenceId: dto.reportReferenceId ?? null,
   };
 }
 
