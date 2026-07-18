@@ -34,6 +34,7 @@ import {
   type ProcedureRecentActivity,
   type AuditLogEntry,
 } from '../../services/auditService';
+import { tramiteService } from '../../services/tramiteService';
 import { useToast } from '../../context/ToastContext';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -245,8 +246,16 @@ export const AuditTrail: React.FC = () => {
   const handleLoadMore = () => { setAuditPage((p) => p + 1); loadAuditLog(auditPage + 1, true); };
 
   const handleSearch = async (idOverride?: number) => {
-    const id = idOverride ?? Number.parseInt(procedureId, 10);
-    if (Number.isNaN(id) || id <= 0) { toast.error('Ingrese un ID de trámite válido.'); return; }
+    let id = idOverride ?? Number.parseInt(procedureId, 10);
+    if (Number.isNaN(id) || id <= 0) {
+      const code = procedureId.trim().toUpperCase();
+      try {
+        const tramites = await tramiteService.getMyProcedures();
+        const found = tramites.find((t) => t.codigoTramite === code);
+        if (found) { id = found.id; }
+        else { toast.error('Ingrese un ID o código de trámite válido.'); return; }
+      } catch { toast.error('Ingrese un ID o código de trámite válido.'); return; }
+    }
     try {
       setLoading(true); setError(null);
       const data = await auditService.getTraceability(id);
