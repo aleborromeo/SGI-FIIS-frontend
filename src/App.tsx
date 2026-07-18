@@ -49,6 +49,10 @@ import { TramitesInbox } from './pages/tramites/TramitesInbox.tsx';
 import { TramiteDetail } from './pages/tramites/TramiteDetail.tsx';
 import { SubsanacionPanel } from './pages/observations/SubsanacionPanel.tsx';
 
+// Views del módulo Gestión Documental y Resoluciones
+import { DocumentsPage } from './pages/documents/DocumentsPage.tsx';
+import { ResolutionsPage } from './pages/resolutions/ResolutionsPage.tsx';
+
 // Admin Views
 import { CreateUser } from './pages/users/CreateUser';
 import { UserManagement } from './pages/admin/UserManagement.tsx';
@@ -306,7 +310,14 @@ function App() {
                       <DecanoReview />
                     </RoleProtectedRoute>
                   } />
-                  <Route path="/resolutions/new" element={
+
+                  {/* Gestión Documental y Resoluciones */}
+                  <Route path="/resolutions" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION', 'DECANO']}>
+                      <ResolutionsPage />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/resolutions/new-legacy" element={
                     <RoleProtectedRoute allowedRoles={['DIRECTOR_INVESTIGACION', 'ADMIN']}>
                       <NewResolutionForm />
                     </RoleProtectedRoute>
@@ -321,6 +332,16 @@ function App() {
                   <Route path="/users" element={
                     <RoleProtectedRoute allowedRoles={['ADMIN']}>
                       <UserManagement />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/documents" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION', 'COORDINADOR_GRUPO', 'DECANO', 'DOCENTE_INVESTIGADOR', 'ESTUDIANTE', 'EVALUADOR']}>
+                      <DocumentsPage />
+                    </RoleProtectedRoute>
+                  } />
+                  <Route path="/admin/documents" element={
+                    <RoleProtectedRoute allowedRoles={['ADMIN']}>
+                      <DocumentRepository />
                     </RoleProtectedRoute>
                   } />
                   <Route path="/audit" element={
