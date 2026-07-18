@@ -196,8 +196,32 @@ function getQuickActions(role: string | null, t: TFunction): QuickAction[] {
         },
       ];
 
-    case 'DIRECTOR_INVESTIGACION':
     case 'DECANO':
+      return [
+        {
+          to: '/decano/review',
+          label: t('dashboard:quickActions.dean.pendingResolutions', 'Resolver Trámites'),
+          description: t('dashboard:quickActions.dean.pendingResolutionsDesc', 'Revisar y firmar resoluciones pendientes'),
+          icon: Scale,
+          tone: 'blue',
+        },
+        {
+          to: '/resolutions',
+          label: t('dashboard:quickActions.dean.resolutionsList', 'Resoluciones Emitidas'),
+          description: t('dashboard:quickActions.dean.resolutionsListDesc', 'Ver todas las resoluciones emitidas'),
+          icon: FileText,
+          tone: 'purple',
+        },
+        {
+          to: '/projects',
+          label: t('dashboard:quickActions.director.institutionalProjects'),
+          description: t('dashboard:quickActions.director.institutionalProjectsDesc'),
+          icon: Building2,
+          tone: 'green',
+        },
+      ];
+
+    case 'DIRECTOR_INVESTIGACION':
       return [
         {
           to: '/projects',
@@ -992,10 +1016,10 @@ export const RoleDashboards = () => {
             tone: 'blue',
           },
           {
-            icon: Users,
-            value: 'Global',
-            label: t('dashboard:director.metrics.researchGroups'),
-            sublabel: t('dashboard:director.metrics.researchGroupsSublabel'),
+            icon: ScrollText,
+            value: directorData.issuedResolutions ?? 0,
+            label: t('dashboard:director.metrics.issuedResolutions'),
+            sublabel: t('dashboard:director.metrics.issuedResolutionsSublabel', 'Resoluciones emitidas'),
             tone: 'green',
           },
           {

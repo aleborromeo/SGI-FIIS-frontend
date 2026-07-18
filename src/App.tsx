@@ -38,6 +38,7 @@ import { ConvocatoriasList } from './pages/convocatorias/ConvocatoriasList.tsx';
 import { NewConvocatoria } from './pages/convocatorias/NewConvocatoria.tsx';
 import { EditConvocatoria } from './pages/convocatorias/EditConvocatoria.tsx';
 
+import { NotificationsPage } from './pages/notifications/NotificationsPage.tsx';
 import { ConvocatoriasDashboard } from './modules/convocatorias/pages/ConvocatoriasDashboard.tsx';
 import { NewProposalForm } from './modules/convocatorias/pages/NewProposalForm.tsx';
 import { TramitesList } from './pages/tramites/TramitesList.tsx';
@@ -166,6 +167,7 @@ function App() {
                 {/* Rutas Protegidas (Con Layout de Dashboard persistente) */}
                 <Route element={<ProtectedRoute><DashboardContainer /></ProtectedRoute>}>
                   <Route path="/dashboard" element={<RoleDashboards />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
                   <Route path="/metrics" element={
                     <RoleProtectedRoute allowedRoles={['ADMIN', 'DIRECTOR_INVESTIGACION']}>
                       <MetricsReportsPage />
@@ -275,12 +277,12 @@ function App() {
                     </RoleProtectedRoute>
                   } />
                   <Route path="/progressreports/new" element={
-                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR']}>
+                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'ESTUDIANTE']}>
                       <NewProgressReport />
                     </RoleProtectedRoute>
                   } />
                   <Route path="/progressreports/amend/:id" element={
-                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR']}>
+                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'ESTUDIANTE']}>
                       <AmendProgressReport />
                     </RoleProtectedRoute>
                   } />
@@ -319,7 +321,7 @@ function App() {
                     </RoleProtectedRoute>
                   } />
                   <Route path="/resolutions/new-legacy" element={
-                    <RoleProtectedRoute allowedRoles={['DIRECTOR_INVESTIGACION', 'ADMIN']}>
+                    <RoleProtectedRoute allowedRoles={['DECANO']}>
                       <NewResolutionForm />
                     </RoleProtectedRoute>
                   } />

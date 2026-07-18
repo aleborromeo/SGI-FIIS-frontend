@@ -92,7 +92,10 @@ export const DirectorEvaluations: React.FC = () => {
 
   const filteredEvaluations = useMemo(() => {
     return evaluations.filter(e => {
-      const matchesStatus = filterStatus ? String(e.estado || e.status || '').toUpperCase() === filterStatus.toUpperCase() : true;
+      const matchesStatus = filterStatus ? (
+        String(e.estado || e.status || '').toUpperCase() === filterStatus.toUpperCase() ||
+        String(e.resultado || e.result || '').toUpperCase() === filterStatus.toUpperCase()
+      ) : true;
       const idStr = String(e.id || e.evaluationId || e.idEvaluacion || '').toLowerCase();
       const codeStr = String(e.expedienteCode || '').toLowerCase();
       const matchesSearch = searchQuery

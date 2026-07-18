@@ -41,10 +41,6 @@ export interface ResolutionResponse {
 }
 
 export const resolutionService = {
-  create: async (payload: ResolutionPayload): Promise<Resolution> => {
-    return api.post<Resolution>('/api/v1/resolutions', payload);
-  },
-
   getByProcedureId: async (procedureId: number): Promise<Resolution | null> => {
     try {
       return await api.get<Resolution>(`/api/v1/resolutions/procedure/${procedureId}`);
@@ -70,10 +66,8 @@ export const resolutionService = {
     formData.append('fechaEmision', data.fechaEmision);
     formData.append('asunto', data.asunto);
     formData.append('idTramite', String(data.idTramite));
-    formData.append('fileBytes', data.file);
+    formData.append('archivo', data.file);
 
-    return api.post<ResolutionResponse>('/resolutions', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.post<ResolutionResponse>('/api/v1/resolutions', formData);
   },
 };

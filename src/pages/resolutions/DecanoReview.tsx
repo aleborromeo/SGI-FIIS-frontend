@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
+  PenTool,
   Scale,
 } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
@@ -64,7 +65,7 @@ export const DecanoReview: React.FC = () => {
       number: resolutionNum.trim(),
       title: asunto.trim() || tramite.tituloReferencia,
     });
-    navigate(`/resolutions/new?${params.toString()}`);
+    navigate(`/resolutions/new-legacy?${params.toString()}`);
   };
 
   const handleObserve = async (tramite: Tramite) => {

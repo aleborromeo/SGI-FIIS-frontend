@@ -131,8 +131,8 @@ export const EvaluationForm: React.FC = () => {
       const user = userStr ? JSON.parse(userStr) : { id: 1 };
       await evaluacionService.submitResult(evaluacionId, {
         idEvaluador: user.id,
-        resultado: Number(totalScore) >= 13 ? 'APROBADO' : 'DESAPROBADO',
-        puntaje: Math.round(Number(totalScore)),
+        resultado: verdict,
+        puntaje: Number(totalScore),
         observaciones: generalComments
       });
       toast.success(t('projects:evaluation.evaluationSubmitted'));

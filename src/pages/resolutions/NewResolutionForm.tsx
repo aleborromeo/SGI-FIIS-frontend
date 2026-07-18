@@ -61,23 +61,17 @@ export const NewResolutionForm: React.FC = () => {
     }
     setSubmitting(true);
     try {
-      let attachedDocumentId: number | undefined;
-      if (fileSelected) {
-        attachedDocumentId = await resolutionService.uploadAttachment(fileSelected);
+      if (!fileSelected) {
+        toast.error(t('new.error.saveFailed'));
+        setSubmitting(false);
+        return;
       }
-      await resolutionService.create({
-        procedureId,
-        number: resNumber,
-        title: resTitle,
-        emissionDate,
-        issuer,
-        startDate,
-        endDate,
-        duration: Number(duration),
-        receivesFif: receivesFif === 'SI',
-        fifStatus,
-        requiresArticle: requiresArticle === 'SI',
-        attachedDocumentId,
+      await resolutionService.issueResolution({
+        numeroResolucion: resNumber,
+        fechaEmision: emissionDate,
+        asunto: resTitle,
+        idTramite: procedureId,
+        file: fileSelected,
       });
       toast.success(t('new.toast.success'));
       navigate('/decano/review');

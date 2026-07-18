@@ -54,7 +54,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         id: 'notifications',
         label: t('navigation:notifications', 'Notificaciones'),
         icon: <Inbox size={20} />,
-        path: '/dashboard',
+        path: '/notifications',
       },
       {
         id: 'metrics',
@@ -142,6 +142,20 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         icon: <FileSearch size={20} />,
         path: '/progressreports/review',
         roles: ['COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION'],
+      },
+      {
+        id: 'director-evaluations',
+        label: t('navigation:sidebarDirectorEvaluations'),
+        icon: <ClipboardCheck size={20} />,
+        path: '/evaluations/director',
+        roles: ['DIRECTOR_INVESTIGACION'],
+      },
+      {
+        id: 'assign-reviewers',
+        label: t('navigation:sidebarAssignReviewers'),
+        icon: <Users size={20} />,
+        path: '/projects/assign',
+        roles: ['DIRECTOR_INVESTIGACION'],
       },
       {
         id: 'audit',

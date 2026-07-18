@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 
 import { AuthContext } from '../../context/AuthContext';
+import { authService } from '../../services/authService';
 import { auditService } from '../../services/auditService';
 import { researchService } from '../../services/researchService';
 import { Spinner } from '../../components/common/Spinner';
@@ -130,7 +131,7 @@ function getMaxValue(metrics: MetricDefinition[], data: DashboardRecord): number
   return values.length > 0 ? Math.max(...values) : 1;
 }
 
-function toCSV(rows: Record<string, unknown>[], headers: string[]): string {
+function toCSV(rows: any[], headers: string[]): string {
   const escape = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const lines = [headers.map(escape).join(',')];
   for (const row of rows) {
@@ -179,7 +180,7 @@ export function MetricsReportsPage() {
       setLoading(true);
       try {
         const [dashRes, groupsRes] = await Promise.all([
-          auditService.getProjectReport(),
+          authService.getDashboardData<DashboardRecord>(),
           researchService.getGroups(),
         ]);
         if (mounted) {
@@ -298,10 +299,6 @@ export function MetricsReportsPage() {
           <span className="metrics-eyebrow">{t('dashboard:metricsPage.eyebrow')}</span>
           <h2>{t('dashboard:metricsPage.title')}</h2>
           <p>{t('dashboard:metricsPage.description')}</p>
-        </div>
-        <div className="metrics-header-badge">
-          <TrendingUp size={20} />
-          <span>{t('dashboard:metricsPage.currentRole')} {currentRole ?? t('dashboard:metricsPage.roleUndefined')}</span>
         </div>
       </header>
 

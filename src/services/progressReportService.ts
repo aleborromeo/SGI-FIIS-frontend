@@ -12,7 +12,7 @@ export type ProgressReportStatus =
 // Mapping: backend English → frontend Spanish
 const STATUS_BE_TO_FE: Record<string, ProgressReportStatus> = {
   PENDING: 'PENDIENTE',
-  UNDER_REVISION: 'EN_REVISION',
+  UNDER_REVIEW: 'EN_REVISION',
   OBSERVED: 'OBSERVADO',
   APPROVED: 'APROBADO',
   REJECTED: 'RECHAZADO',
@@ -21,7 +21,7 @@ const STATUS_BE_TO_FE: Record<string, ProgressReportStatus> = {
 // Mapping: frontend Spanish → backend English
 const STATUS_FE_TO_BE: Record<string, string> = {
   PENDIENTE: 'PENDING',
-  EN_REVISION: 'UNDER_REVISION',
+  EN_REVISION: 'UNDER_REVIEW',
   OBSERVADO: 'OBSERVED',
   APROBADO: 'APPROVED',
   RECHAZADO: 'REJECTED',
