@@ -268,6 +268,20 @@ export const TramiteDetail: React.FC = () => {
               )}
               {thesisPlan.nombreLinea && <div><strong>{t('tramites:detailPage.fields.researchLine', { defaultValue: 'Línea' })}:</strong> {thesisPlan.nombreLinea}</div>}
               {thesisPlan.nombreGrupo && <div><strong>{t('tramites:detailPage.fields.researchGroup', { defaultValue: 'Grupo' })}:</strong> {thesisPlan.nombreGrupo}</div>}
+              {thesisPlan.idDocumentoActual && (
+                <div>
+                  <strong>{t('tramites:detailPage.fields.document', { defaultValue: 'Documento' })}:</strong>{' '}
+                  <a
+                    href={documentService.getViewUrl(thesisPlan.idDocumentoActual)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}
+                  >
+                    <Download size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                    {thesisPlan.nombreDocumento || t('tramites:detailPage.viewDocument', { defaultValue: 'Ver documento' })}
+                  </a>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
