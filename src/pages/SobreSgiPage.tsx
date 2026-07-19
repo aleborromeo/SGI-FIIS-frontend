@@ -6,6 +6,8 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import './WelcomePage.css';
 import universityIcon from '../assets/images/icon-sgi-fiis.png';
 import { User, ChevronDown } from 'lucide-react';
+import { researchService } from '../services/researchService';
+import type { ResearchLine, ResearchGroup } from '../services/researchService';
 
 export const SobreSgiPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,92 +30,132 @@ export const SobreSgiPage: React.FC = () => {
     window.scrollTo(0, 0);
   }, [location]);
 
-  // Datos de Líneas de Investigación
-  const researchLinesDetail = [
-    {
-      title: 'Computación',
+  const [researchLines, setResearchLines] = useState<any[]>([]);
+  const [researchGroups, setResearchGroups] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  // Mapa de descripciones estáticas de Líneas de Investigación para enriquecer los datos de la BD
+  const lineDetailsMap: Record<string, { bases: string; areas: string[] }> = {
+    'computacion': {
       bases: 'El estudio formal de los fundamentos teóricos de la computación, desarrollo de algoritmos de alta complejidad y modelado científico-matemático.',
       areas: ['Teoría de la computación', 'Algorítmica avanzada', 'Optimización matemática', 'Computación de alto rendimiento (HPC)']
     },
-    {
-      title: 'Ingeniería de Software',
+    'ingenieria de software': {
       bases: 'La aplicación de métodos sistemáticos, disciplinados y cuantificables al diseño, desarrollo, operación y mantenimiento del software.',
       areas: ['Calidad y pruebas de software', 'Arquitectura de sistemas complejos', 'Metodologías ágiles de desarrollo', 'DevOps e integración continua']
     },
-    {
-      title: 'Inteligencia Artificial',
+    'inteligencia artificial': {
       bases: 'El desarrollo de modelos informáticos y agentes autónomos capaces de aprender de la experiencia, percibir patrones y tomar decisiones inteligentes.',
       areas: ['Aprendizaje profundo (Deep Learning)', 'Procesamiento de lenguaje natural (NLP)', 'Visión computacional', 'Robótica y automatización']
     },
-    {
-      title: 'Ciencia de Datos',
+    'ciencia de datos': {
       bases: 'La extracción de conocimiento predictivo y descriptivo a partir de grandes conjuntos de datos estructurados y no estructurados.',
       areas: ['Minería de datos (Data Mining)', 'Big Data y almacenamiento masivo', 'Visualización avanzada de información', 'Inteligencia de negocios (BI)']
     },
-    {
-      title: 'Redes y Telecomunicaciones',
+    'redes y telecomunicaciones': {
       bases: 'El diseño y optimización de infraestructuras de comunicación digital para garantizar la transferencia segura y eficiente de datos.',
       areas: ['Internet de las Cosas (IoT)', 'Computación en la nube (Cloud Computing)', 'Seguridad y protocolos de red', 'Redes definidas por software (SDN)']
     },
-    {
-      title: 'Ciberseguridad',
+    'ciberseguridad': {
       bases: 'La salvaguarda de activos de información mediante la protección de redes, sistemas de hardware y software contra ataques cibernéticos y accesos no autorizados.',
       areas: ['Criptografía aplicada', 'Hacking ético y análisis forense', 'Gestión de incidentes y riesgos TI', 'Seguridad en aplicaciones web y móviles']
+    },
+    'ciberseguridad y auditoria de ti': {
+      bases: 'La salvaguarda de activos de información mediante la protección de redes, sistemas de hardware y software contra ataques cibernéticos y accesos no autorizados.',
+      areas: ['Criptografía aplicada', 'Hacking ético y análisis forense', 'Gestión de incidentes y riesgos TI', 'Seguridad en aplicaciones web y móviles']
+    },
+    'gestion de tecnologias de informacion': {
+      bases: 'La aplicación estratégica de las tecnologías de información para la optimización de procesos de negocio y toma de decisiones.',
+      areas: ['Gobernanza TI', 'Gestión de Proyectos TI', 'Auditoría de Sistemas', 'Arquitectura Empresarial']
     }
-  ];
+  };
 
-  // Datos de Grupos de Investigación
-  const researchGroupsDetail = [
-    {
-      codigo: 'GINSOFT',
-      nombre: 'Grupo de Investigación en Ingeniería de Software',
+  // Mapa de descripciones estáticas de Grupos de Investigación
+  const groupDetailsMap: Record<string, { bases: string; investigaciones: number }> = {
+    'GINSOFT': {
       bases: 'Se enfoca en la optimización de procesos de software, la adopción de arquitecturas de software robustas y escalables y la aplicación de metodologías de calidad internacional.',
-      lineas: 'Ingeniería de Software',
       investigaciones: 18
     },
-    {
-      codigo: 'RESEGTI',
-      nombre: 'Red de Seguridad y Gestión de TI',
+    'RESEGTI': {
       bases: 'Especializado en ciberseguridad, gestión de riesgos de tecnologías de información, auditoría de sistemas e implementación de marcos de gobernanza TI.',
-      lineas: 'Ciberseguridad, Redes y Telecomunicaciones',
       investigaciones: 12
     },
-    {
-      codigo: 'GISI',
-      nombre: 'Grupo de Investigación en Sistemas de Información',
+    'GISI': {
       bases: 'Investiga el diseño y el impacto estratégico de los sistemas de información en la gestión empresarial, la reingeniería de procesos y soluciones ERP/CRM.',
-      lineas: 'Ciencia de Datos, Computación',
       investigaciones: 15
     },
-    {
-      codigo: 'CICO',
-      nombre: 'Círculo de Computación',
+    'CICO': {
       bases: 'Dedicado al entrenamiento en programación competitiva, el diseño de algoritmos avanzados de grafos, estructuras de datos complejas y teoría computacional.',
-      lineas: 'Computación, Inteligencia Artificial',
       investigaciones: 22
     },
-    {
-      codigo: 'EAP',
-      nombre: 'Estadística Aplicada',
+    'EAP': {
       bases: 'Aplica el análisis de regresión, diseño de experimentos, series de tiempo y modelos matemáticos aplicados a la agricultura, economía y ecología.',
-      lineas: 'Ciencia de Datos',
       investigaciones: 8
     },
-    {
-      codigo: 'MAP',
-      nombre: 'Matemática Aplicada',
+    'MAP': {
       bases: 'Estudia métodos numéricos, optimización convexa, ecuaciones diferenciales y simulación por computadora para la resolución de problemas físicos y de ingeniería.',
-      lineas: 'Computación',
       investigaciones: 10
     },
-    {
-      codigo: 'EU',
-      nombre: 'Emprendimiento Universitario',
+    'EU': {
       bases: 'Investiga y promueve la innovación tecnológica, el desarrollo de modelos de negocio digitales y la incubación de startups y spin-offs de base científica.',
-      lineas: 'Ingeniería de Software',
       investigaciones: 6
     }
-  ];
+  };
+
+  useEffect(() => {
+    setLoadingData(true);
+    Promise.all([
+      researchService.getLines(true).catch(() => [] as ResearchLine[]),
+      researchService.getGroups().catch(() => [] as ResearchGroup[]),
+    ])
+      .then(async ([linesData, groupsData]) => {
+        // Enriquecer líneas
+        const enrichedLines = linesData.map((line) => {
+          const key = line.lineName.toLowerCase().trim();
+          const detail = lineDetailsMap[key] || {
+            bases: 'Línea de investigación oficial de la facultad dedicada al desarrollo científico y tecnológico.',
+            areas: ['Investigación aplicada', 'Innovación tecnológica']
+          };
+          return {
+            title: line.lineName,
+            bases: detail.bases,
+            areas: detail.areas
+          };
+        });
+        setResearchLines(enrichedLines);
+
+        // Enriquecer grupos (cargando sus líneas asociadas dinámicamente)
+        const enrichedGroups = await Promise.all(
+          groupsData.map(async (group) => {
+            const key = group.groupCode.toUpperCase().trim();
+            const detail = groupDetailsMap[key] || {
+              bases: 'Grupo de investigación oficial orientado al fomento de la investigación científica y el desarrollo académico.',
+              investigaciones: 0
+            };
+
+            // Jalar líneas asociadas desde la BD
+            let associatedLines = '';
+            try {
+              const lines = await researchService.getGroupLines(group.id);
+              associatedLines = lines.map((l) => l.lineName).join(', ');
+            } catch (err) {
+              console.error(`Error al obtener líneas para grupo ${group.groupCode}:`, err);
+            }
+
+            return {
+              codigo: group.groupCode,
+              nombre: group.groupName,
+              bases: detail.bases,
+              lineas: associatedLines || 'Ninguna línea asociada',
+              investigaciones: detail.investigaciones
+            };
+          })
+        );
+        setResearchGroups(enrichedGroups);
+      })
+      .catch((err) => console.error('Error al cargar datos de SGI:', err))
+      .finally(() => setLoadingData(false));
+  }, []);
 
   return (
     <div className="welcome-page-container">
@@ -304,28 +346,36 @@ export const SobreSgiPage: React.FC = () => {
                   {t('about.researchLinesDescription')}
                 </p>
 
-                <div className="about-tabs-grid-container">
-                  {researchLinesDetail.map((line) => (
-                    <div key={line.title} className="about-info-card">
-                      <div className="about-card-header-row">
-                        <div className="about-card-badge">{t('about.badgeLine')}</div>
-                        <h4 className="about-card-title">{line.title}</h4>
+                {loadingData ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+                    <div className="loading-spinner" />
+                  </div>
+                ) : (
+                  <div className="about-tabs-grid-container">
+                    {researchLines.map((line) => (
+                      <div key={line.title} className="about-info-card">
+                        <div className="about-card-header-row">
+                          <div className="about-card-badge">{t('about.badgeLine')}</div>
+                          <h4 className="about-card-title">{line.title}</h4>
+                        </div>
+                        <div className="about-card-divider" />
+                        <p className="about-card-bases">
+                          <strong>{t('about.basedOn')}</strong> {line.bases}
+                        </p>
+                        {line.areas && line.areas.length > 0 && (
+                          <div className="about-card-subareas">
+                            <strong>{t('about.priorityAreas')}</strong>
+                            <ul className="about-subareas-list">
+                              {line.areas.map((area: string, idx: number) => (
+                                <li key={idx}>{area}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
-                      <div className="about-card-divider" />
-                      <p className="about-card-bases">
-                        <strong>{t('about.basedOn')}</strong> {line.bases}
-                      </p>
-                      <div className="about-card-subareas">
-                        <strong>{t('about.priorityAreas')}</strong>
-                        <ul className="about-subareas-list">
-                          {line.areas.map((area, idx) => (
-                            <li key={idx}>{area}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </section>
             )}
 
@@ -336,25 +386,31 @@ export const SobreSgiPage: React.FC = () => {
                   {t('about.researchGroupsDescription')}
                 </p>
 
-                <div className="about-tabs-grid-container">
-                  {researchGroupsDetail.map((group) => (
-                    <div key={group.codigo} className="about-info-card">
-                      <div className="about-card-header-row">
-                        <div className="about-card-badge group-badge">{group.codigo}</div>
-                        <h4 className="about-card-title">{group.nombre}</h4>
-                      </div>
-                      <div className="about-card-divider" />
-                      <p className="about-card-bases">
-                        <strong>{t('about.basedOn')}</strong> {group.bases}
-                      </p>
-                      <div className="about-card-meta-row">
-                        <div>
-                          <strong>{t('about.associatedLine')}</strong> <span className="meta-value">{group.lineas}</span>
+                {loadingData ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+                    <div className="loading-spinner" />
+                  </div>
+                ) : (
+                  <div className="about-tabs-grid-container">
+                    {researchGroups.map((group) => (
+                      <div key={group.codigo} className="about-info-card">
+                        <div className="about-card-header-row">
+                          <div className="about-card-badge group-badge">{group.codigo}</div>
+                          <h4 className="about-card-title">{group.nombre}</h4>
+                        </div>
+                        <div className="about-card-divider" />
+                        <p className="about-card-bases">
+                          <strong>{t('about.basedOn')}</strong> {group.bases}
+                        </p>
+                        <div className="about-card-meta-row">
+                          <div>
+                            <strong>{t('about.associatedLine')}</strong> <span className="meta-value">{group.lineas}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </section>
             )}
 

@@ -172,4 +172,12 @@ export const researchService = {
   getGroupLines: async (id: number): Promise<ResearchLine[]> => {
     return api.get<ResearchLine[]>(`/research-groups/${id}/lines`);
   },
+
+  getGroupByUser: async (userId: number): Promise<ResearchGroup | null> => {
+    try {
+      return await api.get<ResearchGroup | null>(`/research-groups/user/${userId}`);
+    } catch (e) {
+      return null;
+    }
+  },
 };

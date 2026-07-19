@@ -45,7 +45,6 @@ export const WelcomePage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) return;
     callService.getVigent()
       .then((data) => {
         if (data && data.length > 0) {
@@ -53,7 +52,7 @@ export const WelcomePage: React.FC = () => {
         }
       })
       .catch((err) => console.error('Error fetching vigent calls:', err));
-  }, [isAuthenticated]);
+  }, []);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
