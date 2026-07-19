@@ -10,6 +10,7 @@ export interface User {
   roleCode: string;
   roleDescription: string;
   active: boolean;
+  status?: string;
   mustChangePassword?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -68,6 +69,10 @@ export const userService = {
 
   rejectUser: async (id: number): Promise<void> => {
     return api.patch<void>(`/users/${id}/status`, { active: false });
+  },
+
+  activateUser: async (id: number): Promise<void> => {
+    return api.patch<void>(`/users/${id}/status`, { active: true });
   },
 
   createUser: async (user: {

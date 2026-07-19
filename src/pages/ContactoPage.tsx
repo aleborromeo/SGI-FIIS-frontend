@@ -19,7 +19,7 @@ export const ContactoPage: React.FC = () => {
 
   const [contactForm, setContactForm] = useState({
     userEmail: '',
-    deptEmail: 'sgi.decanato@unas.edu.pe',
+    deptEmail: 'sgifiisunas@gmail.com',
     msgType: 'comentario',
     message: ''
   });
@@ -29,7 +29,7 @@ export const ContactoPage: React.FC = () => {
     toast.success(t('contact.page.successMessage'));
     setContactForm({
       userEmail: '',
-      deptEmail: 'sgi.decanato@unas.edu.pe',
+      deptEmail: 'sgifiisunas@gmail.com',
       msgType: 'comentario',
       message: ''
     });
@@ -228,9 +228,7 @@ export const ContactoPage: React.FC = () => {
                           value={contactForm.deptEmail}
                           onChange={(e) => setContactForm({ ...contactForm, deptEmail: e.target.value })}
                         >
-                          <option value="sgi.decanato@unas.edu.pe">{t('contact.page.deptDecanato')}</option>
-                          <option value="sgi.investigacion@unas.edu.pe">{t('contact.page.deptInvestigacion')}</option>
-                          <option value="sgi.soporte@unas.edu.pe">{t('contact.page.deptSoporte')}</option>
+                          <option value="sgifiisunas@gmail.com">sgifiisunas@gmail.com</option>
                         </select>
                       </div>
                     </div>

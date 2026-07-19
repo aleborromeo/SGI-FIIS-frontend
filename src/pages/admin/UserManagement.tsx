@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   UserPlus,
@@ -8,6 +9,10 @@ import {
   Pencil,
   KeyRound,
   UserCheck,
+  UserX,
+  Shield,
+  Mail,
+  Phone,
   X,
   AlertCircle,
 } from 'lucide-react';
@@ -15,8 +20,6 @@ import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Alert } from '../../components/ui/Alert';
-import { Input } from '../../components/ui/Input';
-import { Select } from '../../components/ui/Select';
 import {
   TableContainer,
   TableHead,
@@ -31,10 +34,13 @@ import {
   type CreateUserPayload,
   type UpdateUserPayload,
 } from '../../services/userService';
+import { researchService, type ResearchGroup } from '../../services/researchService';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
 import { AuthContext } from '../../context/AuthContext';
 import Pagination from '../../components/ui/Pagination';
+import { UserDetailsModal } from '../../components/users/UserDetailsModal';
+import '../users/CreateUser.css';
 
 const ROLE_OPTIONS = [
   { value: 'ADMIN', label: 'Administrador' },
@@ -78,7 +84,9 @@ const EMPTY_FORM: UserFormData = {
 
 export const UserManagement: React.FC = () => {
   const { t } = useTranslation('admin');
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
+  const [groups, setGroups] = useState<ResearchGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,10 +94,13 @@ export const UserManagement: React.FC = () => {
   const [page, setPage] = useState(1);
 
   const [showForm, setShowForm] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<UserFormData>(EMPTY_FORM);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [editGroupId, setEditGroupId] = useState<number | ''>('');
+  const [initialGroupId, setInitialGroupId] = useState<number | ''>('');
 
   const toast = useToast();
   const confirm = useConfirm();
@@ -119,6 +130,13 @@ export const UserManagement: React.FC = () => {
     loadUsers();
   }, [loadUsers]);
 
+  useEffect(() => {
+    researchService
+      .getGroups()
+      .then((data) => setGroups(data.filter((group) => group.active)))
+      .catch((err) => console.error('Error loading research groups:', err));
+  }, []);
+
   const totalPages = Math.ceil(users.length / PAGE_SIZE);
   const paginatedUsers = users.slice(
     (page - 1) * PAGE_SIZE,
@@ -134,10 +152,7 @@ export const UserManagement: React.FC = () => {
   };
 
   const openCreateForm = () => {
-    setEditingUser(null);
-    setFormData(EMPTY_FORM);
-    setFormErrors({});
-    setShowForm(true);
+    navigate('/users/create');
   };
 
   const openEditForm = (user: User) => {
@@ -150,8 +165,20 @@ export const UserManagement: React.FC = () => {
       phone: user.phone || '',
       roleCode: user.roleCode,
     });
+    setEditGroupId('');
+    setInitialGroupId('');
     setFormErrors({});
     setShowForm(true);
+
+    researchService
+      .getGroupByUser(user.id)
+      .then((userGroup) => {
+        if (userGroup) {
+          setEditGroupId(userGroup.id);
+          setInitialGroupId(userGroup.id);
+        }
+      })
+      .catch((err) => console.error('Error fetching user group:', err));
   };
 
   const closeForm = () => {
@@ -159,6 +186,8 @@ export const UserManagement: React.FC = () => {
     setEditingUser(null);
     setFormData(EMPTY_FORM);
     setFormErrors({});
+    setEditGroupId('');
+    setInitialGroupId('');
   };
 
   const validateForm = (): boolean => {
@@ -182,6 +211,11 @@ export const UserManagement: React.FC = () => {
   const handleSave = async () => {
     if (!validateForm()) return;
 
+    if (formData.roleCode !== 'ADMIN' && !editGroupId) {
+      toast.error('Debe seleccionar un grupo de investigación para este usuario.');
+      return;
+    }
+
     try {
       setSaving(true);
       if (editingUser) {
@@ -195,6 +229,20 @@ export const UserManagement: React.FC = () => {
           payload.institutionalEmail = formData.institutionalEmail.trim();
         }
         await userService.update(editingUser.id, payload);
+
+        if (formData.roleCode === 'ADMIN') {
+          if (initialGroupId !== '') {
+            await researchService.removeMember(Number(initialGroupId), editingUser.id);
+          }
+        } else if (editGroupId !== initialGroupId) {
+          if (initialGroupId !== '') {
+            await researchService.removeMember(Number(initialGroupId), editingUser.id);
+          }
+          if (editGroupId !== '') {
+            await researchService.addMember(Number(editGroupId), editingUser.id);
+          }
+        }
+
         toast.success(t('users.toast.updated'));
       } else {
         const payload: CreateUserPayload = {
@@ -345,17 +393,35 @@ export const UserManagement: React.FC = () => {
         }}
       >
         <div style={{ flex: 1, maxWidth: '400px' }}>
-          <Input
-            label={t('users.searchLabel')}
-            placeholder={t('users.searchPlaceholder')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          />
+          <label htmlFor="users-search" className="label">
+            {t('users.searchLabel')}
+          </label>
+          <div style={{ position: 'relative' }}>
+            <Search
+              size={16}
+              style={{
+                position: 'absolute',
+                left: '14px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--on-surface-variant)',
+                pointerEvents: 'none',
+              }}
+            />
+            <input
+              id="users-search"
+              type="text"
+              className="input"
+              placeholder={t('users.searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              style={{ paddingLeft: '42px', marginBottom: 0 }}
+            />
+          </div>
         </div>
         <Button
           variant="secondary"
-          icon={<Search size={16} />}
           onClick={handleSearch}
         >
           {t('users.btnSearch')}
@@ -428,7 +494,6 @@ export const UserManagement: React.FC = () => {
             <TableHeader>{t('users.table.dni')}</TableHeader>
             <TableHeader>{t('users.table.nameAndLastname')}</TableHeader>
             <TableHeader>{t('users.table.email')}</TableHeader>
-            <TableHeader>{t('users.table.phone')}</TableHeader>
             <TableHeader>{t('users.table.role')}</TableHeader>
             <TableHeader>{t('users.table.status')}</TableHeader>
             <TableHeader style={{ textAlign: 'right' }}>{t('users.table.actions')}</TableHeader>
@@ -437,20 +502,31 @@ export const UserManagement: React.FC = () => {
         <TableBody>
           {loading ? (
             <TableRow>
-              <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: 'var(--on-surface-variant)' }}>
+              <td colSpan={6} style={{ textAlign: 'center', padding: '32px', color: 'var(--on-surface-variant)' }}>
                 {t('users.table.loading')}
               </td>
             </TableRow>
           ) : users.length === 0 ? (
             <TableRow>
-              <td colSpan={7} style={{ textAlign: 'center', padding: '48px', color: 'var(--on-surface-variant)' }}>
+              <td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: 'var(--on-surface-variant)' }}>
                 <Users size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
                 {t('users.table.empty')}
               </td>
             </TableRow>
           ) : (
             paginatedUsers.map((user) => (
-              <TableRow key={user.id}>
+              <TableRow
+                key={user.id}
+                className="clickable-user-row"
+                tabIndex={0}
+                onClick={() => setSelectedUser(user)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedUser(user);
+                  }
+                }}
+              >
                 <TableCell style={{ fontWeight: 700 }}>{user.dni}</TableCell>
                 <TableCell>
                   <div style={{ fontWeight: 600 }}>
@@ -458,7 +534,6 @@ export const UserManagement: React.FC = () => {
                   </div>
                 </TableCell>
                 <TableCell>{user.institutionalEmail || <span style={{ color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>{t('users.table.noEmail')}</span>}</TableCell>
-                <TableCell>{user.phone || '-'}</TableCell>
                 <TableCell>
                   <Badge variant={ROLE_BADGE_MAP[user.roleCode] || 'neutral'}>
                     {getRoleLabel(user.roleCode)}
@@ -471,34 +546,46 @@ export const UserManagement: React.FC = () => {
                 </TableCell>
                 <TableCell style={{ textAlign: 'right' }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                <Button
-                  variant="secondary"
-                  icon={<Pencil size={14} />}
-                  onClick={() => openEditForm(user)}
-                >
-                  {t('users.btnEdit')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  icon={<KeyRound size={14} />}
-                  onClick={() => handleResetPassword(user)}
-                  disabled={processingId === user.id}
-                >
-                  {t('users.btnResetPass')}
-                </Button>
-                <Button
-                  variant={user.active ? 'primary' : 'secondary'}
-                  icon={<UserCheck size={14} />}
-                  onClick={() => handleToggleStatus(user)}
-                  disabled={processingId === user.id}
-                  style={
-                    user.active
-                      ? { color: '#15803d', borderColor: '#15803d' }
-                      : { color: '#ba1a1a', borderColor: '#ba1a1a' }
-                  }
-                    >
-                      {user.active ? t('users.btnDeactivate') : t('users.btnActivate')}
-                    </Button>
+                    <Button
+                      variant="secondary"
+                      icon={<Pencil size={14} />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditForm(user);
+                      }}
+                      aria-label={t('users.btnEdit')}
+                      title={t('users.btnEdit')}
+                      className="btn-icon-only"
+                    />
+                    <Button
+                      variant="secondary"
+                      icon={<KeyRound size={14} />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleResetPassword(user);
+                      }}
+                      disabled={processingId === user.id}
+                      aria-label={t('users.btnResetPass')}
+                      title={t('users.btnResetPass')}
+                      className="btn-icon-only"
+                    />
+                    <Button
+                      variant="danger"
+                      icon={<UserX size={14} />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleStatus(user);
+                      }}
+                      disabled={processingId === user.id}
+                      aria-label={user.active ? t('users.btnDeactivate') : t('users.btnActivate')}
+                      title={user.active ? t('users.btnDeactivate') : t('users.btnActivate')}
+                      className="btn-icon-only"
+                      style={
+                        user.active
+                          ? { color: '#15803d', borderColor: '#15803d' }
+                          : { color: '#ba1a1a', borderColor: '#ba1a1a' }
+                      }
+                    />
                   </div>
                 </TableCell>
               </TableRow>
@@ -515,115 +602,153 @@ export const UserManagement: React.FC = () => {
         onPageChange={setPage}
       />
 
+      <UserDetailsModal
+        user={selectedUser}
+        open={Boolean(selectedUser)}
+        onClose={() => setSelectedUser(null)}
+      />
+
       {showForm && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-          }}
-          onClick={closeForm}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: 'var(--surface)',
-              borderRadius: '16px',
-              padding: '32px',
-              width: '95%',
-              maxWidth: '560px',
-              maxHeight: '90vh',
-              overflow: 'auto',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 className="text-headline-md">
-                {editingUser ? t('users.form.editTitle') : t('users.form.newTitle')}
-              </h2>
-              <button
-                onClick={closeForm}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)' }}
-              >
-                <X size={24} />
+        <div className="edit-user-modal-overlay" role="dialog" aria-modal="true" onClick={closeForm}>
+          <div className="edit-user-modal-container animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-custom">
+              <div className="modal-title-box">
+                <Pencil size={20} className="modal-title-icon" />
+                <h3>{editingUser ? t('users.form.editTitle', { defaultValue: 'Editar Datos Personales' }) : t('users.form.newTitle')}</h3>
+              </div>
+              <button onClick={closeForm} className="modal-close-btn" type="button">
+                <X size={20} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <Input
-                label={t('users.form.dniLabel')}
-                placeholder={t('users.form.dniPlaceholder')}
-                value={formData.dni}
-                onChange={(e) => setFormData({ ...formData, dni: e.target.value })}
-                error={formErrors.dni}
-                disabled={!!editingUser}
-                maxLength={8}
-              />
+            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="modal-form">
+              <div className="modal-fields-grid">
+                <div className="form-group-custom">
+                  <label className="field-label">{t('users.form.dniLabel')}</label>
+                  <input
+                    type="text"
+                    className="field-input readonly-input"
+                    value={formData.dni}
+                    onChange={(e) => setFormData({ ...formData, dni: e.target.value })}
+                    maxLength={8}
+                    disabled={!!editingUser}
+                    readOnly={!!editingUser}
+                  />
+                </div>
 
-              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <Input
-                  label={t('users.form.namesLabel')}
-                  placeholder={t('users.form.namesPlaceholder')}
-                  value={formData.firstNames}
-                  onChange={(e) => setFormData({ ...formData, firstNames: e.target.value })}
-                  error={formErrors.firstNames}
-                />
-                <Input
-                  label={t('users.form.lastNamesLabel')}
-                  placeholder={t('users.form.lastNamesPlaceholder')}
-                  value={formData.lastNames}
-                  onChange={(e) => setFormData({ ...formData, lastNames: e.target.value })}
-                  error={formErrors.lastNames}
-                />
-              </div>
+                <div className="form-group-custom">
+                  <label htmlFor="editRoleCode" className="field-label">{t('users.form.roleLabel')}</label>
+                  <select
+                    id="editRoleCode"
+                    className="field-input select-input"
+                    value={formData.roleCode}
+                    onChange={(e) => setFormData({ ...formData, roleCode: e.target.value })}
+                    disabled={saving}
+                  >
+                    {ROLE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <Input
-                label={t('users.form.emailLabel')}
-                placeholder={t('users.form.emailPlaceholder')}
-                value={formData.institutionalEmail}
-                onChange={(e) => setFormData({ ...formData, institutionalEmail: e.target.value })}
-                helpText={t('users.form.emailHelp')}
-              />
+                <div className="form-group-custom">
+                  <label htmlFor="editFirstNames" className="field-label">{t('users.form.namesLabel')}</label>
+                  <input
+                    type="text"
+                    id="editFirstNames"
+                    className="field-input"
+                    value={formData.firstNames}
+                    onChange={(e) => setFormData({ ...formData, firstNames: e.target.value })}
+                    disabled={saving}
+                  />
+                  {formErrors.firstNames && <span className="field-hint" style={{ color: '#dc2626' }}>{formErrors.firstNames}</span>}
+                </div>
 
-              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <Input
-                  label={t('users.form.phoneLabel')}
-                  placeholder={t('users.form.phonePlaceholder')}
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
-                <Select
-                  label={t('users.form.roleLabel')}
-                  value={formData.roleCode}
-                  onChange={(e) => setFormData({ ...formData, roleCode: e.target.value })}
-                  options={ROLE_OPTIONS}
-                  error={formErrors.roleCode}
-                />
+                <div className="form-group-custom">
+                  <label htmlFor="editLastNames" className="field-label">{t('users.form.lastNamesLabel')}</label>
+                  <input
+                    type="text"
+                    id="editLastNames"
+                    className="field-input"
+                    value={formData.lastNames}
+                    onChange={(e) => setFormData({ ...formData, lastNames: e.target.value })}
+                    disabled={saving}
+                  />
+                  {formErrors.lastNames && <span className="field-hint" style={{ color: '#dc2626' }}>{formErrors.lastNames}</span>}
+                </div>
+
+                <div className="form-group-custom">
+                  <label htmlFor="editEmail" className="field-label">{t('users.form.emailLabel')}</label>
+                  <div className="field-input-wrapper">
+                    <span className="field-icon"><Mail size={18} /></span>
+                    <input
+                      type="email"
+                      id="editEmail"
+                      className="field-input"
+                      value={formData.institutionalEmail}
+                      onChange={(e) => setFormData({ ...formData, institutionalEmail: e.target.value })}
+                      disabled={saving}
+                    />
+                  </div>
+                  <p className="field-hint">{t('users.form.emailHelp')}</p>
+                </div>
+
+                <div className="form-group-custom">
+                  <label htmlFor="editPhone" className="field-label">{t('users.form.phoneLabel')}</label>
+                  <div className="field-input-wrapper">
+                    <span className="field-icon"><Phone size={18} /></span>
+                    <input
+                      type="text"
+                      id="editPhone"
+                      className="field-input"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
+
+                {formData.roleCode !== 'ADMIN' && (
+                  <div className="form-group-custom">
+                    <label htmlFor="editGroupId" className="field-label">Grupo de Investigación</label>
+                    <div className="field-input-wrapper">
+                      <span className="field-icon"><Shield size={18} /></span>
+                      <select
+                        id="editGroupId"
+                        className="field-input select-input"
+                        value={editGroupId}
+                        onChange={(e) => setEditGroupId(e.target.value ? Number(e.target.value) : '')}
+                        disabled={saving}
+                      >
+                        <option value="">Seleccione un grupo...</option>
+                        {groups.map((group) => (
+                          <option key={group.id} value={group.id}>
+                            {group.groupName} ({group.groupCode})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {!editingUser && (
                 <Alert title={t('users.form.tempPasswordTitle')}>
-                  <span style={{ fontSize: '0.875rem' }}>
-                    {t('users.form.tempPasswordMessage')}
-                  </span>
+                  <span style={{ fontSize: '0.875rem' }}>{t('users.form.tempPasswordMessage')}</span>
                 </Alert>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
-                <Button variant="secondary" onClick={closeForm}>
+              <div className="modal-actions-wrapper">
+                <Button type="button" variant="secondary" onClick={closeForm} disabled={saving}>
                   {t('users.form.btnCancel')}
                 </Button>
-                <Button variant="primary" onClick={handleSave} disabled={saving}>
+                <Button type="submit" variant="primary" disabled={saving} className="modal-save-btn">
                   {saving ? t('users.form.saving') : editingUser ? t('users.form.btnUpdate') : t('users.form.btnCreate')}
                 </Button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}

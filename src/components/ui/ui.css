@@ -54,6 +54,17 @@
   background-color: var(--surface-container-low);
 }
 
+.btn-icon-only {
+  padding: 8px;
+  min-width: 36px;
+  min-height: 36px;
+  gap: 0;
+}
+
+.btn-icon-only .btn-icon {
+  margin: 0;
+}
+
 .btn-danger {
   background-color: var(--surface-container-lowest);
   color: var(--error);
@@ -203,6 +214,15 @@
 
 .table tbody tr:hover {
   background-color: var(--surface);
+}
+
+.clickable-user-row {
+  cursor: pointer;
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+
+.clickable-user-row:hover {
+  background-color: rgba(15, 23, 42, 0.045);
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
