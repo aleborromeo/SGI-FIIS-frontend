@@ -279,24 +279,25 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
                 </Box>
               </Box>
             )}
-            renderInput={(params) => {
-              const { InputProps, ...rest } = params as any;
-              return (
-                <TextField
-                  {...rest}
-                  label="Buscar miembro por nombre o correo"
-                  placeholder="Escribe para buscar..."
-                  slotProps={{
-                    input: {
-                      ...(InputProps || {}),
-                      startAdornment: (
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Buscar miembro por nombre o correo"
+                placeholder="Escribe para buscar..."
+                slotProps={{
+                  ...params.slotProps,
+                  input: {
+                    ...params.slotProps?.input,
+                    startAdornment: (
+                      <>
                         <Search size={18} style={{ marginRight: 4, color: 'var(--on-surface-variant)' }} />
-                      ),
-                    },
-                  }}
-                />
-              );
-            }}
+                        {params.slotProps?.input?.startAdornment}
+                      </>
+                    ),
+                  },
+                }}
+              />
+            )}
             sx={{ minWidth: isMobile ? '100%' : 320 }}
           />
           <FormControl sx={{ minWidth: isMobile ? '100%' : 180 }} size="small">
