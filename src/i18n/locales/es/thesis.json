@@ -158,6 +158,10 @@
     "projectLine": "Línea del proyecto",
     "researchGroup": "Grupo de investigación",
     "advisor": "Asesor",
+    "summaryTitle": "Resumen del plan de tesis",
+    "summaryPlaceholder": "Este plan no tiene resumen registrado.",
+    "observationTitle": "Observaciones del revisor",
+    "observationPlaceholder": "No hay observaciones registradas.",
     "institutionalObservationFlow": "Flujo de observación institucional",
     "traceabilityBadge": "Trazabilidad",
     "timeline": {

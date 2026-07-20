@@ -158,6 +158,10 @@
     "projectLine": "Project line",
     "researchGroup": "Research group",
     "advisor": "Advisor",
+    "summaryTitle": "Thesis plan summary",
+    "summaryPlaceholder": "This plan has no registered summary.",
+    "observationTitle": "Reviewer observations",
+    "observationPlaceholder": "No observations registered.",
     "institutionalObservationFlow": "Institutional observation flow",
     "traceabilityBadge": "Traceability",
     "timeline": {

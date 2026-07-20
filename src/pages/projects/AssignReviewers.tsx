@@ -67,7 +67,7 @@ export const AssignReviewers: React.FC = () => {
 
   useEffect(() => {
     userService
-      .getReviewers()
+      .getReviewers(Number(projectId) || undefined)
       .then((users) => {
         setAvailableReviewers(users.map(mapUserToReviewer));
       })
@@ -75,7 +75,7 @@ export const AssignReviewers: React.FC = () => {
         setFetchError(t('projects:assignReviewers.errorLoadingTeachersDetail'));
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [projectId]);
 
   const filteredReviewers = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();

@@ -38,6 +38,13 @@ export interface AuditLogEntry {
   fechaAccion: string;
 }
 
+export interface AuditStats {
+  totalRecords: number;
+  tablesAffected: number;
+  activeUsers: number;
+  todayActions: number;
+}
+
 export const auditService = {
   getTraceability: async (procedureId: number): Promise<TraceabilityMovement[]> => {
     const res = await api.get<TraceabilityMovement[]>(
@@ -57,6 +64,11 @@ export const auditService = {
   getAuditLog: async (page = 0, size = 20): Promise<AuditLogEntry[]> => {
     const res = await api.get<AuditLogEntry[]>('/api/audit', { params: { page, size } });
     return Array.isArray(res) ? res : [];
+  },
+
+  getAuditStats: async (): Promise<AuditStats> => {
+    const res = await api.get<AuditStats>('/api/audit/stats');
+    return res || { totalRecords: 0, tablesAffected: 0, activeUsers: 0, todayActions: 0 };
   },
 
   getAuditLogByTabla: async (tabla: string, page = 0, size = 20): Promise<AuditLogEntry[]> => {

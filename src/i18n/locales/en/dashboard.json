@@ -240,7 +240,9 @@
       "activeProcedures": "Active procedures",
       "pendingReviewSuffix": "pending review",
       "calls": "Calls",
-      "callsSublabel": "Current calls for research"
+      "callsSublabel": "Current calls for research",
+      "issuedResolutions": "Issued resolutions",
+      "issuedResolutionsSublabel": "Historical administrative signatures"
     },
     "sections": {
       "procedureDistribution": "Institutional procedure distribution",
