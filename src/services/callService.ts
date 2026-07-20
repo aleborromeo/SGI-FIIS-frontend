@@ -10,6 +10,7 @@ export interface CallResponse {
   targetAudience: string;
   documentId?: number;
   researchLineIds: number[];
+  researchLineNames?: string[];
 }
 
 export interface CreateCallPayload {

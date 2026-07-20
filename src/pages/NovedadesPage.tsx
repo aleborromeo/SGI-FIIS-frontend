@@ -5,13 +5,22 @@ import universityIcon from '../assets/images/icon-sgi-fiis.png';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../hooks/useLanguage';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
-import { User, ChevronDown } from 'lucide-react';
+import { User, ChevronDown, Megaphone, Target, Calendar, BookOpen } from 'lucide-react';
 import { callService } from '../services/callService';
+import type { CallResponse } from '../services/callService';
+import { researchService } from '../services/researchService';
+import type { ResearchLine } from '../services/researchService';
 
 // Import news images
 import convocatoriasBg from '../assets/images/convocatorias.png';
 import reconocimientoBg from '../assets/images/reconocimineto.png';
 import congresosBg from '../assets/images/congresos.png';
+
+// Import social logos
+import facebookLogo from '../assets/images/logos/logotipo-circular-de-facebook.png';
+import linkedinLogo from '../assets/images/logos/linkedin.png';
+import whatsappLogo from '../assets/images/logos/whatsapp.png';
+import instagramLogo from '../assets/images/logos/instagram.png';
 
 export const NovedadesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,7 +28,8 @@ export const NovedadesPage: React.FC = () => {
   const { t } = useTranslation('public');
   useLanguage();
   const [activeSection, setActiveSection] = useState('novedades-convocatorias');
-  const [calls, setCalls] = useState<any[]>([]);
+  const [calls, setCalls] = useState<CallResponse[]>([]);
+  const [allLines, setAllLines] = useState<ResearchLine[]>([]);
   const [loading, setLoading] = useState(true);
 
   const handleScrollToSection = (id: string) => {
@@ -36,22 +46,81 @@ export const NovedadesPage: React.FC = () => {
     window.scrollTo(0, 0);
   }, [location]);
 
-  // Cargar convocatorias del backend
+  // Cargar convocatorias y líneas de investigación del backend
   useEffect(() => {
     setLoading(true);
-    callService.getAll()
-      .then((data) => {
-        // Ordenar: ABIERTA primero, luego id descendente
-        const sorted = [...data].sort((a, b) => {
-          if (a.status === 'ABIERTA' && b.status !== 'ABIERTA') return -1;
-          if (a.status !== 'ABIERTA' && b.status === 'ABIERTA') return 1;
-          return b.id - a.id;
-        });
-        setCalls(sorted);
+    Promise.all([
+      callService.getAll(),
+      researchService.getLines(true).catch(() => [] as ResearchLine[]),
+    ])
+      .then(([callsData, linesData]) => {
+        setAllLines(linesData);
+
+        // Crear un mapa de id => nombre de línea
+        const lineMap = new Map<number, string>();
+        linesData.forEach((line) => lineMap.set(line.id, line.lineName));
+
+        // Enriquecer las convocatorias con nombres de líneas
+        const enriched = callsData.map((call) => ({
+          ...call,
+          researchLineNames: (call.researchLineIds || [])
+            .map((id) => lineMap.get(id))
+            .filter(Boolean) as string[],
+        }));
+
+        // Filtrar: separar vigentes (ABIERTA) de vencidas
+        const activeCalls = enriched.filter((c) => c.status === 'ABIERTA');
+        const expiredCalls = enriched.filter((c) => c.status !== 'ABIERTA');
+
+        // Ordenar ambas listas por ID descendente
+        activeCalls.sort((a, b) => b.id - a.id);
+        expiredCalls.sort((a, b) => b.id - a.id);
+
+        // Mostrar todas las vigentes y máximo las 2 últimas vencidas
+        const limitedExpired = expiredCalls.slice(0, 2);
+        const finalCalls = [...activeCalls, ...limitedExpired];
+
+        setCalls(finalCalls);
       })
       .catch((err) => console.error('Error al obtener convocatorias:', err))
       .finally(() => setLoading(false));
   }, []);
+
+  /** Helper: genera el link de compartir para una convocatoria */
+  const getShareUrl = (call: CallResponse) => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/novedades?convocatoria=${call.id}`;
+  };
+
+  /** Helper: formatea fecha a formato legible */
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '—';
+    try {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  /** Renderiza el badge de estado */
+  const renderStatusBadge = (status: string) => {
+    const statusClass = status === 'ABIERTA' ? 'open' : status === 'CERRADA' ? 'closed' : 'finished';
+    const statusLabel = status === 'ABIERTA' ? t('news.open') : status === 'CERRADA' ? t('news.closed') : t('news.finished');
+    return (
+      <span className={`convocatoria-status-badge ${statusClass}`}>
+        ● {statusLabel}
+      </span>
+    );
+  };
+
+  const getTargetAudienceLabel = (targetAudience?: string) => {
+    if (!targetAudience) return '—';
+    if (targetAudience === 'DOCENTES') return 'Docentes';
+    if (targetAudience === 'ESTUDIANTES') return 'Estudiantes';
+    if (targetAudience === 'AMBOS') return 'Docentes y Estudiantes';
+    return targetAudience;
+  };
 
   return (
     <div className="welcome-page-container">
@@ -191,10 +260,10 @@ export const NovedadesPage: React.FC = () => {
 
       {/* Cuerpo Principal */}
       <section className="welcome-about-fiis-section" style={{ marginTop: '70px', minHeight: 'calc(100vh - 120px)' }}>
-        <div className="about-fiis-container">
+        <div className="about-fiis-container novedades-layout">
           
-          {/* Columna Izquierda: Novedades Stacked */}
-          <div className="about-fiis-main-content">
+          {/* Columna Izquierda: Contenido Scrolleable */}
+          <div className="about-fiis-main-content novedades-main-content">
             <div className="about-fiis-breadcrumbs">
               {t('news.breadcrumb')}
             </div>
@@ -230,73 +299,87 @@ export const NovedadesPage: React.FC = () => {
                     </p>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  <div className="convocatorias-grid">
                     {calls.map((call) => {
                       const isOpen = call.status === 'ABIERTA';
+                      const shareUrl = getShareUrl(call);
+                      const shareText = encodeURIComponent(call.title);
+
                       return (
-                        <div key={call.id} className="about-info-card" style={{ padding: '0', overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
-                          <div style={{
-                            height: '240px',
-                            backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.7) 100%), url(${convocatoriasBg})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            padding: '2rem',
-                            display: 'flex',
-                            alignItems: 'flex-end',
-                            justifyContent: 'space-between'
-                          }}>
-                            <div className="about-card-badge" style={{ backgroundColor: '#1a365d', color: '#ffffff', margin: 0 }}>{t('news.convocatoriaBadge')}</div>
-                            <span style={{ 
-                              color: '#ffffff', 
-                              backgroundColor: 'rgba(15, 23, 42, 0.65)', 
-                              padding: '4px 10px', 
-                              borderRadius: '4px', 
-                              fontSize: '0.75rem', 
-                              fontWeight: 600 
-                            }}>
-                              {t('news.code', { id: call.id })}
-                            </span>
+                        <div key={call.id} className="convocatoria-card">
+                          <div className="convocatoria-card-header">
+                            <div className="convocatoria-card-brand">
+                              <div className="convocatoria-card-logo-wrap">
+                                <Megaphone className="convocatoria-card-megaphone" size={24} color="#ffffff" fill="#ffffff" />
+                              </div>
+                              <div className="convocatoria-card-brand-copy">
+                                <span className="convocatoria-card-code">CONV-{call.id}</span>
+                                <h3 className="convocatoria-card-title">{call.title}</h3>
+                              </div>
+                            </div>
+                            {renderStatusBadge(call.status)}
                           </div>
-                          <div style={{ padding: '2rem' }}>
-                            <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 1rem 0', color: '#0f172a' }}>
-                              {call.title}
-                            </h3>
-                            <p style={{ fontSize: '0.98rem', color: '#475569', lineHeight: 1.6, margin: '0 0 1.5rem 0', whiteSpace: 'pre-line' }}>
-                              {call.description}
-                            </p>
-                            
-                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2rem', fontSize: '0.88rem', color: '#64748b' }}>
-                              <span><strong>{t('news.duration')}</strong> {call.startDate} {t('news.to')} {call.endDate}</span>
+
+                          <p className="convocatoria-card-desc">{call.description}</p>
+
+                          <div className="convocatoria-card-details">
+                            <div className="convocatoria-card-row" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <Target size={16} color="#334155" />
                               <span>
-                                <strong>{t('news.status')}</strong>{' '}
-                                <span style={{ 
-                                  color: isOpen ? '#166534' : '#991b1b', 
-                                  fontWeight: 700,
-                                  backgroundColor: isOpen ? '#dcfce7' : '#fee2e2',
-                                  padding: '4px 10px',
-                                  borderRadius: '6px',
-                                  fontSize: '0.8rem'
-                                }}>
-                                  {isOpen ? t('news.open') : call.status === 'CERRADA' ? t('news.closed') : t('news.finished')}
-                                </span>
+                                <strong>Dirigido a: </strong>
+                                {getTargetAudienceLabel(call.targetAudience)}
                               </span>
                             </div>
 
-                            <button 
-                              onClick={() => isOpen && navigate('/login')} 
-                              className="btn-submit-contact"
-                              disabled={!isOpen}
-                              style={{ 
-                                marginTop: '1.5rem', 
-                                width: 'auto', 
-                                padding: '0.75rem 1.5rem',
-                                opacity: isOpen ? 1 : 0.5,
-                                cursor: isOpen ? 'pointer' : 'not-allowed',
-                                background: isOpen ? 'linear-gradient(135deg, #1e3a8a 0%, #1a365d 100%)' : '#cbd5e1'
-                              }}
-                            >
-                              {isOpen ? t('news.applyStartProcess') : t('news.applicationsClosed')}
-                            </button>
+                            <div className="convocatoria-card-row" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <Calendar size={16} color="#334155" />
+                              <span>
+                                <strong>Vigencia: </strong>
+                                {formatDate(call.startDate)} — {formatDate(call.endDate)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {call.researchLineNames && call.researchLineNames.length > 0 && (
+                            <div className="convocatoria-lines-block">
+                              <div className="convocatoria-lines-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <BookOpen size={16} color="#334155" />
+                                <strong>Líneas de investigación asociadas:</strong>
+                              </div>
+                              <div className="research-lines-container" style={{ display: 'block', marginTop: '0.35rem' }}>
+                                {call.researchLineNames.map((name, idx) => (
+                                  <span key={`${call.id}-${idx}`} className="research-line-tag">
+                                    {name}{idx < call.researchLineNames.length - 1 ? ', ' : ''}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <button
+                            className="convocatoria-view-btn"
+                            onClick={() => isOpen && navigate('/login')}
+                            disabled={!isOpen}
+                          >
+                            {isOpen ? 'Ver convocatoria' : 'Convocatoria cerrada'}
+                          </button>
+
+                          <div className="convocatoria-share">
+                            <span className="convocatoria-share-label">Compartir en:</span>
+                            <div className="convocatoria-share-icons">
+                              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" title="Facebook">
+                                <img src={facebookLogo} alt="Facebook" />
+                              </a>
+                              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" title="LinkedIn">
+                                <img src={linkedinLogo} alt="LinkedIn" />
+                              </a>
+                              <a href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" title="WhatsApp">
+                                <img src={whatsappLogo} alt="WhatsApp" />
+                              </a>
+                              <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" title="Instagram">
+                                <img src={instagramLogo} alt="Instagram" />
+                              </a>
+                            </div>
                           </div>
                         </div>
                       );
@@ -387,8 +470,8 @@ export const NovedadesPage: React.FC = () => {
             )}
           </div>
 
-          {/* Columna Derecha: Sidebar Indices Sticky */}
-          <aside className="about-fiis-sidebar">
+          {/* Columna Derecha: Sidebar Sticky con Botones Azules */}
+          <aside className="about-fiis-sidebar novedades-sidebar">
             <h4 className="sidebar-title">{t('news.sidebarTitle')}</h4>
             <ul className="sidebar-menu">
               <li>

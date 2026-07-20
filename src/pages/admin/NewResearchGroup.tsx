@@ -30,8 +30,8 @@ export const NewResearchGroup: React.FC = () => {
     setLoading(true);
 
     try {
-      await researchService.createGroup(formData);
-      navigate('/groups');
+      const createdGroup = await researchService.createGroup(formData);
+      navigate(`/groups/${createdGroup.id}`);
     } catch (err: any) {
       setErrorMsg(err.message || t('createGroup.errorCreate'));
     } finally {

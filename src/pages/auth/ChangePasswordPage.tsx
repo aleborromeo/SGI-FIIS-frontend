@@ -23,6 +23,17 @@ export const ChangePasswordPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [currentPasswordInvalid, setCurrentPasswordInvalid] = useState(false);
+  const passwordRules = {
+    length: newPassword.length >= 6 && newPassword.length <= 12,
+    uppercase: /[A-Z]/.test(newPassword),
+    lowercase: /[a-z]/.test(newPassword),
+    number: /\d/.test(newPassword),
+    symbol: /[^A-Za-z0-9]/.test(newPassword),
+  };
+  const passwordRulesValid = Object.values(passwordRules).every(Boolean);
+  const showPasswordRulesWarning = newPassword.length > 0 && !passwordRulesValid;
+  const showConfirmPasswordMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
 
   // Redirigir si no está logueado o si no necesita cambiar contraseña
   useEffect(() => {
@@ -41,6 +52,7 @@ export const ChangePasswordPage: React.FC = () => {
     e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
+    setCurrentPasswordInvalid(false);
 
     if (!currentPassword || !newPassword || !confirmPassword) {
       setErrorMsg(t('auth:changePassword.validation.allFieldsRequired'));
@@ -73,7 +85,6 @@ export const ChangePasswordPage: React.FC = () => {
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorMsg(t('auth:changePassword.validation.passwordMismatch'));
       return;
     }
 
@@ -119,7 +130,20 @@ export const ChangePasswordPage: React.FC = () => {
       }, 2000);
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || t('auth:changePassword.error.changeFailed'));
+      const rawMessage = String(err?.message || '');
+      const isWrongCurrentPassword =
+        rawMessage.includes('incorrectPassword') ||
+        rawMessage.includes('actual-incorrect') ||
+        rawMessage.toLowerCase().includes('current password is incorrect') ||
+        rawMessage.toLowerCase().includes('contraseña actual es incorrecta') ||
+        rawMessage.toLowerCase().includes('contraseña actual incorrecta');
+
+      if (isWrongCurrentPassword) {
+        setCurrentPasswordInvalid(true);
+        setErrorMsg(null);
+      } else {
+        setErrorMsg(err.message || t('auth:changePassword.error.changeFailed'));
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -178,10 +202,18 @@ export const ChangePasswordPage: React.FC = () => {
                 <input
                   type={showCurrentPassword ? 'text' : 'password'}
                   id="currentPassword"
-                  className="form-input-custom"
+                  className={`form-input-custom ${currentPasswordInvalid ? 'input-error' : ''}`}
                   placeholder={t('auth:changePassword.currentPasswordPlaceholder')}
                   value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  onChange={(e) => {
+                    setCurrentPassword(e.target.value);
+                    if (currentPasswordInvalid) {
+                      setCurrentPasswordInvalid(false);
+                      if (errorMsg === t('auth:changePassword.error.incorrectPassword')) {
+                        setErrorMsg(null);
+                      }
+                    }
+                  }}
                   disabled={isSubmitting}
                 />
                 <button
@@ -202,6 +234,15 @@ export const ChangePasswordPage: React.FC = () => {
                   )}
                 </button>
               </div>
+              {currentPasswordInvalid && (
+                <div
+                  key={`current-password-error-${currentPassword}`}
+                  className="password-rules-helper password-rules-helper--error password-rules-helper--shake"
+                  aria-live="polite"
+                >
+                  {t('auth:changePassword.error.incorrectPassword')}
+                </div>
+              )}
             </div>
 
             {/* Input Nueva Contraseña */}
@@ -240,6 +281,13 @@ export const ChangePasswordPage: React.FC = () => {
                   )}
                 </button>
               </div>
+              <div
+                key={showPasswordRulesWarning ? `warning-${newPassword.length}` : 'ok'}
+                className={`password-rules-helper ${showPasswordRulesWarning ? 'password-rules-helper--error password-rules-helper--shake' : ''}`}
+                aria-live="polite"
+              >
+                {t('auth:changePassword.validation.passwordRequirements')}
+              </div>
             </div>
 
             {/* Input Confirmar Contraseña */}
@@ -277,6 +325,13 @@ export const ChangePasswordPage: React.FC = () => {
                     </svg>
                   )}
                 </button>
+              </div>
+              <div
+                key={showConfirmPasswordMismatch ? `mismatch-${newPassword}-${confirmPassword}` : 'match'}
+                className={`password-rules-helper ${showConfirmPasswordMismatch ? 'password-rules-helper--error password-rules-helper--shake' : ''}`}
+                aria-live="polite"
+              >
+                {showConfirmPasswordMismatch ? t('auth:changePassword.validation.passwordMismatch') : ''}
               </div>
             </div>
 

@@ -454,6 +454,34 @@
   line-height: 1.3;
 }
 
+.password-rules-helper {
+  margin-top: 0.55rem;
+  margin-left: 0.15rem;
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.35;
+  transition: color 0.2s ease, transform 0.2s ease, margin-top 0.2s ease;
+  min-height: 1.1rem;
+}
+
+.password-rules-helper--error {
+  color: #dc2626;
+  transform: translateX(4px);
+  margin-top: 0.7rem;
+}
+
+.password-rules-helper--shake {
+  animation: passwordHelperShake 0.35s ease-in-out;
+}
+
+@keyframes passwordHelperShake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-2px); }
+  100% { transform: translateX(4px); }
+}
+
 .btn-spinner {
   width: 18px;
   height: 18px;
