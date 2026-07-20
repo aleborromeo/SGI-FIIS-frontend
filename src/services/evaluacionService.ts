@@ -105,6 +105,18 @@ export interface EvaluationItem {
   [key: string]: any;
 }
 
+// ── Evaluador asignado a un proyecto ──────────────────────────────────────────
+
+export interface EvaluatorAssigned {
+  id: number;
+  nombres: string;
+  apellidos: string;
+  correoInstitucional: string;
+  codigoRol: string;
+  resultado: string | null;
+  pendiente: boolean;
+}
+
 // ── Servicio ──────────────────────────────────────────────────────────────────
 
 export const evaluacionService = {
@@ -132,7 +144,7 @@ export const evaluacionService = {
   ): Promise<void> => {
     return fetchApi<void>('/evaluaciones/asignar-multiple', {
       method: 'POST',
-      body: JSON.stringify({ projectId, reviewerIds }),
+      body: JSON.stringify({ projectId, evaluadorIds: reviewerIds }),
     });
   },
 
@@ -189,5 +201,9 @@ export const evaluacionService = {
 
   listAll: async (): Promise<EvaluationItem[]> => {
     return fetchApi<EvaluationItem[]>('/evaluaciones');
+  },
+
+  getEvaluatorsByProject: async (projectId: number): Promise<EvaluatorAssigned[]> => {
+    return fetchApi<EvaluatorAssigned[]>(`/evaluaciones/project/${projectId}/evaluators`);
   },
 };

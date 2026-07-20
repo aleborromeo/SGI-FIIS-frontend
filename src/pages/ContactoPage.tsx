@@ -283,7 +283,7 @@ export const ContactoPage: React.FC = () => {
                     rel="noopener noreferrer" 
                     className="contact-whatsapp-direct"
                   >
-                    <img src={whatsappGif} alt="WhatsApp" className="whatsapp-contact-icon" />
+                    <img src={whatsappGif} alt="WhatsApp" className="whatsapp-contact-icon" loading="lazy" />
                     <span>{t('contact.page.openWhatsApp')}</span>
                   </a>
                 </div>

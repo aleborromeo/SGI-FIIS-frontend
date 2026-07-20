@@ -513,6 +513,9 @@
     "executionPlace": "Lugar de ejecución",
     "responsible": "Responsable",
     "associatedDocument": "Documento asociado",
+    "reviewers": "Revisores",
+    "pendingEvaluation": "Pendiente",
+    "noReviewersAssigned": "Sin revisores asignados",
     "notRegistered": "No registrado",
     "notRegisteredDuration": "No registrada",
     "needHelp": "¿Necesitas ayuda?",
@@ -567,7 +570,7 @@
   },
   "assignReviewers": {
     "backToProject": "Volver al proyecto",
-    "pageTitle": "Asignación de jurados y revisores",
+    "pageTitle": "Evaluaciones",
     "projectLabel": "Proyecto: {{code}}",
     "selectedCount": "{{count}} seleccionado(s)",
     "reviewAssignment": "Revisa la asignación",

@@ -54,6 +54,9 @@ describe('MyEvaluations', () => {
     
     expect(screen.getByText('Bandeja de Evaluaciones')).toBeDefined();
     expect(screen.getByText(/Expedientes asignados para evaluación/i)).toBeDefined();
+    await waitFor(() => {
+      expect(evaluacionService.getByEvaluator).toHaveBeenCalled();
+    });
   });
 
   it('renders the mock evaluation data in the table', async () => {

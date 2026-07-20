@@ -43,12 +43,14 @@ export const userService = {
     return Array.isArray(res) ? res : [];
   },
 
-  getReviewers: async (): Promise<User[]> => {
-    const users = await api.get<User[]>('/users');
-    if (!Array.isArray(users)) return [];
-    return users.filter(
-      (u) => u.active && REVIEWER_ROLES.includes(u.roleCode)
-    );
+  getReviewers: async (projectId?: number): Promise<User[]> => {
+    const params = projectId ? { projectId } : undefined;
+    const res = await api.get<User[]>('/evaluaciones/available-evaluators', { params });
+    if (!Array.isArray(res)) return [];
+    return res.map((u: any) => ({
+      ...u,
+      active: true,
+    }));
   },
 
   getById: async (id: string | number): Promise<User> => {

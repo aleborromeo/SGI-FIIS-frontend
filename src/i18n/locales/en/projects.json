@@ -512,6 +512,9 @@
     "executionPlace": "Execution Location",
     "responsible": "Responsible",
     "associatedDocument": "Associated Document",
+    "reviewers": "Reviewers",
+    "pendingEvaluation": "Pending",
+    "noReviewersAssigned": "No reviewers assigned",
     "notRegistered": "Not registered",
     "notRegisteredDuration": "Not registered",
     "needHelp": "Need help?",
@@ -566,7 +569,7 @@
   },
   "assignReviewers": {
     "backToProject": "Back to project",
-    "pageTitle": "Jury and Reviewer Assignment",
+    "pageTitle": "Evaluations",
     "projectLabel": "Project: {{code}}",
     "selectedCount": "{{count}} selected",
     "reviewAssignment": "Review the assignment",

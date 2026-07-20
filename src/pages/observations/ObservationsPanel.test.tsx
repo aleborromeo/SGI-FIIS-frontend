@@ -8,6 +8,7 @@ import { observationService } from '../../services/observationService';
 vi.mock('../../services/observationService', () => ({
   observationService: {
     getByProcedureId: vi.fn(),
+    getMyObservations: vi.fn(),
     addRemedy: vi.fn(),
   }
 }));
@@ -30,7 +31,7 @@ describe('ObservationsPanel', () => {
   it('renders the title correctly', async () => {
     vi.mocked(observationService.getByProcedureId).mockResolvedValue([]);
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={['/observations?procedureId=1']}>
         <ObservationsPanel />
       </MemoryRouter>
     );
@@ -46,7 +47,7 @@ describe('ObservationsPanel', () => {
       { id: 2, procedureId: 1, type: 'Metodología', description: 'Justificar el tamaño de la muestra.', status: 'PENDIENTE', createdAt: '' }
     ]);
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={['/observations?procedureId=1']}>
         <ObservationsPanel />
       </MemoryRouter>
     );
@@ -62,7 +63,7 @@ describe('ObservationsPanel', () => {
   it('renders the remedy submission form', async () => {
     vi.mocked(observationService.getByProcedureId).mockResolvedValue([]);
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={['/observations?procedureId=1']}>
         <ObservationsPanel />
       </MemoryRouter>
     );

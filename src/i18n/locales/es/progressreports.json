@@ -373,7 +373,8 @@
       "difficulties": "Dificultades",
       "attachedDoc": "Documento adjunto",
       "download": "Descargar",
-      "noRecords": "Sin registros"
+      "noRecords": "Sin registros",
+      "observation": "Observación del Director"
     },
     "prompt": {
       "observeDetail": "Escriba el detalle de la observación para el docente:",
@@ -438,7 +439,8 @@
       "noComments": "Sin comentarios.",
       "noChangeHistory": "Sin historial de cambios.",
       "attachedFiles": "Archivos Adjuntos ({{count}})",
-      "loadError": "No se pudo cargar el detalle del informe."
+      "loadError": "No se pudo cargar el detalle del informe.",
+      "directorObservation": "Observación del Director"
     }
   },
   "new": {

@@ -91,8 +91,8 @@ describe('NewProposalForm', () => {
       { id: 2, lineName: 'Redes', active: true },
     ]);
     vi.mocked(researchService.getGroupLines).mockResolvedValue([
-      { id: 1, lineName: 'Computación' },
-      { id: 2, lineName: 'Redes' },
+      { id: 1, lineName: 'Computación', active: true },
+      { id: 2, lineName: 'Redes', active: true },
     ]);
   });
 
@@ -168,7 +168,7 @@ describe('NewProposalForm', () => {
       { id: 6, groupName: 'Grupo Normal', groupCode: 'GRUPO01', active: true },
     ]);
     vi.mocked(researchService.getGroupLines).mockResolvedValue([
-      { id: 1, lineName: 'Línea General' },
+      { id: 1, lineName: 'Línea General', active: true },
     ]);
 
     renderForm();

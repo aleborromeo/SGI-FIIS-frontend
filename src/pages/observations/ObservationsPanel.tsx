@@ -72,7 +72,7 @@ export const ObservationsPanel: React.FC = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
 
-  const procedureId = queryParams.get('procedureId') || '1';
+  const procedureId = queryParams.get('procedureId');
 
   const [justification, setJustification] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -96,7 +96,12 @@ export const ObservationsPanel: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const response = await observationService.getByProcedureId(procedureId);
+      let response: Observation[];
+      if (procedureId) {
+        response = await observationService.getByProcedureId(procedureId);
+      } else {
+        response = await observationService.getMyObservations();
+      }
 
       setObservations(Array.isArray(response) ? response : []);
     } catch (err) {
@@ -213,6 +218,17 @@ export const ObservationsPanel: React.FC = () => {
         </Badge>
       </div>
 
+      {!procedureId && (
+        <Card style={{ marginBottom: '24px' }}>
+          <CardContent style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--on-surface-variant)' }}>
+            <p style={{ fontSize: '16px' }}>
+              Seleccione un expediente o trámite desde el módulo correspondiente para ver sus observaciones.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {procedureId && (<>
       <div
         style={{
           display: 'grid',
@@ -557,6 +573,7 @@ export const ObservationsPanel: React.FC = () => {
           </Card>
         </div>
       </div>
+      </>)}
     </div>
   );
 };

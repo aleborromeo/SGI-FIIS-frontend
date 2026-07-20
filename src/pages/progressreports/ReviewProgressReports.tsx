@@ -531,6 +531,15 @@ export const ReviewProgressReports: React.FC = () => {
                   </Button>
                 </div>
               )}
+
+              {reportDetail.directorObservation && (
+                <div>
+                  <strong style={{ display: 'block', color: 'var(--on-surface-variant)', fontSize: '12px', marginBottom: '4px' }}>{t('review.detail.observation')}:</strong>
+                  <p style={{ margin: 0, padding: '12px', backgroundColor: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 'var(--radius-md)', lineHeight: 1.5, color: '#92400e' }}>
+                    {reportDetail.directorObservation}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

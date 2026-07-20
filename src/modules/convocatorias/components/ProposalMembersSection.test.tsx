@@ -46,6 +46,9 @@ describe('ProposalMembersSection', () => {
     render(<ProposalMembersSection {...defaultProps} />);
     expect(screen.getByText('Equipo de Investigación')).toBeDefined();
     expect(screen.getByText(/Busca y agrega los integrantes del grupo/)).toBeDefined();
+    await waitFor(() => {
+      expect(researchService.getMembers).toHaveBeenCalled();
+    });
   });
 
   it('fetches and displays available members in select', async () => {
@@ -84,6 +87,9 @@ describe('ProposalMembersSection', () => {
 
     expect(screen.getByText(/Juan.*Pérez/)).toBeDefined();
     expect(screen.getByText('juan@test.com')).toBeDefined();
+    await waitFor(() => {
+      expect(researchService.getMembers).toHaveBeenCalled();
+    });
   });
 
   it('calls onChange when removing a member', async () => {

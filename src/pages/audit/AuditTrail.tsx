@@ -187,6 +187,7 @@ export const AuditTrail: React.FC = () => {
   const isCoordinator = currentRole === 'COORDINADOR_GRUPO';
 
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+  const [auditStats, setAuditStats] = useState<{ totalRecords: number; tablesAffected: number; activeUsers: number; todayActions: number } | null>(null);
   const [auditLoading, setAuditLoading] = useState(true);
   const [auditPage, setAuditPage] = useState(0);
   const [auditHasMore, setAuditHasMore] = useState(true);
@@ -200,6 +201,17 @@ export const AuditTrail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
   const [expandedObs, setExpandedObs] = useState<Record<number, boolean>>({});
+
+  const loadAuditStats = useCallback(async () => {
+    try {
+      const stats = await auditService.getAuditStats();
+      setAuditStats(stats);
+    } catch (err) {
+      console.error('Error loading audit stats:', err);
+    }
+  }, []);
+
+  useEffect(() => { loadAuditStats(); }, [loadAuditStats]);
 
   const loadAuditLog = useCallback(async (page: number, append = false) => {
     try {
@@ -266,11 +278,10 @@ export const AuditTrail: React.FC = () => {
     setExpandedObs((prev) => ({ ...prev, [movementId]: !prev[movementId] }));
   };
 
-  const totalRecords = auditLogs.length;
-  const tablesSet = new Set(auditLogs.map((l) => TABLE_LABELS[l.tablaAfectada.toLowerCase()] || l.tablaAfectada));
-  const usersSet = new Set(auditLogs.filter((l) => l.idUsuario).map((l) => l.idUsuario));
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const todayCount = auditLogs.filter((l) => l.fechaAccion?.startsWith(todayStr)).length;
+  const totalRecords = auditStats?.totalRecords ?? auditLogs.length;
+  const tablesCount = auditStats?.tablesAffected ?? new Set(auditLogs.map((l) => TABLE_LABELS[l.tablaAfectada.toLowerCase()] || l.tablaAfectada)).size;
+  const usersCount = auditStats?.activeUsers ?? new Set(auditLogs.filter((l) => l.idUsuario).map((l) => l.idUsuario)).size;
+  const todayCount = auditStats?.todayActions ?? auditLogs.filter((l) => l.fechaAccion?.startsWith(new Date().toISOString().slice(0, 10))).length;
   const currentState = movements.length > 0 ? movements.at(-1) : null;
 
   return (
@@ -302,8 +313,8 @@ export const AuditTrail: React.FC = () => {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
         <StatCard icon={<Database size={18} />} value={String(totalRecords)} label={t('tramites:auditTrail.totalRecords')} color="#6366f1" />
-        <StatCard icon={<Activity size={18} />} value={String(tablesSet.size)} label={t('tramites:auditTrail.tablesAffected')} color="#3b82f6" />
-        <StatCard icon={<Users size={18} />} value={String(usersSet.size)} label={t('tramites:auditTrail.activeUsers')} color="#8b5cf6" />
+        <StatCard icon={<Activity size={18} />} value={String(tablesCount)} label={t('tramites:auditTrail.tablesAffected')} color="#3b82f6" />
+        <StatCard icon={<Users size={18} />} value={String(usersCount)} label={t('tramites:auditTrail.activeUsers')} color="#8b5cf6" />
         <StatCard icon={<Calendar size={18} />} value={String(todayCount)} label={t('tramites:auditTrail.todayActions')} color="#15803d" />
       </div>
 

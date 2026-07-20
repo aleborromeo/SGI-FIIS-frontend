@@ -393,14 +393,28 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({ report, isLast, onViewDetai
           </div>
 
           {/* Observaciones expandidas */}
-          {expanded && report.observations && (
+          {expanded && (report.observations || report.directorObservation) && (
             <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--outline-variant)' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--on-surface-variant)', marginBottom: '6px' }}>
-                {t('history.detail.observations')}
-              </div>
-              <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.6, margin: 0 }}>
-                {report.observations}
-              </p>
+              {report.observations && (
+                <>
+                  <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--on-surface-variant)', marginBottom: '6px' }}>
+                    {t('history.detail.observations')}
+                  </div>
+                  <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.6, margin: 0 }}>
+                    {report.observations}
+                  </p>
+                </>
+              )}
+              {report.directorObservation && (
+                <div style={{ marginTop: report.observations ? '12px' : 0, padding: '12px', backgroundColor: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 'var(--radius-md)' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: '#92400e', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <AlertTriangle size={13} /> {t('history.detail.directorObservation')}
+                  </div>
+                  <p style={{ fontSize: '14px', color: '#92400e', lineHeight: 1.6, margin: 0 }}>
+                    {report.directorObservation}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

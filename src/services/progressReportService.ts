@@ -48,7 +48,9 @@ export interface ProgressReport {
   financialProgress: number;
   status: ProgressReportStatus;
   observations?: string;
+  directorObservation?: string;
   attachedDocumentId?: number;
+  fileName?: string;
   period?: string;
 }
 
@@ -121,6 +123,7 @@ function mapResponseToReport(r: any): ProgressReport {
     financialProgress: Number(r.progressPercentage || 0), // Copied from progressPercentage for UI compatibility
     status: toFrontendStatus(r.reportStatus || r.status || 'PENDING'),
     observations: r.achievements ? `Logros: ${r.achievements}. Dificultades: ${r.difficulties}` : undefined,
+    directorObservation: r.observation || undefined,
     attachedDocumentId: r.attachedDocumentId,
     period: r.period,
   };
@@ -147,12 +150,12 @@ function mapResponseToDetail(r: any): ProgressReportDetail {
       url: `/api/documents/download/${r.attachedDocumentId}`,
       uploadedAt: r.registrationDate || ''
     }] : [],
-    comments: r.observations ? [
+    comments: r.observation ? [
       {
         id: 1,
-        authorName: 'Sistema de Trazabilidad',
-        authorRole: 'SISTEMA',
-        content: `Últimas observaciones: ${r.observations}`,
+        authorName: 'Director de Investigación',
+        authorRole: 'DIRECTOR_INVESTIGACION',
+        content: r.observation,
         createdAt: r.lastUpdatedDate || ''
       }
     ] : [],
