@@ -373,7 +373,8 @@
       "difficulties": "Difficulties",
       "attachedDoc": "Attached document",
       "download": "Download",
-      "noRecords": "No records"
+      "noRecords": "No records",
+      "observation": "Director Observation"
     },
     "prompt": {
       "observeDetail": "Enter the observation detail for the teacher:",
@@ -438,7 +439,8 @@
       "noComments": "No comments.",
       "noChangeHistory": "No change history.",
       "attachedFiles": "Attached Files ({{count}})",
-      "loadError": "Could not load report details."
+      "loadError": "Could not load report details.",
+      "directorObservation": "Director Observation"
     }
   },
   "new": {
