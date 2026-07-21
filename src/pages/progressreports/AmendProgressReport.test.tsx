@@ -1,115 +1,102 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AmendProgressReport } from './AmendProgressReport';
-import { progressReportService } from '../../services/progressReportService';
-import { documentService } from '../../services/documentService';
-import { renderWithProviders } from '../../utils/testUtils';
+import { ToastProvider } from '../../context/ToastContext';
+import { AuthContext } from '../../context/AuthContext';
+
+const { mockGetDetail, mockAmendReport, mockUpload } = vi.hoisted(() => ({
+  mockGetDetail: vi.fn(),
+  mockAmendReport: vi.fn(),
+  mockUpload: vi.fn(),
+}));
 
 vi.mock('../../services/progressReportService', () => ({
   progressReportService: {
-    getDetail: vi.fn(),
-    amendReport: vi.fn(),
+    getDetail: mockGetDetail,
+    amendReport: mockAmendReport,
   },
 }));
 
 vi.mock('../../services/documentService', () => ({
-  documentService: {
-    upload: vi.fn(),
-  },
+  documentService: { upload: mockUpload },
 }));
 
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-    useParams: () => ({ id: '5' }),
-  };
-});
-
-const mockProgressReportService = vi.mocked(progressReportService);
-
-const mockReport = {
-  id: 5,
+const baseReport = {
+  id: 1,
+  reportNumber: 1,
   projectId: 10,
-  projectTitle: 'Proyecto de IA',
-  reportType: 'PARCIAL',
-  period: 'T1-2026',
-  status: 'OBSERVADO',
+  projectTitle: 'Proyecto de Riego',
+  responsibleName: 'Docente A',
+  reportDate: '2026-01-01T10:00:00Z',
   physicalProgress: 50,
-  financialProgress: 40,
-  achievements: 'Primeros logros',
-  difficulties: 'Problemas encontrados',
-  recommendations: 'Recomendaciones',
-  observations: 'Necesita correcciones',
-  submittedAt: '2026-03-01T10:00:00Z',
-  attachedDocumentId: null,
-  activities: [],
-  attachments: [],
-  comments: [{ id: 1, authorName: 'Director', authorRole: 'DIRECTOR', content: 'Necesita correcciones', createdAt: '2026-03-02T10:00:00Z' }],
+  financialProgress: 50,
+  status: 'OBSERVADO',
+  observations: 'obs',
+  comments: [
+    {
+      id: 1,
+      authorName: 'Director',
+      authorRole: 'DIRECTOR_INVESTIGACION',
+      content: 'Corregir el formato del informe',
+      createdAt: '2026-01-02T10:00:00Z',
+    },
+  ],
   executedActivities: [],
   evidences: [],
+  attachments: [],
   changeHistory: [],
-};
+} as any;
+
+const renderPage = (id = '1') =>
+  render(
+    <MemoryRouter initialEntries={[`/progressreports/amend/${id}`]}>
+      <ToastProvider>
+        <AuthContext.Provider value={{ currentRole: 'DIRECTOR_INVESTIGACION' } as any}>
+          <Routes>
+            <Route path="/progressreports/amend/:id" element={<AmendProgressReport />} />
+          </Routes>
+        </AuthContext.Provider>
+      </ToastProvider>
+    </MemoryRouter>
+  );
 
 describe('AmendProgressReport', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockProgressReportService.getDetail.mockResolvedValue(mockReport as any);
-    mockProgressReportService.amendReport.mockResolvedValue({ id: 5 } as any);
+    mockGetDetail.mockResolvedValue(baseReport);
+    mockAmendReport.mockResolvedValue(baseReport);
+    mockUpload.mockResolvedValue({ id: 99 });
   });
 
-  it('shows loading spinner initially', () => {
-    mockProgressReportService.getDetail.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve(mockReport as any), 1000))
-    );
-    renderWithProviders(<AmendProgressReport />);
-    expect(document.querySelector('[aria-label="Cargando..."]')).toBeDefined();
+  it('renders the amendment title and the registered observation', async () => {
+    renderPage();
+    expect(
+      await screen.findByRole('heading', { name: /Subsanar Informe de Avance #1/i })
+    ).toBeDefined();
+    expect(await screen.findByText('Corregir el formato del informe')).toBeDefined();
   });
 
-  it('renders report data after loading', async () => {
-    renderWithProviders(<AmendProgressReport />);
-    await act(async () => {});
-    expect(document.body.textContent?.includes('Proyecto de IA')).toBeTruthy();
+  it('shows a not-found message when the report cannot be loaded', async () => {
+    mockGetDetail.mockRejectedValue(new Error('not found'));
+    renderPage();
+    expect(await screen.findByText(/No se pudo obtener el informe/i)).toBeDefined();
   });
 
-  it('renders observations alert', async () => {
-    renderWithProviders(<AmendProgressReport />);
-    await act(async () => {});
-    expect(document.body.textContent?.includes('Necesita correcciones')).toBeTruthy();
-  });
+  it('submits the amendment with the uploaded document', async () => {
+    renderPage();
+    await screen.findByRole('heading', { name: /Subsanar Informe de Avance #1/i });
 
-  it('renders report context data', async () => {
-    renderWithProviders(<AmendProgressReport />);
-    await act(async () => {});
-    expect(document.body.textContent?.includes('Proyecto de IA')).toBeTruthy();
-    expect(document.body.textContent?.includes('T1-2026')).toBeTruthy();
-  });
-
-  it('renders back button', async () => {
-    renderWithProviders(<AmendProgressReport />);
-    await act(async () => {});
-    const backBtn = screen.getByRole('button', { name: /volver/i });
-    expect(backBtn).toBeDefined();
-  });
-
-  it('renders save button', async () => {
-    renderWithProviders(<AmendProgressReport />);
-    await act(async () => {});
-    const saveBtn = screen.getByRole('button', { name: /enviar correcciones/i });
-    expect(saveBtn).toBeDefined();
-  });
-
-  it('navigates back when back button clicked', async () => {
-    renderWithProviders(<AmendProgressReport />);
-    await act(async () => {});
-    const backBtn = screen.getByRole('button', { name: /volver/i });
-    await act(async () => {
-      fireEvent.click(backBtn);
+    const file = new File(['x'], 'corregido.pdf', { type: 'application/pdf' });
+    fireEvent.change(document.getElementById('amendment-file') as HTMLElement, {
+      target: { files: [file] },
     });
-    expect(mockNavigate).toHaveBeenCalledWith('/progressreports/history');
+    await waitFor(() => expect(mockUpload).toHaveBeenCalled());
+
+    fireEvent.click(document.querySelector('button[type="submit"]') as HTMLButtonElement);
+
+    await waitFor(() => expect(mockAmendReport).toHaveBeenCalled());
+    expect(mockAmendReport).toHaveBeenCalledWith(1, { amendmentDocumentId: 99 });
+    expect(await screen.findByText(/enviada exitosamente/i)).toBeDefined();
   });
 });
-

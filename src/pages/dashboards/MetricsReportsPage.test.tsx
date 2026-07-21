@@ -1,83 +1,82 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { AuthContext } from '../../context/AuthContext';
 import { MetricsReportsPage } from './MetricsReportsPage';
-import { authService } from '../../services/authService';
-import { auditService } from '../../services/auditService';
-import { researchService } from '../../services/researchService';
-import { renderWithProviders } from '../../utils/testUtils';
+
+const {
+  mockGetDashboardData,
+  mockGetGroups,
+  mockGetProjectReport,
+  mockGetProcedureReport,
+} = vi.hoisted(() => ({
+  mockGetDashboardData: vi.fn(),
+  mockGetGroups: vi.fn(),
+  mockGetProjectReport: vi.fn(),
+  mockGetProcedureReport: vi.fn(),
+}));
 
 vi.mock('../../services/authService', () => ({
-  authService: {
-    getDashboardData: vi.fn(),
-    getAllProjects: vi.fn(),
-    getAllProcedures: vi.fn(),
-  },
+  authService: { getDashboardData: mockGetDashboardData },
 }));
-
+vi.mock('../../services/researchService', () => ({
+  researchService: { getGroups: mockGetGroups },
+}));
 vi.mock('../../services/auditService', () => ({
   auditService: {
-    getAuditLog: vi.fn(),
-    getRecentActivity: vi.fn(),
+    getProjectReport: mockGetProjectReport,
+    getProcedureReport: mockGetProcedureReport,
   },
 }));
 
-vi.mock('../../services/researchService', () => ({
-  researchService: {
-    getGroups: vi.fn(),
-    getLines: vi.fn(),
-  },
-}));
-
-vi.mock('./MetricsReportsPage.css', () => ({}));
-
-const mockAuthService = vi.mocked(authService);
-const mockAuditService = vi.mocked(auditService);
-const mockResearchService = vi.mocked(researchService);
+const renderWithProviders = (role = 'COORDINADOR_GRUPO') =>
+  render(
+    <AuthContext.Provider value={{ currentRole: role } as any}>
+      <MetricsReportsPage />
+    </AuthContext.Provider>
+  );
 
 describe('MetricsReportsPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockAuthService.getDashboardData.mockResolvedValue({ totalProjects: 10, totalUsers: 25 } as any);
-    mockAuthService.getAllProjects.mockResolvedValue([]);
-    mockAuthService.getAllProcedures.mockResolvedValue([]);
-    mockAuditService.getAuditLog.mockResolvedValue([]);
-    mockAuditService.getRecentActivity.mockResolvedValue([]);
-    mockResearchService.getGroups.mockResolvedValue([]);
-    mockResearchService.getLines.mockResolvedValue([]);
+    mockGetDashboardData.mockResolvedValue({ totalActiveUsers: 10, totalProjects: 5 });
+    mockGetGroups.mockResolvedValue([]);
+    mockGetProjectReport.mockResolvedValue([]);
+    mockGetProcedureReport.mockResolvedValue([]);
   });
 
-  it('renders the page', async () => {
-    renderWithProviders(<MetricsReportsPage />);
-    await act(async () => {});
-    expect(document.body).toBeDefined();
+  it('renders the metrics page title', async () => {
+    renderWithProviders();
+    expect(await screen.findByText('Indicadores institucionales')).toBeDefined();
   });
 
-  it('renders metric cards or sections', async () => {
-    renderWithProviders(<MetricsReportsPage />);
-    await act(async () => {});
-    // At minimum the page renders
-    expect(document.querySelector('.animate-fade-in') || document.body).toBeDefined();
+  it('renders the dashboard metric cards', async () => {
+    renderWithProviders();
+    expect((await screen.findAllByText('Usuarios activos')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Proyectos registrados')).length).toBeGreaterThan(0);
   });
 
-  it('renders search filters', async () => {
-    renderWithProviders(<MetricsReportsPage />);
-    await act(async () => {});
-    const inputs = document.querySelectorAll('input[type="text"], input[type="search"]');
-    expect(inputs.length).toBeGreaterThanOrEqual(0);
+  it('loads and displays the project report table', async () => {
+    mockGetProjectReport.mockResolvedValue([
+      { id: 1, title: 'Proyecto Solar', status: 'APROBADO', group: 'GINSOFT' },
+    ]);
+    renderWithProviders();
+    fireEvent.click(await screen.findByRole('button', { name: /Buscar/i }));
+    expect(await screen.findByText('Proyecto Solar')).toBeDefined();
+    expect(screen.getByText('Reporte de Proyectos')).toBeDefined();
   });
 
-  it('renders export/download buttons', async () => {
-    renderWithProviders(<MetricsReportsPage />);
-    await act(async () => {});
-    // Page should have export functionality
-    expect(document.body).toBeDefined();
-  });
+  it('calls the report service with the selected status filter', async () => {
+    const { container } = renderWithProviders();
+    await screen.findByRole('button', { name: /Buscar/i });
+    const selects = container.querySelectorAll('select');
+    fireEvent.change(selects[0], { target: { value: 'APROBADO' } });
+    const buscarBtn = await screen.findByRole('button', { name: /Buscar/i });
+    fireEvent.click(buscarBtn);
 
-  it('shows refresh button', async () => {
-    renderWithProviders(<MetricsReportsPage />);
-    await act(async () => {});
-    const refreshBtns = screen.queryAllByRole('button', { name: /actualizar|refresh/i });
-    expect(refreshBtns.length).toBeGreaterThanOrEqual(0);
+    await waitFor(() =>
+      expect(mockGetProjectReport).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'APROBADO' })
+      )
+    );
   });
 });

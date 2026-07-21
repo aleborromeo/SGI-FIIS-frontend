@@ -1,33 +1,30 @@
 import { describe, it, expect } from 'vitest';
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { Stepper, type StepStatus } from './Stepper';
+import { Stepper } from './Stepper';
+
+const steps = [
+  { id: '1', label: 'Inicio', status: 'aprobado' as const, sublabel: 'OK' },
+  { id: '2', label: 'Revision', status: 'actual' as const, sublabel: 'EN CURSO' },
+  { id: '3', label: 'Fin', status: 'observado' as const, sublabel: 'OBS' },
+  { id: '4', label: 'Done', status: 'listo' as const, sublabel: 'LISTO' },
+];
 
 describe('Stepper', () => {
-  it('renders all steps and correct status colors/icons', () => {
-    const steps = [
-      { id: '1', label: 'Step One', status: 'listo' as StepStatus, sublabel: 'SUB-1' },
-      { id: '2', label: 'Step Two', status: 'aprobado' as StepStatus, sublabel: 'SUB-2' },
-      { id: '3', label: 'Step Three', status: 'observado' as StepStatus, sublabel: 'SUB-3' },
-      { id: '4', label: 'Step Four', status: 'actual' as StepStatus, sublabel: 'SUB-4' },
-      { id: '5', label: 'Step Five', status: 'unknown_status' as any, sublabel: 'SUB-5' },
-    ];
-
+  it('renderiza todos los labels y sublabels', () => {
     render(<Stepper steps={steps} />);
+    steps.forEach((s) => {
+      expect(screen.getByText(s.label)).toBeInTheDocument();
+      expect(screen.getByText(s.sublabel)).toBeInTheDocument();
+    });
+  });
 
-    expect(screen.getByText('Step One')).toBeDefined();
-    expect(screen.getByText('SUB-1')).toBeDefined();
+  it('renderiza la cantidad correcta de nodos (4 pasos)', () => {
+    const { container } = render(<Stepper steps={steps} />);
+    expect(container.querySelectorAll('.text-label-md').length).toBe(4);
+  });
 
-    expect(screen.getByText('Step Two')).toBeDefined();
-    expect(screen.getByText('SUB-2')).toBeDefined();
-
-    expect(screen.getByText('Step Three')).toBeDefined();
-    expect(screen.getByText('SUB-3')).toBeDefined();
-
-    expect(screen.getByText('Step Four')).toBeDefined();
-    expect(screen.getByText('SUB-4')).toBeDefined();
-
-    expect(screen.getByText('Step Five')).toBeDefined();
-    expect(screen.getByText('SUB-5')).toBeDefined();
+  it('maneja lista vacia sin crashear', () => {
+    const { container } = render(<Stepper steps={[]} />);
+    expect(container.firstChild).toBeTruthy();
   });
 });

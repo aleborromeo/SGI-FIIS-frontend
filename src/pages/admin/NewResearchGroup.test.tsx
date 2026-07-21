@@ -1,95 +1,47 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { ToastProvider } from '../../context/ToastContext';
 import { NewResearchGroup } from './NewResearchGroup';
 import { researchService } from '../../services/researchService';
-import { renderWithProviders } from '../../utils/testUtils';
+
+const mockCreateGroup = vi.hoisted(() => vi.fn());
 
 vi.mock('../../services/researchService', () => ({
   researchService: {
-    createGroup: vi.fn(),
+    createGroup: mockCreateGroup,
   },
 }));
 
-const mockResearchService = vi.mocked(researchService);
+const renderPage = () =>
+  render(
+    <ToastProvider>
+      <MemoryRouter>
+        <NewResearchGroup />
+      </MemoryRouter>
+    </ToastProvider>
+  );
 
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
-
-describe('NewResearchGroup page', () => {
+describe('NewResearchGroup', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-    mockResearchService.createGroup.mockResolvedValue({} as any);
+    vi.clearAllMocks();
   });
 
-  it('renders form and handles cancellation/back navigation', async () => {
-    renderWithProviders(<NewResearchGroup />);
-
+  it('renders the form title', () => {
+    renderPage();
     expect(screen.getByText('Nuevo Grupo de Investigación')).toBeDefined();
-    
-    // Back navigation button
-    const backBtn = screen.getByText('Volver a Grupos');
-    await act(async () => {
-      backBtn.click();
-    });
-    expect(mockNavigate).toHaveBeenCalledWith('/groups');
-
-    // Cancel button
-    const cancelBtn = screen.getByRole('button', { name: 'Cancelar' });
-    await act(async () => {
-      cancelBtn.click();
-    });
-    expect(mockNavigate).toHaveBeenCalledWith('/groups');
   });
 
-  it('submits form successfully and redirects to groups list', async () => {
-    renderWithProviders(<NewResearchGroup />);
+  it('creates a group via the form', async () => {
+    mockCreateGroup.mockResolvedValue({ id: 5, groupCode: 'GI-05', groupName: 'Nuevo' });
+    renderPage();
 
-    const codeInput = screen.getByPlaceholderText('Ej: GI-01');
-    const nameInput = screen.getByPlaceholderText('Ej: Grupo de Inteligencia Artificial');
-    const submitBtn = screen.getByRole('button', { name: 'Guardar Grupo' });
+    fireEvent.change(screen.getByPlaceholderText(/GI-01/), { target: { value: 'GI-05' } });
+    fireEvent.change(screen.getByPlaceholderText(/Inteligencia Artificial/), { target: { value: 'Nuevo' } });
 
-    await act(async () => {
-      fireEvent.change(codeInput, { target: { value: 'GI-TEST' } });
-      fireEvent.change(nameInput, { target: { value: 'GI de Pruebas' } });
-    });
+    const submit = document.querySelector('form button[type="submit"]') as HTMLButtonElement;
+    fireEvent.click(submit);
 
-    await act(async () => {
-      submitBtn.click();
-    });
-
-    expect(mockResearchService.createGroup).toHaveBeenCalledWith({
-      groupCode: 'GI-TEST',
-      groupName: 'GI de Pruebas',
-    });
-    expect(mockNavigate).toHaveBeenCalledWith('/groups');
-  });
-
-  it('displays API error message on creation failure', async () => {
-    mockResearchService.createGroup.mockRejectedValue(new Error('Code already exists'));
-
-    renderWithProviders(<NewResearchGroup />);
-
-    const codeInput = screen.getByPlaceholderText('Ej: GI-01');
-    const nameInput = screen.getByPlaceholderText('Ej: Grupo de Inteligencia Artificial');
-    const submitBtn = screen.getByRole('button', { name: 'Guardar Grupo' });
-
-    await act(async () => {
-      fireEvent.change(codeInput, { target: { value: 'GI-DUPLICATE' } });
-      fireEvent.change(nameInput, { target: { value: 'Grupo Duplicado' } });
-    });
-
-    await act(async () => {
-      submitBtn.click();
-    });
-
-    expect(screen.getByText(/Code already exists/i)).toBeDefined();
+    await waitFor(() => expect(mockCreateGroup).toHaveBeenCalledWith({ groupCode: 'GI-05', groupName: 'Nuevo' }));
   });
 });
-

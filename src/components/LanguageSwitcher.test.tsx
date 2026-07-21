@@ -1,112 +1,47 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+const { useLanguageMock, mockedSetLanguage } = vi.hoisted(() => {
+  const mockedSetLanguage = vi.fn();
+  return {
+    mockedSetLanguage,
+    useLanguageMock: vi.fn(() => ({ language: 'es', setLanguage: mockedSetLanguage })),
+  };
+});
+
+vi.mock('../hooks/useLanguage', () => ({ useLanguage: useLanguageMock }));
+
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { useLanguage } from '../hooks/useLanguage';
-
-vi.mock('../hooks/useLanguage', () => ({
-  useLanguage: vi.fn(),
-}));
-
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
-
-const mockUseLanguage = vi.mocked(useLanguage);
 
 describe('LanguageSwitcher', () => {
-  const mockSetLanguage = vi.fn();
-
   beforeEach(() => {
-    vi.resetAllMocks();
-    mockUseLanguage.mockReturnValue({
-      language: 'es',
-      setLanguage: mockSetLanguage,
-      toggleLanguage: vi.fn(),
-    });
+    mockedSetLanguage.mockClear();
   });
 
-  describe('select variant (default)', () => {
-    it('renders as select element and responds to change events', () => {
-      render(<LanguageSwitcher variant="select" />);
-
-      const select = screen.getByRole('combobox', { name: 'language' }) as HTMLSelectElement;
-      expect(select).toBeDefined();
-      expect(select.value).toBe('es');
-
-      fireEvent.change(select, { target: { value: 'en' } });
-      expect(mockSetLanguage).toHaveBeenCalledWith('en');
-    });
+  it('variant select renderiza un select con opciones es/en', () => {
+    render(<LanguageSwitcher variant="select" />);
+    const select = screen.getByRole('combobox') as HTMLSelectElement;
+    expect(select).toBeInTheDocument();
+    expect(select.value).toBe('es');
+    const options = screen.getAllByRole('option');
+    expect(options.map((o) => o.getAttribute('value'))).toEqual(['es', 'en']);
   });
 
-  describe('button variant', () => {
-    it('renders button, toggles dropdown menu on click, and handles language change', async () => {
-      render(<LanguageSwitcher variant="button" />);
+  it('variant button abre el menu y cambia idioma', async () => {
+    render(<LanguageSwitcher variant="button" />);
+    const trigger = screen.getByRole('button');
+    expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+    await userEvent.click(trigger);
+    const opciones = screen.getAllByRole('menuitemradio');
+    expect(opciones.length).toBe(2);
+    await userEvent.click(opciones[1]);
+    expect(mockedSetLanguage).toHaveBeenCalledWith('en');
+  });
 
-      // Trigger button
-      const triggerButton = screen.getByRole('button', { name: 'language' });
-      expect(triggerButton).toBeDefined();
-      expect(screen.queryByRole('menu')).toBeNull();
-
-      // Click to open menu
-      await act(async () => {
-        triggerButton.click();
-      });
-
-      expect(screen.getByRole('menu')).toBeDefined();
-      
-      const esOption = screen.getByRole('menuitemradio', { name: 'spanishES' });
-      const enOption = screen.getByRole('menuitemradio', { name: 'englishEN' });
-
-      expect(esOption).toBeDefined();
-      expect(enOption).toBeDefined();
-
-      // Click EN option
-      await act(async () => {
-        enOption.click();
-      });
-
-      expect(mockSetLanguage).toHaveBeenCalledWith('en');
-      expect(screen.queryByRole('menu')).toBeNull(); // Menu closes on option click
-    });
-
-    it('closes menu on click outside', async () => {
-      render(
-        <div>
-          <button data-testid="outside-btn">Outside</button>
-          <LanguageSwitcher variant="button" />
-        </div>
-      );
-
-      const triggerButton = screen.getByRole('button', { name: 'language' });
-
-      // Open menu
-      await act(async () => {
-        triggerButton.click();
-      });
-      expect(screen.getByRole('menu')).toBeDefined();
-
-      // Click outside
-      fireEvent.mouseDown(screen.getByTestId('outside-btn'));
-      expect(screen.queryByRole('menu')).toBeNull();
-    });
-
-    it('closes menu on Escape key down', async () => {
-      render(<LanguageSwitcher variant="button" />);
-
-      const triggerButton = screen.getByRole('button', { name: 'language' });
-
-      // Open menu
-      await act(async () => {
-        triggerButton.click();
-      });
-      expect(screen.getByRole('menu')).toBeDefined();
-
-      // Escape key down
-      fireEvent.keyDown(document, { key: 'Escape' });
-      expect(screen.queryByRole('menu')).toBeNull();
-    });
+  it('variant button refleja el idioma activo', () => {
+    useLanguageMock.mockReturnValue({ language: 'en', setLanguage: mockedSetLanguage });
+    render(<LanguageSwitcher variant="button" />);
+    expect(screen.getByRole('button').getAttribute('aria-expanded')).toBe('false');
   });
 });

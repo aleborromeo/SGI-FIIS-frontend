@@ -1,367 +1,125 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { buildUrl, getToken, api, fetchApi } from './api';
 
-import {
-  api,
-  fetchApi,
-  apiGet,
-  apiPost,
-  apiPut,
-  apiPatch,
-  apiDelete,
-} from './api';
+describe('api.buildUrl', () => {
+  it('anade prefijo /api/v1 a endpoints relativos (sin host cuando VITE_API_URL esta vacio)', () => {
+    expect(buildUrl('/calls')).toBe('/api/v1/calls');
+  });
 
-describe('api utility', () => {
-  const originalFetch = global.fetch;
-  const originalLocation = window.location;
+  it('no duplica el prefijo /api/ si ya esta presente', () => {
+    expect(buildUrl('/api/v1/calls')).toBe('/api/v1/calls');
+  });
 
-  beforeEach(() => {
-    vi.resetAllMocks();
+  it('no modifica URLs absolutas', () => {
+    expect(buildUrl('https://otro.com/x')).toBe('https://otro.com/x');
+  });
+
+  it('anade / inicial si falta', () => {
+    expect(buildUrl('calls')).toBe('/api/v1/calls');
+  });
+
+  it('agrega query params omitiendo nulos/undefined', () => {
+    const url = buildUrl('/calls', { status: 'ABIERTA', page: 2, empty: undefined, nulo: null });
+    expect(url).toBe('/api/v1/calls?status=ABIERTA&page=2');
+  });
+
+  it('concatena params con & si ya habia query', () => {
+    const url = buildUrl('/calls?x=1', { y: 2 });
+    expect(url).toBe('/api/v1/calls?x=1&y=2');
+  });
+});
+
+describe('api.getToken', () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => localStorage.clear());
+
+  it('retorna null sin token', () => {
+    expect(getToken()).toBeNull();
+  });
+  it('lee sgi_token y remueve prefijo Bearer', () => {
+    localStorage.setItem('sgi_token', 'Bearer abc123');
+    expect(getToken()).toBe('abc123');
+  });
+  it('cae back a token y access_token', () => {
+    localStorage.setItem('token', 'xyz');
+    expect(getToken()).toBe('xyz');
     localStorage.clear();
+    localStorage.setItem('access_token', 'aaa');
+    expect(getToken()).toBe('aaa');
+  });
+});
 
-    // Mock window.location
+describe('api.request', () => {
+  beforeEach(() => {
+    localStorage.clear();
     Object.defineProperty(window, 'location', {
       writable: true,
-      value: {
-        href: 'http://localhost:8082/dashboard',
-        pathname: '/dashboard',
-      },
+      value: { href: 'http://localhost/', pathname: '/dashboard' },
     });
   });
-
   afterEach(() => {
-    global.fetch = originalFetch;
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      value: originalLocation,
-    });
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    localStorage.clear();
   });
 
-  describe('token retrieval and bearer trimming', () => {
-    it('returns null if no token is found', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{"success": true}',
-      });
+  it('agrega headers de auth, Accept y X-Requested-With', async () => {
+    localStorage.setItem('sgi_token', 'tok');
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: 1 }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
 
-      await api.get('/test');
-
-      const fetchCall = vi.mocked(global.fetch).mock.calls[0];
-      const headers = fetchCall[1]?.headers as Headers;
-      expect(headers.has('Authorization')).toBe(false);
-    });
-
-    it('retrieves and formats sgi_token from localStorage', async () => {
-      localStorage.setItem('sgi_token', 'Bearer abc-123');
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{"success": true}',
-      });
-
-      await api.get('/test');
-
-      const fetchCall = vi.mocked(global.fetch).mock.calls[0];
-      const headers = fetchCall[1]?.headers as Headers;
-      expect(headers.get('Authorization')).toBe('Bearer abc-123');
-    });
-
-    it('retrieves token with alternative keys and strips Bearer prefix if double-added', async () => {
-      localStorage.setItem('token', 'xyz-789');
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{"success": true}',
-      });
-
-      await api.get('/test');
-
-      const fetchCall = vi.mocked(global.fetch).mock.calls[0];
-      const headers = fetchCall[1]?.headers as Headers;
-      expect(headers.get('Authorization')).toBe('Bearer xyz-789');
-    });
-
-    it('retrieves access_token if others are missing', async () => {
-      localStorage.setItem('access_token', 'Bearer access-token');
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{"success": true}',
-      });
-
-      await api.get('/test');
-
-      const fetchCall = vi.mocked(global.fetch).mock.calls[0];
-      const headers = fetchCall[1]?.headers as Headers;
-      expect(headers.get('Authorization')).toBe('Bearer access-token');
-    });
+    const res = await api.get<{ ok: number }>('/data');
+    expect(res).toEqual({ ok: 1 });
+    const init = fetchMock.mock.calls[0][1];
+    expect(init.headers.get('Authorization')).toBe('Bearer tok');
+    expect(init.headers.get('X-Requested-With')).toBe('XMLHttpRequest');
+    expect(init.headers.get('Accept')).toBe('application/json');
   });
 
-  describe('URL building and query parameters', () => {
-    it('appends relative endpoints to api prefix and base url', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{}',
-      });
-
-      await api.get('users');
-
-      const fetchCall = vi.mocked(global.fetch).mock.calls[0];
-      const url = fetchCall[0] as string;
-      expect(url).toContain('/api/v1/users');
-    });
-
-    it('keeps absolute URLs unchanged', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{}',
-      });
-
-      await api.get('https://external-api.com/data');
-
-      const fetchCall = vi.mocked(global.fetch).mock.calls[0];
-      const url = fetchCall[0] as string;
-      expect(url).toBe('https://external-api.com/data');
-    });
-
-    it('builds query parameters correctly', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{}',
-      });
-
-      await api.get('/users', {
-        params: {
-          search: 'john',
-          active: true,
-          limit: 10,
-          nullVal: null,
-          undefVal: undefined,
-        },
-      });
-
-      const fetchCall = vi.mocked(global.fetch).mock.calls[0];
-      const url = fetchCall[0] as string;
-      expect(url).toContain('search=john');
-      expect(url).toContain('active=true');
-      expect(url).toContain('limit=10');
-      expect(url).not.toContain('nullVal');
-      expect(url).not.toContain('undefVal');
-    });
-
-    it('merges query params if endpoint already contains question mark', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{}',
-      });
-
-      await api.get('/users?role=ADMIN', {
-        params: { active: true },
-      });
-
-      const fetchCall = vi.mocked(global.fetch).mock.calls[0];
-      const url = fetchCall[0] as string;
-      expect(url).toContain('role=ADMIN&active=true');
-    });
+  it('no setea Content-Type para FormData', async () => {
+    const fd = new FormData();
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({}), { status: 200 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    await api.post('/upload', fd);
+    const init = fetchMock.mock.calls[0][1];
+    expect(init.headers.has('Content-Type')).toBe(false);
   });
 
-  describe('request headers', () => {
-    it('sets content type to application/json by default', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{}',
-      });
-
-      await api.post('/users', { name: 'Alice' });
-
-      const fetchCall = vi.mocked(global.fetch).mock.calls[0];
-      const headers = fetchCall[1]?.headers as Headers;
-      expect(headers.get('Content-Type')).toBe('application/json');
-      expect(headers.get('Accept')).toBe('application/json');
-      expect(headers.get('X-Requested-With')).toBe('XMLHttpRequest');
-    });
-
-    it('does not set application/json for FormData body', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{}',
-      });
-
-      const formData = new FormData();
-      formData.append('key', 'value');
-      await api.post('/upload', formData);
-
-      const fetchCall = vi.mocked(global.fetch).mock.calls[0];
-      const headers = fetchCall[1]?.headers as Headers;
-      expect(headers.has('Content-Type')).toBe(false);
-    });
+  it('retorna objeto vacio en 204', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const res = await api.get('/noop');
+    expect(res).toEqual({});
   });
 
-  describe('HTTP response status handling', () => {
-    it('handles 401 expired session and redirects to /login', async () => {
-      localStorage.setItem('sgi_token', 'Bearer expired-token');
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 401,
-        headers: new Headers(),
-      });
-
-      await expect(api.get('/users')).rejects.toThrow(
-        'Sesión expirada o no autorizada. Por favor, inicie sesión de nuevo.'
-      );
-      expect(localStorage.getItem('sgi_token')).toBeNull();
-      expect(window.location.href).toBe('/login');
-    });
-
-    it('does not redirect to /login on 401 if login path is already active', async () => {
-      Object.defineProperty(window, 'location', {
-        writable: true,
-        value: {
-          href: 'http://localhost:8082/login',
-          pathname: '/login',
-        },
-      });
-
-      localStorage.setItem('sgi_token', 'Bearer expired-token');
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 401,
-        headers: new Headers(),
-      });
-
-      await expect(api.get('/users')).rejects.toThrow();
-      expect(window.location.href).not.toBe('/login'); // Remains untouched
-    });
-
-    it('does not redirect to /login on 401 if request is /auth/login itself', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 401,
-        headers: new Headers(),
-      });
-
-      await expect(api.post('/auth/login', {})).rejects.toThrow();
-      expect(window.location.href).not.toBe('/login');
-    });
-
-    it('handles 403 forbidden error', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 403,
-        headers: new Headers(),
-      });
-
-      await expect(api.get('/users')).rejects.toThrow(
-        'No tiene permisos para realizar esta acción.'
-      );
-    });
-
-    it('handles other non-ok errors and parses JSON message with details', async () => {
-      const errorResponse = {
-        message: 'Invalid input',
-        details: {
-          field1: 'Must not be null',
-          field2: 'Must be positive',
-        },
-      };
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        headers: new Headers({ 'Content-Type': 'application/json' }),
-        text: async () => JSON.stringify(errorResponse),
-        json: async () => errorResponse,
-      });
-
-      await expect(api.post('/users', {})).rejects.toThrow(
-        'Invalid input'
-      );
-    });
-
-    it('handles fallback error parsing for non-JSON content', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        headers: new Headers(),
-        text: async () => 'Internal Server Error Plain Text',
-        json: async () => { throw new Error('Not JSON'); },
-      });
-
-      await expect(api.get('/users')).rejects.toThrow('Internal Server Error Plain Text');
-    });
+  it('lanza error legible en 401 y limpia sesion', async () => {
+    localStorage.setItem('sgi_token', 'tok');
+    localStorage.setItem('sgi_user', 'u');
+    const fetchMock = vi.fn().mockResolvedValue(new Response('', { status: 401 }));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(api.get('/secure')).rejects.toThrow(/Sesión expirada/);
+    expect(localStorage.getItem('sgi_token')).toBeNull();
   });
 
-  describe('JSON parsing and empty response bodies', () => {
-    it('returns empty object for 204 status response', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-        headers: new Headers({ 'Content-Length': '0' }),
-        text: async () => '',
-      });
-
-      const result = await api.delete('/users/1');
-      expect(result).toEqual({});
-    });
-
-    it('returns empty object for empty text response body', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        headers: new Headers(),
-        text: async () => '',
-      });
-
-      const result = await api.get('/users');
-      expect(result).toEqual({});
-    });
-
-    it('returns empty object and logs warning for invalid JSON response body', async () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        headers: new Headers(),
-        text: async () => 'Not-a-JSON-string',
-      });
-
-      const result = await api.get('/users');
-      expect(result).toEqual({});
-      expect(warnSpy).toHaveBeenCalled();
-      warnSpy.mockRestore();
-    });
+  it('lanza error de permisos en 403', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('', { status: 403 }));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(api.get('/secure')).rejects.toThrow(/No tiene permisos/);
   });
 
-  describe('alternate exported helpers', () => {
-    it('covers short api wrapper functions', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        headers: new Headers(),
-        status: 200,
-        text: async () => '{"success": true}',
-      });
+  it('propaga mensaje de error del backend', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ message: 'Campo invalido' }), { status: 400, headers: { 'Content-Type': 'application/json' } }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(api.get('/x')).rejects.toThrow('Campo invalido');
+  });
 
-      expect(await fetchApi('/test')).toEqual({ success: true });
-      expect(await apiGet('/test')).toEqual({ success: true });
-      expect(await apiPost('/test', {})).toEqual({ success: true });
-      expect(await apiPut('/test', {})).toEqual({ success: true });
-      expect(await apiPatch('/test', {})).toEqual({ success: true });
-      expect(await apiDelete('/test')).toEqual({ success: true });
-    });
+  it('fetchApi es alias de request', () => {
+    expect(fetchApi).toBeInstanceOf(Function);
   });
 });

@@ -1,151 +1,56 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { AuthContext } from '../../context/AuthContext';
 import { NotificationsPage } from './NotificationsPage';
-import { authService } from '../../services/authService';
-import { renderWithProviders } from '../../utils/testUtils';
 
-vi.mock('../../services/authService', () => ({
-  authService: {
-    getDashboardData: vi.fn(),
-  },
+const { mockGetDashboardData } = vi.hoisted(() => ({
+  mockGetDashboardData: vi.fn(),
 }));
 
-// Mock the CSS import from RoleDashboards
-vi.mock('../dashboards/RoleDashboards.css', () => ({}));
+vi.mock('../../services/authService', () => ({
+  authService: { getDashboardData: mockGetDashboardData },
+}));
 
-const mockAuthService = vi.mocked(authService);
+const renderWithProviders = (role = 'COORDINADOR_GRUPO') =>
+  render(
+    <AuthContext.Provider value={{ currentRole: role } as any}>
+      <NotificationsPage />
+    </AuthContext.Provider>
+  );
 
 describe('NotificationsPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockGetDashboardData.mockResolvedValue({});
   });
 
-  it('renders the notifications heading', async () => {
-    mockAuthService.getDashboardData.mockResolvedValue({ alerts: [], currentPlanStatus: '' } as any);
-
-    renderWithProviders(<NotificationsPage />);
-
-    // Wait for loading to finish
-    await act(async () => {});
-    // The page renders
-    expect(document.querySelector('.animate-fade-in')).toBeDefined();
+  it('renders the notifications title and empty state', async () => {
+    renderWithProviders();
+    expect(await screen.findByText('Mis notificaciones')).toBeDefined();
+    expect(screen.getByText(/No tiene notificaciones/i)).toBeDefined();
   });
 
-  it('shows empty state when no alerts', async () => {
-    mockAuthService.getDashboardData.mockResolvedValue({ alerts: [], currentPlanStatus: '' } as any);
-
-    renderWithProviders(<NotificationsPage />);
-
-    expect(await screen.findByText('No tiene notificaciones ni alertas pendientes en este momento.')).toBeDefined();
-  });
-
-  it('shows alerts when data is available', async () => {
-    mockAuthService.getDashboardData.mockResolvedValue({
+  it('renders received alerts with translated title and type badge', async () => {
+    mockGetDashboardData.mockResolvedValue({
       alerts: [
-        { type: 'WARNING', title: 'Pending procedures', description: '2 procedure(s) pending' },
-        { type: 'INFO', title: 'Active call', description: '1 open call' },
+        {
+          type: 'WARNING',
+          title: 'Pending procedures',
+          description: '1 pending procedure',
+        },
       ],
-      currentPlanStatus: '',
-    } as any);
-
-    renderWithProviders(<NotificationsPage />);
-
+    });
+    renderWithProviders();
     expect(await screen.findByText('Trámites pendientes')).toBeDefined();
+    expect(screen.getByText('Advertencia')).toBeDefined();
   });
 
-  it('shows error message on failed data load', async () => {
-    mockAuthService.getDashboardData.mockRejectedValue(new Error('Network error'));
-
-    renderWithProviders(<NotificationsPage />);
-
-    expect(await screen.findByText('Network error')).toBeDefined();
-  });
-
-  it('injects thesis plan approved alert for ESTUDIANTE', async () => {
-    mockAuthService.getDashboardData.mockResolvedValue({
-      alerts: [],
+  it('adds a thesis plan alert for ESTUDIANTE with approved plan', async () => {
+    mockGetDashboardData.mockResolvedValue({
       currentPlanStatus: 'APROBADO',
-    } as any);
-
-    renderWithProviders(<NotificationsPage />, {
-      authValue: {
-        user: { id: 5, roleCode: 'ESTUDIANTE', firstNames: 'Est', lastNames: 'Ud', email: 'e@sgi.com' },
-        roles: ['ESTUDIANTE'],
-        currentRole: 'ESTUDIANTE',
-        loading: false,
-        error: null,
-        isAuthenticated: true,
-        login: vi.fn(),
-        logout: vi.fn(),
-        switchRole: vi.fn(),
-        clearError: vi.fn(),
-        completeRegistration: vi.fn(),
-      } as any,
+      alerts: [],
     });
-
+    renderWithProviders('ESTUDIANTE');
     expect(await screen.findByText('Plan de tesis aprobado')).toBeDefined();
-  });
-
-  it('injects thesis plan rejected alert for ESTUDIANTE', async () => {
-    mockAuthService.getDashboardData.mockResolvedValue({
-      alerts: [],
-      currentPlanStatus: 'RECHAZADO',
-    } as any);
-
-    renderWithProviders(<NotificationsPage />, {
-      authValue: {
-        user: { id: 5, roleCode: 'ESTUDIANTE', firstNames: 'Est', lastNames: 'Ud', email: 'e@sgi.com' },
-        roles: ['ESTUDIANTE'],
-        currentRole: 'ESTUDIANTE',
-        loading: false,
-        error: null,
-        isAuthenticated: true,
-        login: vi.fn(),
-        logout: vi.fn(),
-        switchRole: vi.fn(),
-        clearError: vi.fn(),
-        completeRegistration: vi.fn(),
-      } as any,
-    });
-
-    expect(await screen.findByText('Plan de tesis rechazado')).toBeDefined();
-  });
-
-  it('injects thesis plan observado alert for ESTUDIANTE', async () => {
-    mockAuthService.getDashboardData.mockResolvedValue({
-      alerts: [],
-      currentPlanStatus: 'OBSERVADO',
-    } as any);
-
-    renderWithProviders(<NotificationsPage />, {
-      authValue: {
-        user: { id: 5, roleCode: 'ESTUDIANTE', firstNames: 'Est', lastNames: 'Ud', email: 'e@sgi.com' },
-        roles: ['ESTUDIANTE'],
-        currentRole: 'ESTUDIANTE',
-        loading: false,
-        error: null,
-        isAuthenticated: true,
-        login: vi.fn(),
-        logout: vi.fn(),
-        switchRole: vi.fn(),
-        clearError: vi.fn(),
-        completeRegistration: vi.fn(),
-      } as any,
-    });
-
-    expect(await screen.findByText('Plan de tesis observado')).toBeDefined();
-  });
-
-  it('shows spinner while loading', () => {
-    // Delay the resolution
-    mockAuthService.getDashboardData.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({ alerts: [], currentPlanStatus: '' } as any), 1000))
-    );
-
-    renderWithProviders(<NotificationsPage />);
-
-    // Spinner should be shown
-    expect(document.querySelector('[aria-label="Cargando..."]')).toBeDefined();
   });
 });

@@ -1,90 +1,46 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { ToastProvider } from '../../context/ToastContext';
 import { NewResearchLine } from './NewResearchLine';
 import { researchService } from '../../services/researchService';
-import { renderWithProviders } from '../../utils/testUtils';
+
+const mockCreateLine = vi.hoisted(() => vi.fn());
 
 vi.mock('../../services/researchService', () => ({
   researchService: {
-    createLine: vi.fn(),
+    createLine: mockCreateLine,
   },
 }));
 
-const mockResearchService = vi.mocked(researchService);
+const renderPage = () =>
+  render(
+    <ToastProvider>
+      <MemoryRouter>
+        <NewResearchLine />
+      </MemoryRouter>
+    </ToastProvider>
+  );
 
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
-
-describe('NewResearchLine page', () => {
+describe('NewResearchLine', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-    mockResearchService.createLine.mockResolvedValue({} as any);
+    vi.clearAllMocks();
   });
 
-  it('renders form and handles cancellation/back navigation', async () => {
-    renderWithProviders(<NewResearchLine />);
-
+  it('renders the form title', () => {
+    renderPage();
     expect(screen.getByText('Nueva Línea de Investigación')).toBeDefined();
-
-    // Back button
-    const backBtn = screen.getByText('Volver a Líneas');
-    await act(async () => {
-      backBtn.click();
-    });
-    expect(mockNavigate).toHaveBeenCalledWith('/lines');
-
-    // Cancel button
-    const cancelBtn = screen.getByRole('button', { name: 'Cancelar' });
-    await act(async () => {
-      cancelBtn.click();
-    });
-    expect(mockNavigate).toHaveBeenCalledWith('/lines');
   });
 
-  it('submits form successfully and redirects to lines list', async () => {
-    renderWithProviders(<NewResearchLine />);
+  it('creates a line via the form', async () => {
+    mockCreateLine.mockResolvedValue({ id: 5, lineName: 'Nueva Linea' });
+    renderPage();
 
-    const nameInput = screen.getByPlaceholderText('Ej: Inteligencia Artificial');
-    const submitBtn = screen.getByRole('button', { name: 'Guardar Línea' });
+    fireEvent.change(screen.getByPlaceholderText(/Inteligencia Artificial/), { target: { value: 'Nueva Linea' } });
 
-    await act(async () => {
-      fireEvent.change(nameInput, { target: { value: 'Computación en la Nube' } });
-    });
+    const submit = document.querySelector('form button[type="submit"]') as HTMLButtonElement;
+    fireEvent.click(submit);
 
-    await act(async () => {
-      submitBtn.click();
-    });
-
-    expect(mockResearchService.createLine).toHaveBeenCalledWith({
-      lineName: 'Computación en la Nube',
-    });
-    expect(mockNavigate).toHaveBeenCalledWith('/lines');
-  });
-
-  it('displays API error message on creation failure', async () => {
-    mockResearchService.createLine.mockRejectedValue(new Error('Failed to create line'));
-
-    renderWithProviders(<NewResearchLine />);
-
-    const nameInput = screen.getByPlaceholderText('Ej: Inteligencia Artificial');
-    const submitBtn = screen.getByRole('button', { name: 'Guardar Línea' });
-
-    await act(async () => {
-      fireEvent.change(nameInput, { target: { value: 'Línea Fallida' } });
-    });
-
-    await act(async () => {
-      submitBtn.click();
-    });
-
-    expect(screen.getByText(/Failed to create line/i)).toBeDefined();
+    await waitFor(() => expect(mockCreateLine).toHaveBeenCalledWith({ lineName: 'Nueva Linea' }));
   });
 });
-

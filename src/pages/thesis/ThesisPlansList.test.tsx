@@ -1,196 +1,115 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import { ThesisPlansList } from './ThesisPlansList';
-import { thesisService } from '../../services/thesisService';
-import { authService } from '../../services/authService';
-import { renderWithProviders } from '../../utils/testUtils';
+
+const norm = (s: string) =>
+  s
+    .normalize('NFD')
+    .split('')
+    .filter((c) => c.charCodeAt(0) < 0x300 || c.charCodeAt(0) > 0x36f)
+    .join('')
+    .toLowerCase();
+const byText = (sub: string) => (content: string) => norm(content).includes(norm(sub));
+
+const {
+  mockGetPlansByStudent,
+  mockGetPendingPlans,
+  mockGetPlansByGroup,
+  mockGetDashboardData,
+} = vi.hoisted(() => ({
+  mockGetPlansByStudent: vi.fn(),
+  mockGetPendingPlans: vi.fn(),
+  mockGetPlansByGroup: vi.fn(),
+  mockGetDashboardData: vi.fn(),
+}));
 
 vi.mock('../../services/thesisService', () => ({
   thesisService: {
-    getPlansByStudent: vi.fn(),
-    getAllPlans: vi.fn(),
-    getPendingPlans: vi.fn(),
+    getPlansByStudent: mockGetPlansByStudent,
+    getPendingPlans: mockGetPendingPlans,
+    getPlansByGroup: mockGetPlansByGroup,
   },
 }));
 
 vi.mock('../../services/authService', () => ({
-  authService: {
-    getDashboardData: vi.fn(),
-  },
+  authService: { getDashboardData: mockGetDashboardData },
 }));
 
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
-      <a href={to}>{children}</a>
-    ),
-  };
+const samplePlan = (id: number, titulo: string) => ({
+  idPlanTesis: id,
+  tituloTesis: titulo,
+  resumen: 'resumen de prueba',
+  idEstudiante: 1,
+  idLinea: 1,
+  idGrupo: 1,
+  idDocumentoActual: 1,
+  estadoPlan: 'PENDIENTE',
+  fechaCreacion: '2026-01-01',
+  fechaActualizacion: '2026-01-02',
 });
 
-const mockThesisService = vi.mocked(thesisService);
+const renderPage = (role: string) =>
+  render(
+    <AuthContext.Provider
+      value={{ currentRole: role, user: { id: 1 }, isAuthenticated: true } as any}
+    >
+      <MemoryRouter>
+        <ThesisPlansList />
+      </MemoryRouter>
+    </AuthContext.Provider>
+  );
 
-const mockPlans = [
-  {
-    idPlanTesis: 1,
-    tituloTesis: 'Sistema de detección de anomalías en redes',
-    resumen: 'Resumen del plan',
-    idEstudiante: 5,
-    idLinea: 1,
-    idGrupo: 1,
-    idDocumentoActual: 10,
-    estadoPlan: 'APROBADO',
-    fechaCreacion: '2026-01-01T00:00:00Z',
-    fechaActualizacion: '2026-01-15T00:00:00Z',
-    idTramite: 1,
-    estadoTramite: 'APROBADO_CON_RESOLUCION',
-    revisorActual: null,
-    studentName: 'Carlos López',
-  },
-  {
-    idPlanTesis: 2,
-    tituloTesis: 'Análisis de datos en tiempo real',
-    resumen: 'Resumen del plan 2',
-    idEstudiante: 6,
-    idLinea: 2,
-    idGrupo: 1,
-    idDocumentoActual: 11,
-    estadoPlan: 'PENDIENTE',
-    fechaCreacion: '2026-02-01T00:00:00Z',
-    fechaActualizacion: '2026-02-01T00:00:00Z',
-    idTramite: null,
-    estadoTramite: null,
-    revisorActual: 'Coordinador',
-    studentName: 'María Torres',
-  },
-];
-
-describe('ThesisPlansList', () => {
+describe('ThesisPlansList (#157)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockThesisService.getAllPlans.mockResolvedValue(mockPlans as any);
-    mockThesisService.getPendingPlans.mockResolvedValue([mockPlans[1]] as any);
-    mockThesisService.getPlansByStudent.mockResolvedValue([mockPlans[0]] as any);
+    mockGetPlansByStudent.mockResolvedValue([]);
+    mockGetPendingPlans.mockResolvedValue([]);
+    mockGetPlansByGroup.mockResolvedValue([]);
+    mockGetDashboardData.mockResolvedValue({ groupId: 7 });
   });
 
-  it('shows loading spinner initially', () => {
-    mockThesisService.getAllPlans.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve([]), 1000))
+  it('renders the student plans list with status labels', async () => {
+    mockGetPlansByStudent.mockResolvedValue([samplePlan(1, 'Plan uno')]);
+    renderPage('ESTUDIANTE');
+
+    expect(
+      await screen.findByRole('heading', { name: byText('Planes de Tesis') })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Plan uno')).toBeInTheDocument();
+    expect(screen.getByText(byText('Pendiente'))).toBeInTheDocument();
+  });
+
+  it('filters plans by the search term', async () => {
+    mockGetPlansByStudent.mockResolvedValue([
+      samplePlan(1, 'Plan uno'),
+      samplePlan(2, 'Plan dos'),
+    ]);
+    renderPage('ESTUDIANTE');
+
+    await waitFor(() => expect(screen.getByText('Plan uno')).toBeInTheDocument());
+    const search = screen.getByRole('textbox');
+    fireEvent.change(search, { target: { value: 'uno' } });
+
+    await waitFor(() => expect(screen.queryByText('Plan dos')).not.toBeInTheDocument());
+    expect(screen.getByText('Plan uno')).toBeInTheDocument();
+  });
+
+  it('loads pending plans for the decano role', async () => {
+    mockGetPendingPlans.mockImplementation((role: string) =>
+      role === 'DECANO' ? Promise.resolve([samplePlan(3, 'Plan decano')]) : Promise.resolve([])
     );
-    renderWithProviders(<ThesisPlansList />);
-    expect(document.querySelector('[aria-label="Cargando..."]')).toBeDefined();
+    renderPage('DECANO');
+
+    await waitFor(() => expect(mockGetPendingPlans).toHaveBeenCalledWith('DECANO'));
+    expect(await screen.findByText('Plan decano')).toBeInTheDocument();
   });
 
-  it('renders thesis plans after loading', async () => {
-    renderWithProviders(<ThesisPlansList />, {
-      authValue: {
-        user: { id: 5, roleCode: 'ESTUDIANTE', firstNames: 'Carlos', lastNames: 'López', email: 'c@sgi.com' },
-        roles: ['ESTUDIANTE'],
-        currentRole: 'ESTUDIANTE',
-        loading: false,
-        error: null,
-        isAuthenticated: true,
-        login: vi.fn(),
-        logout: vi.fn(),
-        switchRole: vi.fn(),
-        clearError: vi.fn(),
-        completeRegistration: vi.fn(),
-      } as any,
-    });
-    expect(await screen.findByText('Sistema de detección de anomalías en redes')).toBeDefined();
-  });
+  it('shows an error alert when loading fails', async () => {
+    mockGetPlansByStudent.mockRejectedValue(new Error('Fallo de carga'));
+    renderPage('ESTUDIANTE');
 
-  it('renders student plans for ESTUDIANTE role', async () => {
-    renderWithProviders(<ThesisPlansList />, {
-      authValue: {
-        user: { id: 5, roleCode: 'ESTUDIANTE', firstNames: 'Carlos', lastNames: 'López', email: 'c@sgi.com' },
-        roles: ['ESTUDIANTE'],
-        currentRole: 'ESTUDIANTE',
-        loading: false,
-        error: null,
-        isAuthenticated: true,
-        login: vi.fn(),
-        logout: vi.fn(),
-        switchRole: vi.fn(),
-        clearError: vi.fn(),
-        completeRegistration: vi.fn(),
-      } as any,
-    });
-
-    expect(await screen.findByText('Sistema de detección de anomalías en redes')).toBeDefined();
-    expect(mockThesisService.getPlansByStudent).toHaveBeenCalled();
-  });
-
-  it('renders pending plans tab for COORDINADOR', async () => {
-    renderWithProviders(<ThesisPlansList />, {
-      authValue: {
-        user: { id: 2, roleCode: 'COORDINADOR_GRUPO', firstNames: 'Co', lastNames: 'ord', email: 'co@sgi.com' },
-        roles: ['COORDINADOR_GRUPO'],
-        currentRole: 'COORDINADOR_GRUPO',
-        loading: false,
-        error: null,
-        isAuthenticated: true,
-        login: vi.fn(),
-        logout: vi.fn(),
-        switchRole: vi.fn(),
-        clearError: vi.fn(),
-        completeRegistration: vi.fn(),
-      } as any,
-    });
-
-    await act(async () => {});
-    expect(document.body).toBeDefined();
-  });
-
-  it('filters plans by search text', async () => {
-    renderWithProviders(<ThesisPlansList />, {
-      authValue: {
-        user: { id: 5, roleCode: 'ESTUDIANTE', firstNames: 'Carlos', lastNames: 'López', email: 'c@sgi.com' },
-        roles: ['ESTUDIANTE'],
-        currentRole: 'ESTUDIANTE',
-        loading: false,
-        error: null,
-        isAuthenticated: true,
-        login: vi.fn(),
-        logout: vi.fn(),
-        switchRole: vi.fn(),
-        clearError: vi.fn(),
-        completeRegistration: vi.fn(),
-      } as any,
-    });
-    await screen.findByText('Sistema de detección de anomalías en redes');
-
-    const searchInput = screen.getByRole('textbox');
-    await act(async () => {
-      fireEvent.change(searchInput, { target: { value: 'anomalías' } });
-    });
-
-    expect(screen.getByText('Sistema de detección de anomalías en redes')).toBeDefined();
-    expect(screen.queryByText('Análisis de datos en tiempo real')).toBeNull();
-  });
-
-  it('renders new thesis plan button for ESTUDIANTE', async () => {
-    renderWithProviders(<ThesisPlansList />, {
-      authValue: {
-        user: { id: 5, roleCode: 'ESTUDIANTE', firstNames: 'Carlos', lastNames: 'López', email: 'c@sgi.com' },
-        roles: ['ESTUDIANTE'],
-        currentRole: 'ESTUDIANTE',
-        loading: false,
-        error: null,
-        isAuthenticated: true,
-        login: vi.fn(),
-        logout: vi.fn(),
-        switchRole: vi.fn(),
-        clearError: vi.fn(),
-        completeRegistration: vi.fn(),
-      } as any,
-    });
-
-    await act(async () => {});
-    const newBtn = screen.getByRole('link', { name: /nuevo/i });
-    expect(newBtn).toBeDefined();
+    expect(await screen.findByText(byText('Fallo de carga'))).toBeInTheDocument();
   });
 });
-

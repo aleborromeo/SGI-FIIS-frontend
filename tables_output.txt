@@ -1,0 +1,53 @@
+=== Table 0 (3 rows x 4 cols) ===
+Row 0: ['Versión', 'Fecha', 'Descripción del cambio', 'Autor']
+Row 1: ['1.0', '14/07/2026', 'Versión inicial del Plan Integral de Pru', 'Anali Zelaya']
+Row 2: ['[ ]', '[ ]', '[ ]', '[ ]']
+
+=== Table 1 (7 rows x 4 cols) ===
+Row 0: ['Nivel de prueba', 'Objetivo principal', 'Herramientas', 'Ámbito de ejecución']
+Row 1: ['Unitarias (Backend)', 'Validar lógica de negocio, entidades JPA', 'JUnit 5, Mockito', 'Local / CI']
+Row 2: ['Integración (Backend)', 'Verificar interacción con PostgreSQL rea', 'Testcontainers, Spring Boot Test', 'Local / CI']
+Row 3: ['API / E2E', 'Validar contratos REST y flujos completo', 'Bruno, Postman, Playwright', 'Local / QA']
+Row 4: ['Carga y estrés', 'Simular concurrencia de usuarios y medir', 'k6, Grafana', 'Staging']
+
+=== Table 2 (26 rows x 2 cols) ===
+Row 0: ['Módulo / Componente', 'Descripción']
+Row 1: ['auth', 'Autenticación JWT, OAuth2 (Microsoft), r']
+Row 2: ['users', 'Gestión de usuarios, roles, CRUD, activa']
+Row 3: ['grupos_investigacion', 'Grupos de investigación, membresías, coo']
+Row 4: ['lineas_investigacion', 'Líneas de investigación, activación/desa']
+
+=== Table 3 (12 rows x 5 cols) ===
+Row 0: ['ID', 'Módulo', 'Escenario / Descripción', 'Precondiciones', 'Resultado esperado']
+Row 1: ['QA-UNIT-001', 'thesis', 'ThesisDomainTest – transiciones de estad', 'JDK 17+, Maven 3.8+', '98 tests OK']
+Row 2: ['QA-UNIT-002', 'thesis', 'ThesisPlanServiceTest – 9 métodos del se', 'Mocks Mockito', '53 tests OK']
+Row 3: ['QA-UNIT-003', 'dashboards', 'GetAdminDashboardUseCaseTest – dashboard', 'Mocks repositorios', '7 tests OK']
+Row 4: ['QA-FRONT-001', 'LoginPage', 'LoginPage: renderiza formulario con CAPT', 'Vitest + RTL + MSW', '15-20 tests']
+
+=== Table 4 (7 rows x 2 cols) ===
+Row 0: ['Pipeline / Herramienta', 'Propósito']
+Row 1: ['backend-ci.yml', 'Build + Test (JUnit 5 + Testcontainers) ']
+Row 2: ['frontend-ci.yml', 'Lint + Test (Vitest + RTL + MSW) + Cover']
+Row 3: ['frontend-e2e.yml', 'Playwright E2E tests contra entorno de s']
+Row 4: ['flyway-validation.yml', 'Validación de migraciones Flyway + Docke']
+
+=== Table 5 (16 rows x 3 cols) ===
+Row 0: ['Requisito', 'Descripción', 'Casos de prueba asociados']
+Row 1: ['RF-01 a RF-06', 'Autenticación y acceso', 'QA-UNIT-001 a QA-UNIT-006, QA-FRONT-001,']
+Row 2: ['RF-07 a RF-14', 'Gestión de usuarios', 'QA-UNIT-091, QA-UNIT-092, QA-FRONT-030 a']
+Row 3: ['RF-15 a RF-23', 'Grupos de investigación', 'QA-UNIT-111 a QA-UNIT-114, QA-FRONT-036']
+Row 4: ['RF-24 a RF-28', 'Líneas de investigación', 'QA-UNIT-101 a QA-UNIT-103']
+
+=== Table 6 (10 rows x 3 cols) ===
+Row 0: ['Riesgo identificado', 'Probabilidad / Impacto', 'Estrategia de mitigación']
+Row 1: ['Falsos negativos por diferencia de puert', 'Media / Alta', 'TestcontainersConfig dual-mode con detec']
+Row 2: ['Módulo Thesis con 7% de cobertura inicia', 'Alta / Crítica', 'Priorizar creación de 61 tests en featur']
+Row 3: ['65 errores de compilación por refactorin', 'Alta / Bloqueante', 'Corrección sistemática de adaptadores y ']
+Row 4: ['Cobertura frontend actual ~8% (solo 4 te', 'Alta / Crítica', 'Priorizar ~445 tests sugeridos: estados ']
+
+=== Table 7 (15 rows x 3 cols) ===
+Row 0: ['Actividad', 'Fecha de inicio', 'Fecha de fin']
+Row 1: ['Fase 1: Corrección de tests backend con ', '07/07/2026', '08/07/2026']
+Row 2: ['Fase 2: Issues bloqueantes de compilació', '08/07/2026', '08/07/2026']
+Row 3: ['Fase 3: Issues funcionales backend (CP8,', '08/07/2026', '09/07/2026']
+Row 4: ['Fase 4: Thesis – 61 tests nuevos backend', '09/07/2026', '13/07/2026']

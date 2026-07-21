@@ -1,100 +1,136 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { NewProgressReport } from './NewProgressReport';
-import { progressReportService } from '../../services/progressReportService';
-import { documentService } from '../../services/documentService';
-import { renderWithProviders } from '../../utils/testUtils';
+import { ToastProvider } from '../../context/ToastContext';
+import { AuthContext } from '../../context/AuthContext';
+
+const { mockGetProjectsByRole, mockCreateReport, mockUpload } = vi.hoisted(() => ({
+  mockGetProjectsByRole: vi.fn(),
+  mockCreateReport: vi.fn(),
+  mockUpload: vi.fn(),
+}));
 
 vi.mock('../../services/progressReportService', () => ({
   progressReportService: {
-    getProjectsByRole: vi.fn(),
-    create: vi.fn(),
+    getProjectsByRole: mockGetProjectsByRole,
+    createReport: mockCreateReport,
   },
 }));
 
 vi.mock('../../services/documentService', () => ({
-  documentService: {
-    uploadDocument: vi.fn(),
-  },
+  documentService: { upload: mockUpload },
 }));
 
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
+const authValue = {
+  currentRole: 'DOCENTE_INVESTIGADOR',
+  user: { id: 1 },
+  roles: [],
+  isAuthenticated: true,
+  loading: false,
+  error: null,
+  login: vi.fn(),
+  logout: vi.fn(),
+  switchRole: vi.fn(),
+  clearError: vi.fn(),
+  completeRegistration: vi.fn(),
+} as any;
 
-const mockProgressReportService = vi.mocked(progressReportService);
-const mockDocumentService = vi.mocked(documentService);
+const renderPage = () =>
+  render(
+    <MemoryRouter>
+      <ToastProvider>
+        <AuthContext.Provider value={authValue}>
+          <NewProgressReport />
+        </AuthContext.Provider>
+      </ToastProvider>
+    </MemoryRouter>
+  );
 
-const mockProjects = [
-  { projectId: 1, projectTitle: 'Proyecto de IA', reportCount: 2 },
-  { projectId: 2, projectTitle: 'Proyecto Blockchain', reportCount: 0 },
-];
+const attachedFileInput = () => document.getElementById('attached-file') as HTMLInputElement;
 
 describe('NewProgressReport', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockProgressReportService.getProjectsByRole.mockResolvedValue(mockProjects as any);
-    mockProgressReportService.create.mockResolvedValue({ id: 1 } as any);
-    mockDocumentService.uploadDocument.mockResolvedValue({ id: 10, name: 'informe.pdf' } as any);
+    mockGetProjectsByRole.mockResolvedValue([
+      { id: 5, title: 'Proyecto de Riego', status: 'EN_EJECUCION' },
+    ]);
+    mockCreateReport.mockResolvedValue({ id: 1 });
+    mockUpload.mockResolvedValue({ id: 99 });
   });
 
-  it('shows loading for projects initially', () => {
-    mockProgressReportService.getProjectsByRole.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve([]), 1000))
-    );
-    renderWithProviders(<NewProgressReport />);
-    expect(document.body).toBeDefined();
+  it('renders the page title and loads the project list', async () => {
+    renderPage();
+    expect(
+      await screen.findByRole('heading', { name: /Registrar Nuevo Informe de Avance/i })
+    ).toBeDefined();
+    expect(await screen.findByText(/Proyecto de Riego/)).toBeDefined();
   });
 
-  it('renders report type options', async () => {
-    renderWithProviders(<NewProgressReport />);
-    await act(async () => {});
-    expect(screen.getByText('Parcial')).toBeDefined();
-    expect(screen.getByText('Final')).toBeDefined();
-  });
+  it('shows an error message when report creation fails', async () => {
+    mockCreateReport.mockRejectedValue(new Error('Fallo guardando'));
+    renderPage();
+    await screen.findByText(/Proyecto de Riego/);
 
-  it('renders back button', async () => {
-    renderWithProviders(<NewProgressReport />);
-    await act(async () => {});
-    const backBtn = screen.getByRole('button', { name: /volver/i });
-    expect(backBtn).toBeDefined();
-  });
-
-  it('navigates back when back button is clicked', async () => {
-    renderWithProviders(<NewProgressReport />);
-    await act(async () => {});
-    const backBtn = screen.getByRole('button', { name: /volver/i });
-    await act(async () => {
-      fireEvent.click(backBtn);
+    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: '5' } });
+    fireEvent.change(document.getElementById('input-period') as HTMLElement, {
+      target: { value: 'Trimestre 1' },
     });
-    expect(mockNavigate).toHaveBeenCalledWith('/progressreports/history');
+    fireEvent.change(document.getElementById('input-achievements') as HTMLElement, {
+      target: { value: 'Logros' },
+    });
+    fireEvent.change(document.getElementById('input-difficulties') as HTMLElement, {
+      target: { value: 'Dificultades' },
+    });
+    fireEvent.change(document.getElementById('input-recommendations') as HTMLElement, {
+      target: { value: 'Recomendaciones' },
+    });
+
+    const file = new File(['x'], 'informe.pdf', { type: 'application/pdf' });
+    fireEvent.change(attachedFileInput(), { target: { files: [file] } });
+    await waitFor(() => expect(mockUpload).toHaveBeenCalled());
+
+    fireEvent.click(document.querySelector('button[type="submit"]') as HTMLButtonElement);
+
+    expect(await screen.findByText(/Error al registrar/)).toBeDefined();
+    expect(mockCreateReport).toHaveBeenCalled();
   });
 
-  it('renders achievements and difficulties textareas', async () => {
-    renderWithProviders(<NewProgressReport />);
-    await act(async () => {});
-    const textareas = screen.getAllByRole('textbox');
-    expect(textareas.length).toBeGreaterThan(0);
-  });
+  it('creates the report with the form payload on successful submit', async () => {
+    renderPage();
+    await screen.findByText(/Proyecto de Riego/);
 
-  it('renders progress percentage input', async () => {
-    renderWithProviders(<NewProgressReport />);
-    await act(async () => {});
-    const inputs = screen.getAllByRole('spinbutton');
-    expect(inputs.length).toBeGreaterThan(0);
-  });
+    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: '5' } });
+    fireEvent.change(document.getElementById('input-period') as HTMLElement, {
+      target: { value: 'Trimestre 1' },
+    });
+    fireEvent.change(document.getElementById('input-achievements') as HTMLElement, {
+      target: { value: 'Logros alcanzados' },
+    });
+    fireEvent.change(document.getElementById('input-difficulties') as HTMLElement, {
+      target: { value: 'Dificultades presentadas' },
+    });
+    fireEvent.change(document.getElementById('input-recommendations') as HTMLElement, {
+      target: { value: 'Recomendaciones' },
+    });
 
-  it('renders submit button', async () => {
-    renderWithProviders(<NewProgressReport />);
-    await act(async () => {});
-    const submitBtn = screen.getByRole('button', { name: /enviar/i });
-    expect(submitBtn).toBeDefined();
+    const file = new File(['x'], 'informe.pdf', { type: 'application/pdf' });
+    fireEvent.change(attachedFileInput(), { target: { files: [file] } });
+    await waitFor(() => expect(mockUpload).toHaveBeenCalled());
+
+    fireEvent.click(document.querySelector('button[type="submit"]') as HTMLButtonElement);
+
+    await waitFor(() => expect(mockCreateReport).toHaveBeenCalled());
+    expect(mockCreateReport).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectId: 5,
+        period: 'Trimestre 1',
+        progressPercentage: 0,
+        achievements: 'Logros alcanzados',
+        difficulties: 'Dificultades presentadas',
+        recommendations: 'Recomendaciones',
+        attachedDocumentId: 99,
+      })
+    );
   });
 });
-

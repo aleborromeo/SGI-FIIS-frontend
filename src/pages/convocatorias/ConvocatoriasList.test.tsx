@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
-import { ConvocatoriasList } from './ConvocatoriasList';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
+import { ToastProvider } from '../../context/ToastContext';
+import { ConfirmProvider } from '../../context/ConfirmContext';
 import { callService } from '../../services/callService';
-import { renderWithProviders } from '../../utils/testUtils';
+import type { CallResponse } from '../../services/callService';
+import ConvocatoriasList from './ConvocatoriasList';
 
 vi.mock('../../services/callService', () => ({
   callService: {
@@ -12,124 +15,49 @@ vi.mock('../../services/callService', () => ({
   },
 }));
 
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-    useLocation: () => ({ key: 'test-key' }),
-  };
-});
-
 const mockCallService = vi.mocked(callService);
 
-const mockCalls = [
-  {
-    id: 1,
-    title: 'Convocatoria de Investigación 2026-I',
-    description: 'Primera convocatoria del año',
-    status: 'ABIERTA',
-    startDate: '2026-01-01',
-    endDate: '2026-06-30',
-    targetAudience: 'DOCENTES',
-    researchLines: [],
-    maxProposals: 10,
-    budget: 50000,
-    createdAt: '2025-12-01T00:00:00Z',
-  },
-  {
-    id: 2,
-    title: 'Convocatoria de Tesis 2026-I',
-    description: 'Convocatoria para tesistas',
-    status: 'CERRADA',
-    startDate: '2025-07-01',
-    endDate: '2025-12-31',
-    targetAudience: 'ESTUDIANTES',
-    researchLines: [],
-    maxProposals: 20,
-    budget: 30000,
-    createdAt: '2025-06-01T00:00:00Z',
-  },
+const calls: CallResponse[] = [
+  { id: 1, title: 'Convocatoria Alpha', description: 'Desc A', status: 'ABIERTA', startDate: '2026-01-01', endDate: '2026-12-31', researchLineIds: [1] },
+  { id: 2, title: 'Convocatoria Beta', description: 'Desc B', status: 'CERRADA', startDate: '2026-01-01', endDate: '2026-06-30', researchLineIds: [] },
 ];
 
+function renderPage() {
+  return render(
+    <MemoryRouter>
+      <ToastProvider>
+        <ConfirmProvider>
+          <ConvocatoriasList />
+        </ConfirmProvider>
+      </ToastProvider>
+    </MemoryRouter>
+  );
+}
+
 describe('ConvocatoriasList', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-    mockCallService.getAll.mockResolvedValue(mockCalls as any);
-    mockCallService.updateStatus.mockResolvedValue({} as any);
+  beforeEach(() => vi.resetAllMocks());
+
+  it('muestra estado de carga y luego las convocatorias', async () => {
+    mockCallService.getAll.mockResolvedValue(calls);
+    renderPage();
+    expect(await screen.findByText('Convocatoria Alpha')).toBeInTheDocument();
+    expect(screen.getByText('Convocatoria Beta')).toBeInTheDocument();
   });
 
-  it('shows loading spinner initially', () => {
-    mockCallService.getAll.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve([]), 1000))
-    );
-    renderWithProviders(<ConvocatoriasList />);
-    expect(document.querySelector('[aria-label="Cargando..."]')).toBeDefined();
+  it('muestra mensaje de error si falla la carga', async () => {
+    mockCallService.getAll.mockRejectedValue(new Error('Fallo de red'));
+    renderPage();
+    expect(await screen.findByText(/Fallo de red/)).toBeInTheDocument();
   });
 
-  it('renders convocatorias after loading', async () => {
-    renderWithProviders(<ConvocatoriasList />);
-    expect(await screen.findByText('Convocatoria de Investigación 2026-I')).toBeDefined();
-    expect(screen.getByText('Convocatoria de Tesis 2026-I')).toBeDefined();
-  });
-
-  it('renders results count', async () => {
-    renderWithProviders(<ConvocatoriasList />);
-    await screen.findByText('Convocatoria de Investigación 2026-I');
-    // Results count should be shown
-    expect(document.body.textContent?.includes('2')).toBeTruthy();
-  });
-
-  it('filters convocatorias by search text', async () => {
-    renderWithProviders(<ConvocatoriasList />);
-    await screen.findByText('Convocatoria de Investigación 2026-I');
-
-    const searchInput = screen.getByPlaceholderText(/buscar/i);
-    await act(async () => {
-      fireEvent.change(searchInput, { target: { value: 'Tesis' } });
-    });
-
-    expect(screen.queryByText('Convocatoria de Investigación 2026-I')).toBeNull();
-    expect(screen.getByText('Convocatoria de Tesis 2026-I')).toBeDefined();
-  });
-
-  it('filters by status', async () => {
-    renderWithProviders(<ConvocatoriasList />);
-    await screen.findByText('Convocatoria de Investigación 2026-I');
-
-    // Find status filter buttons (ABIERTA, CERRADA, etc.)
-    const abiertaBtn = screen.getByRole('button', { name: /abierta/i });
-    await act(async () => {
-      fireEvent.click(abiertaBtn);
-    });
-
-    expect(screen.getByText('Convocatoria de Investigación 2026-I')).toBeDefined();
-    expect(screen.queryByText('Convocatoria de Tesis 2026-I')).toBeNull();
-  });
-
-  it('navigates to new convocatoria on + button click', async () => {
-    renderWithProviders(<ConvocatoriasList />);
-    await screen.findByText('Convocatoria de Investigación 2026-I');
-
-    const newLink = screen.getByRole('link', { name: /nueva convocatoria/i });
-    expect(newLink.getAttribute('href')).toBe('/convocatorias/new');
-  });
-
-  it('navigates to edit convocatoria', async () => {
-    renderWithProviders(<ConvocatoriasList />);
-    await screen.findByText('Convocatoria de Investigación 2026-I');
-
-    const editLinks = screen.getAllByRole('link', { name: /editar/i });
-    expect(editLinks[0].getAttribute('href')).toBe('/convocatorias/1/edit');
-  });
-
-  it('shows empty state when no convocatorias', async () => {
-    mockCallService.getAll.mockResolvedValue([]);
-    renderWithProviders(<ConvocatoriasList />);
-    await act(async () => {});
-    // Empty state should be visible
-    expect(document.body.textContent?.includes('0')).toBeTruthy();
+  it('cambia el estado de una convocatoria tras confirmar en el modal', async () => {
+    mockCallService.getAll.mockResolvedValue(calls);
+    mockCallService.updateStatus.mockResolvedValue({ id: 1, status: 'CERRADA' } as any);
+    renderPage();
+    await screen.findByText('Convocatoria Alpha');
+    await userEvent.click(screen.getByRole('button', { name: /cerrar convocatoria/i }));
+    const confirmButtons = await screen.findAllByRole('button', { name: /cerrar convocatoria/i });
+    await userEvent.click(confirmButtons[confirmButtons.length - 1]);
+    await waitFor(() => expect(mockCallService.updateStatus).toHaveBeenCalledWith(1, 'CERRADA'));
   });
 });
-

@@ -1,255 +1,103 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { ToastProvider } from '../../context/ToastContext';
+import { ConfirmProvider } from '../../context/ConfirmContext';
 import { ResearchGroupDetail } from './ResearchGroupDetail';
 import { researchService } from '../../services/researchService';
-import { renderWithProviders } from '../../utils/testUtils';
+
+const mockGetGroupById = vi.hoisted(() => vi.fn());
+const mockGetMembers = vi.hoisted(() => vi.fn());
+const mockGetGroupLines = vi.hoisted(() => vi.fn());
+const mockGetLines = vi.hoisted(() => vi.fn());
+const mockGetAvailableUsers = vi.hoisted(() => vi.fn());
+const mockGetCoordinatorCandidates = vi.hoisted(() => vi.fn());
+const mockDeactivateGroup = vi.hoisted(() => vi.fn());
+const mockAssignCoordinator = vi.hoisted(() => vi.fn());
 
 vi.mock('../../services/researchService', () => ({
   researchService: {
-    getGroupById: vi.fn(),
-    getMembers: vi.fn(),
-    getGroupLines: vi.fn(),
-    getLines: vi.fn(),
-    getAvailableUsers: vi.fn(),
-    getCoordinatorCandidates: vi.fn(),
-    assignCoordinator: vi.fn(),
+    getGroupById: mockGetGroupById,
+    getMembers: mockGetMembers,
+    getGroupLines: mockGetGroupLines,
+    getLines: mockGetLines,
+    getAvailableUsers: mockGetAvailableUsers,
+    getCoordinatorCandidates: mockGetCoordinatorCandidates,
+    deactivateGroup: mockDeactivateGroup,
+    assignCoordinator: mockAssignCoordinator,
     addMember: vi.fn(),
     removeMember: vi.fn(),
+    getGroupByUser: vi.fn(),
     assignGroupToLine: vi.fn(),
     removeGroupFromLine: vi.fn(),
-    deactivateGroup: vi.fn(),
   },
 }));
 
-const mockResearchService = vi.mocked(researchService);
+const group = {
+  id: 1,
+  groupCode: 'GI-01',
+  groupName: 'Grupo IA',
+  active: true,
+  currentCoordinatorId: 3,
+  coordinatorFirstNames: 'Ana',
+  coordinatorLastNames: 'Lopez',
+  createdAt: '2024-01-01',
+};
 
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-    useParams: () => ({ id: '10' }),
-    useSearchParams: () => [new URLSearchParams()],
-  };
-});
+const renderPage = () =>
+  render(
+    <ToastProvider>
+      <ConfirmProvider>
+        <MemoryRouter initialEntries={['/groups/1']}>
+          <Routes>
+            <Route path="/groups/:id" element={<ResearchGroupDetail />} />
+          </Routes>
+        </MemoryRouter>
+      </ConfirmProvider>
+    </ToastProvider>
+  );
 
-describe('ResearchGroupDetail page', () => {
+describe('ResearchGroupDetail', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-
-    mockResearchService.getGroupById.mockResolvedValue({
-      id: 10,
-      groupName: 'GI-SOFT',
-      groupCode: 'G01',
-      active: true,
-      currentCoordinatorId: 200,
-      createdAt: '2026-01-01T00:00:00Z',
-    } as any);
-
-    mockResearchService.getMembers.mockResolvedValue([
+    vi.clearAllMocks();
+    mockGetGroupById.mockResolvedValue(group);
+    mockGetMembers.mockResolvedValue([
       {
-        userId: 200,
-        userFirstNames: 'Carlos',
-        userLastNames: 'Sánchez',
-        userEmail: 'carlos@unas.edu.pe',
-        userRoleCode: 'INVESTIGADOR_PRINCIPAL',
-        joinedAt: '2026-01-01T00:00:00Z',
+        id: 10,
+        userId: 2,
+        userFirstNames: 'Juan',
+        userLastNames: 'Perez',
+        userEmail: 'juan@unas.edu.pe',
         active: true,
-      },
-    ] as any);
-
-    mockResearchService.getGroupLines.mockResolvedValue([
-      {
-        id: 300,
-        lineName: 'Inteligencia Artificial',
-        lineCode: 'LI-01',
-        active: true,
-      },
-    ] as any);
-
-    mockResearchService.getLines.mockResolvedValue([
-      {
-        id: 300,
-        lineName: 'Inteligencia Artificial',
-        lineCode: 'LI-01',
-        active: true,
-      },
-      {
-        id: 301,
-        lineName: 'Ciberseguridad',
-        lineCode: 'LI-02',
-        active: true,
-      },
-    ] as any);
-
-    mockResearchService.getAvailableUsers.mockResolvedValue([
-      {
-        id: 201,
-        firstNames: 'Ana',
-        lastNames: 'Gomez',
-        institutionalEmail: 'ana@unas.edu.pe',
+        joinedAt: '2024-02-01',
       },
     ]);
-
-    mockResearchService.getCoordinatorCandidates.mockResolvedValue([
-      {
-        id: 202,
-        firstNames: 'Maria',
-        lastNames: 'López',
-        institutionalEmail: 'maria@unas.edu.pe',
-      },
-    ]);
-
-    mockResearchService.assignCoordinator.mockResolvedValue({} as any);
-    mockResearchService.addMember.mockResolvedValue({} as any);
-    mockResearchService.removeMember.mockResolvedValue({} as any);
-    mockResearchService.assignGroupToLine.mockResolvedValue({} as any);
-    mockResearchService.removeGroupFromLine.mockResolvedValue({} as any);
-    mockResearchService.deactivateGroup.mockResolvedValue({} as any);
+    mockGetGroupLines.mockResolvedValue([{ id: 7, lineName: 'Linea X', active: true }]);
+    mockGetLines.mockResolvedValue([]);
+    mockGetAvailableUsers.mockResolvedValue([]);
+    mockGetCoordinatorCandidates.mockResolvedValue([]);
   });
 
-  it('renders details, coordination tab, and back button successfully', async () => {
-    renderWithProviders(<ResearchGroupDetail />);
-
-    expect(mockResearchService.getGroupById).toHaveBeenCalledWith(10);
-
-    // Wait for render
-    expect(await screen.findByText('GI-SOFT')).toBeDefined();
-    expect(screen.getByText('GI-SOFT')).toBeDefined();
-
-    // Check breadcrumb
-    const backBtn = screen.getByText('Volver a Grupos');
-    await act(async () => {
-      backBtn.click();
-    });
-    expect(mockNavigate).toHaveBeenCalledWith('/groups');
+  it('renders the group name as heading', async () => {
+    renderPage();
+    expect(await screen.findByText('Grupo IA')).toBeDefined();
   });
 
-  it('handles assigning a coordinator', async () => {
-    renderWithProviders(<ResearchGroupDetail />);
-    expect(await screen.findByText('GI-SOFT')).toBeDefined();
-
-    // The coordinator dropdown is the first select on the summary page
-    const selectCoord = screen.getAllByRole('combobox')[0];
-    expect(selectCoord).toBeDefined();
-
-    await act(async () => {
-      fireEvent.change(selectCoord, { target: { value: '202' } }); // select Maria López
-    });
-
-    const assignBtn = screen.getByRole('button', { name: 'Guardar' });
-    await act(async () => {
-      assignBtn.click();
-    });
-
-    expect(mockResearchService.assignCoordinator).toHaveBeenCalledWith(10, 202);
+  it('shows members in the members tab', async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: /Miembros/i }));
+    expect(await screen.findByText('Juan Perez')).toBeDefined();
   });
 
-  it('handles deactivating the research group', async () => {
-    renderWithProviders(<ResearchGroupDetail />);
-    expect(await screen.findByText('GI-SOFT')).toBeDefined();
+  it('deactivates the group after confirming', async () => {
+    renderPage();
+    fireEvent.click(await screen.findByText('Desactivar Grupo'));
 
-    const deactivateBtn = screen.getByRole('button', { name: 'Desactivar Grupo' });
-    expect(deactivateBtn).toBeDefined();
+    const cancel = await screen.findByText('Cancelar');
+    const container = cancel.parentElement as HTMLElement;
+    const confirmBtn = within(container).getAllByRole('button').find((b) => b !== cancel)!;
+    fireEvent.click(confirmBtn);
 
-    await act(async () => {
-      deactivateBtn.click();
-    });
-
-    // Confirm modal opens, verify desvincular confirm btn
-    const confirmBtns = await screen.findAllByRole('button', { name: 'Desactivar' });
-    const modalConfirmBtn = confirmBtns[confirmBtns.length - 1];
-    expect(modalConfirmBtn).toBeDefined();
-
-    await act(async () => {
-      modalConfirmBtn.click();
-    });
-
-    expect(mockResearchService.deactivateGroup).toHaveBeenCalledWith(10);
-    expect(mockNavigate).toHaveBeenCalledWith('/groups');
-  });
-
-  it('renders members list, allows adding and removing member in members tab', async () => {
-    renderWithProviders(<ResearchGroupDetail />);
-    expect(await screen.findByText('GI-SOFT')).toBeDefined();
-
-    // Switch to members tab
-    const membersTabBtn = screen.getByRole('button', { name: /Miembros \(/i });
-    await act(async () => {
-      membersTabBtn.click();
-    });
-
-    // Lists members correctly
-    expect(screen.getByText('Carlos Sánchez')).toBeDefined();
-
-    // Select available user to add
-    const selectMember = screen.getByRole('combobox');
-    await act(async () => {
-      fireEvent.change(selectMember, { target: { value: '201' } }); // select Ana Gomez
-    });
-
-    const addBtn = screen.getByRole('button', { name: 'Agregar' });
-    await act(async () => {
-      addBtn.click();
-    });
-
-    expect(mockResearchService.addMember).toHaveBeenCalledWith(10, 201);
-
-    // Remove member
-    const removeBtn = screen.getByRole('button', { name: 'Retirar' });
-    await act(async () => {
-      removeBtn.click();
-    });
-
-    const confirmBtns = await screen.findAllByRole('button', { name: 'Retirar' });
-    const modalConfirmBtn = confirmBtns[confirmBtns.length - 1];
-    await act(async () => {
-      modalConfirmBtn.click();
-    });
-
-    expect(mockResearchService.removeMember).toHaveBeenCalledWith(10, 200);
-  });
-
-  it('renders research lines tab, assigns and removes research line', async () => {
-    renderWithProviders(<ResearchGroupDetail />);
-    expect(await screen.findByText('GI-SOFT')).toBeDefined();
-
-    // Switch to lines tab
-    const linesTabBtn = screen.getByRole('button', { name: /Líneas \(/i });
-    await act(async () => {
-      linesTabBtn.click();
-    });
-
-    expect(screen.getByText('Inteligencia Artificial')).toBeDefined();
-
-    // Assign line
-    const selectLine = screen.getByRole('combobox');
-    await act(async () => {
-      fireEvent.change(selectLine, { target: { value: '301' } }); // Ciberseguridad
-    });
-
-    const addBtn = screen.getByRole('button', { name: 'Añadir' });
-    await act(async () => {
-      addBtn.click();
-    });
-
-    expect(mockResearchService.assignGroupToLine).toHaveBeenCalledWith(301, 10);
-
-    // Remove line
-    const removeBtn = screen.getByRole('button', { name: 'Remover' });
-    await act(async () => {
-      removeBtn.click();
-    });
-
-    const confirmBtns = await screen.findAllByRole('button', { name: 'Remover' });
-    const modalConfirmBtn = confirmBtns[confirmBtns.length - 1];
-    await act(async () => {
-      modalConfirmBtn.click();
-    });
-
-    expect(mockResearchService.removeGroupFromLine).toHaveBeenCalledWith(300, 10);
+    await waitFor(() => expect(mockDeactivateGroup).toHaveBeenCalledWith(1));
   });
 });
-

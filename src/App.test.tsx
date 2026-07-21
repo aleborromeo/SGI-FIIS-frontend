@@ -1,7 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import App from './App';
 
-describe('App test', () => {
-  it('should pass a dummy test so the pipeline doesnt fail', () => {
-    expect(1 + 1).toBe(2);
+describe('App', () => {
+  it('renderiza sin crashear y muestra la pagina de bienvenida publica', async () => {
+    render(<App />);
+    const logo = await screen.findByAltText('SGI Logo');
+    expect(logo).toBeInTheDocument();
   });
 });

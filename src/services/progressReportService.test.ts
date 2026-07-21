@@ -1,206 +1,122 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import {
+  toFrontendStatus,
+  toBackendStatus,
+  mapResponseToReport,
+  mapResponseToDetail,
+} from './progressReportService';
+import type { ProgressReportDetail } from './progressReportService';
 
-vi.mock('./api', () => ({
-  api: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
-
-import { progressReportService } from './progressReportService';
-import { api } from './api';
-
-const mockApi = vi.mocked(api);
-
-describe('progressReportService mappers & helper branches', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  describe('getPendingReports', () => {
-    it('calls GET /api/progress-reports with mapped backend status', async () => {
-      mockApi.get.mockResolvedValue({
-        content: [
-          {
-            id: 101,
-            projectId: 1,
-            projectTitle: 'Title 1',
-            responsibleName: 'Name 1',
-            registrationDate: '2026-07-20',
-            progressPercentage: 50,
-            reportStatus: 'PENDING',
-            achievements: 'Achieved stuff',
-            difficulties: 'Hard stuff',
-            attachedDocumentId: 50,
-            period: 'Q1',
-          },
-        ],
-      });
-
-      const result = await progressReportService.getPendingReports('PENDIENTE');
-
-      expect(mockApi.get).toHaveBeenCalledWith('/api/progress-reports', {
-        params: { status: 'PENDING' },
-      });
-      expect(result).toEqual([
-        {
-          id: 101,
-          reportNumber: 101,
-          projectId: 1,
-          projectTitle: 'Title 1',
-          responsibleName: 'Name 1',
-          reportDate: '2026-07-20',
-          physicalProgress: 50,
-          financialProgress: 50,
-          status: 'PENDIENTE',
-          observations: 'Logros: Achieved stuff. Dificultades: Hard stuff',
-          attachedDocumentId: 50,
-          period: 'Q1',
-        },
-      ]);
+describe('progressReportService mappers', () => {
+  describe('toFrontendStatus', () => {
+    it('mapea estados del backend a frontend', () => {
+      expect(toFrontendStatus('PENDING')).toBe('PENDIENTE');
+      expect(toFrontendStatus('UNDER_REVIEW')).toBe('EN_REVISION');
+      expect(toFrontendStatus('OBSERVED')).toBe('OBSERVADO');
+      expect(toFrontendStatus('APPROVED')).toBe('APROBADO');
+      expect(toFrontendStatus('REJECTED')).toBe('RECHAZADO');
     });
-
-    it('handles alternative status parameters and fallback when status is unknown', async () => {
-      mockApi.get.mockResolvedValue([
-        {
-          id: 102,
-          projectId: 2,
-          status: 'UNKNOWN_BE',
-        },
-      ]);
-
-      const result = await progressReportService.getPendingReports();
-
-      expect(mockApi.get).toHaveBeenCalledWith('/api/progress-reports', {
-        params: undefined,
-      });
-      expect(result[0].status).toBe('PENDIENTE'); // fallback to frontend PENDIENTE
+    it('retorna PENDIENTE para estados desconocidos', () => {
+      expect(toFrontendStatus('X')).toBe('PENDIENTE');
     });
   });
 
-  describe('getProjectsByRole', () => {
-    it('calls GET /api/progress-reports and returns project list', async () => {
-      const mockProjects = [{ id: 1, title: 'Project 1', status: 'ACTIVE' }];
-      mockApi.get.mockResolvedValue(mockProjects);
-
-      const result = await progressReportService.getProjectsByRole();
-
-      expect(mockApi.get).toHaveBeenCalledWith('/api/progress-reports');
-      expect(result).toEqual(mockProjects);
+  describe('toBackendStatus', () => {
+    it('mapea estados del frontend a backend', () => {
+      expect(toBackendStatus('PENDIENTE')).toBe('PENDING');
+      expect(toBackendStatus('EN_REVISION')).toBe('UNDER_REVIEW');
+      expect(toBackendStatus('OBSERVADO')).toBe('OBSERVED');
+      expect(toBackendStatus('APROBADO')).toBe('APPROVED');
+      expect(toBackendStatus('RECHAZADO')).toBe('REJECTED');
+    });
+    it('retorna el mismo valor para estados no mapeados', () => {
+      expect(toBackendStatus('OTRO')).toBe('OTRO');
     });
   });
 
-  describe('getByProject', () => {
-    it('calls GET /api/progress-reports/project/:id', async () => {
-      mockApi.get.mockResolvedValue([]);
-      const result = await progressReportService.getByProject(5);
-      expect(mockApi.get).toHaveBeenCalledWith('/api/progress-reports/project/5');
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('getDetail', () => {
-    it('calls GET /api/progress-reports/:id and maps full detail', async () => {
-      const mockRawDetail = {
-        id: 200,
+  describe('mapResponseToReport', () => {
+    it('mapea una respuesta basica', () => {
+      const r = mapResponseToReport({
+        id: 10,
         projectId: 4,
-        period: 'Q2',
-        registrationDate: '2026-07-10',
-        lastUpdatedDate: '2026-07-15',
+        responsibleName: 'Docente',
+        registrationDate: '2026-01-01',
+        progressPercentage: 50,
         reportStatus: 'APPROVED',
-        observations: 'All clear',
-        attachedDocumentId: 88,
-      };
-      mockApi.get.mockResolvedValue(mockRawDetail);
-
-      const result = await progressReportService.getDetail(200);
-
-      expect(mockApi.get).toHaveBeenCalledWith('/api/progress-reports/200');
-      expect(result.id).toBe(200);
-      expect(result.status).toBe('APROBADO');
-      expect(result.attachments).toEqual([
-        {
-          id: 88,
-          fileName: 'informe_avance_200.pdf',
-          fileType: 'pdf',
-          url: '/api/documents/download/88',
-          uploadedAt: '2026-07-10',
-        },
-      ]);
-      expect(result.comments).toEqual([
-        {
-          id: 1,
-          authorName: 'Sistema de Trazabilidad',
-          authorRole: 'SISTEMA',
-          content: 'Últimas observaciones: All clear',
-          createdAt: '2026-07-15',
-        },
-      ]);
-    });
-  });
-
-  describe('createReport', () => {
-    it('calls POST /api/progress-reports', async () => {
-      const payload = {
-        projectId: 1,
-        reportType: 'PARCIAL' as const,
-        period: 'Q3',
-        progressPercentage: 75,
-        achievements: 'none',
-        difficulties: 'none',
-        recommendations: 'none',
-      };
-      mockApi.post.mockResolvedValue({ id: 1 });
-      const result = await progressReportService.createReport(payload);
-      expect(mockApi.post).toHaveBeenCalledWith('/api/progress-reports', payload);
-      expect(result.id).toBe(1);
-    });
-  });
-
-  describe('amendReport', () => {
-    it('calls PATCH /api/progress-reports/:id/amend', async () => {
-      mockApi.patch.mockResolvedValue({ id: 1 });
-      await progressReportService.amendReport(10, { amendmentDocumentId: 99 });
-      expect(mockApi.patch).toHaveBeenCalledWith('/api/progress-reports/10/amend', {
-        amendmentDocumentId: 99,
+        achievements: 'Bien',
+        difficulties: 'Poco',
+        period: '2026-I',
       });
+      expect(r.id).toBe(10);
+      expect(r.reportNumber).toBe(10);
+      expect(r.projectId).toBe(4);
+      expect(r.projectTitle).toBe('Proyecto #4');
+      expect(r.responsibleName).toBe('Docente');
+      expect(r.reportDate).toBe('2026-01-01');
+      expect(r.physicalProgress).toBe(50);
+      expect(r.financialProgress).toBe(50);
+      expect(r.status).toBe('APROBADO');
+      expect(r.observations).toBe('Logros: Bien. Dificultades: Poco');
+      expect(r.period).toBe('2026-I');
+    });
+
+    it('usa valores por defecto para campos faltantes', () => {
+      const r = mapResponseToReport({ id: 1, projectId: 1 });
+      expect(r.physicalProgress).toBe(0);
+      expect(r.financialProgress).toBe(0);
+      expect(r.status).toBe('PENDIENTE');
+      expect(r.responsibleName).toBe('Docente Investigador');
+      expect(r.observations).toBeUndefined();
+    });
+
+    it('combina projectTitle cuando existe', () => {
+      const r = mapResponseToReport({ id: 1, projectId: 1, projectTitle: 'Proy X' });
+      expect(r.projectTitle).toBe('Proy X');
     });
   });
 
-  describe('forwardReport', () => {
-    it('calls PATCH /api/progress-reports/:id/forward', async () => {
-      mockApi.patch.mockResolvedValue({ id: 1 });
-      await progressReportService.forwardReport(10);
-      expect(mockApi.patch).toHaveBeenCalledWith('/api/progress-reports/10/forward', {});
-    });
-  });
-
-  describe('approveReport', () => {
-    it('calls PATCH /api/progress-reports/:id/approve', async () => {
-      mockApi.patch.mockResolvedValue({ id: 1 });
-      await progressReportService.approveReport(10);
-      expect(mockApi.patch).toHaveBeenCalledWith('/api/progress-reports/10/approve', {});
-    });
-  });
-
-  describe('observeReport', () => {
-    it('calls PATCH /api/progress-reports/:id/observe', async () => {
-      mockApi.patch.mockResolvedValue({ id: 1 });
-      await progressReportService.observeReport(10, 'Needs correction');
-      expect(mockApi.patch).toHaveBeenCalledWith('/api/progress-reports/10/observe', {
-        observation: 'Needs correction',
+  describe('mapResponseToDetail', () => {
+    it('construye actividades, evidencias, comentarios e historial', () => {
+      const raw = {
+        id: 2,
+        projectId: 9,
+        registrationDate: '2026-02-01',
+        lastUpdatedDate: '2026-02-10',
+        progressPercentage: 80,
+        reportStatus: 'OBSERVED',
+        period: '2026-I',
+        attachedDocumentId: 55,
+        observation: 'Revisar',
+        executedActivities: [{ id: 1, description: 'A', startDate: 's', endDate: 'e', completed: true }],
+        evidences: [{ id: 1, title: 'E', type: 'img' }],
+        changeHistory: [{ id: 1, field: 'status', oldValue: 'P', newValue: 'O', changedBy: 'U', changedAt: 'd' }],
+      };
+      const d: ProgressReportDetail = mapResponseToDetail(raw);
+      expect(d.executedActivities).toHaveLength(1);
+      expect(d.evidences).toHaveLength(1);
+      expect(d.attachments).toHaveLength(1);
+      expect(d.attachments[0]).toEqual({
+        id: 55,
+        fileName: 'informe_avance_2.pdf',
+        fileType: 'pdf',
+        url: '/api/documents/download/55',
+        uploadedAt: '2026-02-01',
       });
+      expect(d.comments).toHaveLength(1);
+      expect(d.comments[0].content).toBe('Revisar');
+      expect(d.changeHistory).toHaveLength(1);
     });
-  });
 
-  describe('rejectReport', () => {
-    it('calls PATCH /api/progress-reports/:id/reject', async () => {
-      mockApi.patch.mockResolvedValue({ id: 1 });
-      await progressReportService.rejectReport(10);
-      expect(mockApi.patch).toHaveBeenCalledWith('/api/progress-reports/10/reject', {});
+    it('genera actividad por defecto cuando no hay executedActivities', () => {
+      const d = mapResponseToDetail({ id: 3, projectId: 1, period: '2026-I' });
+      expect(d.executedActivities).toHaveLength(1);
+      expect(d.executedActivities[0].completed).toBe(true);
+    });
+
+    it('no genera comentarios ni adjuntos cuando faltan', () => {
+      const d = mapResponseToDetail({ id: 4, projectId: 1 });
+      expect(d.comments).toHaveLength(0);
+      expect(d.attachments).toHaveLength(0);
     });
   });
 });

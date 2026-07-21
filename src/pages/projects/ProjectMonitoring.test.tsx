@@ -1,116 +1,103 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
+import { ToastProvider } from '../../context/ToastContext';
 import { ProjectMonitoring } from './ProjectMonitoring';
-import { projectService } from '../../services/projectService';
-import { progressReportService } from '../../services/progressReportService';
-import { userService } from '../../services/userService';
-import { documentService } from '../../services/documentService';
-import { renderWithProviders } from '../../utils/testUtils';
+
+const {
+  mockGetById,
+  mockUpdateStatus,
+  mockGetByProject,
+  mockList,
+  mockDownloadFile,
+  mockUserGetById,
+} = vi.hoisted(() => ({
+  mockGetById: vi.fn(),
+  mockUpdateStatus: vi.fn(),
+  mockGetByProject: vi.fn(),
+  mockList: vi.fn(),
+  mockDownloadFile: vi.fn(),
+  mockUserGetById: vi.fn(),
+}));
 
 vi.mock('../../services/projectService', () => ({
-  projectService: {
-    getById: vi.fn(),
-  },
+  projectService: { getById: mockGetById, updateStatus: mockUpdateStatus },
 }));
-
 vi.mock('../../services/progressReportService', () => ({
-  progressReportService: {
-    getByProject: vi.fn(),
-  },
+  progressReportService: { getByProject: mockGetByProject },
 }));
-
-vi.mock('../../services/userService', () => ({
-  userService: {
-    getAllUsers: vi.fn(),
-    getById: vi.fn(),
-  },
-}));
-
 vi.mock('../../services/documentService', () => ({
-  documentService: {
-    uploadDocument: vi.fn(),
-  },
+  documentService: { list: mockList, downloadFile: mockDownloadFile },
+}));
+vi.mock('../../services/userService', () => ({
+  userService: { getById: mockUserGetById },
 }));
 
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useParams: () => ({ id: '1' }),
-    useNavigate: () => vi.fn(),
-    Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
-      <a href={to}>{children}</a>
-    ),
-  };
-});
-
-const mockProjectService = vi.mocked(projectService);
-const mockProgressReportService = vi.mocked(progressReportService);
-
-const mockProject = {
+const baseProject = {
   id: 1,
-  title: 'Proyecto de IA en Salud',
-  status: 'APROBADO',
-  researchLine: 'Computación',
-  researchGroup: 'GI-SOFT',
-  responsibleId: 1,
+  code: 'PRY-1',
+  title: 'Proyecto de Riego Inteligente',
+  status: 'EN_EJECUCION',
+  summary: 'RESUMEN: Mejorar el riego. OBJETIVOS ESPECÍFICOS: Optimizar recursos.',
+  generalObjective: 'Mejorar el sistema de riego',
+  budget: 1000,
   startDate: '2026-01-01',
   endDate: '2026-12-31',
-  budget: 50000,
-  abstract: 'Resumen del proyecto',
-  objectives: 'Objetivos del proyecto',
-  teamMembers: [],
 };
+
+const renderWithProviders = (role = 'COORDINADOR_GRUPO', id = '1') =>
+  render(
+    <MemoryRouter initialEntries={[`/projects/${id}`]}>
+      <AuthContext.Provider value={{ currentRole: role } as any}>
+        <ToastProvider>
+          <Routes>
+            <Route path="/projects/:id" element={<ProjectMonitoring />} />
+          </Routes>
+        </ToastProvider>
+      </AuthContext.Provider>
+    </MemoryRouter>
+  );
 
 describe('ProjectMonitoring', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockProjectService.getById.mockResolvedValue(mockProject as any);
-    mockProgressReportService.getByProject.mockResolvedValue([]);
-    vi.mocked(userService.getAllUsers).mockResolvedValue([]);
-    vi.mocked(userService.getById).mockResolvedValue({
-      id: 1,
-      firstNames: 'Juan',
-      lastNames: 'Pérez',
-      dni: '12345678',
-      institutionalEmail: 'juan@sgi.com',
-      roleCode: 'DOCENTE_INVESTIGADOR',
-      roleDescription: 'Docente Investigador',
-      active: true,
-    } as any);
+    mockGetById.mockResolvedValue(baseProject);
+    mockGetByProject.mockResolvedValue([]);
+    mockList.mockResolvedValue([]);
+    mockUserGetById.mockResolvedValue({ firstNames: 'Ana', lastNames: 'Lopez' });
+    mockUpdateStatus.mockResolvedValue({ ...baseProject, status: 'IN_PROGRESS' });
   });
 
-  it('shows loading spinner initially', () => {
-    mockProjectService.getById.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve(mockProject as any), 1000))
+  it('renders the project title and summary section without crashing', async () => {
+    renderWithProviders();
+    expect(await screen.findByText('Proyecto de Riego Inteligente')).toBeDefined();
+    expect(screen.getByText('Resumen y Detalles de la Propuesta')).toBeDefined();
+    expect(screen.getByText('Informes Trimestrales y Final de Ejecución')).toBeDefined();
+  });
+
+  it('calls projectService.updateStatus when moving the project to execution', async () => {
+    renderWithProviders();
+    await screen.findByText('Proyecto de Riego Inteligente');
+    const button = screen.getByRole('button', { name: /Pasar a ejecuci/i });
+    fireEvent.click(button);
+    await waitFor(() =>
+      expect(mockUpdateStatus).toHaveBeenCalledWith('1', 'IN_PROGRESS')
     );
-    renderWithProviders(<ProjectMonitoring />);
-    expect(document.querySelector('[aria-label="Cargando..."]')).toBeDefined();
   });
 
-  it('renders project title after loading', async () => {
-    renderWithProviders(<ProjectMonitoring />);
-    expect(await screen.findByText('Proyecto de IA en Salud')).toBeDefined();
-  });
-
-  it('renders back link to projects', async () => {
-    renderWithProviders(<ProjectMonitoring />);
-    await act(async () => {});
-    const backLink = screen.getByRole('link', { name: /volver/i });
-    expect(backLink).toBeDefined();
-  });
-
-  it('renders project leader name', async () => {
-    renderWithProviders(<ProjectMonitoring />);
-    expect(await screen.findByText('Juan Pérez')).toBeDefined();
-  });
-
-  it('renders project tabs', async () => {
-    renderWithProviders(<ProjectMonitoring />);
-    await screen.findByText('Proyecto de IA en Salud');
-    // Tabs should be rendered
-    expect(document.body.textContent?.length).toBeGreaterThan(100);
+  it('shows the Subsanar action for an observed report when role is DOCENTE_INVESTIGADOR', async () => {
+    mockGetByProject.mockResolvedValue([
+      {
+        id: 5,
+        period: 'Trimestre 1',
+        status: 'OBSERVADO',
+        attachedDocumentId: null,
+        fileName: null,
+      },
+    ]);
+    renderWithProviders('DOCENTE_INVESTIGADOR');
+    expect(await screen.findByText(/Subsanar/i)).toBeDefined();
+    expect(screen.getByText('Trimestre 1')).toBeDefined();
   });
 });
-

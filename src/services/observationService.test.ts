@@ -1,41 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('./api', () => ({
+const { fetchApi } = vi.hoisted(() => ({
   fetchApi: vi.fn(),
 }));
 
-import { observationService, type RemedyRequest } from './observationService';
-import { fetchApi } from './api';
+vi.mock('./api', () => ({ api: {}, fetchApi }));
 
-const mockFetchApi = vi.mocked(fetchApi);
+import { observationService } from './observationService';
 
 describe('observationService', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
+    fetchApi.mockResolvedValue([]);
   });
 
-  describe('getByProcedureId', () => {
-    it('calls fetchApi GET /api/observations/procedure/:id', async () => {
-      mockFetchApi.mockResolvedValue([]);
-      const result = await observationService.getByProcedureId('5');
-      expect(mockFetchApi).toHaveBeenCalledWith('/api/observations/procedure/5');
-      expect(result).toEqual([]);
-    });
+  it('getByProcedureId usa el endpoint con el procedureId', async () => {
+    await observationService.getByProcedureId('3');
+    expect(fetchApi).toHaveBeenCalledWith('/api/observations/procedure/3');
   });
 
-  describe('addRemedy', () => {
-    it('calls fetchApi POST /api/observations/:id/remedy', async () => {
-      mockFetchApi.mockResolvedValue(undefined);
-      const payload: RemedyRequest = {
-        applicantId: 10,
-        description: 'Fixed observation',
-        attachedDocumentId: 15,
-      };
-      await observationService.addRemedy(1, payload);
-      expect(mockFetchApi).toHaveBeenCalledWith('/api/observations/1/remedy', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
+  it('addRemedy postea el payload serializado', async () => {
+    const payload = { applicantId: 1, description: 'd', attachedDocumentId: 2 };
+    await observationService.addRemedy(3, payload);
+    expect(fetchApi).toHaveBeenCalledWith('/api/observations/3/remedy', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
   });
 });

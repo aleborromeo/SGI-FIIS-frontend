@@ -1,86 +1,85 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { ToastProvider } from '../../context/ToastContext';
 import { ResolutionsPage } from './ResolutionsPage';
-import { resolutionService } from '../../services/resolutionService';
-import { renderWithProviders } from '../../utils/testUtils';
 
-vi.mock('../../services/resolutionService', () => ({
-  resolutionService: {
-    issueResolution: vi.fn(),
-  },
+const { mockIssueResolution } = vi.hoisted(() => ({
+  mockIssueResolution: vi.fn(),
 }));
 
-const mockResolutionService = vi.mocked(resolutionService);
+vi.mock('../../services/resolutionService', () => ({
+  resolutionService: { issueResolution: mockIssueResolution },
+}));
 
-describe('ResolutionsPage', () => {
+describe('ResolutionsPage (#161)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockResolutionService.issueResolution.mockResolvedValue({ id: 1 } as any);
+    mockIssueResolution.mockResolvedValue({});
   });
 
-  it('renders the page title', () => {
-    renderWithProviders(<ResolutionsPage />);
-    expect(screen.getByText('Registro de Resoluciones')).toBeDefined();
+  it('renders the resolution registration form', async () => {
+    render(
+      <ToastProvider>
+        <ResolutionsPage />
+      </ToastProvider>
+    );
+
+    expect(await screen.findByText('Registro de Resoluciones')).toBeInTheDocument();
+    expect(screen.getByText('Nueva Resolución')).toBeInTheDocument();
   });
 
-  it('renders the form with all fields', () => {
-    renderWithProviders(<ResolutionsPage />);
-    expect(screen.getByLabelText(/Número de Resolución/i)).toBeDefined();
-    expect(screen.getByLabelText(/ID del Trámite/i)).toBeDefined();
-  });
-
-  it('renders the submit button', () => {
-    renderWithProviders(<ResolutionsPage />);
-    expect(screen.getByRole('button', { name: /Registrar Resolución/i })).toBeDefined();
-  });
-
-  it('updates form fields on input', async () => {
-    renderWithProviders(<ResolutionsPage />);
-
-    const numeroInput = screen.getByPlaceholderText(/N° 123-2026-FIIS/i);
-    await act(async () => {
-      fireEvent.change(numeroInput, { target: { value: 'N° 001-2026' } });
-    });
-
-    expect((numeroInput as HTMLInputElement).value).toBe('N° 001-2026');
-  });
-
-  it('shows error toast when file is missing on submit', async () => {
-    renderWithProviders(<ResolutionsPage />);
+  it('shows an error when submitting without a file', async () => {
+    render(
+      <ToastProvider>
+        <ResolutionsPage />
+      </ToastProvider>
+    );
 
     const form = document.querySelector('form') as HTMLFormElement;
-    await act(async () => {
-      fireEvent.submit(form);
-    });
+    fireEvent.submit(form);
 
-    // Should not call the service since validation fails
-    expect(mockResolutionService.issueResolution).not.toHaveBeenCalled();
+    expect(
+      (await screen.findAllByText('Debe adjuntar el archivo de la resolución')).length
+    ).toBeGreaterThan(0);
+    expect(mockIssueResolution).not.toHaveBeenCalled();
   });
 
-  it('shows file name after file selection', async () => {
-    renderWithProviders(<ResolutionsPage />);
+  it('registers a resolution when all fields and a file are provided', async () => {
+    render(
+      <ToastProvider>
+        <ResolutionsPage />
+      </ToastProvider>
+    );
+
+    fireEvent.change(screen.getByLabelText('Número de Resolución'), {
+      target: { value: 'R-2026-001' },
+    });
+    fireEvent.change(screen.getByLabelText('Fecha de Emisión'), {
+      target: { value: '2026-05-10' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('ID del trámite aprobado'), {
+      target: { value: '42' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Descripción del asunto resolutivo...'), {
+      target: { value: 'Asunto de prueba' },
+    });
 
     const fileInput = document.getElementById('resolution-upload') as HTMLInputElement;
-    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
-
-    await act(async () => {
-      Object.defineProperty(fileInput, 'files', { value: [file], writable: true, configurable: true });
-      fireEvent.change(fileInput, { target: { files: [file] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(['x'], 'resolucion.pdf', { type: 'application/pdf' })] },
     });
 
-    expect(screen.getByText('test.pdf')).toBeDefined();
-  });
+    const submit = await screen.findByRole('button', { name: 'Registrar Resolución' });
+    fireEvent.click(submit);
 
-  it('shows upload button disabled state only when submitting', async () => {
-    renderWithProviders(<ResolutionsPage />);
-    // The upload button should not be disabled initially
-    const uploadBtn = screen.getByRole('button', { name: /Registrar Resolución/i });
-    expect(uploadBtn.hasAttribute('disabled')).toBe(false);
-  });
-
-  it('renders subtitle', () => {
-    renderWithProviders(<ResolutionsPage />);
-    expect(screen.getByText(/Formalización de trámites aprobados/i)).toBeDefined();
+    await waitFor(() =>
+      expect(mockIssueResolution).toHaveBeenCalledWith(
+        expect.objectContaining({
+          numeroResolucion: 'R-2026-001',
+          asunto: 'Asunto de prueba',
+          idTramite: '42',
+        })
+      )
+    );
   });
 });

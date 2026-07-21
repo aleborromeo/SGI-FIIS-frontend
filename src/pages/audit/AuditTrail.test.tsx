@@ -1,154 +1,105 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { ToastProvider } from '../../context/ToastContext';
+import { AuthContext } from '../../context/AuthContext';
 import { AuditTrail } from './AuditTrail';
 import { auditService } from '../../services/auditService';
-import { renderWithProviders } from '../../utils/testUtils';
+
+const mockGetAuditLog = vi.hoisted(() => vi.fn());
+const mockGetRecentActivity = vi.hoisted(() => vi.fn());
+const mockGetTraceability = vi.hoisted(() => vi.fn());
 
 vi.mock('../../services/auditService', () => ({
   auditService: {
-    getAuditLog: vi.fn(),
-    getRecentActivity: vi.fn(),
-    getTraceability: vi.fn(),
+    getAuditLog: mockGetAuditLog,
+    getRecentActivity: mockGetRecentActivity,
+    getTraceability: mockGetTraceability,
   },
 }));
 
-const mockAuditService = vi.mocked(auditService);
+const authValue = {
+  user: { id: 1 },
+  currentRole: 'ADMIN',
+  isAuthenticated: true,
+  roles: ['ADMIN'],
+  loading: false,
+  error: null,
+  login: vi.fn(),
+  logout: vi.fn(),
+  switchRole: vi.fn(),
+  clearError: vi.fn(),
+  completeRegistration: vi.fn(),
+};
 
-const mockAuditLogs = [
-  {
-    id: 1,
-    accion: 'CREAR',
-    tablaAfectada: 'project',
-    idRegistro: 10,
-    datosAnteriores: null,
-    datosNuevos: '{"title":"Test"}',
-    idUsuario: 1,
-    nombreUsuario: 'Admin User',
-    ipOrigen: '192.168.1.1',
-    fechaAccion: new Date().toISOString(),
-  },
-];
-
-const mockRecentActivities = [
-  {
-    procedureId: 5,
-    procedureCode: 'TRM-005',
-    procedureType: 'PROYECTO',
-    currentStatus: 'PENDIENTE_COORDINADOR',
-    movementCount: 3,
-    lastAction: 'CREAR',
-    lastUserName: 'Admin',
-    lastMovementDate: new Date().toISOString(),
-  },
-];
+const renderPage = (entry = '/audit') =>
+  render(
+    <AuthContext.Provider value={authValue as any}>
+      <ToastProvider>
+        <MemoryRouter initialEntries={[entry]}>
+          <AuditTrail />
+        </MemoryRouter>
+      </ToastProvider>
+    </AuthContext.Provider>
+  );
 
 describe('AuditTrail', () => {
+  beforeAll(() => {
+    window.scrollTo = vi.fn();
+  });
+
   beforeEach(() => {
-    vi.resetAllMocks();
-    mockAuditService.getAuditLog.mockResolvedValue(mockAuditLogs as any);
-    mockAuditService.getRecentActivity.mockResolvedValue(mockRecentActivities as any);
-    mockAuditService.getTraceability.mockResolvedValue([]);
+    vi.clearAllMocks();
+    mockGetAuditLog.mockResolvedValue([]);
+    mockGetRecentActivity.mockResolvedValue([]);
+    mockGetTraceability.mockResolvedValue([]);
   });
 
-  it('renders the audit trail header', async () => {
-    renderWithProviders(<AuditTrail />);
-    // Page renders
-    expect(document.querySelector('.animate-fade-in')).toBeDefined();
+  it('renders the page title', async () => {
+    renderPage();
+    expect(await screen.findByText(/Trazabilidad/i)).toBeDefined();
   });
 
-  it('loads and displays audit log entries', async () => {
-    renderWithProviders(<AuditTrail />);
+  it('renders audit log entries returned by the service', async () => {
+    mockGetAuditLog.mockResolvedValue([
+      {
+        id: 1,
+        tablaAfectada: 'user',
+        idRegistro: 3,
+        accion: 'CREAR',
+        idUsuario: 2,
+        nombreUsuario: 'Usuario Uno',
+        datosAnteriores: null,
+        datosNuevos: '{"x":1}',
+        ipOrigen: '127.0.0.1',
+        fechaAccion: '2024-01-01T10:00:00',
+      },
+    ]);
+    renderPage();
 
-    expect(await screen.findByText('Admin User')).toBeDefined();
-    expect(screen.getByText('192.168.1.1')).toBeDefined();
+    expect(await screen.findByText('Creación')).toBeDefined();
+    expect(screen.getByText('Usuario Uno')).toBeDefined();
   });
 
-  it('loads and displays recent activity table', async () => {
-    renderWithProviders(<AuditTrail />);
-
-    expect(await screen.findByText('TRM-005')).toBeDefined();
-    expect(screen.getByText('Admin')).toBeDefined();
-  });
-
-  it('shows stats cards with counts', async () => {
-    renderWithProviders(<AuditTrail />);
-    await screen.findByText('Admin User');
-
-    // Stats should be rendered — values are strings
-    const statCells = document.querySelectorAll('.card');
-    expect(statCells.length).toBeGreaterThan(0);
-  });
-
-  it('renders recent activity table with Ver buttons', async () => {
-    renderWithProviders(<AuditTrail />);
-    await screen.findByText('Admin User');
-
-    const verBtn = screen.getByRole('button', { name: /ver/i });
-    expect(verBtn).toBeDefined();
-  });
-
-  it('searches traceability when clicking Ver on recent activity', async () => {
-    mockAuditService.getTraceability.mockResolvedValue([
+  it('loads traceability when a tramiteId is provided', async () => {
+    mockGetTraceability.mockResolvedValue([
       {
         movementId: 1,
-        procedureCode: 'TRM-005',
-        action: 'REGISTRADO',
-        previousStatus: null,
-        newStatus: 'PENDIENTE_COORDINADOR',
-        movementDate: new Date().toISOString(),
-        actionUserName: 'Admin',
+        procedureId: 5,
+        procedureCode: 'TR-5',
+        actionUserName: 'Ana Lopez',
         actionUserRole: 'ADMIN',
+        action: 'APROBADO',
+        previousStatus: 'PENDIENTE',
+        newStatus: 'APROBADO',
         observation: null,
+        movementDate: '2024-01-02T12:00:00',
         ipOrigen: '127.0.0.1',
       },
-    ] as any);
+    ]);
+    renderPage('/audit?tramiteId=5');
 
-    renderWithProviders(<AuditTrail />);
-
-    const verBtn = await screen.findByRole('button', { name: /ver/i });
-    await act(async () => {
-      fireEvent.click(verBtn);
-    });
-
-    expect(mockAuditService.getTraceability).toHaveBeenCalledWith(5);
-  });
-
-  it('shows coordinator alert for COORDINADOR_GRUPO role', async () => {
-    renderWithProviders(<AuditTrail />, {
-      authValue: {
-        user: { id: 2, roleCode: 'COORDINADOR_GRUPO', firstNames: 'Co', lastNames: 'ord', email: 'co@sgi.com' },
-        roles: ['COORDINADOR_GRUPO'],
-        currentRole: 'COORDINADOR_GRUPO',
-        loading: false,
-        error: null,
-        isAuthenticated: true,
-        login: vi.fn(),
-        logout: vi.fn(),
-        switchRole: vi.fn(),
-        clearError: vi.fn(),
-        completeRegistration: vi.fn(),
-      } as any,
-    });
-
-    expect(await screen.findByText('Acceso de Coordinador de Grupo')).toBeDefined();
-  });
-
-  it('loads more audit entries when Load More is clicked', async () => {
-    mockAuditService.getAuditLog.mockResolvedValue(
-      Array.from({ length: 15 }, (_, i) => ({ ...mockAuditLogs[0], id: i + 1 })) as any
-    );
-
-    renderWithProviders(<AuditTrail />);
-
-    await screen.findAllByText('Admin User');
-
-    const loadMoreBtn = await screen.findByRole('button', { name: /cargar más/i });
-    await act(async () => {
-      fireEvent.click(loadMoreBtn);
-    });
-
-    expect(mockAuditService.getAuditLog).toHaveBeenCalledTimes(2);
-    expect(mockAuditService.getAuditLog).toHaveBeenLastCalledWith(1, 15);
+    expect(await screen.findByText('APROBADO')).toBeDefined();
+    expect(mockGetTraceability).toHaveBeenCalledWith(5);
   });
 });

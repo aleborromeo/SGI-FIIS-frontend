@@ -1,121 +1,114 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ProgressReportHistory } from './ProgressReportHistory';
-import { progressReportService } from '../../services/progressReportService';
-import { renderWithProviders } from '../../utils/testUtils';
+import { AuthContext } from '../../context/AuthContext';
+
+const { mockGetProjectsByRole, mockGetByProject, mockGetDetail } = vi.hoisted(() => ({
+  mockGetProjectsByRole: vi.fn(),
+  mockGetByProject: vi.fn(),
+  mockGetDetail: vi.fn(),
+}));
 
 vi.mock('../../services/progressReportService', () => ({
   progressReportService: {
-    getProjectsByRole: vi.fn(),
-    getByProject: vi.fn(),
-    getDetail: vi.fn(),
+    getProjectsByRole: mockGetProjectsByRole,
+    getByProject: mockGetByProject,
+    getDetail: mockGetDetail,
   },
 }));
 
-const mockProgressReportService = vi.mocked(progressReportService);
+const authValue = {
+  currentRole: 'DOCENTE_INVESTIGADOR',
+  user: { id: 1 },
+  roles: [],
+  isAuthenticated: true,
+  loading: false,
+  error: null,
+  login: vi.fn(),
+  logout: vi.fn(),
+  switchRole: vi.fn(),
+  clearError: vi.fn(),
+  completeRegistration: vi.fn(),
+} as any;
 
-const mockReports = [
-  {
-    id: 1,
-    reportNumber: 1,
-    projectId: 10,
-    projectTitle: 'Proyecto de IA',
-    reportType: 'PARCIAL',
-    period: 'T1-2026',
-    status: 'APROBADO',
-    physicalProgress: 75,
-    financialProgress: 60,
-    submittedAt: '2026-03-01T10:00:00Z',
-    observations: null,
-  },
-  {
-    id: 2,
-    reportNumber: 2,
-    projectId: 10,
-    projectTitle: 'Proyecto de IA',
-    reportType: 'FINAL',
-    period: 'T2-2026',
-    status: 'PENDIENTE',
-    physicalProgress: 40,
-    financialProgress: 35,
-    submittedAt: '2026-06-01T10:00:00Z',
-    observations: 'Falta documentación',
-  },
-];
+const renderPage = () =>
+  render(
+    <AuthContext.Provider value={authValue}>
+      <ProgressReportHistory />
+    </AuthContext.Provider>
+  );
 
-const mockProjectSummaries = [
-  { id: 10, title: 'Proyecto de IA', status: 'APROBADO', reportCount: 2 },
-];
+const makeReport = (id: number, status: string) => ({
+  id,
+  reportNumber: id,
+  projectId: 1,
+  projectTitle: 'Proyecto de Riego',
+  responsibleName: 'Docente A',
+  reportDate: '2026-01-01T10:00:00Z',
+  physicalProgress: 40,
+  financialProgress: 30,
+  status,
+  observations: undefined,
+});
+
+const makeDetail = () => ({
+  id: 1,
+  reportNumber: 1,
+  projectId: 1,
+  projectTitle: 'Proyecto de Riego',
+  responsibleName: 'Docente A',
+  reportDate: '2026-01-01T10:00:00Z',
+  physicalProgress: 40,
+  financialProgress: 30,
+  status: 'APROBADO',
+  observations: 'Observacion de prueba',
+  comments: [],
+  executedActivities: [],
+  evidences: [],
+  attachments: [],
+  changeHistory: [],
+} as any);
 
 describe('ProgressReportHistory', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockProgressReportService.getProjectsByRole.mockResolvedValue(mockProjectSummaries as any);
-    mockProgressReportService.getByProject.mockResolvedValue(mockReports as any);
-    mockProgressReportService.getDetail.mockResolvedValue({
-      ...mockReports[0],
-      executedActivities: [{ id: 1, description: 'Actividad 1', startDate: '2026-01-01', endDate: '2026-03-01', completed: true }],
-      evidences: [],
-      attachments: [],
-      comments: [],
-      changeHistory: [],
-    } as any);
+    mockGetProjectsByRole.mockResolvedValue([{ id: 1, title: 'Proyecto de Riego', status: 'ACTIVO' }]);
+    mockGetByProject.mockResolvedValue([]);
+    mockGetDetail.mockResolvedValue(makeDetail());
   });
 
-  it('shows loading spinner initially', () => {
-    mockProgressReportService.getProjectsByRole.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve([]), 1000))
-    );
-    renderWithProviders(<ProgressReportHistory />);
-    expect(document.querySelector('[aria-label="Cargando..."]')).toBeDefined();
+  it('renders the page title and the selected project', async () => {
+    mockGetByProject.mockResolvedValue([makeReport(1, 'APROBADO')]);
+    renderPage();
+    expect(
+      await screen.findByRole('heading', { name: /Historial de Informes de Avance/i })
+    ).toBeDefined();
+    expect(await screen.findByText('Proyecto de Riego')).toBeDefined();
   });
 
-  it('renders reports after loading', async () => {
-    renderWithProviders(<ProgressReportHistory />);
-    expect(await screen.findByText('Proyecto de IA')).toBeDefined();
+  it('renders statistics and a timeline node per report', async () => {
+    mockGetByProject.mockResolvedValue([makeReport(1, 'APROBADO'), makeReport(2, 'OBSERVADO')]);
+    renderPage();
+
+    expect(await screen.findByText('Total de Informes')).toBeDefined();
+    const detailButtons = await screen.findAllByRole('button', { name: /Ver detalle/i });
+    expect(detailButtons).toHaveLength(2);
   });
 
-  it('renders report numbers', async () => {
-    renderWithProviders(<ProgressReportHistory />);
-    expect(await screen.findByText('Informe #1')).toBeDefined();
+  it('shows an empty state when there are no reports', async () => {
+    mockGetByProject.mockResolvedValue([]);
+    renderPage();
+    expect(await screen.findByText(/Sin informes de avance/i)).toBeDefined();
   });
 
-  it('shows progress percentages', async () => {
-    renderWithProviders(<ProgressReportHistory />);
-    await screen.findByText('Informe #1');
-    // Physical progress should show
-    expect(document.body.textContent?.includes('75')).toBeTruthy();
-  });
+  it('opens the detail panel and loads the report detail on view', async () => {
+    mockGetByProject.mockResolvedValue([makeReport(1, 'APROBADO')]);
+    renderPage();
 
-  it('shows empty state when no reports', async () => {
-    mockProgressReportService.getProjectsByRole.mockResolvedValue([]);
-    mockProgressReportService.getByProject.mockResolvedValue([]);
-    renderWithProviders(<ProgressReportHistory />);
-    await act(async () => {});
-    // Should show empty state
-    expect(document.body).toBeDefined();
-  });
+    const detailButtons = await screen.findAllByRole('button', { name: /Ver detalle/i });
+    fireEvent.click(detailButtons[0]);
 
-  it('renders refresh button', async () => {
-    renderWithProviders(<ProgressReportHistory />);
-    await screen.findByText('Informe #1');
-    const refreshBtn = screen.getByRole('button', { name: /actualizar/i });
-    expect(refreshBtn).toBeDefined();
-  });
-
-  it('expands report details on click', async () => {
-    renderWithProviders(<ProgressReportHistory />);
-    await screen.findByText('Informe #1');
-
-    // Click on a row to expand
-    const buttons = screen.getAllByRole('button');
-    const expandBtn = buttons.find((b) => !b.textContent?.trim());
-    if (expandBtn) {
-      await act(async () => {
-        fireEvent.click(expandBtn);
-      });
-    }
-    expect(document.body).toBeDefined();
+    expect(await screen.findByText(/Detalle del Informe de Avance/i)).toBeDefined();
+    expect(mockGetDetail).toHaveBeenCalledWith(1);
   });
 });

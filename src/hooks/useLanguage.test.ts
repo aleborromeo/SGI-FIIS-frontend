@@ -1,64 +1,73 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLanguage } from './useLanguage';
 
-const mockChangeLanguage = vi.fn().mockResolvedValue(undefined);
-const mockI18n = {
-  language: 'es-PE',
-  resolvedLanguage: 'es',
-  changeLanguage: mockChangeLanguage,
-};
+const state: { lang: 'es' | 'en' } = { lang: 'es' };
+const changeLanguage = vi.fn(async (l: 'es' | 'en') => {
+  state.lang = l;
+});
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    i18n: mockI18n,
+    i18n: {
+      get language() {
+        return state.lang;
+      },
+      get resolvedLanguage() {
+        return state.lang;
+      },
+      changeLanguage,
+    },
   }),
 }));
 
-describe('useLanguage hook', () => {
+describe('useLanguage', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
     localStorage.clear();
-    document.documentElement.lang = 'es';
-    
-    mockI18n.language = 'es-PE';
-    mockI18n.resolvedLanguage = 'es';
+    changeLanguage.mockClear();
+    state.lang = 'es';
+    document.documentElement.lang = '';
   });
+  afterEach(() => localStorage.clear());
 
-  it('initializes language to es when resolvedLanguage is es', () => {
+  it('retorna idioma es por defecto', () => {
     const { result } = renderHook(() => useLanguage());
     expect(result.current.language).toBe('es');
-    expect(document.documentElement.lang).toBe('es');
   });
 
-  it('normalizes language to en when language starts with en', () => {
-    mockI18n.language = 'en-US';
-    mockI18n.resolvedLanguage = undefined as any;
-
+  it('setLanguage cambia i18n, guarda en localStorage y actualiza document.lang', async () => {
     const { result } = renderHook(() => useLanguage());
-    expect(result.current.language).toBe('en');
-    expect(document.documentElement.lang).toBe('en');
-  });
-
-  it('sets language correctly', async () => {
-    const { result } = renderHook(() => useLanguage());
-    
     await act(async () => {
       await result.current.setLanguage('en');
     });
-
-    expect(mockChangeLanguage).toHaveBeenCalledWith('en');
+    expect(changeLanguage).toHaveBeenCalledWith('en');
     expect(localStorage.getItem('sgi_lang')).toBe('en');
     expect(document.documentElement.lang).toBe('en');
   });
 
-  it('toggles language correctly', async () => {
+  it('setLanguage normaliza variantes en/en-US a en', async () => {
     const { result } = renderHook(() => useLanguage());
-
     await act(async () => {
-      result.current.toggleLanguage();
+      await result.current.setLanguage('en-US' as 'en');
     });
+    expect(changeLanguage).toHaveBeenCalledWith('en');
+  });
 
-    expect(mockChangeLanguage).toHaveBeenCalledWith('en');
+  it('toggleLanguage pasa de es a en', async () => {
+    state.lang = 'es';
+    const { result } = renderHook(() => useLanguage());
+    await act(async () => {
+      await result.current.toggleLanguage();
+    });
+    expect(changeLanguage).toHaveBeenCalledWith('en');
+  });
+
+  it('toggleLanguage pasa de en a es', async () => {
+    state.lang = 'en';
+    const { result } = renderHook(() => useLanguage());
+    await act(async () => {
+      await result.current.toggleLanguage();
+    });
+    expect(changeLanguage).toHaveBeenCalledWith('es');
   });
 });

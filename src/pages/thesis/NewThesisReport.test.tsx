@@ -1,108 +1,94 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { ToastProvider } from '../../context/ToastContext';
 import { NewThesisReport } from './NewThesisReport';
-import { thesisService } from '../../services/thesisService';
-import { documentService } from '../../services/documentService';
-import { renderWithProviders } from '../../utils/testUtils';
+
+const { mockGetPlanById, mockCreateReport, mockUpload } = vi.hoisted(() => ({
+  mockGetPlanById: vi.fn(),
+  mockCreateReport: vi.fn(),
+  mockUpload: vi.fn(),
+}));
 
 vi.mock('../../services/thesisService', () => ({
-  thesisService: {
-    getPlanById: vi.fn(),
-    submitReport: vi.fn(),
-  },
+  thesisService: { getPlanById: mockGetPlanById, createReport: mockCreateReport },
 }));
 
 vi.mock('../../services/documentService', () => ({
-  documentService: {
-    uploadDocument: vi.fn(),
-  },
+  documentService: { upload: mockUpload },
 }));
 
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-    useParams: () => ({ planId: '1' }),
-  };
-});
+const renderPage = (planId = '5') =>
+  render(
+    <ToastProvider>
+      <MemoryRouter initialEntries={[`/thesis/report/new/${planId}`]}>
+        <Routes>
+          <Route path="/thesis/report/new/:planId" element={<NewThesisReport />} />
+        </Routes>
+      </MemoryRouter>
+    </ToastProvider>
+  );
 
-const mockThesisService = vi.mocked(thesisService);
-const mockDocumentService = vi.mocked(documentService);
-
-const mockPlan = {
-  idPlanTesis: 1,
-  title: 'Sistema de Monitoreo de Red',
-  estadoPlan: 'APROBADO',
-};
-
-describe('NewThesisReport', () => {
+describe('NewThesisReport (#156)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockThesisService.getPlanById.mockResolvedValue(mockPlan as any);
-    mockThesisService.submitReport.mockResolvedValue({ id: 1 } as any);
-    mockDocumentService.uploadDocument.mockResolvedValue({ id: 10, name: 'tesis.pdf' } as any);
+    mockUpload.mockResolvedValue({ id: 55, originalName: 'tesis.pdf', extension: 'PDF' });
+    mockCreateReport.mockResolvedValue({});
   });
 
-  it('shows loading spinner initially', () => {
-    mockThesisService.getPlanById.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve(mockPlan as any), 1000))
-    );
-    renderWithProviders(<NewThesisReport />);
-    expect(document.querySelector('[aria-label="Cargando..."]')).toBeDefined();
-  });
-
-  it('renders form after loading plan', async () => {
-    renderWithProviders(<NewThesisReport />);
-    await act(async () => {});
-    expect(document.body).toBeDefined();
-  });
-
-  it('pre-fills title from plan', async () => {
-    renderWithProviders(<NewThesisReport />);
-    await act(async () => {});
-    const titleInput = screen.getByRole('textbox');
-    expect((titleInput as HTMLInputElement).value).toBe('Sistema de Monitoreo de Red');
-  });
-
-  it('renders back button', async () => {
-    renderWithProviders(<NewThesisReport />);
-    await act(async () => {});
-    const backBtn = screen.getByRole('button', { name: /volver/i });
-    expect(backBtn).toBeDefined();
-  });
-
-  it('renders submit button', async () => {
-    renderWithProviders(<NewThesisReport />);
-    await act(async () => {});
-    const submitBtn = screen.getByRole('button', { name: /enviar/i });
-    expect(submitBtn).toBeDefined();
-  });
-
-  it('renders file upload area', async () => {
-    renderWithProviders(<NewThesisReport />);
-    await act(async () => {});
-    const fileUpload = document.querySelector('input[type="file"]');
-    expect(fileUpload).toBeDefined();
-  });
-
-  it('navigates back when back button clicked', async () => {
-    renderWithProviders(<NewThesisReport />);
-    await act(async () => {});
-    const backBtn = screen.getByRole('button', { name: /volver/i });
-    await act(async () => {
-      fireEvent.click(backBtn);
+  it('renders the report form after loading the plan', async () => {
+    mockGetPlanById.mockResolvedValue({
+      idPlanTesis: 5,
+      title: 'Tesis de prueba',
+      idDocumentoActual: 1,
     });
-    expect(mockNavigate).toHaveBeenCalledWith('/thesis/plan/1');
+    renderPage();
+
+    expect(
+      await screen.findByRole('heading', { name: 'Registrar Informe de Tesis Final' })
+    ).toBeInTheDocument();
+    const titleInput = document.getElementById('input-thesis-final-title') as HTMLInputElement;
+    expect(titleInput.value).toBe('Tesis de prueba');
   });
 
-  it('disables submit when no file attached', async () => {
-    renderWithProviders(<NewThesisReport />);
-    await act(async () => {});
-    const submitBtn = screen.getByRole('button', { name: /enviar/i });
-    expect(submitBtn.hasAttribute('disabled')).toBe(false);
+  it('shows the not-found UI when the plan is not found', async () => {
+    mockGetPlanById.mockRejectedValue(new Error('Plan inexistente'));
+    renderPage();
+
+    expect(
+      await screen.findByRole('button', { name: 'Volver a Planes de Tesis' })
+    ).toBeInTheDocument();
+  });
+
+  it('submits the report and calls thesisService.createReport', async () => {
+    mockGetPlanById.mockResolvedValue({
+      idPlanTesis: 5,
+      title: 'Tesis de prueba',
+      idDocumentoActual: 1,
+    });
+    renderPage('5');
+
+    await waitFor(() =>
+      expect(screen.getByText('Registrar Informe de Tesis Final')).toBeInTheDocument()
+    );
+
+    const fileInput = document.getElementById('attached-thesis-file') as HTMLInputElement;
+    fireEvent.change(fileInput, {
+      target: { files: [new File(['x'], 'tesis.pdf', { type: 'application/pdf' })] },
+    });
+    await waitFor(() => expect(mockUpload).toHaveBeenCalled());
+
+    const submit = screen.getByRole('button', { name: 'Enviar Tesis' });
+    fireEvent.click(submit);
+
+    await waitFor(() =>
+      expect(mockCreateReport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          idPlanTesis: 5,
+          tituloFinal: 'Tesis de prueba',
+          idDocumentoTesis: 55,
+        })
+      )
+    );
   });
 });
-

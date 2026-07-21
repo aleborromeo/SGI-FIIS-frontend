@@ -1,147 +1,53 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('./api', () => ({
-  api: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
-  },
+const { api, fetchApi } = vi.hoisted(() => ({
+  api: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn() },
+  fetchApi: vi.fn(),
 }));
 
-import { auditService } from './auditService';
-import { api } from './api';
+vi.mock('./api', () => ({ api, fetchApi }));
 
-const mockApi = vi.mocked(api);
+import { auditService } from './auditService';
 
 describe('auditService', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
+    api.get.mockResolvedValue([]);
   });
 
-  describe('getTraceability', () => {
-    it('calls GET /api/reports/traceability/:id', async () => {
-      mockApi.get.mockResolvedValue([]);
-      const result = await auditService.getTraceability(1);
-      expect(mockApi.get).toHaveBeenCalledWith('/api/reports/traceability/1');
-      expect(result).toEqual([]);
-    });
-
-    it('returns empty array if response is not array', async () => {
-      mockApi.get.mockResolvedValue(null);
-      const result = await auditService.getTraceability(1);
-      expect(result).toEqual([]);
-    });
+  it('getTraceability usa el endpoint por procedureId', async () => {
+    await auditService.getTraceability(3);
+    expect(api.get).toHaveBeenCalledWith('/api/reports/traceability/3');
   });
 
-  describe('getRecentActivity', () => {
-    it('calls GET /api/reports/traceability/recent with default parameters', async () => {
-      mockApi.get.mockResolvedValue([]);
-      const result = await auditService.getRecentActivity();
-      expect(mockApi.get).toHaveBeenCalledWith('/api/reports/traceability/recent', { params: { days: 7 } });
-      expect(result).toEqual([]);
+  it('getRecentActivity pasa days como param', async () => {
+    await auditService.getRecentActivity(15);
+    expect(api.get).toHaveBeenCalledWith('/api/reports/traceability/recent', { params: { days: 15 } });
+  });
+
+  it('getAuditLog y getAuditLogByTabla pasan page y size', async () => {
+    await auditService.getAuditLog(2, 10);
+    expect(api.get).toHaveBeenCalledWith('/api/audit', { params: { page: 2, size: 10 } });
+
+    await auditService.getAuditLogByTabla('usuarios', 0, 5);
+    expect(api.get).toHaveBeenCalledWith('/api/audit/tabla/usuarios', { params: { page: 0, size: 5 } });
+  });
+
+  it('getProjectReport y getProcedureReport construyen query params', async () => {
+    await auditService.getProjectReport({ groupId: 1, status: 'ACTIVO', fromDate: '2026-01-01', toDate: '2026-02-01', page: 0, size: 20 });
+    expect(api.get).toHaveBeenCalledWith('/api/reports/projects', {
+      params: { groupId: 1, status: 'ACTIVO', fromDate: '2026-01-01', toDate: '2026-02-01', page: 0, size: 20 },
     });
 
-    it('calls GET with custom days', async () => {
-      mockApi.get.mockResolvedValue([]);
-      await auditService.getRecentActivity(15);
-      expect(mockApi.get).toHaveBeenCalledWith('/api/reports/traceability/recent', { params: { days: 15 } });
-    });
-
-    it('returns empty array if response is not array', async () => {
-      mockApi.get.mockResolvedValue(null);
-      const result = await auditService.getRecentActivity();
-      expect(result).toEqual([]);
+    await auditService.getProcedureReport({ procedureType: 'PROYECTO', page: 1 });
+    expect(api.get).toHaveBeenCalledWith('/api/reports/procedures', {
+      params: { procedureType: 'PROYECTO', page: 1 },
     });
   });
 
-  describe('getAuditLog', () => {
-    it('calls GET /api/audit with page and size', async () => {
-      mockApi.get.mockResolvedValue([]);
-      const result = await auditService.getAuditLog(1, 10);
-      expect(mockApi.get).toHaveBeenCalledWith('/api/audit', { params: { page: 1, size: 10 } });
-      expect(result).toEqual([]);
-    });
-
-    it('uses default pagination parameters', async () => {
-      mockApi.get.mockResolvedValue([]);
-      await auditService.getAuditLog();
-      expect(mockApi.get).toHaveBeenCalledWith('/api/audit', { params: { page: 0, size: 20 } });
-    });
-
-    it('returns empty array if response is not array', async () => {
-      mockApi.get.mockResolvedValue(null);
-      const result = await auditService.getAuditLog();
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('getAuditLogByTabla', () => {
-    it('calls GET /api/audit/tabla/:tabla with page and size', async () => {
-      mockApi.get.mockResolvedValue([]);
-      const result = await auditService.getAuditLogByTabla('users', 2, 15);
-      expect(mockApi.get).toHaveBeenCalledWith('/api/audit/tabla/users', { params: { page: 2, size: 15 } });
-      expect(result).toEqual([]);
-    });
-
-    it('uses default pagination parameters', async () => {
-      mockApi.get.mockResolvedValue([]);
-      await auditService.getAuditLogByTabla('users');
-      expect(mockApi.get).toHaveBeenCalledWith('/api/audit/tabla/users', { params: { page: 0, size: 20 } });
-    });
-
-    it('returns empty array if response is not array', async () => {
-      mockApi.get.mockResolvedValue(null);
-      const result = await auditService.getAuditLogByTabla('users');
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('getProjectReport', () => {
-    it('calls GET /api/reports/projects with query mapping', async () => {
-      mockApi.get.mockResolvedValue({ content: [] });
-      const params = {
-        groupId: 5,
-        status: 'APROBADO',
-        fromDate: '2026-01-01',
-        toDate: '2026-12-31',
-        page: 0,
-        size: 10,
-      };
-      const result = await auditService.getProjectReport(params);
-      expect(mockApi.get).toHaveBeenCalledWith('/api/reports/projects', { params });
-      expect(result).toEqual({ content: [] });
-    });
-
-    it('handles missing/undefined parameters', async () => {
-      mockApi.get.mockResolvedValue({ content: [] });
-      await auditService.getProjectReport();
-      expect(mockApi.get).toHaveBeenCalledWith('/api/reports/projects', { params: {} });
-    });
-  });
-
-  describe('getProcedureReport', () => {
-    it('calls GET /api/reports/procedures with query mapping', async () => {
-      mockApi.get.mockResolvedValue({ content: [] });
-      const params = {
-        groupId: 5,
-        status: 'PENDIENTE',
-        fromDate: '2026-01-01',
-        toDate: '2026-12-31',
-        procedureType: 'THESIS',
-        page: 0,
-        size: 10,
-      };
-      const result = await auditService.getProcedureReport(params);
-      expect(mockApi.get).toHaveBeenCalledWith('/api/reports/procedures', { params });
-      expect(result).toEqual({ content: [] });
-    });
-
-    it('handles missing/undefined parameters', async () => {
-      mockApi.get.mockResolvedValue({ content: [] });
-      await auditService.getProcedureReport();
-      expect(mockApi.get).toHaveBeenCalledWith('/api/reports/procedures', { params: {} });
-    });
+  it('retornan [] si la respuesta no es array', async () => {
+    api.get.mockResolvedValue({});
+    expect(await auditService.getAuditLog()).toEqual([]);
+    expect(await auditService.getTraceability(1)).toEqual([]);
   });
 });

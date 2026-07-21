@@ -1,120 +1,49 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
-import { AssignReviewers } from './AssignReviewers';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { ToastProvider } from '../../context/ToastContext';
 import { userService } from '../../services/userService';
 import { evaluacionService } from '../../services/evaluacionService';
-import { renderWithProviders } from '../../utils/testUtils';
+import AssignReviewers from './AssignReviewers';
+import i18n from '../../i18n';
 
 vi.mock('../../services/userService', () => ({
-  userService: {
-    getAllUsers: vi.fn(),
-    getByRole: vi.fn(),
-    getReviewers: vi.fn(),
-  },
+  userService: { getReviewers: vi.fn() },
 }));
-
 vi.mock('../../services/evaluacionService', () => ({
-  evaluacionService: {
-    assignReviewer: vi.fn(),
-    assignReviewers: vi.fn(),
-    getByProject: vi.fn(),
-  },
+  evaluacionService: { assignReviewers: vi.fn() },
 }));
 
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-    useLocation: () => ({ search: '?projectId=1&projectTitle=Proyecto+IA' }),
-    Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
-      <a href={to}>{children}</a>
-    ),
-  };
-});
+const mockUser = vi.mocked(userService);
+const mockEval = vi.mocked(evaluacionService);
 
-const mockUserService = vi.mocked(userService);
-const mockEvaluacionService = vi.mocked(evaluacionService);
+function renderPage() {
+  return render(
+    <MemoryRouter initialEntries={['/projects/assign?projectId=1']}>
+      <ToastProvider>
+        <AssignReviewers />
+      </ToastProvider>
+    </MemoryRouter>
+  );
+}
 
-const mockUsers = [
-  {
-    id: 10,
-    firstNames: 'Carlos',
-    lastNames: 'Sánchez',
-    institutionalEmail: 'carlos@sgi.com',
-    roleCode: 'EVALUADOR',
-    roleDescription: 'Evaluador',
-    active: true,
-  },
-  {
-    id: 11,
-    firstNames: 'Ana',
-    lastNames: 'Gómez',
-    institutionalEmail: 'ana@sgi.com',
-    roleCode: 'DOCENTE_INVESTIGADOR',
-    roleDescription: 'Docente Investigador',
-    active: true,
-  },
+const reviewers = [
+  { id: 10, firstNames: 'Carlos', lastNames: 'Mendoza', roleCode: 'EVALUADOR', roleDescription: 'Evaluador' },
 ];
 
 describe('AssignReviewers', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-    mockUserService.getAllUsers.mockResolvedValue(mockUsers as any);
-    mockUserService.getByRole.mockResolvedValue(mockUsers as any);
-    mockUserService.getReviewers.mockResolvedValue(mockUsers as any);
-    mockEvaluacionService.assignReviewer.mockResolvedValue({} as any);
-    mockEvaluacionService.assignReviewers.mockResolvedValue(undefined as any);
-    mockEvaluacionService.getByProject.mockResolvedValue([]);
+  beforeEach(() => vi.resetAllMocks());
+
+  it('carga los revisores y muestra el titulo', async () => {
+    mockUser.getReviewers.mockResolvedValue(reviewers as any);
+    renderPage();
+    expect(await screen.findByText(i18n.t('projects:assignReviewers.pageTitle'))).toBeInTheDocument();
+    expect(screen.getByText(/Carlos Mendoza/i)).toBeInTheDocument();
   });
 
-  it('renders loading state', () => {
-    mockUserService.getReviewers.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve([]), 1000))
-    );
-    renderWithProviders(<AssignReviewers />);
-    expect(document.body).toBeDefined();
-  });
-
-  it('renders the page heading', async () => {
-    renderWithProviders(<AssignReviewers />);
-    await act(async () => {});
-    expect(document.body).toBeDefined();
-  });
-
-  it('renders available reviewers after loading', async () => {
-    renderWithProviders(<AssignReviewers />);
-    expect(await screen.findByText('Carlos Sánchez')).toBeDefined();
-    expect(screen.getByText('Ana Gómez')).toBeDefined();
-  });
-
-  it('filters reviewers by search', async () => {
-    renderWithProviders(<AssignReviewers />);
-    await screen.findByText('Carlos Sánchez');
-
-    const searchInput = screen.getByRole('textbox');
-    await act(async () => {
-      fireEvent.change(searchInput, { target: { value: 'Ana' } });
-    });
-
-    expect(screen.queryByText('Carlos Sánchez')).toBeNull();
-    expect(screen.getByText('Ana Gómez')).toBeDefined();
-  });
-
-  it('renders assign buttons for reviewers', async () => {
-    renderWithProviders(<AssignReviewers />);
-    await screen.findByText('Carlos Sánchez');
-    const assignBtns = screen.getAllByRole('button', { name: /asignar/i });
-    expect(assignBtns.length).toBeGreaterThan(0);
-  });
-
-  it('shows back navigation link', async () => {
-    renderWithProviders(<AssignReviewers />);
-    await act(async () => {});
-    const backBtn = screen.getByRole('link', { name: /volver/i });
-    expect(backBtn).toBeDefined();
+  it('muestra error si falla la carga de revisores', async () => {
+    mockUser.getReviewers.mockRejectedValue(new Error('Sin acceso'));
+    renderPage();
+    expect(await screen.findByText(i18n.t('projects:assignReviewers.errorLoadingTeachersDetail'))).toBeInTheDocument();
   });
 });
-

@@ -1,115 +1,92 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { ProjectAudit } from './ProjectAudit';
-import { auditService } from '../../services/auditService';
-import { documentService } from '../../services/documentService';
-import { renderWithProviders } from '../../utils/testUtils';
+
+const { mockGetTraceability, mockList } = vi.hoisted(() => ({
+  mockGetTraceability: vi.fn(),
+  mockList: vi.fn(),
+}));
 
 vi.mock('../../services/auditService', () => ({
-  auditService: {
-    getTraceability: vi.fn(),
-    getRecentActivity: vi.fn(),
-  },
+  auditService: { getTraceability: mockGetTraceability },
 }));
-
 vi.mock('../../services/documentService', () => ({
-  documentService: {
-    getByProject: vi.fn(),
-    list: vi.fn(),
-  },
+  documentService: { list: mockList },
 }));
-
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useSearchParams: () => [new URLSearchParams('procedureId=1&projectTitle=Proyecto+IA')],
-    Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
-      <a href={to}>{children}</a>
-    ),
-  };
-});
-
-const mockAuditService = vi.mocked(auditService);
-const mockDocumentService = vi.mocked(documentService);
 
 const mockMovements = [
   {
     movementId: 1,
-    procedureCode: 'TRM-001',
-    action: 'REGISTRADO',
-    previousStatus: null,
-    newStatus: 'PENDIENTE_COORDINADOR',
-    movementDate: '2026-01-01T10:00:00Z',
-    actionUserName: 'Admin User',
-    actionUserRole: 'ADMIN',
-    observation: null,
-    ipOrigen: '192.168.1.1',
+    procedureId: 5,
+    procedureCode: 'TRM-5',
+    actionUserName: 'Ana Lopez',
+    actionUserRole: null,
+    action: 'APROBADO',
+    previousStatus: 'PENDIENTE',
+    newStatus: 'APROBADO',
+    observation: 'Correcto',
+    movementDate: '2026-06-01T10:00:00',
+    ipOrigen: null,
   },
   {
     movementId: 2,
-    procedureCode: 'TRM-001',
-    action: 'APROBADO',
-    previousStatus: 'PENDIENTE_COORDINADOR',
-    newStatus: 'APROBADO_CON_RESOLUCION',
-    movementDate: '2026-01-10T10:00:00Z',
-    actionUserName: 'Carlos Director',
-    actionUserRole: 'DIRECTOR_INVESTIGACION',
+    procedureId: 5,
+    procedureCode: 'TRM-5',
+    actionUserName: 'Pedro Garcia',
+    actionUserRole: null,
+    action: 'REGISTRADO',
+    previousStatus: '-',
+    newStatus: 'PENDIENTE',
     observation: null,
-    ipOrigen: '192.168.1.2',
+    movementDate: '2026-06-02T10:00:00',
+    ipOrigen: null,
   },
 ];
+
+const mockDocuments = [
+  { id: 1, fileName: 'doc1.pdf', fileType: 'pdf', fileUrl: '', active: true, uploadedAt: '2026-06-01' },
+  { id: 2, fileName: 'doc2.pdf', fileType: 'pdf', fileUrl: '', active: false, uploadedAt: '2026-06-02' },
+];
+
+const renderWithProviders = () =>
+  render(
+    <MemoryRouter initialEntries={['/projects/audit?procedureId=5']}>
+      <ProjectAudit />
+    </MemoryRouter>
+  );
 
 describe('ProjectAudit', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockAuditService.getTraceability.mockResolvedValue(mockMovements as any);
-    mockAuditService.getRecentActivity.mockResolvedValue([]);
-    mockDocumentService.getByProject.mockResolvedValue([]);
-    mockDocumentService.list.mockResolvedValue([]);
+    mockGetTraceability.mockResolvedValue(mockMovements);
+    mockList.mockResolvedValue(mockDocuments);
   });
 
-  it('shows loading spinner initially', () => {
-    mockAuditService.getTraceability.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve([]), 1000))
-    );
-    renderWithProviders(<ProjectAudit />);
-    expect(document.querySelector('[aria-label="Cargando..."]')).toBeDefined();
+  it('renders the audit page title', async () => {
+    renderWithProviders();
+    expect((await screen.findAllByText(/Auditor/i)).length).toBeGreaterThan(0);
   });
 
-  it('renders audit trail entries after loading', async () => {
-    renderWithProviders(<ProjectAudit />);
-    expect((await screen.findAllByText(/Admin User/))[0]).toBeDefined();
-    expect(screen.getAllByText(/Carlos Director/)[0]).toBeDefined();
+  it('loads and displays movements, documents and participants', async () => {
+    renderWithProviders();
+    expect(await screen.findByText('Ana Lopez')).toBeDefined();
+    expect(screen.getByText('doc1.pdf')).toBeDefined();
+    expect(screen.getByText('Pedro Garcia')).toBeDefined();
+    expect(screen.getAllByText('APROBADO').length).toBeGreaterThan(0);
   });
 
-  it('renders back link', async () => {
-    renderWithProviders(<ProjectAudit />);
-    await act(async () => {});
-    const backLink = screen.getByRole('link', { name: /volver/i });
-    expect(backLink).toBeDefined();
-  });
+  it('filters the traceability by search term', async () => {
+    const { container } = renderWithProviders();
+    await screen.findByText('Ana Lopez');
 
-  it('renders traceability timeline', async () => {
-    renderWithProviders(<ProjectAudit />);
-    await screen.findAllByText(/Admin User/);
-    // Timeline events should be visible
-    expect(screen.getByText('REGISTRADO')).toBeDefined();
-  });
+    const input = container.querySelector('input') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'Ana' } });
 
-  it('renders procedure ID from search params', async () => {
-    renderWithProviders(<ProjectAudit />);
-    await act(async () => {});
-    expect(document.body.textContent?.includes('#1') || document.body.textContent?.includes('1')).toBeTruthy();
-  });
-
-  it('shows empty state when no movements', async () => {
-    mockAuditService.getTraceability.mockResolvedValue([]);
-    renderWithProviders(<ProjectAudit />);
-    await act(async () => {});
-    // Should show empty state message
-    expect(document.body).toBeDefined();
+    await waitFor(() => {
+      expect(screen.queryByText('REGISTRADO')).toBeNull();
+    });
+    expect(screen.queryByText('doc1.pdf')).toBeNull();
+    expect(screen.getAllByText('Ana Lopez').length).toBeGreaterThan(0);
   });
 });
-

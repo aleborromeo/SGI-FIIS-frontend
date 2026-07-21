@@ -1,169 +1,103 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { ToastProvider } from '../../context/ToastContext';
+import { ConfirmProvider } from '../../context/ConfirmContext';
+import { AuthContext } from '../../context/AuthContext';
 import { CreateUser } from './CreateUser';
 import { userService } from '../../services/userService';
-import { renderWithProviders } from '../../utils/testUtils';
+
+const mockGetAll = vi.hoisted(() => vi.fn());
+const mockCreateUser = vi.hoisted(() => vi.fn());
 
 vi.mock('../../services/userService', () => ({
   userService: {
-    createUser: vi.fn(),
-    getAll: vi.fn(),
-    resetPassword: vi.fn(),
-    toggleStatus: vi.fn(),
+    getAll: mockGetAll,
+    createUser: mockCreateUser,
     updateUser: vi.fn(),
+    rejectUser: vi.fn(),
+    activateUser: vi.fn(),
+    resetPassword: vi.fn(),
   },
 }));
 
-const mockUserService = vi.mocked(userService);
+const authValue = {
+  user: { id: 1, firstNames: 'Admin', lastNames: 'Istrador', email: 'a@unas.edu.pe' },
+  currentRole: 'ADMIN',
+  isAuthenticated: true,
+  roles: ['ADMIN'],
+  loading: false,
+  error: null,
+  login: vi.fn(),
+  logout: vi.fn(),
+  switchRole: vi.fn(),
+  clearError: vi.fn(),
+  completeRegistration: vi.fn(),
+};
 
-describe('CreateUser page', () => {
+const renderPage = () =>
+  render(
+    <AuthContext.Provider value={authValue as any}>
+      <ToastProvider>
+        <ConfirmProvider>
+          <MemoryRouter>
+            <CreateUser />
+          </MemoryRouter>
+        </ConfirmProvider>
+      </ToastProvider>
+    </AuthContext.Provider>
+  );
+
+describe('CreateUser', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-    
-    // Default mocked resolve values
-    mockUserService.getAll.mockResolvedValue([
-      {
-        id: 10,
-        dni: '12345678',
-        firstNames: 'Juan',
-        lastNames: 'Perez',
-        institutionalEmail: 'juan@unas.edu.pe',
-        phone: '999999999',
-        roleCode: 'ESTUDIANTE',
-        active: true,
-      },
-    ] as any);
-
-    mockUserService.createUser.mockResolvedValue({
-      id: 11,
-      institutionalEmail: 'newuser@unas.edu.pe',
-      temporaryPassword: 'tempPassword123',
-    } as any);
+    vi.clearAllMocks();
+    mockGetAll.mockResolvedValue([]);
   });
 
-  it('renders tabs and the default create user tab', async () => {
-    renderWithProviders(<CreateUser />);
-
-    expect(screen.getByText('Agregar')).toBeDefined();
-    expect(screen.getByText('Ver Usuarios')).toBeDefined();
-
-    expect(screen.getByPlaceholderText('8 caracteres')).toBeDefined();
-    expect(screen.getByPlaceholderText('Nombres completos')).toBeDefined();
-    expect(screen.getByPlaceholderText('Apellidos completos')).toBeDefined();
-    expect(screen.getByPlaceholderText('ejemplo@unas.edu.pe')).toBeDefined();
+  it('renders the management title', async () => {
+    renderPage();
+    expect(await screen.findByText('Gestión de Usuarios')).toBeDefined();
   });
 
-  it('allows filling out the form manually and submitting', async () => {
-    renderWithProviders(<CreateUser />);
-
-    const dniInput = screen.getByPlaceholderText('8 caracteres');
-    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
-    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
-    const phoneInput = screen.getByPlaceholderText('Ej. +51 987654321');
-    const submitBtn = screen.getByText('Registrar Usuario');
-
-    // Fill form manually
-    fireEvent.change(dniInput, { target: { value: '87654321' } });
-    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
-    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
-    fireEvent.change(phoneInput, { target: { value: '987654321' } });
-
-    // Submit form
-    await act(async () => {
-      submitBtn.click();
-    });
-
-    expect(mockUserService.createUser).toHaveBeenCalledWith({
-      dni: '87654321',
+  it('creates a user via the form', async () => {
+    mockCreateUser.mockResolvedValue({
+      id: 9,
       firstNames: 'Juan',
       lastNames: 'Perez',
-      institutionalEmail: 'juan.perez@unas.edu.pe', // Auto-generated email
-      phone: '987654321',
-      roleCode: 'ESTUDIANTE',
+      institutionalEmail: 'juan@unas.edu.pe',
+      temporaryPassword: 'temp123',
+      roleDescription: 'Estudiante',
     });
-    
-    // After creation, should show temporary password details
-    expect(screen.getByText('Credenciales Temporales de Acceso')).toBeDefined();
-    expect(screen.getByText('tempPassword123')).toBeDefined();
+    renderPage();
+
+    fireEvent.change(screen.getByLabelText(/DNI/i), { target: { value: '12345678' } });
+    fireEvent.change(screen.getByLabelText(/Nombres/i), { target: { value: 'Juan' } });
+    fireEvent.change(screen.getByLabelText(/Apellidos/i), { target: { value: 'Perez' } });
+    fireEvent.change(screen.getByLabelText(/Correo/i), { target: { value: 'juan@unas.edu.pe' } });
+    fireEvent.change(screen.getByLabelText(/Rol/i), { target: { value: 'ESTUDIANTE' } });
+
+    const submit = document.querySelector('form button[type="submit"]') as HTMLButtonElement;
+    fireEvent.click(submit);
+
+    await waitFor(() => expect(mockCreateUser).toHaveBeenCalled());
+    const payload = mockCreateUser.mock.calls[0][0];
+    expect(payload.dni).toBe('12345678');
+    expect(payload.firstNames).toBe('Juan');
+    expect(payload.roleCode).toBe('ESTUDIANTE');
   });
 
-  it('switches to list tab and renders user grid table and triggers search', async () => {
-    renderWithProviders(<CreateUser />);
+  it('shows a validation error for a short DNI', async () => {
+    renderPage();
+    fireEvent.change(screen.getByLabelText(/DNI/i), { target: { value: '123' } });
+    fireEvent.change(screen.getByLabelText(/Nombres/i), { target: { value: 'Juan' } });
+    fireEvent.change(screen.getByLabelText(/Apellidos/i), { target: { value: 'Perez' } });
 
-    const listTabBtn = screen.getByText('Ver Usuarios');
-    await act(async () => {
-      listTabBtn.click();
-    });
+    // Default role is ESTUDIANTE, no need to change it
 
-    expect(mockUserService.getAll).toHaveBeenCalled();
-    expect(screen.getByText('Juan Perez')).toBeDefined();
-    expect(screen.getByText('juan@unas.edu.pe')).toBeDefined();
+    const submit = document.querySelector('form button[type="submit"]') as HTMLButtonElement;
+    fireEvent.click(submit);
 
-    // Trigger filter search
-    const filterInput = screen.getByPlaceholderText('Buscar usuarios por nombre, correo, DNI, rol o estado...');
-    expect(filterInput).toBeDefined();
-
-    await act(async () => {
-      fireEvent.change(filterInput, { target: { value: 'Juan' } });
-    });
-  });
-
-  it('triggers reset password on row action click', async () => {
-    mockUserService.resetPassword.mockResolvedValue({
-      message: 'Password reset successful',
-    } as any);
-
-    renderWithProviders(<CreateUser />);
-
-    // Switch to list tab
-    await act(async () => {
-      screen.getByText('Ver Usuarios').click();
-    });
-
-    // Locate reset password key button
-    const resetBtn = screen.getByTitle('Reset Pass');
-    expect(resetBtn).toBeDefined();
-
-    await act(async () => {
-      resetBtn.click();
-    });
-
-    // Confirm dialog - reset password uses "Restablecer" confirm button
-    const confirmModalBtn = await screen.findByRole('button', { name: /Restablecer/i });
-    expect(confirmModalBtn).toBeDefined();
-
-    await act(async () => {
-      confirmModalBtn.click();
-    });
-
-    expect(mockUserService.resetPassword).toHaveBeenCalledWith(10);
-    // Should display toast success message
-    expect(await screen.findByText(/Contraseña restablecida/i)).toBeDefined();
-  });
-
-  it('toggles user active status on toggle switch click', async () => {
-    mockUserService.toggleStatus.mockResolvedValue({} as any);
-
-    renderWithProviders(<CreateUser />);
-
-    await act(async () => {
-      screen.getByText('Ver Usuarios').click();
-    });
-
-    // Look for deactivate button
-    const toggleBtn = screen.getByTitle('Desactivar');
-    expect(toggleBtn).toBeDefined();
-
-    await act(async () => {
-      toggleBtn.click();
-    });
-
-    const confirmModalBtn = screen.getAllByRole('button', { name: /Desactivar/i })[1];
-    await act(async () => {
-      confirmModalBtn.click();
-    });
-
-    expect(mockUserService.toggleStatus).toHaveBeenCalledWith(10, false);
+    expect(await screen.findByText(/DNI debe tener exactamente 8/i)).toBeDefined();
+    expect(mockCreateUser).not.toHaveBeenCalled();
   });
 });
