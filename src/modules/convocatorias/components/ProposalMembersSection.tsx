@@ -144,7 +144,7 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
         <Users size={20} color="var(--primary)" aria-hidden="true" />
-        <Typography variant="h6" fontWeight={700}>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>
           Equipo de Investigación
         </Typography>
         {members.length > 0 && (
@@ -169,8 +169,8 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
                   <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                       <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Typography variant="body2" fontWeight={600}>
-                          {m.userFirstNames} {m.userLastNames}
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {`${m.userFirstNames} ${m.userLastNames}`}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
                           {m.userEmail}
@@ -212,8 +212,8 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
                 {members.map((m) => (
                   <TableRow key={m.userId} hover>
                     <TableCell>
-                      <Typography variant="body2" fontWeight={600}>
-                        {m.userFirstNames} {m.userLastNames}
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {`${m.userFirstNames} ${m.userLastNames}`}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -270,8 +270,8 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
             renderOption={(props, option) => (
               <Box component="li" {...props} key={option.userId}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                  <Typography variant="body2" fontWeight={600}>
-                    {option.userFirstNames} {option.userLastNames}
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {`${option.userFirstNames} ${option.userLastNames}`}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {option.userEmail}
@@ -284,11 +284,14 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
                 {...params}
                 label="Buscar miembro por nombre o correo"
                 placeholder="Escribe para buscar..."
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <Search size={18} sx={{ mr: 0.5, color: 'text.disabled' }} />
-                  ),
+                slotProps={{
+                  ...params.slotProps,
+                  input: {
+                    ...params.slotProps?.input,
+                    startAdornment: (
+                      <Search size={18} style={{ marginRight: 8, color: 'gray' }} />
+                    ),
+                  },
                 }}
               />
             )}

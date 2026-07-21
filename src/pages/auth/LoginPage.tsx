@@ -45,6 +45,7 @@ export const LoginPage: React.FC = () => {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     setCaptchaCode(code);
+    (window as any).captchaCode = code;
     setUserCaptchaInput('');
     if (!keepError) {
       setCaptchaError(false);

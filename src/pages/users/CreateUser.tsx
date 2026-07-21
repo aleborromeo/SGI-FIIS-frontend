@@ -183,7 +183,7 @@ export const CreateUser: React.FC = () => {
   // --- LÓGICA DE GESTIÓN (LISTA DE USUARIOS) ---
 
   const handleToggleStatus = async (userRow: UserType) => {
-    const isCurrentlyActive = userRow.status !== 'REJECTED' && userRow.status !== 'INACTIVE' && userRow.active !== false;
+    const isCurrentlyActive = userRow.active;
 
     // Evitar que el admin se desactive a sí mismo (RF-13)
     if (loggedInUser && (loggedInUser.id === userRow.id || loggedInUser.email === userRow.institutionalEmail) && isCurrentlyActive) {
@@ -207,10 +207,10 @@ export const CreateUser: React.FC = () => {
 
     try {
       if (isCurrentlyActive) {
-        await userService.rejectUser(userRow.id);
+        await userService.toggleStatus(userRow.id, false);
         toast.success(t('createUser.toast.deactivateSuccess'));
       } else {
-        await userService.activateUser(userRow.id);
+        await userService.toggleStatus(userRow.id, true);
         toast.success(t('createUser.toast.activateSuccess'));
       }
       loadUsers();
@@ -285,7 +285,7 @@ export const CreateUser: React.FC = () => {
     const dniVal = (u.dni || '').toLowerCase();
     const roleDesc = (u.roleDescription || '').toLowerCase();
     const roleCd = (u.roleCode || '').toLowerCase();
-    const statusVal = (u.status || 'ACTIVE').toLowerCase();
+    const statusVal = u.active ? 'activo' : 'inactivo';
 
     return fullName.includes(q) || email.includes(q) || dniVal.includes(q) || roleDesc.includes(q) || roleCd.includes(q) || statusVal.includes(q);
   });
@@ -312,7 +312,7 @@ export const CreateUser: React.FC = () => {
   };
 
   const getStatusBadge = (userRow: UserType) => {
-    const isActive = userRow.status !== 'REJECTED' && userRow.status !== 'INACTIVE' && userRow.active !== false;
+    const isActive = userRow.active;
     return isActive ? (
       <Badge variant="success">{t('users.statusKey.active')}</Badge>
     ) : (
@@ -674,12 +674,12 @@ export const CreateUser: React.FC = () => {
                                   {/* Activar / Desactivar */}
                                   <button
                                     onClick={() => handleToggleStatus(u)}
-                                    className={`action-btn toggle-action ${u.status !== 'REJECTED' && u.status !== 'INACTIVE' && u.active !== false ? 'active-user' : 'inactive-user'
+                                    className={`action-btn toggle-action ${u.active ? 'active-user' : 'inactive-user'
                                       }`}
-                                    title={u.active !== false ? t('users.btnDeactivate') : t('users.btnActivate')}
+                                    title={u.active ? t('users.btnDeactivate') : t('users.btnActivate')}
                                     disabled={loggedInUser && (loggedInUser.id === u.id || loggedInUser.email === u.institutionalEmail)}
                                   >
-                                    {u.active !== false ? <UserX size={16} /> : <UserCheck size={16} />}
+                                    {u.active ? <UserX size={16} /> : <UserCheck size={16} />}
                                   </button>
                                 </div>
                               </TableCell>
