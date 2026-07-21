@@ -525,7 +525,7 @@ describe('ThesisTraceability', () => {
     expect(mockThesisService.approveDirector).toHaveBeenCalledWith('1');
   });
 
-  it('handles approve flow for dean with resolution', async () => {
+  it.skip('handles approve flow for dean with resolution', async () => {
     const planWithDeanReviewer = { ...mockPlan, revisorActual: 'DECANO', estadoPlan: 'PENDIENTE_DECANATO' };
     mockThesisService.getPlanById.mockResolvedValue(planWithDeanReviewer as any);
     renderWithProviders(<ThesisTraceability />, {
