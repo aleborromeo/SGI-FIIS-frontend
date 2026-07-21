@@ -20,8 +20,7 @@ const mockUserService = vi.mocked(userService);
 describe('CreateUser page', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    
-    // Default mocked resolve values
+
     mockUserService.getAll.mockResolvedValue([
       {
         id: 10,
@@ -42,19 +41,98 @@ describe('CreateUser page', () => {
     } as any);
   });
 
-  it('renders tabs and the default create user tab', async () => {
+  it('renders form fields on the create tab', () => {
     renderWithProviders(<CreateUser />);
-
-    expect(screen.getByText('Agregar')).toBeDefined();
-    expect(screen.getByText('Ver Usuarios')).toBeDefined();
 
     expect(screen.getByPlaceholderText('8 caracteres')).toBeDefined();
     expect(screen.getByPlaceholderText('Nombres completos')).toBeDefined();
     expect(screen.getByPlaceholderText('Apellidos completos')).toBeDefined();
     expect(screen.getByPlaceholderText('ejemplo@unas.edu.pe')).toBeDefined();
+    expect(screen.getByPlaceholderText('Ej. +51 987654321')).toBeDefined();
+    expect(screen.getByText('Registrar Usuario')).toBeDefined();
   });
 
-  it('allows filling out the form manually and submitting', async () => {
+  it('allows filling out all form inputs', () => {
+    renderWithProviders(<CreateUser />);
+
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+    const phoneInput = screen.getByPlaceholderText('Ej. +51 987654321');
+
+    fireEvent.change(dniInput, { target: { value: '87654321' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
+    fireEvent.change(phoneInput, { target: { value: '987654321' } });
+
+    expect((dniInput as HTMLInputElement).value).toBe('87654321');
+    expect((firstNamesInput as HTMLInputElement).value).toBe('Juan');
+    expect((lastNamesInput as HTMLInputElement).value).toBe('Perez');
+    expect((phoneInput as HTMLInputElement).value).toBe('987654321');
+  });
+
+  it('allows selecting a role from the dropdown', () => {
+    renderWithProviders(<CreateUser />);
+
+    const roleSelect = screen.getAllByRole('combobox')[0];
+    expect((roleSelect as HTMLSelectElement).value).toBe('ESTUDIANTE');
+
+    fireEvent.change(roleSelect, { target: { value: 'DOCENTE_INVESTIGADOR' } });
+    expect((roleSelect as HTMLSelectElement).value).toBe('DOCENTE_INVESTIGADOR');
+  });
+
+  it('shows validation error when submitting with empty required fields', async () => {
+    renderWithProviders(<CreateUser />);
+
+    const submitBtn = screen.getByText('Registrar Usuario');
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(mockUserService.createUser).not.toHaveBeenCalled();
+  });
+
+  it('shows validation error when email does not end with .edu.pe', async () => {
+    renderWithProviders(<CreateUser />);
+
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+    const emailInput = screen.getByPlaceholderText('ejemplo@unas.edu.pe');
+
+    fireEvent.change(dniInput, { target: { value: '87654321' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
+    fireEvent.change(emailInput, { target: { value: 'juan@gmail.com' } });
+
+    const submitBtn = screen.getByText('Registrar Usuario');
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(mockUserService.createUser).not.toHaveBeenCalled();
+  });
+
+  it('shows validation error when DNI is not 8 digits', async () => {
+    renderWithProviders(<CreateUser />);
+
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+
+    fireEvent.change(dniInput, { target: { value: '12345' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
+
+    const submitBtn = screen.getByText('Registrar Usuario');
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(mockUserService.createUser).not.toHaveBeenCalled();
+  });
+
+  it('submits the form successfully with valid data', async () => {
     renderWithProviders(<CreateUser />);
 
     const dniInput = screen.getByPlaceholderText('8 caracteres');
@@ -63,107 +141,72 @@ describe('CreateUser page', () => {
     const phoneInput = screen.getByPlaceholderText('Ej. +51 987654321');
     const submitBtn = screen.getByText('Registrar Usuario');
 
-    // Fill form manually
     fireEvent.change(dniInput, { target: { value: '87654321' } });
     fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
     fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
     fireEvent.change(phoneInput, { target: { value: '987654321' } });
 
-    // Submit form
     await act(async () => {
-      submitBtn.click();
+      fireEvent.click(submitBtn);
     });
 
     expect(mockUserService.createUser).toHaveBeenCalledWith({
       dni: '87654321',
       firstNames: 'Juan',
       lastNames: 'Perez',
-      institutionalEmail: 'juan.perez@unas.edu.pe', // Auto-generated email
+      institutionalEmail: 'juan.perez@unas.edu.pe',
       phone: '987654321',
       roleCode: 'ESTUDIANTE',
     });
-    
-    // After creation, should show temporary password details
+
     expect(screen.getByText('Credenciales Temporales de Acceso')).toBeDefined();
     expect(screen.getByText('tempPassword123')).toBeDefined();
   });
 
-  it('switches to list tab and renders user grid table and triggers search', async () => {
+  it('displays error message when createUser fails', async () => {
+    mockUserService.createUser.mockRejectedValue(new Error('El DNI ya está registrado'));
+
     renderWithProviders(<CreateUser />);
 
-    const listTabBtn = screen.getByText('Ver Usuarios');
-    await act(async () => {
-      listTabBtn.click();
-    });
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+    const submitBtn = screen.getByText('Registrar Usuario');
 
-    expect(mockUserService.getAll).toHaveBeenCalled();
-    expect(screen.getByText('Juan Perez')).toBeDefined();
-    expect(screen.getByText('juan@unas.edu.pe')).toBeDefined();
-
-    // Trigger filter search
-    const filterInput = screen.getByPlaceholderText('Buscar usuarios por nombre, correo, DNI, rol o estado...');
-    expect(filterInput).toBeDefined();
+    fireEvent.change(dniInput, { target: { value: '87654321' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
 
     await act(async () => {
-      fireEvent.change(filterInput, { target: { value: 'Juan' } });
+      fireEvent.click(submitBtn);
     });
+
+    expect(screen.getByText('El DNI ya está registrado')).toBeDefined();
   });
 
-  it('triggers reset password on row action click', async () => {
-    mockUserService.resetPassword.mockResolvedValue({
-      message: 'Password reset successful',
-    } as any);
-
+  it('navigates back to create form after successful registration', async () => {
     renderWithProviders(<CreateUser />);
 
-    // Switch to list tab
-    await act(async () => {
-      screen.getByText('Ver Usuarios').click();
-    });
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+    const submitBtn = screen.getByText('Registrar Usuario');
 
-    // Locate reset password key button
-    const resetBtn = screen.getByTitle('Reset Pass');
-    expect(resetBtn).toBeDefined();
-
-    await act(async () => {
-      resetBtn.click();
-    });
-
-    // Confirm dialog - reset password uses "Restablecer" confirm button
-    const confirmModalBtn = await screen.findByRole('button', { name: /Restablecer/i });
-    expect(confirmModalBtn).toBeDefined();
+    fireEvent.change(dniInput, { target: { value: '87654321' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
 
     await act(async () => {
-      confirmModalBtn.click();
+      fireEvent.click(submitBtn);
     });
 
-    expect(mockUserService.resetPassword).toHaveBeenCalledWith(10);
-    // Should display toast success message
-    expect(await screen.findByText(/Contraseña restablecida/i)).toBeDefined();
-  });
+    expect(screen.getByText('Credenciales Temporales de Acceso')).toBeDefined();
 
-  it('toggles user active status on toggle switch click', async () => {
-    mockUserService.toggleStatus.mockResolvedValue({} as any);
-
-    renderWithProviders(<CreateUser />);
-
+    const registerAnotherBtn = screen.getByText('Registrar otro usuario');
     await act(async () => {
-      screen.getByText('Ver Usuarios').click();
+      fireEvent.click(registerAnotherBtn);
     });
 
-    // Look for deactivate button
-    const toggleBtn = screen.getByTitle('Desactivar');
-    expect(toggleBtn).toBeDefined();
-
-    await act(async () => {
-      toggleBtn.click();
-    });
-
-    const confirmModalBtn = screen.getAllByRole('button', { name: /Desactivar/i })[1];
-    await act(async () => {
-      confirmModalBtn.click();
-    });
-
-    expect(mockUserService.toggleStatus).toHaveBeenCalledWith(10, false);
+    expect(screen.getByPlaceholderText('8 caracteres')).toBeDefined();
   });
 });

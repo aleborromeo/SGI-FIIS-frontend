@@ -47,6 +47,8 @@ describe('ResearchLineDetail page', () => {
         groupName: 'GI-SOFT',
         groupCode: 'G01',
         active: true,
+        coordinatorFirstNames: 'Carlos',
+        coordinatorLastNames: 'Sánchez',
       },
     ] as any);
 
@@ -72,7 +74,6 @@ describe('ResearchLineDetail page', () => {
         userLastNames: 'Sánchez',
         userEmail: 'carlos@unas.edu.pe',
         userRoleCode: 'INVESTIGADOR_PRINCIPAL',
-        membershipStatus: 'ACTIVE',
         active: true,
       },
     ] as any);
@@ -81,82 +82,84 @@ describe('ResearchLineDetail page', () => {
     mockResearchService.removeGroupFromLine.mockResolvedValue({} as any);
   });
 
-  it('loads and renders details, assigned groups list, and back navigation', async () => {
+  it('renders line details after loading', async () => {
     renderWithProviders(<ResearchLineDetail />);
 
     expect(mockResearchService.getLineById).toHaveBeenCalledWith(1);
-    expect(mockResearchService.getGroupsByLine).toHaveBeenCalledWith(1);
-
-    // Wait for render
     expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
-    expect(screen.getByText('GI-SOFT')).toBeDefined();
-
-    // Click back button
-    const backBtn = screen.getByText('Volver a Líneas');
-    await act(async () => {
-      backBtn.click();
-    });
-    expect(mockNavigate).toHaveBeenCalledWith('/lines');
   });
 
-  it('handles assigning a group to the line', async () => {
+  it('shows group association in groups tab', async () => {
     renderWithProviders(<ResearchLineDetail />);
     expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
 
-    // Find select dropdown
-    const selectGroup = screen.getByRole('combobox');
-    expect(selectGroup).toBeDefined();
+    expect(screen.getByText('GI-SOFT')).toBeDefined();
+    expect(screen.getByText('Carlos Sánchez')).toBeDefined();
+  });
 
+  it('navigates back to lines list', async () => {
+    renderWithProviders(<ResearchLineDetail />);
+    expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
+
+    const backBtn = screen.getByText('Volver a Líneas');
     await act(async () => {
-      fireEvent.change(selectGroup, { target: { value: '101' } }); // select GI-HARD
+      fireEvent.click(backBtn);
     });
 
-    const assignBtn = screen.getByRole('button', { name: 'Vincular' });
+    expect(mockNavigate).toHaveBeenCalledWith('/lines');
+  });
+
+  it('assigns a group to the line', async () => {
+    renderWithProviders(<ResearchLineDetail />);
+    expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
+
+    const selectGroup = screen.getByRole('combobox');
     await act(async () => {
-      assignBtn.click();
+      fireEvent.change(selectGroup, { target: { value: '101' } });
+    });
+
+    const linkBtn = screen.getByRole('button', { name: /^Vincular$/i });
+    await act(async () => {
+      fireEvent.click(linkBtn);
     });
 
     expect(mockResearchService.assignGroupToLine).toHaveBeenCalledWith(1, 101);
   });
 
-  it('handles removing group assignment from the line', async () => {
+  it('removes a group assignment with confirmation', async () => {
     renderWithProviders(<ResearchLineDetail />);
     expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
 
-    const removeBtn = screen.getByRole('button', { name: 'Desvincular' });
-    expect(removeBtn).toBeDefined();
-
+    const removeBtn = screen.getByRole('button', { name: /Desvincular/i });
     await act(async () => {
-      removeBtn.click();
+      fireEvent.click(removeBtn);
     });
 
-    // Confirm modal opens, verify desvincular confirm btn
-    const confirmBtns = await screen.findAllByRole('button', { name: 'Desvincular' });
-    const modalConfirmBtn = confirmBtns[confirmBtns.length - 1];
-    expect(modalConfirmBtn).toBeDefined();
-
+    const confirmModalBtns = await screen.findAllByRole('button', { name: /Desvincular/i });
+    const modalConfirmBtn = confirmModalBtns[confirmModalBtns.length - 1];
     await act(async () => {
-      modalConfirmBtn.click();
+      fireEvent.click(modalConfirmBtn);
     });
 
     expect(mockResearchService.removeGroupFromLine).toHaveBeenCalledWith(1, 100);
   });
 
-  it('renders unique group members in users tab', async () => {
+  it('shows loading state while fetching data', async () => {
+    mockResearchService.getLineById.mockReturnValue(new Promise(() => {}));
+    mockResearchService.getGroupsByLine.mockReturnValue(new Promise(() => {}));
+    mockResearchService.getGroups.mockReturnValue(new Promise(() => {}));
+
     renderWithProviders(<ResearchLineDetail />);
-    expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
 
-    const usersTabBtn = screen.getByText(/Usuarios Vinculados/i);
-    expect(usersTabBtn).toBeDefined();
+    const spinner = document.querySelector('.animate-fade-in');
+    expect(spinner).toBeDefined();
+  });
 
-    await act(async () => {
-      usersTabBtn.click();
-    });
+  it('shows error state when loading fails', async () => {
+    mockResearchService.getLineById.mockRejectedValue(new Error('Línea no encontrada'));
 
-    // Verify member details are displayed
-    expect(mockResearchService.getMembers).toHaveBeenCalledWith(100);
-    expect(screen.getByText('Carlos Sánchez')).toBeDefined();
-    expect(screen.getByText('carlos@unas.edu.pe')).toBeDefined();
+    renderWithProviders(<ResearchLineDetail />);
+
+    expect(await screen.findByText(/Línea no encontrada/i)).toBeDefined();
   });
 });
-

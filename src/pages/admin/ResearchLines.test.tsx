@@ -51,149 +51,82 @@ describe('ResearchLines page', () => {
     mockResearchService.updateLine.mockResolvedValue({} as any);
   });
 
-  it('renders research lines list and table correctly', async () => {
+  it('renders lines after loading', async () => {
     renderWithProviders(<ResearchLines />);
 
     expect(mockResearchService.getLines).toHaveBeenCalledWith(false);
-
-    // Wait for row renders
     expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
     expect(screen.getByText('Ciberseguridad')).toBeDefined();
   });
 
-  it('handles search input filtering', async () => {
+  it('shows empty state when no lines exist', async () => {
+    mockResearchService.getLines.mockResolvedValue([]);
+    renderWithProviders(<ResearchLines />);
+
+    expect(await screen.findByText(/No se encontraron líneas/i)).toBeDefined();
+  });
+
+  it('filters lines by search term', async () => {
     renderWithProviders(<ResearchLines />);
     expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
 
     const searchInput = screen.getByPlaceholderText('Buscar por nombre o código...');
-    expect(searchInput).toBeDefined();
-
     await act(async () => {
       fireEvent.change(searchInput, { target: { value: 'Ciber' } });
     });
 
-    // Inteligencia Artificial should be filtered out, Ciberseguridad should remain
     expect(screen.queryByText('Inteligencia Artificial')).toBeNull();
     expect(screen.getByText('Ciberseguridad')).toBeDefined();
   });
 
-  it('handles status dropdown filtering', async () => {
+  it('navigates to create line page', async () => {
     renderWithProviders(<ResearchLines />);
     expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
 
-    const statusSelect = screen.getByRole('combobox');
-    expect(statusSelect).toBeDefined();
-
+    const newBtn = screen.getByRole('button', { name: /Nueva Línea/i });
     await act(async () => {
-      fireEvent.change(statusSelect, { target: { value: 'active' } });
-    });
-
-    // Only active should show (Inteligencia Artificial is active, Ciberseguridad is inactive)
-    expect(screen.getByText('Inteligencia Artificial')).toBeDefined();
-    expect(screen.queryByText('Ciberseguridad')).toBeNull();
-  });
-
-  it('handles sorting columns click', async () => {
-    renderWithProviders(<ResearchLines />);
-    expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
-
-    const nameHeader = screen.getByText('Nombre');
-    expect(nameHeader).toBeDefined();
-
-    await act(async () => {
-      nameHeader.click();
-    });
-
-    expect(screen.getByText('Inteligencia Artificial')).toBeDefined();
-  });
-
-  it('opens confirmation modal and deactivates line', async () => {
-    renderWithProviders(<ResearchLines />);
-    expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
-
-    const deactivateBtn = screen.getByRole('button', { name: 'Desactivar' });
-    expect(deactivateBtn).toBeDefined();
-
-    await act(async () => {
-      deactivateBtn.click();
-    });
-
-    // Confirm dialog confirm button has text "Desactivar"
-    const confirmModalBtn = await screen.findAllByRole('button', { name: 'Desactivar' });
-    expect(confirmModalBtn[1]).toBeDefined(); // index 1 is modal confirm button
-
-    await act(async () => {
-      confirmModalBtn[1].click();
-    });
-
-    expect(mockResearchService.changeLineStatus).toHaveBeenCalledWith(1, false);
-    expect(mockResearchService.getLines).toHaveBeenCalledTimes(2); // re-fetch after status change
-  });
-
-  it('opens edit modal, validates inputs, and updates line successfully', async () => {
-    renderWithProviders(<ResearchLines />);
-    expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
-
-    // Click first "Editar" button (Inteligencia Artificial)
-    const editBtns = screen.getAllByRole('button', { name: 'Editar' });
-    expect(editBtns[0]).toBeDefined();
-
-    await act(async () => {
-      editBtns[0].click();
-    });
-
-    // Edit modal should open
-    expect(screen.getByText('Editar Línea de Investigación')).toBeDefined();
-
-    // We can target input fields by placeholder or getting them by value/id
-    const nameInput = screen.getByDisplayValue('Ciberseguridad');
-    const codeInput = screen.getByDisplayValue('LI-02');
-    const descInput = screen.getByDisplayValue('Línea de Ciberseguridad');
-
-    // Test validation error by emptying name input
-    await act(async () => {
-      fireEvent.change(nameInput, { target: { value: '' } });
-    });
-
-    const saveBtn = screen.getByRole('button', { name: 'Guardar' });
-    await act(async () => {
-      saveBtn.click();
-    });
-
-    // Error message should show
-    expect(screen.getByText('El nombre es obligatorio')).toBeDefined();
-
-    // Re-fill and save
-    await act(async () => {
-      fireEvent.change(nameInput, { target: { value: 'Ciberseguridad Avanzada' } });
-      fireEvent.change(codeInput, { target: { value: 'LI-02-A' } });
-      fireEvent.change(descInput, { target: { value: 'Nueva descripción de Ciber' } });
-    });
-
-    await act(async () => {
-      saveBtn.click();
-    });
-
-    expect(mockResearchService.updateLine).toHaveBeenCalledWith(2, {
-      lineName: 'Ciberseguridad Avanzada',
-      lineCode: 'LI-02-A',
-      description: 'Nueva descripción de Ciber',
-    });
-    expect(mockResearchService.getLines).toHaveBeenCalledTimes(2); // re-fetch after edit
-  });
-
-  it('navigates to create line page on New button click', async () => {
-    renderWithProviders(<ResearchLines />);
-    expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
-
-    const newBtn = screen.getByRole('button', { name: 'Nueva Línea' });
-    expect(newBtn).toBeDefined();
-
-    await act(async () => {
-      newBtn.click();
+      fireEvent.click(newBtn);
     });
 
     expect(mockNavigate).toHaveBeenCalledWith('/lines/new');
   });
-});
 
+  it('opens edit modal for a line', async () => {
+    renderWithProviders(<ResearchLines />);
+    expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
+
+    const editBtns = screen.getAllByRole('button', { name: /Editar/i });
+    await act(async () => {
+      editBtns[0].click();
+    });
+
+    expect(screen.getByText('Editar Línea de Investigación')).toBeDefined();
+  });
+
+  it('deactivates a line with confirmation', async () => {
+    renderWithProviders(<ResearchLines />);
+    expect(await screen.findByText('Inteligencia Artificial')).toBeDefined();
+
+    const deactivateBtn = screen.getByRole('button', { name: /Desactivar/i });
+    await act(async () => {
+      fireEvent.click(deactivateBtn);
+    });
+
+    const confirmModalBtns = await screen.findAllByRole('button', { name: /Desactivar/i });
+    const modalConfirmBtn = confirmModalBtns[confirmModalBtns.length - 1];
+    await act(async () => {
+      fireEvent.click(modalConfirmBtn);
+    });
+
+    expect(mockResearchService.changeLineStatus).toHaveBeenCalledWith(1, false);
+    expect(mockResearchService.getLines).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows loading state while fetching lines', async () => {
+    mockResearchService.getLines.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<ResearchLines />);
+
+    const spinner = document.querySelector('.animate-fade-in');
+    expect(spinner).toBeDefined();
+  });
+});

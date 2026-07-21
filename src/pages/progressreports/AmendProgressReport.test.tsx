@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { screen, act, fireEvent, waitFor } from '@testing-library/react';
 import { AmendProgressReport } from './AmendProgressReport';
 import { progressReportService } from '../../services/progressReportService';
 import { documentService } from '../../services/documentService';
@@ -30,6 +30,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 const mockProgressReportService = vi.mocked(progressReportService);
+const mockDocumentService = vi.mocked(documentService);
 
 const mockReport = {
   id: 5,
@@ -46,10 +47,9 @@ const mockReport = {
   observations: 'Necesita correcciones',
   submittedAt: '2026-03-01T10:00:00Z',
   attachedDocumentId: null,
-  activities: [],
+  executedActivities: [],
   attachments: [],
   comments: [{ id: 1, authorName: 'Director', authorRole: 'DIRECTOR', content: 'Necesita correcciones', createdAt: '2026-03-02T10:00:00Z' }],
-  executedActivities: [],
   evidences: [],
   changeHistory: [],
 };
@@ -59,50 +59,108 @@ describe('AmendProgressReport', () => {
     vi.resetAllMocks();
     mockProgressReportService.getDetail.mockResolvedValue(mockReport as any);
     mockProgressReportService.amendReport.mockResolvedValue({ id: 5 } as any);
+    mockDocumentService.upload.mockResolvedValue({ id: 20, originalName: 'correccion.pdf' } as any);
   });
 
-  it('shows loading spinner initially', () => {
+  it('shows loading state', () => {
     mockProgressReportService.getDetail.mockImplementation(
       () => new Promise((resolve) => setTimeout(() => resolve(mockReport as any), 1000))
     );
     renderWithProviders(<AmendProgressReport />);
+    expect(screen.getByText(/Cargando datos del informe/i)).toBeDefined();
     expect(document.querySelector('[aria-label="Cargando..."]')).toBeDefined();
   });
 
-  it('renders report data after loading', async () => {
+  it('renders report data after load', async () => {
     renderWithProviders(<AmendProgressReport />);
     await act(async () => {});
-    expect(document.body.textContent?.includes('Proyecto de IA')).toBeTruthy();
+    expect(screen.getByText(/Subsanar Informe de Avance #5/)).toBeDefined();
   });
 
-  it('renders observations alert', async () => {
+  it('displays observation comments', async () => {
     renderWithProviders(<AmendProgressReport />);
     await act(async () => {});
-    expect(document.body.textContent?.includes('Necesita correcciones')).toBeTruthy();
+    expect(screen.getByText('Necesita correcciones')).toBeDefined();
+    expect(screen.getByText(/Observación Registrada/)).toBeDefined();
   });
 
-  it('renders report context data', async () => {
+  it('displays context data', async () => {
     renderWithProviders(<AmendProgressReport />);
     await act(async () => {});
-    expect(document.body.textContent?.includes('Proyecto de IA')).toBeTruthy();
-    expect(document.body.textContent?.includes('T1-2026')).toBeTruthy();
+    expect(screen.getByText(/Proyecto de IA/)).toBeDefined();
+    expect(screen.getByText(/T1-2026/)).toBeDefined();
+    expect(screen.getByText(/50%/)).toBeDefined();
+    expect(screen.getByText('OBSERVADO')).toBeDefined();
   });
 
-  it('renders back button', async () => {
+  it('shows file upload area', async () => {
     renderWithProviders(<AmendProgressReport />);
     await act(async () => {});
-    const backBtn = screen.getByRole('button', { name: /volver/i });
-    expect(backBtn).toBeDefined();
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).toBeDefined();
+    expect(fileInput.accept).toBe('.pdf,.doc,.docx');
   });
 
-  it('renders save button', async () => {
+  it('shows error when submitting without document', async () => {
     renderWithProviders(<AmendProgressReport />);
     await act(async () => {});
-    const saveBtn = screen.getByRole('button', { name: /enviar correcciones/i });
-    expect(saveBtn).toBeDefined();
+    const submitBtn = screen.getByRole('button', { name: /enviar correcciones/i });
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+    expect(mockProgressReportService.amendReport).not.toHaveBeenCalled();
   });
 
-  it('navigates back when back button clicked', async () => {
+  it('navigates to history on successful submit', async () => {
+    renderWithProviders(<AmendProgressReport />);
+    await act(async () => {});
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['test'], 'correccion.pdf', { type: 'application/pdf' });
+    Object.defineProperty(file, 'size', { value: 1024 });
+    await act(async () => {
+      fireEvent.change(fileInput, { target: { files: [file] } });
+    });
+
+    const submitBtn = screen.getByRole('button', { name: /enviar correcciones/i });
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    await waitFor(() => {
+      expect(mockProgressReportService.amendReport).toHaveBeenCalledWith(5, { amendmentDocumentId: 20 });
+      expect(mockNavigate).toHaveBeenCalledWith('/progressreports/history');
+    });
+  });
+
+  it('handles submit error', async () => {
+    mockProgressReportService.amendReport.mockRejectedValue(new Error('Error al subsanar'));
+    renderWithProviders(<AmendProgressReport />);
+    await act(async () => {});
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['test'], 'correccion.pdf', { type: 'application/pdf' });
+    Object.defineProperty(file, 'size', { value: 1024 });
+    await act(async () => {
+      fireEvent.change(fileInput, { target: { files: [file] } });
+    });
+
+    const submitBtn = screen.getByRole('button', { name: /enviar correcciones/i });
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('shows not found state when report is null', async () => {
+    mockProgressReportService.getDetail.mockResolvedValue(null as any);
+    renderWithProviders(<AmendProgressReport />);
+    await act(async () => {});
+    expect(screen.getByText(/Error/i)).toBeDefined();
+  });
+
+  it('navigates back when back button is clicked', async () => {
     renderWithProviders(<AmendProgressReport />);
     await act(async () => {});
     const backBtn = screen.getByRole('button', { name: /volver/i });
@@ -112,4 +170,3 @@ describe('AmendProgressReport', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/progressreports/history');
   });
 });
-

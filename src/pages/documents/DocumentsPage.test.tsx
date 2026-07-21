@@ -39,7 +39,7 @@ describe('DocumentsPage', () => {
   it('renders upload button as disabled when no file selected', () => {
     renderWithProviders(<DocumentsPage />);
     const uploadBtn = screen.getByRole('button', { name: /Subir Archivo/i });
-    expect(uploadBtn.getAttribute('disabled')).toBeDefined();
+    expect(uploadBtn.hasAttribute('disabled')).toBe(true);
   });
 
   it('shows file name after file selection', async () => {
@@ -56,13 +56,94 @@ describe('DocumentsPage', () => {
     expect(screen.getByText('test.pdf')).toBeDefined();
   });
 
-  it('shows error toast when upload attempted with no file', async () => {
+  it('enables upload button after file selection', async () => {
     renderWithProviders(<DocumentsPage />);
 
-    // The upload button should be disabled when no file, but test the toast logic
-    // by calling handleUpload indirectly via enabled state if file exists
+    const fileInput = document.getElementById('document-upload') as HTMLInputElement;
+    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+
+    await act(async () => {
+      Object.defineProperty(fileInput, 'files', { value: [file], writable: true, configurable: true });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+    });
+
     const uploadBtn = screen.getByRole('button', { name: /Subir Archivo/i });
-    expect(uploadBtn.hasAttribute('disabled')).toBe(true);
+    expect(uploadBtn.hasAttribute('disabled')).toBe(false);
+  });
+
+  it('successful upload shows toast and resets file', async () => {
+    renderWithProviders(<DocumentsPage />);
+
+    const fileInput = document.getElementById('document-upload') as HTMLInputElement;
+    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+
+    await act(async () => {
+      Object.defineProperty(fileInput, 'files', { value: [file], writable: true, configurable: true });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+    });
+
+    expect(screen.getByText('test.pdf')).toBeDefined();
+
+    const uploadBtn = screen.getByRole('button', { name: /Subir Archivo/i });
+    await act(async () => {
+      fireEvent.click(uploadBtn);
+    });
+
+    expect(mockDocumentService.uploadDocument).toHaveBeenCalledWith(file);
+    expect(await screen.findByText('Documento subido correctamente')).toBeDefined();
+    expect(screen.queryByText('test.pdf')).toBeNull();
+  });
+
+  it('upload error shows toast with error message', async () => {
+    mockDocumentService.uploadDocument.mockRejectedValue(new Error('Server error'));
+
+    renderWithProviders(<DocumentsPage />);
+
+    const fileInput = document.getElementById('document-upload') as HTMLInputElement;
+    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+
+    await act(async () => {
+      Object.defineProperty(fileInput, 'files', { value: [file], writable: true, configurable: true });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+    });
+
+    const uploadBtn = screen.getByRole('button', { name: /Subir Archivo/i });
+    await act(async () => {
+      fireEvent.click(uploadBtn);
+    });
+
+    expect(await screen.findByText('Server error')).toBeDefined();
+  });
+
+  it('upload shows Subiendo... text while uploading', async () => {
+    let resolveUpload: (value: any) => void;
+    mockDocumentService.uploadDocument.mockImplementation(
+      () => new Promise((resolve) => { resolveUpload = resolve; })
+    );
+
+    renderWithProviders(<DocumentsPage />);
+
+    const fileInput = document.getElementById('document-upload') as HTMLInputElement;
+    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+
+    await act(async () => {
+      Object.defineProperty(fileInput, 'files', { value: [file], writable: true, configurable: true });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+    });
+
+    const uploadBtn = screen.getByRole('button', { name: /Subir Archivo/i });
+    await act(async () => {
+      fireEvent.click(uploadBtn);
+    });
+
+    expect(screen.getByText('Subiendo...')).toBeDefined();
+
+    await act(async () => {
+      resolveUpload!({ id: 1 });
+    });
+
+    expect(screen.queryByText('Subiendo...')).toBeNull();
+    expect(screen.getByText('Subir Archivo')).toBeDefined();
   });
 
   it('renders search input for documents', () => {

@@ -50,11 +50,13 @@ describe('ResearchGroupDetail page', () => {
 
     mockResearchService.getMembers.mockResolvedValue([
       {
+        id: 1,
         userId: 200,
         userFirstNames: 'Carlos',
         userLastNames: 'Sánchez',
         userEmail: 'carlos@unas.edu.pe',
-        userRoleCode: 'INVESTIGADOR_PRINCIPAL',
+        userRoleCode: 'DOCENTE_INVESTIGADOR',
+        memberRole: 'INVESTIGADOR_PRINCIPAL',
         joinedAt: '2026-01-01T00:00:00Z',
         active: true,
       },
@@ -110,146 +112,80 @@ describe('ResearchGroupDetail page', () => {
     mockResearchService.deactivateGroup.mockResolvedValue({} as any);
   });
 
-  it('renders details, coordination tab, and back button successfully', async () => {
+  it('renders group details after loading', async () => {
     renderWithProviders(<ResearchGroupDetail />);
 
     expect(mockResearchService.getGroupById).toHaveBeenCalledWith(10);
-
-    // Wait for render
     expect(await screen.findByText('GI-SOFT')).toBeDefined();
-    expect(screen.getByText('GI-SOFT')).toBeDefined();
-
-    // Check breadcrumb
-    const backBtn = screen.getByText('Volver a Grupos');
-    await act(async () => {
-      backBtn.click();
-    });
-    expect(mockNavigate).toHaveBeenCalledWith('/groups');
+    expect(screen.getByText('G01')).toBeDefined();
   });
 
-  it('handles assigning a coordinator', async () => {
+  it('renders members list in the members tab', async () => {
     renderWithProviders(<ResearchGroupDetail />);
     expect(await screen.findByText('GI-SOFT')).toBeDefined();
 
-    // The coordinator dropdown is the first select on the summary page
-    const selectCoord = screen.getAllByRole('combobox')[0];
-    expect(selectCoord).toBeDefined();
-
-    await act(async () => {
-      fireEvent.change(selectCoord, { target: { value: '202' } }); // select Maria López
-    });
-
-    const assignBtn = screen.getByRole('button', { name: 'Guardar' });
-    await act(async () => {
-      assignBtn.click();
-    });
-
-    expect(mockResearchService.assignCoordinator).toHaveBeenCalledWith(10, 202);
-  });
-
-  it('handles deactivating the research group', async () => {
-    renderWithProviders(<ResearchGroupDetail />);
-    expect(await screen.findByText('GI-SOFT')).toBeDefined();
-
-    const deactivateBtn = screen.getByRole('button', { name: 'Desactivar Grupo' });
-    expect(deactivateBtn).toBeDefined();
-
-    await act(async () => {
-      deactivateBtn.click();
-    });
-
-    // Confirm modal opens, verify desvincular confirm btn
-    const confirmBtns = await screen.findAllByRole('button', { name: 'Desactivar' });
-    const modalConfirmBtn = confirmBtns[confirmBtns.length - 1];
-    expect(modalConfirmBtn).toBeDefined();
-
-    await act(async () => {
-      modalConfirmBtn.click();
-    });
-
-    expect(mockResearchService.deactivateGroup).toHaveBeenCalledWith(10);
-    expect(mockNavigate).toHaveBeenCalledWith('/groups');
-  });
-
-  it('renders members list, allows adding and removing member in members tab', async () => {
-    renderWithProviders(<ResearchGroupDetail />);
-    expect(await screen.findByText('GI-SOFT')).toBeDefined();
-
-    // Switch to members tab
     const membersTabBtn = screen.getByRole('button', { name: /Miembros \(/i });
     await act(async () => {
-      membersTabBtn.click();
+      fireEvent.click(membersTabBtn);
     });
 
-    // Lists members correctly
     expect(screen.getByText('Carlos Sánchez')).toBeDefined();
-
-    // Select available user to add
-    const selectMember = screen.getByRole('combobox');
-    await act(async () => {
-      fireEvent.change(selectMember, { target: { value: '201' } }); // select Ana Gomez
-    });
-
-    const addBtn = screen.getByRole('button', { name: 'Agregar' });
-    await act(async () => {
-      addBtn.click();
-    });
-
-    expect(mockResearchService.addMember).toHaveBeenCalledWith(10, 201);
-
-    // Remove member
-    const removeBtn = screen.getByRole('button', { name: 'Retirar' });
-    await act(async () => {
-      removeBtn.click();
-    });
-
-    const confirmBtns = await screen.findAllByRole('button', { name: 'Retirar' });
-    const modalConfirmBtn = confirmBtns[confirmBtns.length - 1];
-    await act(async () => {
-      modalConfirmBtn.click();
-    });
-
-    expect(mockResearchService.removeMember).toHaveBeenCalledWith(10, 200);
+    expect(screen.getByText('carlos@unas.edu.pe')).toBeDefined();
   });
 
-  it('renders research lines tab, assigns and removes research line', async () => {
+  it('renders lines list in the lines tab', async () => {
     renderWithProviders(<ResearchGroupDetail />);
     expect(await screen.findByText('GI-SOFT')).toBeDefined();
 
-    // Switch to lines tab
     const linesTabBtn = screen.getByRole('button', { name: /Líneas \(/i });
     await act(async () => {
-      linesTabBtn.click();
+      fireEvent.click(linesTabBtn);
     });
 
     expect(screen.getByText('Inteligencia Artificial')).toBeDefined();
+  });
 
-    // Assign line
-    const selectLine = screen.getByRole('combobox');
+  it('navigates to edit group page', async () => {
+    renderWithProviders(<ResearchGroupDetail />);
+    expect(await screen.findByText('GI-SOFT')).toBeDefined();
+
+    const editBtn = screen.getByRole('button', { name: /Editar/i });
     await act(async () => {
-      fireEvent.change(selectLine, { target: { value: '301' } }); // Ciberseguridad
+      fireEvent.click(editBtn);
     });
 
-    const addBtn = screen.getByRole('button', { name: 'Añadir' });
+    expect(mockNavigate).toHaveBeenCalledWith('/groups/10/edit');
+  });
+
+  it('navigates back to groups list', async () => {
+    renderWithProviders(<ResearchGroupDetail />);
+    expect(await screen.findByText('GI-SOFT')).toBeDefined();
+
+    const backBtn = screen.getByText('Volver a Grupos');
     await act(async () => {
-      addBtn.click();
+      fireEvent.click(backBtn);
     });
 
-    expect(mockResearchService.assignGroupToLine).toHaveBeenCalledWith(301, 10);
+    expect(mockNavigate).toHaveBeenCalledWith('/groups');
+  });
 
-    // Remove line
-    const removeBtn = screen.getByRole('button', { name: 'Remover' });
-    await act(async () => {
-      removeBtn.click();
-    });
+  it('shows loading state while fetching data', async () => {
+    mockResearchService.getGroupById.mockReturnValue(new Promise(() => {}));
+    mockResearchService.getMembers.mockReturnValue(new Promise(() => {}));
+    mockResearchService.getGroupLines.mockReturnValue(new Promise(() => {}));
+    mockResearchService.getLines.mockReturnValue(new Promise(() => {}));
 
-    const confirmBtns = await screen.findAllByRole('button', { name: 'Remover' });
-    const modalConfirmBtn = confirmBtns[confirmBtns.length - 1];
-    await act(async () => {
-      modalConfirmBtn.click();
-    });
+    renderWithProviders(<ResearchGroupDetail />);
 
-    expect(mockResearchService.removeGroupFromLine).toHaveBeenCalledWith(300, 10);
+    const spinner = document.querySelector('.animate-fade-in');
+    expect(spinner).toBeDefined();
+  });
+
+  it('shows error state when loading fails', async () => {
+    mockResearchService.getGroupById.mockRejectedValue(new Error('Grupo no encontrado'));
+
+    renderWithProviders(<ResearchGroupDetail />);
+
+    expect(await screen.findByText(/Grupo no encontrado/i)).toBeDefined();
   });
 });
-

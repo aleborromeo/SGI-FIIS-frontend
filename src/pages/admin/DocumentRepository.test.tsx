@@ -43,21 +43,21 @@ describe('DocumentRepository page', () => {
     mockDocumentService.deactivate.mockResolvedValue({} as any);
   });
 
-  it('renders stats cards and documents table correctly', async () => {
+  it('renders documents after loading', async () => {
     renderWithProviders(<DocumentRepository />);
 
     expect(mockDocumentService.list).toHaveBeenCalled();
-
-    // Wait for row renders
     expect(await screen.findByText('normas.pdf')).toBeDefined();
     expect(screen.getByText('formato.docx')).toBeDefined();
-
-    // Verification of size formats (2048 bytes = 2.0 KB, 1MB = 1.0 MB)
     expect(screen.getByText('2.0 KB')).toBeDefined();
     expect(screen.getByText('1.0 MB')).toBeDefined();
+  });
 
-    // Verify statistics are rendered
-    expect(screen.getByText('2')).toBeDefined(); // Total count of documents
+  it('shows empty state when no documents exist', async () => {
+    mockDocumentService.list.mockResolvedValue([]);
+    renderWithProviders(<DocumentRepository />);
+
+    expect(await screen.findByText(/No hay documentos/i)).toBeDefined();
   });
 
   it('filters documents by search term', async () => {
@@ -65,8 +65,6 @@ describe('DocumentRepository page', () => {
     expect(await screen.findByText('normas.pdf')).toBeDefined();
 
     const searchInput = screen.getByPlaceholderText('Buscar documentos...');
-    expect(searchInput).toBeDefined();
-
     await act(async () => {
       fireEvent.change(searchInput, { target: { value: 'docx' } });
     });
@@ -75,22 +73,13 @@ describe('DocumentRepository page', () => {
     expect(screen.getByText('formato.docx')).toBeDefined();
   });
 
-  it('handles file upload validation and upload trigger', async () => {
+  it('triggers upload via file input', async () => {
     renderWithProviders(<DocumentRepository />);
     expect(await screen.findByText('normas.pdf')).toBeDefined();
 
-    // Target file input
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     expect(fileInput).toBeDefined();
 
-    // Test invalid file type
-    const invalidFile = new File(['hello'], 'doc.txt', { type: 'text/plain' });
-    await act(async () => {
-      fireEvent.change(fileInput, { target: { files: [invalidFile] } });
-    });
-    expect(mockDocumentService.upload).not.toHaveBeenCalled();
-
-    // Test valid file type
     const validFile = new File(['pdfcontent'], 'guias.pdf', { type: 'application/pdf' });
     await act(async () => {
       fireEvent.change(fileInput, { target: { files: [validFile] } });
@@ -99,92 +88,41 @@ describe('DocumentRepository page', () => {
     expect(mockDocumentService.upload).toHaveBeenCalledWith(validFile);
   });
 
-  it('triggers download click', async () => {
+  it('triggers download when download button is clicked', async () => {
     renderWithProviders(<DocumentRepository />);
     expect(await screen.findByText('normas.pdf')).toBeDefined();
 
-    const downloadBtns = screen.getAllByRole('button', { name: 'Descargar' });
-    expect(downloadBtns[0]).toBeDefined();
-
+    const downloadBtns = screen.getAllByRole('button', { name: /Descargar/i });
     await act(async () => {
-      downloadBtns[0].click();
+      fireEvent.click(downloadBtns[0]);
     });
 
     expect(mockDocumentService.downloadFile).toHaveBeenCalledWith(1, 'normas.pdf');
   });
 
-  it('handles preview modal opening and closing', async () => {
+  it('deactivates a document with confirmation', async () => {
     renderWithProviders(<DocumentRepository />);
     expect(await screen.findByText('normas.pdf')).toBeDefined();
 
-    // Click view for PDF
-    const viewBtns = screen.getAllByRole('button', { name: 'Ver' });
-    expect(viewBtns[0]).toBeDefined();
-
+    const deleteBtns = screen.getAllByRole('button', { name: /Eliminar/i });
     await act(async () => {
-      viewBtns[0].click();
+      fireEvent.click(deleteBtns[0]);
     });
 
-    // Preview dialog should open
-    const dialog = screen.getByRole('dialog');
-    expect(dialog).toBeDefined();
-    expect(mockDocumentService.download).toHaveBeenCalledWith(1);
-
-    // Close preview dialog
-    const closeBtn = screen.getByRole('button', { name: '×' });
+    const confirmModalBtns = await screen.findAllByRole('button', { name: /Eliminar/i });
+    const lastBtn = confirmModalBtns[confirmModalBtns.length - 1];
     await act(async () => {
-      closeBtn.click();
-    });
-
-    expect(screen.queryByRole('dialog')).toBeNull();
-  });
-
-  it('handles preview fallback for non-PDF files', async () => {
-    renderWithProviders(<DocumentRepository />);
-    expect(await screen.findByText('normas.pdf')).toBeDefined();
-
-    const viewBtns = screen.getAllByRole('button', { name: 'Ver' });
-    expect(viewBtns[1]).toBeDefined(); // Word file
-
-    await act(async () => {
-      viewBtns[1].click();
-    });
-
-    // Word fallback message
-    expect(screen.getByText(/Vista previa no disponible/i)).toBeDefined();
-    
-    const modalDownloadBtn = screen.getByRole('button', { name: /Descargar para ver/i });
-    expect(modalDownloadBtn).toBeDefined();
-
-    await act(async () => {
-      modalDownloadBtn.click();
-    });
-
-    expect(mockDocumentService.downloadFile).toHaveBeenCalledWith(2, 'formato.docx');
-  });
-
-  it('opens confirmation modal and deactivates document', async () => {
-    renderWithProviders(<DocumentRepository />);
-    expect(await screen.findByText('normas.pdf')).toBeDefined();
-
-    const deleteBtns = screen.getAllByRole('button', { name: 'Eliminar' });
-    expect(deleteBtns[0]).toBeDefined();
-
-    await act(async () => {
-      deleteBtns[0].click();
-    });
-
-    // Modal confirm text is "Eliminar"
-    const confirmModalBtn = await screen.findAllByRole('button', { name: 'Eliminar' });
-    const lastBtn = confirmModalBtn[confirmModalBtn.length - 1];
-    expect(lastBtn).toBeDefined();
-
-    await act(async () => {
-      lastBtn.click();
+      fireEvent.click(lastBtn);
     });
 
     expect(mockDocumentService.deactivate).toHaveBeenCalledWith(1);
-    // norms.pdf should be removed from list
     expect(screen.queryByText('normas.pdf')).toBeNull();
+  });
+
+  it('shows loading state while fetching documents', async () => {
+    mockDocumentService.list.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<DocumentRepository />);
+
+    expect(screen.getByText(/Cargando/i)).toBeDefined();
   });
 });

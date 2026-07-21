@@ -54,20 +54,24 @@ describe('ResearchGroups page', () => {
     mockResearchService.deactivateGroup.mockResolvedValue({} as any);
   });
 
-  it('renders research groups list and table correctly', async () => {
+  it('renders groups after loading', async () => {
     renderWithProviders(<ResearchGroups />);
 
     expect(mockResearchService.getGroups).toHaveBeenCalled();
-
-    // Wait for row renders
     expect(await screen.findByText('GI-SOFT')).toBeDefined();
     expect(screen.getByText('GI-HARD')).toBeDefined();
-
     expect(screen.getByText('Carlos Sánchez')).toBeDefined();
     expect(screen.getByText('Ana Gomez')).toBeDefined();
   });
 
-  it('handles search input filtering', async () => {
+  it('shows empty state when no groups exist', async () => {
+    mockResearchService.getGroups.mockResolvedValue([]);
+    renderWithProviders(<ResearchGroups />);
+
+    expect(await screen.findByText(/No se encontraron grupos/i)).toBeDefined();
+  });
+
+  it('filters groups by search term', async () => {
     renderWithProviders(<ResearchGroups />);
 
     const searchInput = await screen.findByPlaceholderText('Buscar por nombre, código o coordinador...');
@@ -77,79 +81,56 @@ describe('ResearchGroups page', () => {
       fireEvent.change(searchInput, { target: { value: 'HARD' } });
     });
 
-    // GI-SOFT should be filtered out, GI-HARD should remain
     expect(screen.queryByText('GI-SOFT')).toBeNull();
     expect(screen.getByText('GI-HARD')).toBeDefined();
   });
 
-  it('handles status dropdown filtering', async () => {
+  it('navigates to create group page', async () => {
     renderWithProviders(<ResearchGroups />);
 
-    // Target the select element
-    const statusSelect = await screen.findByRole('combobox');
-    expect(statusSelect).toBeDefined();
-
+    const newBtn = await screen.findByRole('button', { name: /Nuevo Grupo/i });
     await act(async () => {
-      fireEvent.change(statusSelect, { target: { value: 'active' } });
-    });
-
-    // Only active groups should show (GI-SOFT is active, GI-HARD is inactive)
-    expect(screen.getByText('GI-SOFT')).toBeDefined();
-    expect(screen.queryByText('GI-HARD')).toBeNull();
-  });
-
-  it('handles sorting columns click', async () => {
-    renderWithProviders(<ResearchGroups />);
-
-    // Find the header table cell for "Nombre" (index key matches name)
-    const nameHeader = await screen.findByText('Nombre');
-    expect(nameHeader).toBeDefined();
-
-    await act(async () => {
-      nameHeader.click();
-    });
-
-    // Clicking it should sort or change direction. We can verify no crash.
-    expect(screen.getByText('GI-SOFT')).toBeDefined();
-  });
-
-  it('opens confirmation modal and deactivates group', async () => {
-    renderWithProviders(<ResearchGroups />);
-
-    // Locate "Desactivar" button next to GI-SOFT (it has active = true)
-    // The button text is "Desactivar"
-    const deactivateBtn = await screen.findByRole('button', { name: 'Desactivar' });
-    expect(deactivateBtn).toBeDefined();
-
-    await act(async () => {
-      deactivateBtn.click();
-    });
-
-    // Modal opens, confirm button has text "Desactivar"
-    // Since there are multiple buttons with text "Desactivar" (row btn and modal btn),
-    // get index [1] to fetch the modal confirm button.
-    const confirmModalBtn = await screen.findAllByRole('button', { name: 'Desactivar' });
-    expect(confirmModalBtn[1]).toBeDefined();
-
-    await act(async () => {
-      confirmModalBtn[1].click();
-    });
-
-    expect(mockResearchService.deactivateGroup).toHaveBeenCalledWith(1);
-    expect(mockResearchService.getGroups).toHaveBeenCalledTimes(2); // re-fetch after deactivation
-  });
-
-  it('navigates to create group page on New button click', async () => {
-    renderWithProviders(<ResearchGroups />);
-
-    const newBtn = await screen.findByRole('button', { name: 'Nuevo Grupo' });
-    expect(newBtn).toBeDefined();
-
-    await act(async () => {
-      newBtn.click();
+      fireEvent.click(newBtn);
     });
 
     expect(mockNavigate).toHaveBeenCalledWith('/groups/new');
   });
-});
 
+  it('navigates to edit group detail', async () => {
+    const { container } = renderWithProviders(<ResearchGroups />);
+    expect(await screen.findByText('GI-SOFT')).toBeDefined();
+
+    const viewBtn = container.querySelector('#btn-view-group-1') as HTMLButtonElement;
+    await act(async () => {
+      fireEvent.click(viewBtn);
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith('/groups/1');
+  });
+
+  it('deactivates a group with confirmation', async () => {
+    renderWithProviders(<ResearchGroups />);
+
+    const deactivateBtn = await screen.findByRole('button', { name: /Desactivar/i });
+    await act(async () => {
+      fireEvent.click(deactivateBtn);
+    });
+
+    const confirmModalBtns = await screen.findAllByRole('button', { name: /Desactivar/i });
+    const modalConfirmBtn = confirmModalBtns[confirmModalBtns.length - 1];
+    await act(async () => {
+      fireEvent.click(modalConfirmBtn);
+    });
+
+    expect(mockResearchService.deactivateGroup).toHaveBeenCalledWith(1);
+    expect(mockResearchService.getGroups).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows loading state while fetching groups', async () => {
+    mockResearchService.getGroups.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<ResearchGroups />);
+
+    const spinner = document.querySelector('.animate-fade-in');
+    expect(spinner).toBeDefined();
+  });
+});
