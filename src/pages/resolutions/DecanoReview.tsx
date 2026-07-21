@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
-  PenTool,
+  FileText,
   Scale,
 } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
@@ -10,8 +10,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Spinner } from '../../components/common/Spinner';
 import { useToast } from '../../context/ToastContext';
-import { AuthContext } from '../../context/AuthContext';
-import { tramiteService, PENDING_STATE_BY_ROLE } from '../../services/tramiteService';
+import { tramiteService } from '../../services/tramiteService';
 import {
   TableContainer,
   TableHead,
@@ -27,7 +26,6 @@ export const DecanoReview: React.FC = () => {
   const { t } = useTranslation('resolutions');
   const navigate = useNavigate();
   const toast = useToast();
-  const { currentRole } = useContext(AuthContext);
   const [tramites, setTramites] = useState<Tramite[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +36,7 @@ export const DecanoReview: React.FC = () => {
       setLoading(true);
       setError(null);
       const data = await tramiteService.getPendingForRole('DECANO');
-      setTramites(data);
+      setTramites(data.filter(t => t.estadoActual === 'PENDIENTE_DECANATO'));
     } catch (err: any) {
       setError(err.message || t('decanoReview.error.loadError'));
     } finally {
@@ -50,20 +48,10 @@ export const DecanoReview: React.FC = () => {
     loadTramites();
   }, []);
 
-  const handleApprove = async (tramite: Tramite) => {
-    const resolutionNum = window.prompt(t('decanoReview.prompt.resolutionNumber'));
-    if (resolutionNum === null) return;
-    if (!resolutionNum.trim()) {
-      toast.error(t('decanoReview.prompt.resolutionNumberRequired'));
-      return;
-    }
-    const asunto = window.prompt(t('decanoReview.prompt.resolutionSubject'));
-    if (asunto === null) return;
-
+  const handleApprove = (tramite: Tramite) => {
     const params = new URLSearchParams({
       procedureId: String(tramite.id),
-      number: resolutionNum.trim(),
-      title: asunto.trim() || tramite.tituloReferencia,
+      title: tramite.tituloReferencia || tramite.codigoTramite,
     });
     navigate(`/resolutions/new-legacy?${params.toString()}`);
   };
@@ -88,20 +76,7 @@ export const DecanoReview: React.FC = () => {
     }
   };
 
-  const handleReject = async (tramite: Tramite) => {
-    if (!window.confirm(t('decanoReview.prompt.rejectConfirm', { code: tramite.codigoTramite }))) return;
 
-    try {
-      setSubmitting(true);
-      await tramiteService.reject(tramite.id);
-      toast.success(t('decanoReview.toast.rejected', { code: tramite.codigoTramite }));
-      await loadTramites();
-    } catch (err: any) {
-      toast.error(err.message || t('decanoReview.toast.rejectError'));
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const formatFecha = (iso: string): string =>
     new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -185,7 +160,7 @@ export const DecanoReview: React.FC = () => {
                               variant="primary"
                               onClick={() => handleApprove(tramite)}
                               disabled={submitting}
-                              icon={<PenTool size={14} />}
+                              icon={<FileText size={14} />}
                               style={{ padding: '4px 12px', fontSize: '12px' }}
                             >
                               {t('decanoReview.actions.sign')}
@@ -197,14 +172,6 @@ export const DecanoReview: React.FC = () => {
                               style={{ padding: '4px 12px', fontSize: '12px', color: 'var(--error)', borderColor: 'var(--error)' }}
                             >
                               {t('decanoReview.actions.observe')}
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              onClick={() => handleReject(tramite)}
-                              disabled={submitting}
-                              style={{ padding: '4px 12px', fontSize: '12px', color: 'var(--error)' }}
-                            >
-                              {t('decanoReview.actions.reject')}
                             </Button>
                           </div>
                         </TableCell>
