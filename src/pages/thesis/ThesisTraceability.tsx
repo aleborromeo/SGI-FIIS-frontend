@@ -27,6 +27,7 @@ import { researchService } from '../../services/researchService';
 import { useToast } from '../../context/ToastContext';
 import { AuthContext } from '../../context/AuthContext';
 import { documentService } from '../../services/documentService';
+import { useConfirm } from '../../context/ConfirmContext';
 
 function getStatusLabel(t: any, status?: string): string {
   if (!status) return t('thesis:statusLabels.noStatus');
@@ -116,6 +117,7 @@ function readValue(plan: ThesisPlan | null, keys: string[], fallback = 'No regis
 export const ThesisTraceability: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { currentRole } = useContext(AuthContext);
+  const confirm = useConfirm();
   const { t } = useTranslation('thesis');
   const rawToast = useToast();
   const toast = useMemo(() => ({
@@ -134,6 +136,12 @@ export const ThesisTraceability: React.FC = () => {
   const [rectifyFile, setRectifyFile] = useState<File | null>(null);
   const [rectifying, setRectifying] = useState(false);
   const [coordinatorName, setCoordinatorName] = useState<string | null>(null);
+
+  // Custom modal states to replace native browser prompts
+  const [isResolutionModalOpen, setIsResolutionModalOpen] = useState(false);
+  const [resolutionNumInput, setResolutionNumInput] = useState('');
+  const [isRectificationModalOpen, setIsRectificationModalOpen] = useState(false);
+  const [rectificationCommentInput, setRectificationCommentInput] = useState('');
 
   const steps = useMemo(() => {
     const [studentStatus, coordinatorStatus, directorStatus, currentStatus] =
@@ -303,31 +311,61 @@ export const ThesisTraceability: React.FC = () => {
 
   async function handleApprove() {
     if (!plan || !id) return;
-    if (!window.confirm(t('thesis:traceability.actions.approveConfirm'))) return;
+
+    const confirmed = await confirm.confirmDialog({
+      title: t('thesis:traceability.actions.approveConfirmTitle', { defaultValue: 'Confirmar Aprobación' }),
+      message: t('thesis:traceability.actions.approveConfirm'),
+      confirmText: t('thesis:traceability.approve', { defaultValue: 'Aprobar' }),
+      cancelText: t('thesis:traceability.cancel', { defaultValue: 'Cancelar' }),
+    });
+    if (!confirmed) return;
+
+    if (currentRole === 'COORDINADOR_GRUPO') {
+      try {
+        setLoading(true);
+        await thesisService.approveCoordinator(id);
+        toast.success(t('thesis:traceability.actions.approveSuccess'));
+        window.location.reload();
+      } catch (err: any) {
+        toast.error(err.message || t('thesis:traceability.actions.approveError'));
+      } finally {
+        setLoading(false);
+      }
+    } else if (currentRole === 'DIRECTOR_INVESTIGACION') {
+      try {
+        setLoading(true);
+        await thesisService.approveDirector(id);
+        toast.success(t('thesis:traceability.actions.approveSuccess'));
+        window.location.reload();
+      } catch (err: any) {
+        toast.error(err.message || t('thesis:traceability.actions.approveError'));
+      } finally {
+        setLoading(false);
+      }
+    } else if (currentRole === 'DECANO') {
+      setResolutionNumInput('');
+      setIsResolutionModalOpen(true);
+    } else {
+      toast.error(t('thesis:traceability.actions.approveRoleError'));
+    }
+  }
+
+  async function submitDeanResolution() {
+    if (!plan || !id) return;
+    if (!resolutionNumInput.trim()) {
+      toast.error(t('thesis:traceability.actions.resolutionRequired'));
+      return;
+    }
+    setIsResolutionModalOpen(false);
 
     try {
       setLoading(true);
-      if (currentRole === 'COORDINADOR_GRUPO') {
-        await thesisService.approveCoordinator(id);
-      } else if (currentRole === 'DIRECTOR_INVESTIGACION') {
-        await thesisService.approveDirector(id);
-      } else if (currentRole === 'DECANO') {
-        const resolutionNum = window.prompt(t('thesis:traceability.actions.resolutionPrompt'));
-        if (resolutionNum === null) return;
-        if (!resolutionNum.trim()) {
-          toast.error(t('thesis:traceability.actions.resolutionRequired'));
-          return;
-        }
-        await thesisService.issueDeanResolution(id, {
-          numeroResolucion: resolutionNum,
-          fechaEmision: new Date().toISOString().split('T')[0],
-          asunto: `Aprobación y emisión de resolución de plan de tesis ID: ${id}`,
-          idDocumentoAdjunto: null
-        });
-      } else {
-        toast.error(t('thesis:traceability.actions.approveRoleError'));
-        return;
-      }
+      await thesisService.issueDeanResolution(id, {
+        numeroResolucion: resolutionNumInput.trim(),
+        fechaEmision: new Date().toISOString().split('T')[0],
+        asunto: `Aprobación y emisión de resolución de plan de tesis ID: ${id}`,
+        idDocumentoAdjunto: null
+      });
       toast.success(t('thesis:traceability.actions.approveSuccess'));
       window.location.reload();
     } catch (err: any) {
@@ -337,14 +375,18 @@ export const ThesisTraceability: React.FC = () => {
     }
   }
 
-  async function handleReturnForCorrection() {
+  function handleRectifyClick() {
+    setRectificationCommentInput('');
+    setIsRectificationModalOpen(true);
+  }
+
+  async function submitRectification() {
     if (!plan || !id) return;
-    const comment = window.prompt(t('thesis:traceability.actions.rectifyPrompt'));
-    if (comment === null) return;
-    if (!comment.trim()) {
+    if (!rectificationCommentInput.trim()) {
       toast.error(t('thesis:traceability.actions.rectifyRequired'));
       return;
     }
+    setIsRectificationModalOpen(false);
 
     try {
       setRectifying(true);
@@ -355,7 +397,7 @@ export const ThesisTraceability: React.FC = () => {
       }
       await thesisService.rectifyPlan(id, {
         resumenSubsanado: plan.resumen,
-        comentarioSubsanacion: comment,
+        comentarioSubsanacion: rectificationCommentInput.trim(),
         idDocumentoActual: docId,
       });
       toast.success(t('thesis:traceability.actions.rectifySuccess'));
@@ -1049,7 +1091,7 @@ export const ThesisTraceability: React.FC = () => {
             variant="primary"
             icon={<Send size={18} />}
             style={{ width: '100%', maxWidth: '300px' }}
-            onClick={handleReturnForCorrection}
+            onClick={handleRectifyClick}
             disabled={rectifying}
           >
             {rectifying ? t('thesis:traceability.rectifying', { defaultValue: 'Rectificando...' }) : t('thesis:traceability.registerRectification')}
@@ -1122,6 +1164,154 @@ export const ThesisTraceability: React.FC = () => {
                 variant="primary"
                 onClick={submitObserve}
                 disabled={!observeText.trim()}
+              >
+                {t('thesis:traceability.send', 'Enviar')}
+              </Button>
+            </div>
+          </div>
+        </button>
+      )}
+
+      {isResolutionModalOpen && (
+        <button
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: 'none', cursor: 'default', width: '100%', height: '100%',
+            outline: 'none',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsResolutionModalOpen(false);
+            }
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-lg)',
+              padding: '28px', width: '100%', maxWidth: '520px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.24)',
+              cursor: 'default',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
+                {t('thesis:traceability.actions.resolutionPromptTitle', { defaultValue: 'Emisión de Resolución Decanal' })}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsResolutionModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', marginBottom: '14px', marginTop: 0 }}>
+              {t('thesis:traceability.actions.resolutionPrompt')}
+            </p>
+            <input
+              type="text"
+              value={resolutionNumInput}
+              onChange={e => setResolutionNumInput(e.target.value)}
+              placeholder="Ej. RESOLUCIÓN DECANAL Nº 012-2026-FIIS"
+              style={{
+                width: '100%', padding: '12px 14px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--outline)',
+                fontSize: '14px', fontFamily: 'inherit',
+                backgroundColor: 'var(--surface)', color: 'var(--on-surface)',
+                outline: 'none', boxSizing: 'border-box',
+              }}
+              onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--outline)')}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px' }}>
+              <Button
+                variant="secondary"
+                onClick={() => setIsResolutionModalOpen(false)}
+              >
+                {t('thesis:traceability.cancel', 'Cancelar')}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={submitDeanResolution}
+                disabled={!resolutionNumInput.trim()}
+              >
+                {t('thesis:traceability.send', 'Aceptar')}
+              </Button>
+            </div>
+          </div>
+        </button>
+      )}
+
+      {isRectificationModalOpen && (
+        <button
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: 'none', cursor: 'default', width: '100%', height: '100%',
+            outline: 'none',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsRectificationModalOpen(false);
+            }
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-lg)',
+              padding: '28px', width: '100%', maxWidth: '520px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.24)',
+              cursor: 'default',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
+                {t('thesis:traceability.actions.rectifyPromptTitle', { defaultValue: 'Registrar Subsanación' })}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsRectificationModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', marginBottom: '14px', marginTop: 0 }}>
+              {t('thesis:traceability.actions.rectifyPrompt')}
+            </p>
+            <textarea
+              rows={4}
+              value={rectificationCommentInput}
+              onChange={e => setRectificationCommentInput(e.target.value)}
+              placeholder="Describe detalladamente los cambios realizados..."
+              style={{
+                width: '100%', padding: '12px 14px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--outline)',
+                fontSize: '14px', fontFamily: 'inherit',
+                backgroundColor: 'var(--surface)', color: 'var(--on-surface)',
+                resize: 'vertical', outline: 'none', boxSizing: 'border-box',
+              }}
+              onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--outline)')}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px' }}>
+              <Button
+                variant="secondary"
+                onClick={() => setIsRectificationModalOpen(false)}
+              >
+                {t('thesis:traceability.cancel', 'Cancelar')}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={submitRectification}
+                disabled={!rectificationCommentInput.trim()}
               >
                 {t('thesis:traceability.send', 'Enviar')}
               </Button>
