@@ -3,6 +3,7 @@ import React from 'react';
 import { screen, act, fireEvent } from '@testing-library/react';
 import { CreateUser } from './CreateUser';
 import { userService } from '../../services/userService';
+import { researchService } from '../../services/researchService';
 import { renderWithProviders } from '../../utils/testUtils';
 
 vi.mock('../../services/userService', () => ({
@@ -25,10 +26,14 @@ vi.mock('../../services/researchService', () => ({
 }));
 
 const mockUserService = vi.mocked(userService);
+const mockResearchService = vi.mocked(researchService);
 
 describe('CreateUser page', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockResearchService.getGroups.mockResolvedValue([
+      { id: 1, groupName: 'GI-SOFT', groupCode: 'G01', active: true },
+    ] as any);
 
     mockUserService.getAll.mockResolvedValue([
       {

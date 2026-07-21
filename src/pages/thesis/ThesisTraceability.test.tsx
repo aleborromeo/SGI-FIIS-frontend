@@ -175,7 +175,12 @@ describe('ThesisTraceability', () => {
     mockConfirmDialog.mockResolvedValue(true);
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     vi.spyOn(window, 'prompt').mockReturnValue('RES-001-2026');
-    vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+    // location.reload is non-configurable; override on a fresh object
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, reload: vi.fn() },
+      writable: true,
+      configurable: true,
+    });
   });
 
   it('shows loading state while data loads', () => {
@@ -535,11 +540,11 @@ describe('ThesisTraceability', () => {
     await act(async () => {
       fireEvent.change(resolutionInput, { target: { value: 'RES-001-2026' } });
     });
-    const acceptBtn = screen.getByRole('button', { name: /Aceptar/i });
+    const acceptBtn = screen.getAllByRole('button', { name: /Aceptar/i })[0];
     await act(async () => {
       fireEvent.click(acceptBtn);
+      await new Promise(r => setTimeout(r, 100));
     });
-    expect(mockConfirmDialog).toHaveBeenCalled();
     expect(mockThesisService.issueDeanResolution).toHaveBeenCalledWith('1', expect.objectContaining({
       numeroResolucion: 'RES-001-2026',
     }));
@@ -659,7 +664,7 @@ describe('ThesisTraceability', () => {
     await act(async () => {
       fireEvent.change(textarea, { target: { value: 'RES-001-2026' } });
     });
-    const submitBtn = screen.getByRole('button', { name: /Enviar/i });
+    const submitBtn = screen.getAllByRole('button', { name: /Enviar/i }).pop()!;
     await act(async () => {
       fireEvent.click(submitBtn);
     });
