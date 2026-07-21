@@ -113,7 +113,10 @@ export const TramiteDetail: React.FC = () => {
   const getAccionLabel = useCallback((accion: string): string => {
     const key = `tramites:detailPage.actionLabels.${accion}`;
     const translated = t(key);
-    return translated === key ? accion.replaceAll('_', ' ') : translated;
+    if (translated === key || translated === `detailPage.actionLabels.${accion}`) {
+      return accion.replaceAll('_', ' ');
+    }
+    return translated;
   }, [t]);
 
   const cargarDatos = useCallback(() => {
@@ -294,6 +297,18 @@ export const TramiteDetail: React.FC = () => {
               {project.summary && <div><strong>{t('tramites:detailPage.fields.abstract', { defaultValue: 'Resumen' })}:</strong> {project.summary}</div>}
               {project.researchLineName && <div><strong>{t('tramites:detailPage.fields.researchLine', { defaultValue: 'Línea de investigación' })}:</strong> {project.researchLineName}</div>}
               {project.researchGroupCode && <div><strong>{t('tramites:detailPage.fields.researchGroup', { defaultValue: 'Grupo de investigación' })}:</strong> {project.researchGroupCode}</div>}
+              {project.documentId && (
+                <div>
+                  <strong>{t('tramites:detailPage.fields.document', { defaultValue: 'Documento' })}:</strong>{' '}
+                  <span
+                    onClick={() => documentService.downloadFile(project.documentId!, project.documentName || 'proyecto.pdf')}
+                    style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}
+                  >
+                    <Download size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                    {project.documentName || t('tramites:detailPage.viewDocument', { defaultValue: 'Ver documento' })}
+                  </span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

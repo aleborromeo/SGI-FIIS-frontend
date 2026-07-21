@@ -140,6 +140,7 @@
       "pending": "Pendiente"
     },
     "actionLabels": {
+      "CREAR": "Registrado / Creado",
       "PRESENTADO_POR_SOLICITANTE": "Presentado por el solicitante",
       "APROBADO_POR_COORDINADOR": "Aprobado por el Coordinador",
       "APROBADO_POR_DIRECTOR": "Aprobado por el Director",
