@@ -183,7 +183,7 @@ function App() {
 
                   {/* Proyectos */}
                   <Route path="/projects" element={
-                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'EVALUADOR']}>
+                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'EVALUADOR', 'ESTUDIANTE']}>
                       <ProjectsList />
                     </RoleProtectedRoute>
                   } />
@@ -203,7 +203,7 @@ function App() {
                     </RoleProtectedRoute>
                   } />
                   <Route path="/projects/:id" element={
-                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'EVALUADOR']}>
+                    <RoleProtectedRoute allowedRoles={['DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'EVALUADOR', 'ESTUDIANTE']}>
                       <ProjectMonitoring />
                     </RoleProtectedRoute>
                   } />

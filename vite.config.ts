@@ -29,7 +29,16 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      exclude: ['node_modules/', 'dist/']
+      clean: false,
+      cleanOnRerun: false,
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/main.tsx',
+        'src/test-i18n.ts',
+        'src/vite-env.d.ts',
+        'src/types/**/*',
+        'src/**/*.test.{ts,tsx}'
+      ]
     }
   }
 })

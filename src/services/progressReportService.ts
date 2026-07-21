@@ -27,11 +27,11 @@ const STATUS_FE_TO_BE: Record<string, string> = {
   RECHAZADO: 'REJECTED',
 };
 
-function toFrontendStatus(backendStatus: string): ProgressReportStatus {
+export function toFrontendStatus(backendStatus: string): ProgressReportStatus {
   return STATUS_BE_TO_FE[backendStatus] ?? 'PENDIENTE';
 }
 
-function toBackendStatus(frontendStatus: string): string {
+export function toBackendStatus(frontendStatus: string): string {
   return STATUS_FE_TO_BE[frontendStatus] ?? frontendStatus;
 }
 
@@ -111,7 +111,7 @@ export interface ProjectSummary {
 
 // ── Mapper Helpers ────────────────────────────────────────────────────────────
 
-function mapResponseToReport(r: any): ProgressReport {
+export function mapResponseToReport(r: any): ProgressReport {
   return {
     id: r.id,
     reportNumber: r.id,
@@ -129,7 +129,7 @@ function mapResponseToReport(r: any): ProgressReport {
   };
 }
 
-function mapResponseToDetail(r: any): ProgressReportDetail {
+export function mapResponseToDetail(r: any): ProgressReportDetail {
   const base = mapResponseToReport(r);
   return {
     ...base,

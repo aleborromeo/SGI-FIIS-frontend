@@ -89,7 +89,13 @@
       "tramiteType": "Procedure type",
       "currentReviewer": "Current reviewer",
       "submissionDate": "Submission date",
-      "lastUpdate": "Last update"
+      "lastUpdate": "Last update",
+      "title": "Title",
+      "abstract": "Abstract",
+      "researchLine": "Research Line",
+      "researchGroup": "Research Group",
+      "student": "Student",
+      "document": "Document"
     },
     "actionsSection": "Actions",
     "buttons": {
@@ -134,6 +140,7 @@
       "pending": "Pending"
     },
     "actionLabels": {
+      "CREAR": "Registered / Created",
       "PRESENTADO_POR_SOLICITANTE": "Submitted by applicant",
       "APROBADO_POR_COORDINADOR": "Approved by Coordinator",
       "APROBADO_POR_DIRECTOR": "Approved by Director",
