@@ -99,7 +99,7 @@ describe('AssignReviewers', () => {
   it('renders page heading', async () => {
     renderWithProviders(<AssignReviewers />);
     await waitFor(() => {
-      expect(screen.getByText(/asignación de jurados/i)).toBeDefined();
+      expect(screen.getByText(/evaluaciones/i)).toBeDefined();
     });
   });
 

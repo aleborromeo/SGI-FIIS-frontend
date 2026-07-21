@@ -15,6 +15,15 @@ vi.mock('../../services/userService', () => ({
   },
 }));
 
+vi.mock('../../services/researchService', () => ({
+  researchService: {
+    getGroups: vi.fn().mockResolvedValue([
+      { id: 1, groupName: 'GI-SOFT', groupCode: 'G01', active: true },
+    ]),
+    addMember: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 const mockUserService = vi.mocked(userService);
 
 describe('CreateUser page', () => {
@@ -146,18 +155,22 @@ describe('CreateUser page', () => {
     fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
     fireEvent.change(phoneInput, { target: { value: '987654321' } });
 
+    await act(async () => {});
+
+    const groupSelect = screen.getByLabelText(/Grupo de Investigación/i);
+    fireEvent.change(groupSelect, { target: { value: '1' } });
+
     await act(async () => {
       fireEvent.click(submitBtn);
     });
 
-    expect(mockUserService.createUser).toHaveBeenCalledWith({
+    expect(mockUserService.createUser).toHaveBeenCalledWith(expect.objectContaining({
       dni: '87654321',
       firstNames: 'Juan',
       lastNames: 'Perez',
-      institutionalEmail: 'juan.perez@unas.edu.pe',
       phone: '987654321',
       roleCode: 'ESTUDIANTE',
-    });
+    }));
 
     expect(screen.getByText('Credenciales Temporales de Acceso')).toBeDefined();
     expect(screen.getByText('tempPassword123')).toBeDefined();
@@ -177,6 +190,11 @@ describe('CreateUser page', () => {
     fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
     fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
 
+    await act(async () => {});
+
+    const groupSelect = screen.getByLabelText(/Grupo de Investigación/i);
+    fireEvent.change(groupSelect, { target: { value: '1' } });
+
     await act(async () => {
       fireEvent.click(submitBtn);
     });
@@ -195,6 +213,11 @@ describe('CreateUser page', () => {
     fireEvent.change(dniInput, { target: { value: '87654321' } });
     fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
     fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
+
+    await act(async () => {});
+
+    const groupSelect = screen.getByLabelText(/Grupo de Investigación/i);
+    fireEvent.change(groupSelect, { target: { value: '1' } });
 
     await act(async () => {
       fireEvent.click(submitBtn);

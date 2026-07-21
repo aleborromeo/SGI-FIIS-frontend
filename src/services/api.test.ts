@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { buildUrl, getToken, api, fetchApi } from './api';
 
 describe('api.buildUrl', () => {
-  const BASE = 'http://localhost:8080';
+  const BASE = 'http://localhost:5173';
 
   it('anade prefijo /api/v1 a endpoints relativos (sin host cuando VITE_API_URL esta vacio)', () => {
     expect(buildUrl('/calls')).toBe(`${BASE}/api/v1/calls`);

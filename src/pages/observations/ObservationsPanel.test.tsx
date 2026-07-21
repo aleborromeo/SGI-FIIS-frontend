@@ -8,6 +8,7 @@ import { renderWithProviders } from '../../utils/testUtils';
 vi.mock('../../services/observationService', () => ({
   observationService: {
     getByProcedureId: vi.fn(),
+    getMyObservations: vi.fn(),
     addRemedy: vi.fn(),
   },
 }));
@@ -68,6 +69,7 @@ describe('ObservationsPanel', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockObservationService.getByProcedureId.mockResolvedValue(mockObservations);
+    mockObservationService.getMyObservations.mockResolvedValue(mockObservations);
     localStorage.setItem('sgi_user', JSON.stringify({ id: 1 }));
   });
 
@@ -76,7 +78,7 @@ describe('ObservationsPanel', () => {
   });
 
   it('renders title and description', async () => {
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     expect(screen.getByText('Mis observaciones')).toBeDefined();
     expect(screen.getByText(/Consulta las observaciones/)).toBeDefined();
@@ -88,7 +90,7 @@ describe('ObservationsPanel', () => {
   it('shows empty state when no observations', async () => {
     mockObservationService.getByProcedureId.mockResolvedValue([]);
 
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('No hay observaciones registradas para este expediente.')).toBeDefined();
@@ -96,7 +98,7 @@ describe('ObservationsPanel', () => {
   });
 
   it('loads and displays observations', async () => {
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Marco Teórico')).toBeDefined();
@@ -108,7 +110,7 @@ describe('ObservationsPanel', () => {
   });
 
   it('shows stats for total, pending, and resolved counts', async () => {
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Marco Teórico')).toBeDefined();
@@ -125,7 +127,7 @@ describe('ObservationsPanel', () => {
   });
 
   it('shows "Requiere subsanación" badge when pending observations exist', async () => {
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Requiere subsanación')).toBeDefined();
@@ -137,7 +139,7 @@ describe('ObservationsPanel', () => {
       { id: 1, procedureId: 1, type: 'Test', description: 'Done', status: 'SUBSANADO', createdAt: '' },
     ]);
 
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Todo conforme')).toBeDefined();
@@ -145,7 +147,7 @@ describe('ObservationsPanel', () => {
   });
 
   it('displays remedy text for resolved observations', async () => {
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Se corrigieron las conclusiones.')).toBeDefined();
@@ -158,7 +160,7 @@ describe('ObservationsPanel', () => {
       () => new Promise(() => {})
     );
 
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Cargando observaciones...')).toBeDefined();
@@ -168,7 +170,7 @@ describe('ObservationsPanel', () => {
   it('shows error state when service fails', async () => {
     mockObservationService.getByProcedureId.mockRejectedValue(new Error('Network error'));
 
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('No se pudieron cargar las observaciones')).toBeDefined();
@@ -176,7 +178,7 @@ describe('ObservationsPanel', () => {
   });
 
   it('shows remedy form with justification input and submit button', async () => {
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Enviar subsanación')).toBeDefined();
@@ -187,7 +189,7 @@ describe('ObservationsPanel', () => {
   });
 
   it('calls warning toast when submitting empty justification', async () => {
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Marco Teórico')).toBeDefined();
@@ -205,7 +207,7 @@ describe('ObservationsPanel', () => {
   it('submits remedy successfully with justification', async () => {
     mockObservationService.addRemedy.mockResolvedValue(undefined);
 
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Marco Teórico')).toBeDefined();
@@ -227,7 +229,7 @@ describe('ObservationsPanel', () => {
     mockDocumentService.upload.mockResolvedValue({ id: 42, originalName: 'doc.pdf', extension: 'pdf' });
     mockObservationService.addRemedy.mockResolvedValue(undefined);
 
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Marco Teórico')).toBeDefined();
@@ -253,7 +255,7 @@ describe('ObservationsPanel', () => {
   it('shows error toast when remedy submission fails', async () => {
     mockObservationService.addRemedy.mockRejectedValue(new Error('Server error'));
 
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(screen.getByText('Marco Teórico')).toBeDefined();
@@ -287,13 +289,13 @@ describe('ObservationsPanel', () => {
   });
 
   it('displays back to dashboard link', async () => {
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     expect(screen.getByText('Volver al dashboard')).toBeDefined();
   });
 
   it('reloads observations when update button is clicked', async () => {
-    renderWithProviders(<ObservationsPanel />);
+    renderWithProviders(<ObservationsPanel />, { route: '/observations?procedureId=1' });
 
     await waitFor(() => {
       expect(mockObservationService.getByProcedureId).toHaveBeenCalledTimes(1);

@@ -5,6 +5,15 @@ import { UserManagement } from './UserManagement';
 import { userService } from '../../services/userService';
 import { renderWithProviders } from '../../utils/testUtils';
 
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual: any = await importOriginal();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
 vi.mock('../../services/userService', () => ({
   userService: {
     create: vi.fn(),
@@ -157,18 +166,7 @@ describe('UserManagement page', () => {
       fireEvent.click(createBtn);
     });
 
-    expect(screen.getByText('Crear Usuario')).toBeDefined();
-
-    fireEvent.change(screen.getByPlaceholderText('8 caracteres'), { target: { value: '11223344' } });
-    fireEvent.change(screen.getByPlaceholderText('Nombres completos'), { target: { value: 'Bob' } });
-    fireEvent.change(screen.getByPlaceholderText('Apellidos completos'), { target: { value: 'Builder' } });
-
-    const submitBtn = screen.getByRole('button', { name: /Crear Usuario/i });
-    await act(async () => {
-      fireEvent.click(submitBtn);
-    });
-
-    expect(mockUserService.create).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith('/users/create');
   });
 
   it('renders pagination when there are many users', async () => {

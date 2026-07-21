@@ -65,7 +65,7 @@ describe('ProgressReportsPage', () => {
       fireEvent.click(searchBtn);
     });
 
-    expect(mockProgressReportService.getByProject).toHaveBeenCalledWith('42');
+    expect(mockProgressReportService.getByProject).toHaveBeenCalledWith(42);
     expect(await screen.findByText('#1')).toBeDefined();
     expect(screen.getByText('#2')).toBeDefined();
   });

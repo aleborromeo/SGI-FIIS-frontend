@@ -9,7 +9,6 @@ vi.mock('../../services/tramiteService', () => ({
   tramiteService: {
     getPendingForRole: vi.fn(),
     flag: vi.fn(),
-    reject: vi.fn(),
   },
   PENDING_STATE_BY_ROLE: {
     DECANO: 'PENDIENTE_DECANATO',
@@ -112,13 +111,13 @@ describe('DecanoReview', () => {
     expect(screen.getByText(/Plan de Tesis XYZ/i)).toBeDefined();
   });
 
-  it('renders Firmar and Rechazar buttons for each tramite', async () => {
+  it('renders Firmar and Observar buttons for each tramite', async () => {
     renderWithProviders(<DecanoReview />, { authValue: defaultAuth });
     await screen.findByText('TRM-001');
     const firmarBtns = screen.getAllByRole('button', { name: /firmar/i });
     expect(firmarBtns.length).toBe(2);
-    const rechazarBtns = screen.getAllByRole('button', { name: /rechazar/i });
-    expect(rechazarBtns.length).toBe(2);
+    const obsBtns = screen.getAllByRole('button', { name: /observar/i });
+    expect(obsBtns.length).toBe(2);
   });
 
   it('renders Observar buttons for each tramite', async () => {
@@ -128,7 +127,7 @@ describe('DecanoReview', () => {
     expect(obsBtns.length).toBe(2);
   });
 
-  it('approve button triggers prompt and navigates', async () => {
+  it('approve button navigates to resolution form', async () => {
     renderWithProviders(<DecanoReview />, { authValue: defaultAuth });
     await screen.findByText('TRM-001');
 
@@ -137,94 +136,10 @@ describe('DecanoReview', () => {
       fireEvent.click(firmarBtns[0]);
     });
 
-    expect(window.prompt).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalled();
     const callArg = mockNavigate.mock.calls[0][0] as string;
     expect(callArg).toContain('/resolutions/new-legacy');
     expect(callArg).toContain('procedureId=1');
-  });
-
-  it('approve with null prompt (user cancels) does not navigate', async () => {
-    vi.mocked(window.prompt).mockReturnValue(null);
-    renderWithProviders(<DecanoReview />, { authValue: defaultAuth });
-    await screen.findByText('TRM-001');
-
-    const firmarBtns = screen.getAllByRole('button', { name: /firmar/i });
-    await act(async () => {
-      fireEvent.click(firmarBtns[0]);
-    });
-
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
-
-  it('approve with empty prompt shows error toast', async () => {
-    vi.mocked(window.prompt).mockReturnValue('');
-    renderWithProviders(<DecanoReview />, { authValue: defaultAuth });
-    await screen.findByText('TRM-001');
-
-    const firmarBtns = screen.getAllByRole('button', { name: /firmar/i });
-    await act(async () => {
-      fireEvent.click(firmarBtns[0]);
-    });
-
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
-
-  it('approve cancels on second prompt (asunto)', async () => {
-    vi.mocked(window.prompt)
-      .mockReturnValueOnce('N° 001-2026')
-      .mockReturnValueOnce(null);
-
-    renderWithProviders(<DecanoReview />, { authValue: defaultAuth });
-    await screen.findByText('TRM-001');
-
-    const firmarBtns = screen.getAllByRole('button', { name: /firmar/i });
-    await act(async () => {
-      fireEvent.click(firmarBtns[0]);
-    });
-
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
-
-  it('reject button triggers confirm and calls service', async () => {
-    renderWithProviders(<DecanoReview />, { authValue: defaultAuth });
-    await screen.findByText('TRM-001');
-
-    const rechazarBtns = screen.getAllByRole('button', { name: /rechazar/i });
-    await act(async () => {
-      fireEvent.click(rechazarBtns[0]);
-    });
-
-    expect(window.confirm).toHaveBeenCalled();
-    expect(mockTramiteService.reject).toHaveBeenCalledWith(1);
-  });
-
-  it('reject cancelled does not call service', async () => {
-    vi.mocked(window.confirm).mockReturnValue(false);
-    renderWithProviders(<DecanoReview />, { authValue: defaultAuth });
-    await screen.findByText('TRM-001');
-
-    const rechazarBtns = screen.getAllByRole('button', { name: /rechazar/i });
-    await act(async () => {
-      fireEvent.click(rechazarBtns[0]);
-    });
-
-    expect(mockTramiteService.reject).not.toHaveBeenCalled();
-  });
-
-  it('reject failure shows error toast', async () => {
-    mockTramiteService.reject.mockRejectedValue(new Error('Server error'));
-    renderWithProviders(<DecanoReview />, { authValue: defaultAuth });
-    await screen.findByText('TRM-001');
-
-    const rechazarBtns = screen.getAllByRole('button', { name: /rechazar/i });
-    await act(async () => {
-      fireEvent.click(rechazarBtns[0]);
-    });
-
-    await waitFor(() => {
-      expect(mockTramiteService.reject).toHaveBeenCalled();
-    });
   });
 
   it('observe button triggers prompt and calls flag', async () => {

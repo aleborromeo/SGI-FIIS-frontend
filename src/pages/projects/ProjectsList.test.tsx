@@ -188,7 +188,21 @@ describe('ProjectsList', () => {
   });
 
   it('renders reviewer assignment links', async () => {
-    renderWithProviders(<ProjectsList />);
+    renderWithProviders(<ProjectsList />, {
+      authValue: {
+        user: { id: 1, roleCode: 'DIRECTOR_INVESTIGACION', firstNames: 'Dir', lastNames: 'Ector', email: 'dir@sgi.com' },
+        roles: ['DIRECTOR_INVESTIGACION'],
+        currentRole: 'DIRECTOR_INVESTIGACION',
+        loading: false,
+        error: null,
+        isAuthenticated: true,
+        login: vi.fn(),
+        logout: vi.fn(),
+        switchRole: vi.fn(),
+        clearError: vi.fn(),
+        completeRegistration: vi.fn(),
+      },
+    });
     await waitFor(() => {
       expect(screen.getByText('Proyecto de Inteligencia Artificial')).toBeDefined();
     });

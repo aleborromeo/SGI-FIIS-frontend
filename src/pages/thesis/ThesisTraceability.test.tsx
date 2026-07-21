@@ -22,6 +22,14 @@ vi.mock('../../services/thesisService', () => ({
   },
 }));
 
+const mockConfirmDialog = vi.fn().mockResolvedValue(true);
+vi.mock('../../context/ConfirmContext', () => ({
+  useConfirm: () => ({
+    confirmDialog: mockConfirmDialog,
+  }),
+  ConfirmProvider: ({ children }: any) => children,
+}));
+
 vi.mock('../../services/researchService', () => ({
   researchService: {
     getGroupById: vi.fn(),
@@ -164,8 +172,10 @@ describe('ThesisTraceability', () => {
     mockThesisService.getPlanById.mockResolvedValue(mockPlan as any);
     mockThesisService.getReportByPlanId.mockResolvedValue([]);
     mockResearchService.getGroupById.mockResolvedValue(mockGroup as any);
+    mockConfirmDialog.mockResolvedValue(true);
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     vi.spyOn(window, 'prompt').mockReturnValue('RES-001-2026');
+    vi.spyOn(window.location, 'reload').mockImplementation(() => {});
   });
 
   it('shows loading state while data loads', () => {
@@ -476,12 +486,12 @@ describe('ThesisTraceability', () => {
     await act(async () => {
       fireEvent.click(approveBtn);
     });
-    expect(window.confirm).toHaveBeenCalled();
+    expect(mockConfirmDialog).toHaveBeenCalled();
     expect(mockThesisService.approveCoordinator).toHaveBeenCalledWith('1');
   });
 
   it('does not approve when user cancels confirm dialog', async () => {
-    (window.confirm as any).mockReturnValue(false);
+    mockConfirmDialog.mockResolvedValue(false);
     const planWithCoordinatorReviewer = { ...mockPlan, revisorActual: 'COORDINADOR_GRUPO' };
     mockThesisService.getPlanById.mockResolvedValue(planWithCoordinatorReviewer as any);
     renderWithProviders(<ThesisTraceability />, {
@@ -506,6 +516,7 @@ describe('ThesisTraceability', () => {
     await act(async () => {
       fireEvent.click(approveBtn);
     });
+    expect(mockConfirmDialog).toHaveBeenCalled();
     expect(mockThesisService.approveDirector).toHaveBeenCalledWith('1');
   });
 
@@ -520,7 +531,15 @@ describe('ThesisTraceability', () => {
     await act(async () => {
       fireEvent.click(approveBtn);
     });
-    expect(window.prompt).toHaveBeenCalled();
+    const resolutionInput = screen.getByPlaceholderText(/RESOLUCIÓN DECANAL/i);
+    await act(async () => {
+      fireEvent.change(resolutionInput, { target: { value: 'RES-001-2026' } });
+    });
+    const acceptBtn = screen.getByRole('button', { name: /Aceptar/i });
+    await act(async () => {
+      fireEvent.click(acceptBtn);
+    });
+    expect(mockConfirmDialog).toHaveBeenCalled();
     expect(mockThesisService.issueDeanResolution).toHaveBeenCalledWith('1', expect.objectContaining({
       numeroResolucion: 'RES-001-2026',
     }));
@@ -635,6 +654,14 @@ describe('ThesisTraceability', () => {
     const rectifyBtn = screen.getByRole('button', { name: /registrar subsanación/i });
     await act(async () => {
       fireEvent.click(rectifyBtn);
+    });
+    const textarea = screen.getByPlaceholderText(/Describe detalladamente/i);
+    await act(async () => {
+      fireEvent.change(textarea, { target: { value: 'RES-001-2026' } });
+    });
+    const submitBtn = screen.getByRole('button', { name: /Enviar/i });
+    await act(async () => {
+      fireEvent.click(submitBtn);
     });
     expect(mockThesisService.rectifyPlan).toHaveBeenCalledWith('1', expect.objectContaining({
       comentarioSubsanacion: 'RES-001-2026',
