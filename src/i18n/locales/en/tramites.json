@@ -89,7 +89,13 @@
       "tramiteType": "Procedure type",
       "currentReviewer": "Current reviewer",
       "submissionDate": "Submission date",
-      "lastUpdate": "Last update"
+      "lastUpdate": "Last update",
+      "title": "Title",
+      "abstract": "Abstract",
+      "researchLine": "Research Line",
+      "researchGroup": "Research Group",
+      "student": "Student",
+      "document": "Document"
     },
     "actionsSection": "Actions",
     "buttons": {

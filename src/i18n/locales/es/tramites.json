@@ -89,7 +89,13 @@
       "tramiteType": "Tipo de trámite",
       "currentReviewer": "Revisor actual",
       "submissionDate": "Fecha de presentación",
-      "lastUpdate": "Última actualización"
+      "lastUpdate": "Última actualización",
+      "title": "Título",
+      "abstract": "Resumen",
+      "researchLine": "Línea de investigación",
+      "researchGroup": "Grupo de investigación",
+      "student": "Estudiante",
+      "document": "Documento"
     },
     "actionsSection": "Acciones",
     "buttons": {

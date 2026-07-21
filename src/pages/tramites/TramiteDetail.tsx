@@ -290,10 +290,10 @@ export const TramiteDetail: React.FC = () => {
           <CardContent>
             <h3 className="text-title-lg" style={{ marginBottom: '16px' }}>{t('tramites:detailPage.projectData', { defaultValue: 'Datos del Proyecto' })}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div><strong>{t('tramites:detailPage.fields.title')}:</strong> {project.title || project.code}</div>
-              {project.summary && <div><strong>{t('tramites:detailPage.fields.abstract')}:</strong> {project.summary}</div>}
-              {project.researchLineName && <div><strong>{t('tramites:detailPage.fields.researchLine')}:</strong> {project.researchLineName}</div>}
-              {project.researchGroupCode && <div><strong>{t('tramites:detailPage.fields.researchGroup')}:</strong> {project.researchGroupCode}</div>}
+              <div><strong>{t('tramites:detailPage.fields.title', { defaultValue: 'Título' })}:</strong> {project.title || project.code}</div>
+              {project.summary && <div><strong>{t('tramites:detailPage.fields.abstract', { defaultValue: 'Resumen' })}:</strong> {project.summary}</div>}
+              {project.researchLineName && <div><strong>{t('tramites:detailPage.fields.researchLine', { defaultValue: 'Línea de investigación' })}:</strong> {project.researchLineName}</div>}
+              {project.researchGroupCode && <div><strong>{t('tramites:detailPage.fields.researchGroup', { defaultValue: 'Grupo de investigación' })}:</strong> {project.researchGroupCode}</div>}
             </div>
           </CardContent>
         </Card>
