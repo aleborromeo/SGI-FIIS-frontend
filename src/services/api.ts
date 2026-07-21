@@ -5,7 +5,7 @@ interface FetchOptions extends RequestInit {
   params?: Record<string, string | number | boolean | null | undefined>;
 }
 
-function getToken(): string | null {
+export function getToken(): string | null {
   const token =
     localStorage.getItem('sgi_token') ??
     localStorage.getItem('token') ??
@@ -16,7 +16,7 @@ function getToken(): string | null {
   return token.replace(/^Bearer\s+/i, '');
 }
 
-function buildUrl(endpoint: string, params?: FetchOptions['params']): string {
+export function buildUrl(endpoint: string, params?: FetchOptions['params']): string {
   let url = endpoint;
 
   if (!/^https?:\/\//i.test(url)) {
