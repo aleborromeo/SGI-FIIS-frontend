@@ -1104,7 +1104,8 @@ export const ThesisTraceability: React.FC = () => {
           style={{
             position: 'fixed', inset: 0, zIndex: 1000,
             backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            paddingTop: '80px',
             border: 'none', cursor: 'default', width: '100%', height: '100%',
             outline: 'none',
           }}
@@ -1177,7 +1178,8 @@ export const ThesisTraceability: React.FC = () => {
           style={{
             position: 'fixed', inset: 0, zIndex: 1000,
             backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            paddingTop: '80px',
             border: 'none', cursor: 'default', width: '100%', height: '100%',
             outline: 'none',
           }}
@@ -1251,7 +1253,8 @@ export const ThesisTraceability: React.FC = () => {
           style={{
             position: 'fixed', inset: 0, zIndex: 1000,
             backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            paddingTop: '80px',
             border: 'none', cursor: 'default', width: '100%', height: '100%',
             outline: 'none',
           }}
