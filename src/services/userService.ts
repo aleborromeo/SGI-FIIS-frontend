@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, fetchApi } from './api';
 
 export interface User {
   id: number;

@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173,
+    port: 8082,
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
@@ -29,7 +29,15 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      exclude: ['node_modules/', 'dist/']
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/main.tsx',
+        'src/test-i18n.ts',
+        'src/vite-env.d.ts',
+        'src/types/**/*',
+        'src/**/*.test.{ts,tsx}'
+      ],
+      all: true
     }
   }
 })
