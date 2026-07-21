@@ -45,7 +45,8 @@ export const NewThesisReport: React.FC = () => {
       }
     }
     fetchPlan();
-  }, [planId, toast, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planId]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
