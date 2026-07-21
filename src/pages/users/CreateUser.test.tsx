@@ -6,6 +6,7 @@ import { ConfirmProvider } from '../../context/ConfirmContext';
 import { AuthContext } from '../../context/AuthContext';
 import { CreateUser } from './CreateUser';
 import { userService } from '../../services/userService';
+import { researchService } from '../../services/researchService';
 
 const mockGetAll = vi.hoisted(() => vi.fn());
 const mockCreateUser = vi.hoisted(() => vi.fn());
@@ -18,6 +19,18 @@ vi.mock('../../services/userService', () => ({
     rejectUser: vi.fn(),
     activateUser: vi.fn(),
     resetPassword: vi.fn(),
+    toggleStatus: vi.fn(),
+  },
+}));
+
+const mockGetGroups = vi.hoisted(() => vi.fn());
+
+vi.mock('../../services/researchService', () => ({
+  researchService: {
+    getGroups: mockGetGroups,
+    getGroupByUser: vi.fn(),
+    addMember: vi.fn(),
+    removeMember: vi.fn(),
   },
 }));
 
@@ -52,6 +65,9 @@ describe('CreateUser', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetAll.mockResolvedValue([]);
+    mockGetGroups.mockResolvedValue([
+      { id: 1, groupCode: 'GINSOFT', groupName: 'Grupo de Investigación en Software', active: true },
+    ]);
   });
 
   it('renders the management title', async () => {
@@ -70,14 +86,22 @@ describe('CreateUser', () => {
     });
     renderPage();
 
+    await screen.findByLabelText(/DNI/i);
+
     fireEvent.change(screen.getByLabelText(/DNI/i), { target: { value: '12345678' } });
     fireEvent.change(screen.getByLabelText(/Nombres/i), { target: { value: 'Juan' } });
     fireEvent.change(screen.getByLabelText(/Apellidos/i), { target: { value: 'Perez' } });
     fireEvent.change(screen.getByLabelText(/Correo/i), { target: { value: 'juan@unas.edu.pe' } });
     fireEvent.change(screen.getByLabelText(/Rol/i), { target: { value: 'ESTUDIANTE' } });
 
-    const submit = document.querySelector('form button[type="submit"]') as HTMLButtonElement;
-    fireEvent.click(submit);
+    // Select a research group (required for non-ADMIN roles)
+    const groupSelect = screen.getByLabelText(/Grupo de Investigación/i);
+    await waitFor(() => {
+      expect(groupSelect.querySelector('option[value="1"]')).toBeTruthy();
+    });
+    fireEvent.change(groupSelect, { target: { value: '1' } });
+
+    fireEvent.submit(document.querySelector('form')!);
 
     await waitFor(() => expect(mockCreateUser).toHaveBeenCalled());
     const payload = mockCreateUser.mock.calls[0][0];
@@ -88,14 +112,13 @@ describe('CreateUser', () => {
 
   it('shows a validation error for a short DNI', async () => {
     renderPage();
+    await screen.findByLabelText(/DNI/i);
+
     fireEvent.change(screen.getByLabelText(/DNI/i), { target: { value: '123' } });
     fireEvent.change(screen.getByLabelText(/Nombres/i), { target: { value: 'Juan' } });
     fireEvent.change(screen.getByLabelText(/Apellidos/i), { target: { value: 'Perez' } });
 
-    // Default role is ESTUDIANTE, no need to change it
-
-    const submit = document.querySelector('form button[type="submit"]') as HTMLButtonElement;
-    fireEvent.click(submit);
+    fireEvent.submit(document.querySelector('form')!);
 
     expect(await screen.findByText(/DNI debe tener exactamente 8/i)).toBeDefined();
     expect(mockCreateUser).not.toHaveBeenCalled();

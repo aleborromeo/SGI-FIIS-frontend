@@ -5,10 +5,9 @@ import { ToastProvider } from '../../context/ToastContext';
 import { AuthContext } from '../../context/AuthContext';
 import { DecanoReview } from './DecanoReview';
 
-const { mockGetPendingForRole, mockFlag, mockReject } = vi.hoisted(() => ({
+const { mockGetPendingForRole, mockFlag } = vi.hoisted(() => ({
   mockGetPendingForRole: vi.fn(),
   mockFlag: vi.fn(),
-  mockReject: vi.fn(),
 }));
 
 vi.mock('../../services/tramiteService', () => ({
@@ -20,7 +19,6 @@ vi.mock('../../services/tramiteService', () => ({
   tramiteService: {
     getPendingForRole: mockGetPendingForRole,
     flag: mockFlag,
-    reject: mockReject,
   },
 }));
 
@@ -49,7 +47,6 @@ describe('DecanoReview (#159)', () => {
     vi.resetAllMocks();
     mockGetPendingForRole.mockResolvedValue([]);
     mockFlag.mockResolvedValue({});
-    mockReject.mockResolvedValue({});
   });
 
   it('renders the list of pending tramites for the decano', async () => {
@@ -62,9 +59,6 @@ describe('DecanoReview (#159)', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /Observar/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /Rechazar/i })
     ).toBeInTheDocument();
   });
 
@@ -84,16 +78,5 @@ describe('DecanoReview (#159)', () => {
     fireEvent.click(observe);
 
     await waitFor(() => expect(mockFlag).toHaveBeenCalledWith(1, 'observacion de prueba'));
-  });
-
-  it('rejects a tramite after the confirmation dialog', async () => {
-    mockGetPendingForRole.mockResolvedValue([sampleTramite(1, 'TRM-001')]);
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    renderPage();
-
-    const reject = await screen.findByRole('button', { name: /Rechazar/i });
-    fireEvent.click(reject);
-
-    await waitFor(() => expect(mockReject).toHaveBeenCalledWith(1));
   });
 });

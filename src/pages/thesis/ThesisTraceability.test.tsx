@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ToastProvider } from '../../context/ToastContext';
+import { ConfirmProvider } from '../../context/ConfirmContext';
 import { AuthContext } from '../../context/AuthContext';
 import { ThesisTraceability } from './ThesisTraceability';
 
@@ -43,13 +44,15 @@ vi.mock('../../services/documentService', () => ({
 const renderPage = (role: string, planId = '10') =>
   render(
     <ToastProvider>
-      <AuthContext.Provider value={{ currentRole: role } as any}>
-        <MemoryRouter initialEntries={[`/thesis/plan/${planId}`]}>
-          <Routes>
-            <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
-          </Routes>
-        </MemoryRouter>
-      </AuthContext.Provider>
+      <ConfirmProvider>
+        <AuthContext.Provider value={{ currentRole: role } as any}>
+          <MemoryRouter initialEntries={[`/thesis/plan/${planId}`]}>
+            <Routes>
+              <Route path="/thesis/plan/:id" element={<ThesisTraceability />} />
+            </Routes>
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </ConfirmProvider>
     </ToastProvider>
   );
 
@@ -93,11 +96,14 @@ describe('ThesisTraceability (#158)', () => {
       estadoPlan: 'PENDIENTE',
       revisorActual: 'COORDINADOR_GRUPO',
     });
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     renderPage('COORDINADOR_GRUPO');
 
     const approve = await screen.findByRole('button', { name: /Aprobar/i });
     fireEvent.click(approve);
+
+    // ConfirmProvider shows a confirm dialog - click the confirm button (second "Aprobar" button)
+    const allApprove = await screen.findAllByRole('button', { name: /Aprobar/i });
+    fireEvent.click(allApprove[1]);
 
     await waitFor(() => expect(mockApproveCoordinator).toHaveBeenCalledWith('10'));
   });

@@ -2,12 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { buildUrl, getToken, api, fetchApi } from './api';
 
 describe('api.buildUrl', () => {
+  const BASE = 'http://localhost:8080';
+
   it('anade prefijo /api/v1 a endpoints relativos (sin host cuando VITE_API_URL esta vacio)', () => {
-    expect(buildUrl('/calls')).toBe('/api/v1/calls');
+    expect(buildUrl('/calls')).toBe(`${BASE}/api/v1/calls`);
   });
 
   it('no duplica el prefijo /api/ si ya esta presente', () => {
-    expect(buildUrl('/api/v1/calls')).toBe('/api/v1/calls');
+    expect(buildUrl('/api/v1/calls')).toBe(`${BASE}/api/v1/calls`);
   });
 
   it('no modifica URLs absolutas', () => {
@@ -15,17 +17,17 @@ describe('api.buildUrl', () => {
   });
 
   it('anade / inicial si falta', () => {
-    expect(buildUrl('calls')).toBe('/api/v1/calls');
+    expect(buildUrl('calls')).toBe(`${BASE}/api/v1/calls`);
   });
 
   it('agrega query params omitiendo nulos/undefined', () => {
     const url = buildUrl('/calls', { status: 'ABIERTA', page: 2, empty: undefined, nulo: null });
-    expect(url).toBe('/api/v1/calls?status=ABIERTA&page=2');
+    expect(url).toBe(`${BASE}/api/v1/calls?status=ABIERTA&page=2`);
   });
 
   it('concatena params con & si ya habia query', () => {
     const url = buildUrl('/calls?x=1', { y: 2 });
-    expect(url).toBe('/api/v1/calls?x=1&y=2');
+    expect(url).toBe(`${BASE}/api/v1/calls?x=1&y=2`);
   });
 });
 

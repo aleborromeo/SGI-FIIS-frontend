@@ -67,7 +67,7 @@ describe('NovedadesPage', () => {
   it('navigates to login when clicking apply on an open call', async () => {
     renderWithProviders(<NovedadesPage />);
 
-    const applyBtn = await screen.findByRole('button', { name: 'Postular e Iniciar Trámite' });
+    const applyBtn = await screen.findByRole('button', { name: 'Ver convocatoria' });
     await act(async () => {
       applyBtn.click();
     });

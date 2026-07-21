@@ -1,8 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { screen, act, fireEvent, waitFor } from '@testing-library/react';
 import { SobreSgiPage } from './SobreSgiPage';
 import { renderWithProviders } from '../utils/testUtils';
+import { researchService } from '../services/researchService';
+
+vi.mock('../services/researchService', () => ({
+  researchService: {
+    getLines: vi.fn(),
+    getGroups: vi.fn(),
+    getGroupLines: vi.fn(),
+    getGroupByUser: vi.fn(),
+  },
+}));
+
+const mockResearchService = vi.mocked(researchService);
 
 const mockNavigate = vi.fn();
 let mockLocationState: any = null;
@@ -22,6 +34,16 @@ describe('SobreSgiPage', () => {
     vi.resetAllMocks();
     mockLocationState = null;
     window.scrollTo = vi.fn();
+    mockResearchService.getLines.mockResolvedValue([
+      { id: 1, lineName: 'Computación', active: true },
+      { id: 2, lineName: 'Ingeniería de Software', active: true },
+      { id: 3, lineName: 'Inteligencia Artificial', active: true },
+    ]);
+    mockResearchService.getGroups.mockResolvedValue([
+      { id: 1, groupCode: 'GINSOFT', groupName: 'Grupo de Investigación en Ingeniería de Software', active: true },
+      { id: 2, groupCode: 'RESEGTI', groupName: 'Red de Seguridad y Gestión de TI', active: true },
+    ]);
+    mockResearchService.getGroupLines.mockResolvedValue([]);
   });
 
   it('renders side menu and default section (quienes-somos)', async () => {
@@ -65,7 +87,7 @@ describe('SobreSgiPage', () => {
     mockLocationState = { scrollToHash: 'grupos-investigacion' };
     renderWithProviders(<SobreSgiPage />);
 
-    expect(screen.getByText('GINSOFT')).toBeDefined();
+    expect(await screen.findByText('GINSOFT')).toBeDefined();
   });
 
   it('navigates when clicking header and footer links', async () => {
