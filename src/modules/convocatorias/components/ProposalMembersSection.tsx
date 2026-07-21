@@ -43,6 +43,7 @@ interface ProposalMembersSectionProps {
   groupId: string;
   members: ProposalMember[];
   onChange: (members: ProposalMember[]) => void;
+  currentUser?: { id: number; firstNames: string; lastNames: string; email: string } | null;
 }
 
 const ROLE_OPTIONS = [
@@ -52,7 +53,7 @@ const ROLE_OPTIONS = [
   { value: 'ASESOR', label: 'Asesor' },
 ];
 
-export function ProposalMembersSection({ groupId, members, onChange }: ProposalMembersSectionProps) {
+export function ProposalMembersSection({ groupId, members, onChange, currentUser }: ProposalMembersSectionProps) {
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [addingUserId, setAddingUserId] = useState<number | null>(null);
@@ -75,10 +76,22 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
       .finally(() => setLoadingMembers(false));
   }, [groupId]);
 
-  const availableMembers = useMemo(
-    () => groupMembers.filter((gm) => !members.some((m) => m.userId === gm.userId)),
-    [groupMembers, members],
-  );
+  const availableMembers = useMemo(() => {
+    const fromGroup = groupMembers.filter((gm) => !members.some((m) => m.userId === gm.userId));
+    if (currentUser && !members.some((m) => m.userId === currentUser.id) && !fromGroup.some((gm) => gm.userId === currentUser.id)) {
+      return [
+        {
+          userId: currentUser.id,
+          userFirstNames: currentUser.firstNames,
+          userLastNames: currentUser.lastNames,
+          userEmail: currentUser.email,
+          active: true,
+        } as GroupMember,
+        ...fromGroup,
+      ];
+    }
+    return fromGroup;
+  }, [groupMembers, members, currentUser]);
 
   const selectedMember = useMemo(
     () => availableMembers.find((gm) => gm.userId === addingUserId) || null,
@@ -90,7 +103,7 @@ export function ProposalMembersSection({ groupId, members, onChange }: ProposalM
       setError('Selecciona un miembro del grupo.');
       return;
     }
-    const member = groupMembers.find((gm) => gm.userId === addingUserId);
+    const member = availableMembers.find((gm) => gm.userId === addingUserId);
     if (!member) return;
 
     if (members.some((m) => m.userId === member.userId)) {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import {
@@ -39,6 +39,7 @@ import { useConvocatorias } from '../hooks/useConvocatorias';
 import { ConvocatoriaSelect } from '../components/ConvocatoriaSelect';
 import { EligibilityGate } from '../components/EligibilityGate';
 import { ProposalMembersSection } from '../components/ProposalMembersSection';
+import { AuthContext } from '../../../context/AuthContext';
 import { FileUploadSection } from '../components/FileUploadSection';
 import { PROJECT_TYPES } from '../validators/proposal.schema';
 import type { ProposalFormData } from '../types/convocatoria.types';
@@ -760,6 +761,7 @@ function NewProposalFormInner() {
   const editDraftId = searchParams.get('editDraft');
   const toast = useToast();
   const confirm = useConfirm();
+  const { user } = useContext(AuthContext);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -1458,6 +1460,7 @@ function NewProposalFormInner() {
                 groupId={watchedGroupId}
                 members={members}
                 onChange={setMembers}
+                currentUser={user ? { id: user.id, firstNames: user.firstNames, lastNames: user.lastNames, email: user.email || user.institutionalEmail } : null}
               />
             </CardContent>
           </Card>

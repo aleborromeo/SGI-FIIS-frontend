@@ -122,7 +122,7 @@ const tabButtonStyle = (active: boolean): React.CSSProperties => ({
 const PAGE_SIZE = 10;
 
 export const ProjectsList: React.FC = () => {
-  const { user } = useContext(AuthContext);
+  const { user, currentRole } = useContext(AuthContext);
   const { t } = useTranslation('projects');
   const [activeTab, setActiveTab] = useState<'proposals' | 'drafts'>('proposals');
 
@@ -321,11 +321,13 @@ export const ProjectsList: React.FC = () => {
                 {t('projects:list.viewDetail')}
               </Button>
             </Link>
-            <Link to={`/projects/assign?projectId=${item.id}`}>
-              <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
-                {t('projects:list.reviewers')}
-              </Button>
-            </Link>
+            {currentRole === 'DIRECTOR_INVESTIGACION' && (
+              <Link to={`/projects/assign?projectId=${item.id}`}>
+                <Button variant="secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>
+                  {t('projects:list.reviewers')}
+                </Button>
+              </Link>
+            )}
           </div>
         </TableCell>
       </TableRow>

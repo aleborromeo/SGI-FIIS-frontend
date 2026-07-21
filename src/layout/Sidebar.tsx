@@ -85,7 +85,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
         label: t('navigation:projects'),
         icon: <FileText size={20} />,
         path: '/projects',
-        roles: ['DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'EVALUADOR'],
+        roles: ['DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO', 'DIRECTOR_INVESTIGACION', 'DECANO', 'EVALUADOR', 'ESTUDIANTE'],
       },
       {
         id: 'thesis-plans',

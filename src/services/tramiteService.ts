@@ -53,17 +53,17 @@ function mapMovementToMovimiento(
 
 export const tramiteService = {
   getMyProcedures: async (): Promise<Tramite[]> => {
-    const res = await api.get<ProcedureResponseDto[]>('/api/v1/procedures');
-    if (!Array.isArray(res)) return [];
-    return res.map(mapProcedureToTramite);
+    const res = await api.get<any>('/api/v1/procedures');
+    const data = Array.isArray(res) ? res : (res && Array.isArray(res.content) ? res.content : []);
+    return data.map(mapProcedureToTramite);
   },
 
   getPendingForRole: async (role: string): Promise<Tramite[]> => {
-    const res = await api.get<ProcedureResponseDto[]>('/api/v1/procedures', {
+    const res = await api.get<any>('/api/v1/procedures', {
       params: { role },
     });
-    if (!Array.isArray(res)) return [];
-    return res.map(mapProcedureToTramite);
+    const data = Array.isArray(res) ? res : (res && Array.isArray(res.content) ? res.content : []);
+    return data.map(mapProcedureToTramite);
   },
 
   getById: async (id: number): Promise<Tramite> => {

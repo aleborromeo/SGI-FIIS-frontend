@@ -285,9 +285,12 @@ export const CreateUser: React.FC = () => {
 
     try {
       const userGroup = await researchService.getGroupByUser(userRow.id);
-      if (userGroup) {
+      if (userGroup && userGroup.id !== undefined && userGroup.id !== null) {
         setEditGroupId(userGroup.id);
         setInitialGroupId(userGroup.id);
+      } else {
+        setEditGroupId('');
+        setInitialGroupId('');
       }
     } catch (err) {
       console.error('Error fetching user group:', err);
@@ -322,18 +325,18 @@ export const CreateUser: React.FC = () => {
       // 2. Gestionar cambios de membresía de grupo
       if (editRoleCode === 'ADMIN') {
         // Si el rol es admin y tenía un grupo, removerlo del grupo
-        if (initialGroupId !== '') {
+        if (initialGroupId !== '' && initialGroupId !== undefined && initialGroupId !== null && !isNaN(Number(initialGroupId))) {
           await researchService.removeMember(Number(initialGroupId), editingUser.id);
         }
       } else {
         // Si cambió de grupo
         if (editGroupId !== initialGroupId) {
           // Desasociar del grupo original si existía
-          if (initialGroupId !== '') {
+          if (initialGroupId !== '' && initialGroupId !== undefined && initialGroupId !== null && !isNaN(Number(initialGroupId))) {
             await researchService.removeMember(Number(initialGroupId), editingUser.id);
           }
           // Asociar al nuevo grupo
-          if (editGroupId !== '') {
+          if (editGroupId !== '' && editGroupId !== undefined && editGroupId !== null && !isNaN(Number(editGroupId))) {
             await researchService.addMember(Number(editGroupId), editingUser.id);
           }
         }
