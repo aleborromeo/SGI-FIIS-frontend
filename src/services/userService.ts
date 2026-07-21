@@ -39,8 +39,14 @@ const REVIEWER_ROLES = ['EVALUADOR', 'DOCENTE_INVESTIGADOR', 'COORDINADOR_GRUPO'
 export const userService = {
   getAll: async (query?: string): Promise<User[]> => {
     const params = query ? { query } : undefined;
-    const res = await api.get<User[]>('/users', { params });
-    return Array.isArray(res) ? res : [];
+    const res = await api.get<any>('/users', { params });
+    if (Array.isArray(res)) {
+      return res;
+    }
+    if (res && Array.isArray(res.content)) {
+      return res.content;
+    }
+    return [];
   },
 
   getReviewers: async (projectId?: number): Promise<User[]> => {
