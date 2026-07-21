@@ -6,7 +6,6 @@ import { ConfirmProvider } from '../../context/ConfirmContext';
 import { AuthContext } from '../../context/AuthContext';
 import { CreateUser } from './CreateUser';
 import { userService } from '../../services/userService';
-import { researchService } from '../../services/researchService';
 
 const mockGetAll = vi.hoisted(() => vi.fn());
 const mockCreateUser = vi.hoisted(() => vi.fn());
@@ -19,17 +18,6 @@ vi.mock('../../services/userService', () => ({
     rejectUser: vi.fn(),
     activateUser: vi.fn(),
     resetPassword: vi.fn(),
-  },
-}));
-
-vi.mock('../../services/researchService', () => ({
-  researchService: {
-    getGroups: vi.fn().mockResolvedValue([
-      { id: 1, groupCode: 'GI-01', groupName: 'Grupo IA', active: true },
-    ]),
-    getGroupByUser: vi.fn(),
-    addMember: vi.fn(),
-    removeMember: vi.fn(),
   },
 }));
 
@@ -86,10 +74,7 @@ describe('CreateUser', () => {
     fireEvent.change(screen.getByLabelText(/Nombres/i), { target: { value: 'Juan' } });
     fireEvent.change(screen.getByLabelText(/Apellidos/i), { target: { value: 'Perez' } });
     fireEvent.change(screen.getByLabelText(/Correo/i), { target: { value: 'juan@unas.edu.pe' } });
-
-    // Group options load asynchronously; wait for them before selecting.
-    await screen.findByText(/Grupo IA/);
-    fireEvent.change(screen.getByLabelText(/Grupo de Investigación/i), { target: { value: '1' } });
+    fireEvent.change(screen.getByLabelText(/Rol/i), { target: { value: 'ESTUDIANTE' } });
 
     const submit = document.querySelector('form button[type="submit"]') as HTMLButtonElement;
     fireEvent.click(submit);
@@ -107,8 +92,7 @@ describe('CreateUser', () => {
     fireEvent.change(screen.getByLabelText(/Nombres/i), { target: { value: 'Juan' } });
     fireEvent.change(screen.getByLabelText(/Apellidos/i), { target: { value: 'Perez' } });
 
-    await screen.findByText(/Grupo IA/);
-    fireEvent.change(screen.getByLabelText(/Grupo de Investigación/i), { target: { value: '1' } });
+    // Default role is ESTUDIANTE, no need to change it
 
     const submit = document.querySelector('form button[type="submit"]') as HTMLButtonElement;
     fireEvent.click(submit);

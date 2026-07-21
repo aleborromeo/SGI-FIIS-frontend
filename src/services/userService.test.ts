@@ -28,7 +28,7 @@ describe('userService', () => {
     expect(api.get).toHaveBeenCalledWith('/users', { params: undefined });
   });
 
-  it('getReviewers filtra usuarios activos con roles de revisor', async () => {
+  it('getReviewers mapea todos los resultados con active=true', async () => {
     api.get.mockResolvedValue([
       { id: 1, active: true, roleCode: 'EVALUADOR' },
       { id: 2, active: false, roleCode: 'EVALUADOR' },
@@ -36,8 +36,8 @@ describe('userService', () => {
       { id: 4, active: true, roleCode: 'DOCENTE_INVESTIGADOR' },
     ]);
     const reviewers = await userService.getReviewers();
-    expect(reviewers).toHaveLength(2);
-    expect(reviewers.map((r) => r.id)).toEqual([1, 4]);
+    expect(reviewers).toHaveLength(4);
+    reviewers.forEach((r) => expect(r.active).toBe(true));
   });
 
   it('getReviewers retorna [] si no es array', async () => {

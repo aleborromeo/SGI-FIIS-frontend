@@ -26,7 +26,7 @@ describe('evaluacionService', () => {
     await evaluacionService.assignReviewers(5, [1, 2]);
     expect(fetchApi).toHaveBeenCalledWith('/evaluaciones/asignar-multiple', {
       method: 'POST',
-      body: JSON.stringify({ projectId: 5, reviewerIds: [1, 2] }),
+      body: JSON.stringify({ projectId: 5, evaluadorIds: [1, 2] }),
     });
   });
 

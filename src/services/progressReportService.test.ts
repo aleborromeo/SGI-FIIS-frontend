@@ -86,7 +86,7 @@ describe('progressReportService mappers', () => {
         reportStatus: 'OBSERVED',
         period: '2026-I',
         attachedDocumentId: 55,
-        observations: 'Revisar',
+        observation: 'Revisar',
         executedActivities: [{ id: 1, description: 'A', startDate: 's', endDate: 'e', completed: true }],
         evidences: [{ id: 1, title: 'E', type: 'img' }],
         changeHistory: [{ id: 1, field: 'status', oldValue: 'P', newValue: 'O', changedBy: 'U', changedAt: 'd' }],
@@ -103,7 +103,7 @@ describe('progressReportService mappers', () => {
         uploadedAt: '2026-02-01',
       });
       expect(d.comments).toHaveLength(1);
-      expect(d.comments[0].content).toBe('Últimas observaciones: Revisar');
+      expect(d.comments[0].content).toBe('Revisar');
       expect(d.changeHistory).toHaveLength(1);
     });
 

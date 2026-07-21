@@ -53,6 +53,6 @@ describe('ProgressReportsPage', () => {
     expect(await screen.findByText('#7')).toBeDefined();
     expect(screen.getByText('PARCIAL')).toBeDefined();
     expect(screen.getByText('APPROVED')).toBeDefined();
-    expect(mockGetByProject).toHaveBeenCalledWith('7');
+    expect(mockGetByProject).toHaveBeenCalledWith(7);
   });
 });
