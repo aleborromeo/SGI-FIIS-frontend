@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   LayoutDashboard,
   FileText,
@@ -17,8 +17,6 @@ import {
   Scale,
   ShieldCheck,
   CheckCircle,
-  FolderOpen,
-  ClipboardList,
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -52,7 +50,7 @@ const getNavGroups = (t: (key: string) => string): NavGroup[] => [
       },
       {
         id: 'notifications',
-        label: t('navigation:notifications', 'Notificaciones'),
+        label: t('navigation:notifications'),
         icon: <Inbox size={20} />,
         path: '/notifications',
       },
@@ -192,6 +190,40 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
   const { user, currentRole, logout } = React.useContext(AuthContext);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previouslyFocused = document.activeElement as HTMLElement;
+    const sidebar = sidebarRef.current;
+
+    const focusableElements = sidebar?.querySelectorAll<HTMLElement>(
+      'a, button, [tabindex]:not([tabindex="-1"])',
+    );
+    const firstFocusable = focusableElements?.[0];
+    const lastFocusable = focusableElements?.[focusableElements.length - 1];
+
+    firstFocusable?.focus();
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey && document.activeElement === firstFocusable) {
+        e.preventDefault();
+        lastFocusable?.focus();
+      } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+        e.preventDefault();
+        firstFocusable?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleTabKey);
+
+    return () => {
+      document.removeEventListener('keydown', handleTabKey);
+      previouslyFocused?.focus();
+    };
+  }, [isOpen]);
 
   const navGroups = getNavGroups(t);
 
@@ -272,7 +304,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         />
       )}
 
-      <aside className={`sidebar-container ${isOpen ? 'open' : ''}`}>
+      <aside ref={sidebarRef} className={`sidebar-container ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-brand-header">
           <button
             className="sidebar-close-btn"
@@ -324,13 +356,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                   <h3 className="sidebar-group-title">
                     {group.title}
                   </h3>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px',
-                    }}
-                  >
+                  <div className="sidebar-group-items">
                     {visibleItems.map((item) => {
                       const isActive = isItemActive(item.id, item.path);
 
@@ -396,17 +422,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               <span>{t('navigation:sidebarCloseSession')}</span>
             </button>
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '8px 12px 0 12px',
-                borderTop: '1px dashed rgba(203, 213, 225, 0.6)',
-                marginTop: '4px',
-              }}
-            >
-              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--on-surface-variant)' }}>
+            <div className="sidebar-language-row">
+              <span className="sidebar-language-row-label">
                 Idioma / Language
               </span>
               <LanguageSwitcher variant="button" className="sidebar-language-switcher sidebar-language-switcher--compact" />

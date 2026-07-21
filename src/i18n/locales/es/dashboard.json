@@ -240,7 +240,9 @@
       "activeProcedures": "Trámites activos",
       "pendingReviewSuffix": "pendientes de revisión",
       "calls": "Convocatorias",
-      "callsSublabel": "Convocatorias vigentes para investigación"
+      "callsSublabel": "Convocatorias vigentes para investigación",
+      "issuedResolutions": "Resoluciones emitidas",
+      "issuedResolutionsSublabel": "Histórico de firmas administrativas"
     },
     "sections": {
       "procedureDistribution": "Distribución institucional de trámites",

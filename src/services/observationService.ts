@@ -22,6 +22,10 @@ export const observationService = {
     return fetchApi<Observation[]>(`/api/observations/procedure/${procedureId}`);
   },
 
+  getMyObservations: async (): Promise<Observation[]> => {
+    return fetchApi<Observation[]>('/api/observations/my');
+  },
+
   addRemedy: async (observationId: string | number, payload: RemedyRequest): Promise<void> => {
     return fetchApi<void>(`/api/observations/${observationId}/remedy`, {
       method: 'POST',

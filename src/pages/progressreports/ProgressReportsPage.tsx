@@ -21,7 +21,7 @@ export const ProgressReportsPage: React.FC = () => {
 
     setLoading(true);
     try {
-      const data = await progressReportService.getByProject(projectId);
+      const data = await progressReportService.getByProject(Number(projectId));
       setReports(data || []);
       if (!data || data.length === 0) {
         toast.info('No se encontraron informes para este proyecto');

@@ -17,9 +17,6 @@ import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
 import { AuthContext } from '../../context/AuthContext';
 import { userService, type User as UserType } from '../../services/userService';
-import { researchService } from '../../services/researchService';
-import type { ResearchGroup } from '../../services/researchService';
-import { UserDetailsModal } from '../../components/users/UserDetailsModal';
 import './CreateUser.css';
 
 export const CreateUser: React.FC = () => {
@@ -39,19 +36,7 @@ export const CreateUser: React.FC = () => {
   const [institutionalEmail, setInstitutionalEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [roleCode, setRoleCode] = useState('ESTUDIANTE');
-  const [groups, setGroups] = useState<ResearchGroup[]>([]);
-  const [groupId, setGroupId] = useState<number | ''>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Cargar grupos de investigación para el dropdown
-  useEffect(() => {
-    researchService.getGroups()
-      .then((data) => {
-        // Filtrar solo grupos activos
-        setGroups(data.filter(g => g.active));
-      })
-      .catch((err) => console.error('Error al cargar grupos:', err));
-  }, []);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isEmailManuallyEdited, setIsEmailManuallyEdited] = useState(false);
 
@@ -67,7 +52,6 @@ export const CreateUser: React.FC = () => {
   const [usersList, setUsersList] = useState<UserType[]>([]);
   const [loadingList, setLoadingList] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
 
   // Paginación
@@ -80,8 +64,6 @@ export const CreateUser: React.FC = () => {
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editRoleCode, setEditRoleCode] = useState('');
-  const [editGroupId, setEditGroupId] = useState<number | ''>('');
-  const [initialGroupId, setInitialGroupId] = useState<number | ''>('');
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Cargar usuarios al cambiar a la pestaña 'list'
@@ -123,7 +105,6 @@ export const CreateUser: React.FC = () => {
     setInstitutionalEmail('');
     setPhone('');
     setRoleCode('ESTUDIANTE');
-    setGroupId('');
     setCreatedUser(null);
     setErrorMsg(null);
     setIsEmailManuallyEdited(false);
@@ -153,11 +134,6 @@ export const CreateUser: React.FC = () => {
       return;
     }
 
-    if (roleCode !== 'ADMIN' && !groupId) {
-      setErrorMsg('Debe seleccionar un grupo de investigación para este usuario.');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const response = await userService.createUser({
@@ -168,16 +144,6 @@ export const CreateUser: React.FC = () => {
         phone: phone.trim() || undefined,
         roleCode
       });
-
-      // Si no es admin y se seleccionó grupo, asociar al grupo en la BD
-      if (roleCode !== 'ADMIN' && groupId) {
-        try {
-          await researchService.addMember(Number(groupId), response.id);
-        } catch (err: any) {
-          console.error('Error al asociar al grupo de investigación:', err);
-          toast.warning('Usuario creado, pero no se pudo asociar al grupo de investigación.');
-        }
-      }
 
       setCreatedUser({
         institutionalEmail: response.institutionalEmail,
@@ -217,7 +183,7 @@ export const CreateUser: React.FC = () => {
   // --- LÓGICA DE GESTIÓN (LISTA DE USUARIOS) ---
 
   const handleToggleStatus = async (userRow: UserType) => {
-    const isCurrentlyActive = userRow.status !== 'REJECTED' && userRow.status !== 'INACTIVE' && userRow.active !== false;
+    const isCurrentlyActive = userRow.active !== false;
 
     // Evitar que el admin se desactive a sí mismo (RF-13)
     if (loggedInUser && (loggedInUser.id === userRow.id || loggedInUser.email === userRow.institutionalEmail) && isCurrentlyActive) {
@@ -244,7 +210,7 @@ export const CreateUser: React.FC = () => {
         await userService.rejectUser(userRow.id);
         toast.success(t('createUser.toast.deactivateSuccess'));
       } else {
-        await userService.activateUser(userRow.id);
+        await userService.toggleStatus(userRow.id, true);
         toast.success(t('createUser.toast.activateSuccess'));
       }
       loadUsers();
@@ -273,25 +239,13 @@ export const CreateUser: React.FC = () => {
     }
   };
 
-  const handleStartEdit = async (userRow: UserType) => {
+  const handleStartEdit = (userRow: UserType) => {
     setEditingUser(userRow);
     setEditFirstNames(userRow.firstNames);
     setEditLastNames(userRow.lastNames);
     setEditEmail(userRow.institutionalEmail);
     setEditPhone(userRow.phone || '');
     setEditRoleCode(userRow.roleCode);
-    setEditGroupId('');
-    setInitialGroupId('');
-
-    try {
-      const userGroup = await researchService.getGroupByUser(userRow.id);
-      if (userGroup) {
-        setEditGroupId(userGroup.id);
-        setInitialGroupId(userGroup.id);
-      }
-    } catch (err) {
-      console.error('Error fetching user group:', err);
-    }
   };
 
   const handleUpdateSubmit = async (e: React.FormEvent) => {
@@ -303,14 +257,8 @@ export const CreateUser: React.FC = () => {
       return;
     }
 
-    if (editRoleCode !== 'ADMIN' && !editGroupId) {
-      toast.error('Debe seleccionar un grupo de investigación para este usuario.');
-      return;
-    }
-
     setIsUpdating(true);
     try {
-      // 1. Actualizar datos del usuario
       await userService.updateUser(editingUser.id, {
         firstNames: editFirstNames,
         lastNames: editLastNames,
@@ -318,27 +266,6 @@ export const CreateUser: React.FC = () => {
         phone: editPhone || undefined,
         roleCode: editRoleCode
       });
-
-      // 2. Gestionar cambios de membresía de grupo
-      if (editRoleCode === 'ADMIN') {
-        // Si el rol es admin y tenía un grupo, removerlo del grupo
-        if (initialGroupId !== '') {
-          await researchService.removeMember(Number(initialGroupId), editingUser.id);
-        }
-      } else {
-        // Si cambió de grupo
-        if (editGroupId !== initialGroupId) {
-          // Desasociar del grupo original si existía
-          if (initialGroupId !== '') {
-            await researchService.removeMember(Number(initialGroupId), editingUser.id);
-          }
-          // Asociar al nuevo grupo
-          if (editGroupId !== '') {
-            await researchService.addMember(Number(editGroupId), editingUser.id);
-          }
-        }
-      }
-
       toast.success(t('createUser.toast.updateSuccess'));
       setEditingUser(null);
       loadUsers();
@@ -358,7 +285,7 @@ export const CreateUser: React.FC = () => {
     const dniVal = (u.dni || '').toLowerCase();
     const roleDesc = (u.roleDescription || '').toLowerCase();
     const roleCd = (u.roleCode || '').toLowerCase();
-    const statusVal = (u.status || 'ACTIVE').toLowerCase();
+    const statusVal = (u.active !== false ? 'active' : 'inactive');
 
     return fullName.includes(q) || email.includes(q) || dniVal.includes(q) || roleDesc.includes(q) || roleCd.includes(q) || statusVal.includes(q);
   });
@@ -385,7 +312,7 @@ export const CreateUser: React.FC = () => {
   };
 
   const getStatusBadge = (userRow: UserType) => {
-    const isActive = userRow.status !== 'REJECTED' && userRow.status !== 'INACTIVE' && userRow.active !== false;
+    const isActive = userRow.active !== false;
     return isActive ? (
       <Badge variant="success">{t('users.statusKey.active')}</Badge>
     ) : (
@@ -629,33 +556,6 @@ export const CreateUser: React.FC = () => {
                         />
                       </div>
                     </div>
-
-                    {/* Grupo de investigación */}
-                    {roleCode !== 'ADMIN' && (
-                      <div className="form-group-custom">
-                        <label htmlFor="groupId" className="field-label">
-                          Grupo de Investigación
-                        </label>
-                        <div className="field-input-wrapper">
-                          <span className="field-icon"><Shield size={18} /></span>
-                          <select
-                            id="groupId"
-                            className="field-input select-input"
-                            value={groupId}
-                            onChange={(e) => setGroupId(e.target.value ? Number(e.target.value) : '')}
-                            disabled={isSubmitting}
-                            required
-                          >
-                            <option value="">Seleccione un grupo...</option>
-                            {groups.map((g) => (
-                              <option key={g.id} value={g.id}>
-                                {g.groupName} ({g.groupCode})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Advertencia sobre la Contraseña */}
@@ -747,18 +647,7 @@ export const CreateUser: React.FC = () => {
                           </TableRow>
                         ) : (
                           paginatedUsers.map((u) => (
-                            <TableRow
-                              key={u.id}
-                              className="clickable-user-row"
-                              onClick={() => setSelectedUser(u)}
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault();
-                                  setSelectedUser(u);
-                                }
-                              }}
-                            >
+                            <TableRow key={u.id}>
                               <TableCell style={{ fontWeight: '500' }}>{u.dni}</TableCell>
                               <TableCell style={{ fontWeight: '600' }}>{u.firstNames} {u.lastNames}</TableCell>
                               <TableCell className="email-cell">{u.institutionalEmail}</TableCell>
@@ -768,10 +657,7 @@ export const CreateUser: React.FC = () => {
                                 <div className="actions-button-group">
                                   {/* Editar */}
                                   <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleStartEdit(u);
-                                    }}
+                                    onClick={() => handleStartEdit(u)}
                                     className="action-btn edit-action"
                                     title={t('users.btnEdit')}
                                   >
@@ -779,10 +665,7 @@ export const CreateUser: React.FC = () => {
                                   </button>
                                   {/* Reiniciar Contraseña */}
                                   <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleResetUserPassword(u);
-                                    }}
+                                    onClick={() => handleResetUserPassword(u)}
                                     className="action-btn reset-action"
                                     title={t('users.btnResetPass')}
                                   >
@@ -790,11 +673,8 @@ export const CreateUser: React.FC = () => {
                                   </button>
                                   {/* Activar / Desactivar */}
                                   <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleToggleStatus(u);
-                                    }}
-                                    className={`action-btn toggle-action ${u.status !== 'REJECTED' && u.status !== 'INACTIVE' && u.active !== false ? 'active-user' : 'inactive-user'
+                                    onClick={() => handleToggleStatus(u)}
+                                    className={`action-btn toggle-action ${u.active !== false ? 'active-user' : 'inactive-user'
                                       }`}
                                     title={u.active !== false ? t('users.btnDeactivate') : t('users.btnActivate')}
                                     disabled={loggedInUser && (loggedInUser.id === u.id || loggedInUser.email === u.institutionalEmail)}
@@ -826,12 +706,6 @@ export const CreateUser: React.FC = () => {
           </Card>
         </div>
       )}
-
-      <UserDetailsModal
-        user={selectedUser}
-        open={Boolean(selectedUser)}
-        onClose={() => setSelectedUser(null)}
-      />
 
       {/* --- MODAL EDITAR USUARIO --- */}
       {editingUser && (
@@ -929,33 +803,6 @@ export const CreateUser: React.FC = () => {
                     disabled={isUpdating}
                   />
                 </div>
-
-                {/* Grupo de investigación */}
-                {editRoleCode !== 'ADMIN' && (
-                  <div className="form-group-custom">
-                    <label htmlFor="editGroupId" className="field-label">
-                      Grupo de Investigación
-                    </label>
-                    <div className="field-input-wrapper">
-                      <span className="field-icon"><Shield size={18} /></span>
-                      <select
-                        id="editGroupId"
-                        className="field-input select-input"
-                        value={editGroupId}
-                        onChange={(e) => setEditGroupId(e.target.value ? Number(e.target.value) : '')}
-                        disabled={isUpdating}
-                        required
-                      >
-                        <option value="">Seleccione un grupo...</option>
-                        {groups.map((g) => (
-                          <option key={g.id} value={g.id}>
-                            {g.groupName} ({g.groupCode})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="modal-actions-wrapper">

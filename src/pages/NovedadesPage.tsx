@@ -347,9 +347,9 @@ export const NovedadesPage: React.FC = () => {
                                 <strong>Líneas de investigación asociadas:</strong>
                               </div>
                               <div className="research-lines-container" style={{ display: 'block', marginTop: '0.35rem' }}>
-                                {call.researchLineNames.map((name, idx) => (
+                                {call.researchLineNames?.map((name, idx) => (
                                   <span key={`${call.id}-${idx}`} className="research-line-tag">
-                                    {name}{idx < call.researchLineNames.length - 1 ? ', ' : ''}
+                                    {name}{idx < (call.researchLineNames?.length ?? 0) - 1 ? ', ' : ''}
                                   </span>
                                 ))}
                               </div>

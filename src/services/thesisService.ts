@@ -20,6 +20,7 @@ export interface ThesisPlan {
   codigoGrupo?: string;
   nombreLinea?: string;
   nombreDocumento?: string;
+  observacionActual?: string;
   id: string;
   title: string;
   status: string;

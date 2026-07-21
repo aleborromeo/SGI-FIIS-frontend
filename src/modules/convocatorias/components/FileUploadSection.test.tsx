@@ -104,8 +104,8 @@ describe('FileUploadSection', () => {
   it('uploads file and calls onChange on success', async () => {
     vi.mocked(projectService.uploadDocument).mockResolvedValue({
       id: 10,
-      fileName: 'test.pdf',
-      fileUrl: '/files/test.pdf',
+      originalName: 'test.pdf',
+      extension: 'pdf',
     });
 
     render(<FileUploadSection documentId={null} onChange={mockOnChange} />);

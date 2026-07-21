@@ -43,7 +43,7 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({ children
         </div>
 
         <div className="sgi-content-scroll">
-          <main className="sgi-main-content animate-fade-in">
+          <main id="main-content" className="sgi-main-content animate-fade-in">
             {children || <Outlet />}
           </main>
 

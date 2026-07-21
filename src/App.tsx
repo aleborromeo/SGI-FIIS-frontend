@@ -82,15 +82,7 @@ const PublicRoute = ({ children }: ProtectedRouteProps) => {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        height: '100vh',
-        gap: '1rem',
-        backgroundColor: '#f8f9fa'
-      }}>
+      <div className="loading-screen">
         <Spinner size="large" />
       </div>
     );
@@ -109,19 +101,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (loading) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          gap: '1rem',
-          backgroundColor: '#f8f9fa',
-        }}
-      >
+      <div className="loading-screen">
         <Spinner size="large" />
-        <p style={{ color: '#6b7280', fontSize: '0.9rem', fontWeight: 500 }}>
+        <p className="loading-screen-text">
           Restaurando sesión segura...
         </p>
       </div>
@@ -146,6 +128,9 @@ function App() {
         <ConfirmProvider>
           <AuthProvider>
             <BrowserRouter>
+              <a href="#main-content" className="skip-to-content">
+                Saltar al contenido principal
+              </a>
               <Routes>
                 {/* Rutas públicas */}
                 <Route path="/" element={<PublicRoute><WelcomePage /></PublicRoute>} />

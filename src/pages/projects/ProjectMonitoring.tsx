@@ -26,6 +26,7 @@ import { documentService } from '../../services/documentService';
 import { AuthContext } from '../../context/AuthContext';
 import { progressReportService } from '../../services/progressReportService';
 import { userService } from '../../services/userService';
+import { evaluacionService, type EvaluatorAssigned } from '../../services/evaluacionService';
 
 function getStatusLabel(status?: string, t?: (key: string) => string): string {
   if (!status) {
@@ -159,6 +160,7 @@ export const ProjectMonitoring: React.FC = () => {
 
   const [project, setProject] = useState<Project | null>(null);
   const [progressReports, setProgressReports] = useState<any[]>([]);
+  const [evaluators, setEvaluators] = useState<EvaluatorAssigned[]>([]);
   const [loading, setLoading] = useState(true);
   const rawToast = useToast();
   const toast = useMemo(() => ({
@@ -245,6 +247,15 @@ export const ProjectMonitoring: React.FC = () => {
           }
         } catch (err) {
           console.warn('Error al cargar informes de avance:', err);
+        }
+
+        try {
+          const evals = await evaluacionService.getEvaluatorsByProject(Number(id));
+          if (mounted) {
+            setEvaluators(evals);
+          }
+        } catch (err) {
+          console.warn('Error al cargar evaluadores:', err);
         }
       } catch (err) {
         console.error('Error al cargar el proyecto:', err);
@@ -1061,6 +1072,36 @@ export const ProjectMonitoring: React.FC = () => {
                         </button>
                       ) : (
                         t('projects:monitoring.notRegistered')
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <Users size={20} color="var(--primary)" />
+                  <div>
+                    <strong>{t('projects:monitoring.reviewers')}</strong>
+                    <div style={{ color: 'var(--on-surface-variant)' }}>
+                      {evaluators.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {evaluators.map((ev) => (
+                            <span key={ev.id}>
+                              {ev.nombres} {ev.apellidos}
+                              {ev.pendiente && (
+                                <Badge variant="warning" style={{ marginLeft: '6px', fontSize: '10px' }}>
+                                  {t('projects:monitoring.pendingEvaluation')}
+                                </Badge>
+                              )}
+                              {!ev.pendiente && ev.resultado && (
+                                <Badge variant={ev.resultado === 'APROBADO' ? 'success' : ev.resultado === 'RECHAZADO' ? 'error' : 'warning'} style={{ marginLeft: '6px', fontSize: '10px' }}>
+                                  {ev.resultado}
+                                </Badge>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        t('projects:monitoring.noReviewersAssigned')
                       )}
                     </div>
                   </div>

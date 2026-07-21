@@ -549,16 +549,16 @@ export const WelcomePage: React.FC = () => {
           <div className="hero-repos-rect-card">
             <div className="hero-repos-list">
               <a href="https://www.scopus.com" target="_blank" rel="noopener noreferrer" className="hero-repo-item-link logo-scopus" title="Scopus">
-                <img src={scopusLogo} alt="Scopus" className="hero-repo-logo-img" />
+                <img src={scopusLogo} alt="Scopus" className="hero-repo-logo-img" loading="lazy" />
               </a>
               <a href="https://www.sciencedirect.com" target="_blank" rel="noopener noreferrer" className="hero-repo-item-link logo-sciencedirect" title="ScienceDirect">
-                <img src={scienceDirectLogo} alt="ScienceDirect" className="hero-repo-logo-img" />
+                <img src={scienceDirectLogo} alt="ScienceDirect" className="hero-repo-logo-img" loading="lazy" />
               </a>
               <a href="https://www.scival.com" target="_blank" rel="noopener noreferrer" className="hero-repo-item-link logo-scival" title="SciVal">
-                <img src={scivalLogo} alt="SciVal" className="hero-repo-logo-img" />
+                <img src={scivalLogo} alt="SciVal" className="hero-repo-logo-img" loading="lazy" />
               </a>
               <a href="https://www.tandfonline.com" target="_blank" rel="noopener noreferrer" className="hero-repo-item-link logo-taylorfrancis" title="Taylor & Francis">
-                <img src={taylorFrancisLogo} alt="Taylor & Francis" className="hero-repo-logo-img" />
+                <img src={taylorFrancisLogo} alt="Taylor & Francis" className="hero-repo-logo-img" loading="lazy" />
               </a>
 
               {/* Flecha a MYLOFT */}
@@ -585,7 +585,7 @@ export const WelcomePage: React.FC = () => {
         <div className="lines-grid">
           {researchLines.map((line) => (
             <div key={line.title} className={`line-card theme-${line.theme}`}>
-              <img src={line.image} alt={line.title} className="line-card-img" />
+              <img src={line.image} alt={line.title} className="line-card-img" loading="lazy" />
               <div className="line-card-overlay" />
               <div className="line-card-content">
                 <h4 className="line-card-title">{line.title}</h4>
@@ -936,7 +936,7 @@ export const WelcomePage: React.FC = () => {
             <p>{t('footer.donaASgiDesc')}</p>
             <div className="yape-qr-box">
               <div className="yape-qr-wrapper">
-                <img src={qrYape} alt="Yape QR Code" className="yape-qr-img" />
+                <img src={qrYape} alt="Yape QR Code" className="yape-qr-img" loading="lazy" />
               </div>
             </div>
             <div className="yape-badge-tag">

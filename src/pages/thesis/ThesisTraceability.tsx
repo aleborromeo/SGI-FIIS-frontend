@@ -420,7 +420,7 @@ export const ThesisTraceability: React.FC = () => {
   const advisor = coordinatorName || t('thesis:traceability.notRegistered');
 
   const revisor = plan.revisorActual || '';
-  const observationText = readValue(plan, ['observacion', 'observaciones', 'observacionActual', 'comentario', 'comentarios', 'comentarioSubsanacion'], '');
+  const observationText = (plan as any).observacionActual || readValue(plan, ['observacion', 'observaciones', 'observacionActual', 'comentario', 'comentarios', 'comentarioSubsanacion'], '');
 
   const showReviewActions = 
     (currentRole === 'COORDINADOR_GRUPO' && revisor === 'COORDINADOR_GRUPO') ||
@@ -647,6 +647,55 @@ export const ThesisTraceability: React.FC = () => {
           <Stepper steps={steps} />
         </CardContent>
       </Card>
+
+      {/* Resumen del plan */}
+      <Card style={{ marginBottom: '24px' }}>
+        <CardHeader>
+          <h3 className="text-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FileText size={20} />
+            {t('thesis:traceability.summaryTitle')}
+          </h3>
+        </CardHeader>
+        <CardContent>
+          <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--on-surface)' }}>
+            {readValue(plan, ['resumen', 'summary', 'description'], t('thesis:traceability.summaryPlaceholder'))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Observaciones del revisor */}
+      {['OBSERVED', 'OBSERVADO'].includes(String((plan as any).estadoPlan || plan.status).toUpperCase()) && (
+        <Card style={{ marginBottom: '24px', borderLeft: '4px solid #d97706' }}>
+          <CardHeader>
+            <h3 className="text-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#92400e' }}>
+              <ShieldAlert size={20} />
+              {t('thesis:traceability.observationTitle')}
+            </h3>
+          </CardHeader>
+          <CardContent>
+            {observationText ? (
+              <div
+                style={{
+                  backgroundColor: '#fffbeb',
+                  border: '1px solid #fde68a',
+                  padding: '16px',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                  color: '#78350f',
+                  whiteSpace: 'pre-wrap',
+                }}
+              >
+                {observationText}
+              </div>
+            ) : (
+              <div style={{ fontSize: '14px', color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>
+                {t('thesis:traceability.observationPlaceholder')}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="section-grid" style={{ gap: '32px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
