@@ -1,83 +1,128 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { ToastProvider } from '../../context/ToastContext';
-import { ConfirmProvider } from '../../context/ConfirmContext';
+import React from 'react';
+import { screen, act, fireEvent } from '@testing-library/react';
 import { DocumentRepository } from './DocumentRepository';
 import { documentService } from '../../services/documentService';
-
-const mockList = vi.hoisted(() => vi.fn());
-const mockDeactivate = vi.hoisted(() => vi.fn());
-const mockUpload = vi.hoisted(() => vi.fn());
+import { renderWithProviders } from '../../utils/testUtils';
 
 vi.mock('../../services/documentService', () => ({
   documentService: {
-    list: mockList,
-    deactivate: mockDeactivate,
-    upload: mockUpload,
-    downloadFile: vi.fn(),
+    list: vi.fn(),
+    upload: vi.fn(),
+    deactivate: vi.fn(),
     download: vi.fn(),
+    downloadFile: vi.fn(),
   },
 }));
 
-const renderPage = () =>
-  render(
-    <ToastProvider>
-      <ConfirmProvider>
-        <MemoryRouter>
-          <DocumentRepository />
-        </MemoryRouter>
-      </ConfirmProvider>
-    </ToastProvider>
-  );
+const mockDocumentService = vi.mocked(documentService);
 
-describe('DocumentRepository', () => {
+describe('DocumentRepository page', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockList.mockResolvedValue([]);
+    vi.resetAllMocks();
+
+    mockDocumentService.list.mockResolvedValue([
+      {
+        id: 1,
+        fileName: 'normas.pdf',
+        fileType: 'application/pdf',
+        fileSize: 2048,
+        createdAt: '2026-01-01T00:00:00Z',
+      },
+      {
+        id: 2,
+        fileName: 'formato.docx',
+        fileType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        fileSize: 1048576,
+        createdAt: '2026-01-02T00:00:00Z',
+      },
+    ] as any);
+
+    mockDocumentService.download.mockReturnValue('http://mockurl.com/1');
+    mockDocumentService.upload.mockResolvedValue({} as any);
+    mockDocumentService.deactivate.mockResolvedValue({} as any);
   });
 
-  it('renders the page title', async () => {
-    renderPage();
-    expect(await screen.findByText('Repositorio Documental')).toBeDefined();
+  it('renders documents after loading', async () => {
+    renderWithProviders(<DocumentRepository />);
+
+    expect(mockDocumentService.list).toHaveBeenCalled();
+    expect(await screen.findByText('normas.pdf')).toBeDefined();
+    expect(screen.getByText('formato.docx')).toBeDefined();
+    expect(screen.getByText('2.0 KB')).toBeDefined();
+    expect(screen.getByText('1.0 MB')).toBeDefined();
   });
 
-  it('lists documents returned by the service', async () => {
-    mockList.mockResolvedValue([
-      { id: 1, fileName: 'Anexo_1.pdf', fileType: 'application/pdf', fileSize: 1024 },
-      { id: 2, fileName: 'Manual.docx', fileType: 'application/msword', fileSize: 2048 },
-    ]);
-    renderPage();
+  it('shows empty state when no documents exist', async () => {
+    mockDocumentService.list.mockResolvedValue([]);
+    renderWithProviders(<DocumentRepository />);
 
-    expect(await screen.findByText('Anexo_1.pdf')).toBeDefined();
-    expect(screen.getByText('Manual.docx')).toBeDefined();
+    expect(await screen.findByText(/No hay documentos/i)).toBeDefined();
   });
 
-  it('deletes a document after confirming', async () => {
-    mockList.mockResolvedValue([
-      { id: 1, fileName: 'Anexo_1.pdf', fileType: 'application/pdf', fileSize: 1024 },
-    ]);
-    renderPage();
+  it('filters documents by search term', async () => {
+    renderWithProviders(<DocumentRepository />);
+    expect(await screen.findByText('normas.pdf')).toBeDefined();
 
-    await screen.findByText('Anexo_1.pdf');
-    fireEvent.click(screen.getByText('Eliminar'));
+    const searchInput = screen.getByPlaceholderText('Buscar documentos...');
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: 'docx' } });
+    });
 
-    const cancel = await screen.findByText('Cancelar');
-    const container = cancel.parentElement as HTMLElement;
-    const confirmBtn = within(container).getAllByRole('button').find((b) => b !== cancel)!;
-    fireEvent.click(confirmBtn);
-
-    await waitFor(() => expect(mockDeactivate).toHaveBeenCalledWith(1));
+    expect(screen.queryByText('normas.pdf')).toBeNull();
+    expect(screen.getByText('formato.docx')).toBeDefined();
   });
 
-  it('uploads a selected file', async () => {
-    const file = new File(['contenido'], 'nuevo.pdf', { type: 'application/pdf' });
-    mockUpload.mockResolvedValue({ id: 1 });
-    renderPage();
+  it('triggers upload via file input', async () => {
+    renderWithProviders(<DocumentRepository />);
+    expect(await screen.findByText('normas.pdf')).toBeDefined();
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [file] } });
+    expect(fileInput).toBeDefined();
 
-    await waitFor(() => expect(mockUpload).toHaveBeenCalledWith(file));
+    const validFile = new File(['pdfcontent'], 'guias.pdf', { type: 'application/pdf' });
+    await act(async () => {
+      fireEvent.change(fileInput, { target: { files: [validFile] } });
+    });
+
+    expect(mockDocumentService.upload).toHaveBeenCalledWith(validFile);
+  });
+
+  it('triggers download when download button is clicked', async () => {
+    renderWithProviders(<DocumentRepository />);
+    expect(await screen.findByText('normas.pdf')).toBeDefined();
+
+    const downloadBtns = screen.getAllByRole('button', { name: /Descargar/i });
+    await act(async () => {
+      fireEvent.click(downloadBtns[0]);
+    });
+
+    expect(mockDocumentService.downloadFile).toHaveBeenCalledWith(1, 'normas.pdf');
+  });
+
+  it('deactivates a document with confirmation', async () => {
+    renderWithProviders(<DocumentRepository />);
+    expect(await screen.findByText('normas.pdf')).toBeDefined();
+
+    const deleteBtns = screen.getAllByRole('button', { name: /Eliminar/i });
+    await act(async () => {
+      fireEvent.click(deleteBtns[0]);
+    });
+
+    const confirmModalBtns = await screen.findAllByRole('button', { name: /Eliminar/i });
+    const lastBtn = confirmModalBtns[confirmModalBtns.length - 1];
+    await act(async () => {
+      fireEvent.click(lastBtn);
+    });
+
+    expect(mockDocumentService.deactivate).toHaveBeenCalledWith(1);
+    expect(screen.queryByText('normas.pdf')).toBeNull();
+  });
+
+  it('shows loading state while fetching documents', async () => {
+    mockDocumentService.list.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<DocumentRepository />);
+
+    expect(screen.getByText(/Cargando/i)).toBeDefined();
   });
 });

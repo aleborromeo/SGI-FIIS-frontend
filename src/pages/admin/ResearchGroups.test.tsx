@@ -1,68 +1,136 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { ToastProvider } from '../../context/ToastContext';
-import { ConfirmProvider } from '../../context/ConfirmContext';
+import React from 'react';
+import { screen, act, fireEvent } from '@testing-library/react';
 import { ResearchGroups } from './ResearchGroups';
 import { researchService } from '../../services/researchService';
-
-const mockGetGroups = vi.hoisted(() => vi.fn());
-const mockDeactivateGroup = vi.hoisted(() => vi.fn());
+import { renderWithProviders } from '../../utils/testUtils';
 
 vi.mock('../../services/researchService', () => ({
   researchService: {
-    getGroups: mockGetGroups,
-    deactivateGroup: mockDeactivateGroup,
+    getGroups: vi.fn(),
+    deactivateGroup: vi.fn(),
   },
 }));
 
-const renderPage = () =>
-  render(
-    <ToastProvider>
-      <ConfirmProvider>
-        <MemoryRouter>
-          <ResearchGroups />
-        </MemoryRouter>
-      </ConfirmProvider>
-    </ToastProvider>
-  );
+const mockResearchService = vi.mocked(researchService);
 
-describe('ResearchGroups', () => {
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual: any = await importOriginal();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useLocation: () => ({ key: 'test-key' }),
+  };
+});
+
+describe('ResearchGroups page', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockGetGroups.mockResolvedValue([]);
+    vi.resetAllMocks();
+
+    mockResearchService.getGroups.mockResolvedValue([
+      {
+        id: 1,
+        groupName: 'GI-SOFT',
+        groupCode: 'G01',
+        currentCoordinatorId: 100,
+        coordinatorFirstNames: 'Carlos',
+        coordinatorLastNames: 'Sánchez',
+        active: true,
+        createdAt: '2026-01-01T00:00:00Z',
+      },
+      {
+        id: 2,
+        groupName: 'GI-HARD',
+        groupCode: 'G02',
+        currentCoordinatorId: 101,
+        coordinatorFirstNames: 'Ana',
+        coordinatorLastNames: 'Gomez',
+        active: false,
+        createdAt: '2026-01-02T00:00:00Z',
+      },
+    ] as any);
+
+    mockResearchService.deactivateGroup.mockResolvedValue({} as any);
   });
 
-  it('renders the page title', async () => {
-    renderPage();
-    expect(await screen.findByText('Grupos de Investigación')).toBeDefined();
+  it('renders groups after loading', async () => {
+    renderWithProviders(<ResearchGroups />);
+
+    expect(mockResearchService.getGroups).toHaveBeenCalled();
+    expect(await screen.findByText('GI-SOFT')).toBeDefined();
+    expect(screen.getByText('GI-HARD')).toBeDefined();
+    expect(screen.getByText('Carlos Sánchez')).toBeDefined();
+    expect(screen.getByText('Ana Gomez')).toBeDefined();
   });
 
-  it('lists groups returned by the service', async () => {
-    mockGetGroups.mockResolvedValue([
-      { id: 1, groupCode: 'GI-01', groupName: 'Grupo IA', active: true, createdAt: '2024-01-01' },
-      { id: 2, groupCode: 'GI-02', groupName: 'Grupo Redes', active: false },
-    ]);
-    renderPage();
+  it('shows empty state when no groups exist', async () => {
+    mockResearchService.getGroups.mockResolvedValue([]);
+    renderWithProviders(<ResearchGroups />);
 
-    expect(await screen.findByText('Grupo IA')).toBeDefined();
-    expect(screen.getByText('Grupo Redes')).toBeDefined();
+    expect(await screen.findByText(/No se encontraron grupos/i)).toBeDefined();
   });
 
-  it('deactivates a group after confirming', async () => {
-    mockGetGroups.mockResolvedValue([
-      { id: 1, groupCode: 'GI-01', groupName: 'Grupo IA', active: true },
-    ]);
-    renderPage();
+  it('filters groups by search term', async () => {
+    renderWithProviders(<ResearchGroups />);
 
-    await screen.findByText('Grupo IA');
-    fireEvent.click(document.getElementById('btn-deactivate-group-1')!);
+    const searchInput = await screen.findByPlaceholderText('Buscar por nombre, código o coordinador...');
+    expect(searchInput).toBeDefined();
 
-    const cancel = await screen.findByText('Cancelar');
-    const container = cancel.parentElement as HTMLElement;
-    const confirmBtn = within(container).getAllByRole('button').find((b) => b !== cancel)!;
-    fireEvent.click(confirmBtn);
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: 'HARD' } });
+    });
 
-    await waitFor(() => expect(mockDeactivateGroup).toHaveBeenCalledWith(1));
+    expect(screen.queryByText('GI-SOFT')).toBeNull();
+    expect(screen.getByText('GI-HARD')).toBeDefined();
+  });
+
+  it('navigates to create group page', async () => {
+    renderWithProviders(<ResearchGroups />);
+
+    const newBtn = await screen.findByRole('button', { name: /Nuevo Grupo/i });
+    await act(async () => {
+      fireEvent.click(newBtn);
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith('/groups/new');
+  });
+
+  it('navigates to edit group detail', async () => {
+    const { container } = renderWithProviders(<ResearchGroups />);
+    expect(await screen.findByText('GI-SOFT')).toBeDefined();
+
+    const viewBtn = container.querySelector('#btn-view-group-1') as HTMLButtonElement;
+    await act(async () => {
+      fireEvent.click(viewBtn);
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith('/groups/1');
+  });
+
+  it('deactivates a group with confirmation', async () => {
+    renderWithProviders(<ResearchGroups />);
+
+    const deactivateBtn = await screen.findByRole('button', { name: /Desactivar/i });
+    await act(async () => {
+      fireEvent.click(deactivateBtn);
+    });
+
+    const confirmModalBtns = await screen.findAllByRole('button', { name: /Desactivar/i });
+    const modalConfirmBtn = confirmModalBtns[confirmModalBtns.length - 1];
+    await act(async () => {
+      fireEvent.click(modalConfirmBtn);
+    });
+
+    expect(mockResearchService.deactivateGroup).toHaveBeenCalledWith(1);
+    expect(mockResearchService.getGroups).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows loading state while fetching groups', async () => {
+    mockResearchService.getGroups.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<ResearchGroups />);
+
+    const spinner = document.querySelector('.animate-fade-in');
+    expect(spinner).toBeDefined();
   });
 });

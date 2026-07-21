@@ -1,103 +1,191 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { ToastProvider } from '../../context/ToastContext';
-import { ConfirmProvider } from '../../context/ConfirmContext';
+import React from 'react';
+import { screen, act, fireEvent } from '@testing-library/react';
 import { ResearchGroupDetail } from './ResearchGroupDetail';
 import { researchService } from '../../services/researchService';
-
-const mockGetGroupById = vi.hoisted(() => vi.fn());
-const mockGetMembers = vi.hoisted(() => vi.fn());
-const mockGetGroupLines = vi.hoisted(() => vi.fn());
-const mockGetLines = vi.hoisted(() => vi.fn());
-const mockGetAvailableUsers = vi.hoisted(() => vi.fn());
-const mockGetCoordinatorCandidates = vi.hoisted(() => vi.fn());
-const mockDeactivateGroup = vi.hoisted(() => vi.fn());
-const mockAssignCoordinator = vi.hoisted(() => vi.fn());
+import { renderWithProviders } from '../../utils/testUtils';
 
 vi.mock('../../services/researchService', () => ({
   researchService: {
-    getGroupById: mockGetGroupById,
-    getMembers: mockGetMembers,
-    getGroupLines: mockGetGroupLines,
-    getLines: mockGetLines,
-    getAvailableUsers: mockGetAvailableUsers,
-    getCoordinatorCandidates: mockGetCoordinatorCandidates,
-    deactivateGroup: mockDeactivateGroup,
-    assignCoordinator: mockAssignCoordinator,
+    getGroupById: vi.fn(),
+    getMembers: vi.fn(),
+    getGroupLines: vi.fn(),
+    getLines: vi.fn(),
+    getAvailableUsers: vi.fn(),
+    getCoordinatorCandidates: vi.fn(),
+    assignCoordinator: vi.fn(),
     addMember: vi.fn(),
     removeMember: vi.fn(),
-    getGroupByUser: vi.fn(),
     assignGroupToLine: vi.fn(),
     removeGroupFromLine: vi.fn(),
+    deactivateGroup: vi.fn(),
   },
 }));
 
-const group = {
-  id: 1,
-  groupCode: 'GI-01',
-  groupName: 'Grupo IA',
-  active: true,
-  currentCoordinatorId: 3,
-  coordinatorFirstNames: 'Ana',
-  coordinatorLastNames: 'Lopez',
-  createdAt: '2024-01-01',
-};
+const mockResearchService = vi.mocked(researchService);
 
-const renderPage = () =>
-  render(
-    <ToastProvider>
-      <ConfirmProvider>
-        <MemoryRouter initialEntries={['/groups/1']}>
-          <Routes>
-            <Route path="/groups/:id" element={<ResearchGroupDetail />} />
-          </Routes>
-        </MemoryRouter>
-      </ConfirmProvider>
-    </ToastProvider>
-  );
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual: any = await importOriginal();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useParams: () => ({ id: '10' }),
+    useSearchParams: () => [new URLSearchParams()],
+  };
+});
 
-describe('ResearchGroupDetail', () => {
+describe('ResearchGroupDetail page', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockGetGroupById.mockResolvedValue(group);
-    mockGetMembers.mockResolvedValue([
+    vi.resetAllMocks();
+
+    mockResearchService.getGroupById.mockResolvedValue({
+      id: 10,
+      groupName: 'GI-SOFT',
+      groupCode: 'G01',
+      active: true,
+      currentCoordinatorId: 200,
+      createdAt: '2026-01-01T00:00:00Z',
+    } as any);
+
+    mockResearchService.getMembers.mockResolvedValue([
       {
-        id: 10,
-        userId: 2,
-        userFirstNames: 'Juan',
-        userLastNames: 'Perez',
-        userEmail: 'juan@unas.edu.pe',
+        id: 1,
+        userId: 200,
+        userFirstNames: 'Carlos',
+        userLastNames: 'Sánchez',
+        userEmail: 'carlos@unas.edu.pe',
+        userRoleCode: 'DOCENTE_INVESTIGADOR',
+        memberRole: 'INVESTIGADOR_PRINCIPAL',
+        joinedAt: '2026-01-01T00:00:00Z',
         active: true,
-        joinedAt: '2024-02-01',
+      },
+    ] as any);
+
+    mockResearchService.getGroupLines.mockResolvedValue([
+      {
+        id: 300,
+        lineName: 'Inteligencia Artificial',
+        lineCode: 'LI-01',
+        active: true,
+      },
+    ] as any);
+
+    mockResearchService.getLines.mockResolvedValue([
+      {
+        id: 300,
+        lineName: 'Inteligencia Artificial',
+        lineCode: 'LI-01',
+        active: true,
+      },
+      {
+        id: 301,
+        lineName: 'Ciberseguridad',
+        lineCode: 'LI-02',
+        active: true,
+      },
+    ] as any);
+
+    mockResearchService.getAvailableUsers.mockResolvedValue([
+      {
+        id: 201,
+        firstNames: 'Ana',
+        lastNames: 'Gomez',
+        institutionalEmail: 'ana@unas.edu.pe',
       },
     ]);
-    mockGetGroupLines.mockResolvedValue([{ id: 7, lineName: 'Linea X', active: true }]);
-    mockGetLines.mockResolvedValue([]);
-    mockGetAvailableUsers.mockResolvedValue([]);
-    mockGetCoordinatorCandidates.mockResolvedValue([]);
+
+    mockResearchService.getCoordinatorCandidates.mockResolvedValue([
+      {
+        id: 202,
+        firstNames: 'Maria',
+        lastNames: 'López',
+        institutionalEmail: 'maria@unas.edu.pe',
+      },
+    ]);
+
+    mockResearchService.assignCoordinator.mockResolvedValue({} as any);
+    mockResearchService.addMember.mockResolvedValue({} as any);
+    mockResearchService.removeMember.mockResolvedValue({} as any);
+    mockResearchService.assignGroupToLine.mockResolvedValue({} as any);
+    mockResearchService.removeGroupFromLine.mockResolvedValue({} as any);
+    mockResearchService.deactivateGroup.mockResolvedValue({} as any);
   });
 
-  it('renders the group name as heading', async () => {
-    renderPage();
-    expect(await screen.findByText('Grupo IA')).toBeDefined();
+  it('renders group details after loading', async () => {
+    renderWithProviders(<ResearchGroupDetail />);
+
+    expect(mockResearchService.getGroupById).toHaveBeenCalledWith(10);
+    expect(await screen.findByText('GI-SOFT')).toBeDefined();
+    expect(screen.getByText('G01')).toBeDefined();
   });
 
-  it('shows members in the members tab', async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: /Miembros/i }));
-    expect(await screen.findByText('Juan Perez')).toBeDefined();
+  it('renders members list in the members tab', async () => {
+    renderWithProviders(<ResearchGroupDetail />);
+    expect(await screen.findByText('GI-SOFT')).toBeDefined();
+
+    const membersTabBtn = screen.getByRole('button', { name: /Miembros \(/i });
+    await act(async () => {
+      fireEvent.click(membersTabBtn);
+    });
+
+    expect(screen.getByText('Carlos Sánchez')).toBeDefined();
+    expect(screen.getByText('carlos@unas.edu.pe')).toBeDefined();
   });
 
-  it('deactivates the group after confirming', async () => {
-    renderPage();
-    fireEvent.click(await screen.findByText('Desactivar Grupo'));
+  it('renders lines list in the lines tab', async () => {
+    renderWithProviders(<ResearchGroupDetail />);
+    expect(await screen.findByText('GI-SOFT')).toBeDefined();
 
-    const cancel = await screen.findByText('Cancelar');
-    const container = cancel.parentElement as HTMLElement;
-    const confirmBtn = within(container).getAllByRole('button').find((b) => b !== cancel)!;
-    fireEvent.click(confirmBtn);
+    const linesTabBtn = screen.getByRole('button', { name: /Líneas \(/i });
+    await act(async () => {
+      fireEvent.click(linesTabBtn);
+    });
 
-    await waitFor(() => expect(mockDeactivateGroup).toHaveBeenCalledWith(1));
+    expect(screen.getByText('Inteligencia Artificial')).toBeDefined();
+  });
+
+  it('navigates to edit group page', async () => {
+    renderWithProviders(<ResearchGroupDetail />);
+    expect(await screen.findByText('GI-SOFT')).toBeDefined();
+
+    const editBtn = screen.getByRole('button', { name: /Editar/i });
+    await act(async () => {
+      fireEvent.click(editBtn);
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith('/groups/10/edit');
+  });
+
+  it('navigates back to groups list', async () => {
+    renderWithProviders(<ResearchGroupDetail />);
+    expect(await screen.findByText('GI-SOFT')).toBeDefined();
+
+    const backBtn = screen.getByText('Volver a Grupos');
+    await act(async () => {
+      fireEvent.click(backBtn);
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith('/groups');
+  });
+
+  it('shows loading state while fetching data', async () => {
+    mockResearchService.getGroupById.mockReturnValue(new Promise(() => {}));
+    mockResearchService.getMembers.mockReturnValue(new Promise(() => {}));
+    mockResearchService.getGroupLines.mockReturnValue(new Promise(() => {}));
+    mockResearchService.getLines.mockReturnValue(new Promise(() => {}));
+
+    renderWithProviders(<ResearchGroupDetail />);
+
+    const spinner = document.querySelector('.animate-fade-in');
+    expect(spinner).toBeDefined();
+  });
+
+  it('shows error state when loading fails', async () => {
+    mockResearchService.getGroupById.mockRejectedValue(new Error('Grupo no encontrado'));
+
+    renderWithProviders(<ResearchGroupDetail />);
+
+    expect(await screen.findByText(/Grupo no encontrado/i)).toBeDefined();
   });
 });

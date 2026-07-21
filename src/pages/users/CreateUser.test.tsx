@@ -1,126 +1,212 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { ToastProvider } from '../../context/ToastContext';
-import { ConfirmProvider } from '../../context/ConfirmContext';
-import { AuthContext } from '../../context/AuthContext';
+import React from 'react';
+import { screen, act, fireEvent } from '@testing-library/react';
 import { CreateUser } from './CreateUser';
 import { userService } from '../../services/userService';
-import { researchService } from '../../services/researchService';
-
-const mockGetAll = vi.hoisted(() => vi.fn());
-const mockCreateUser = vi.hoisted(() => vi.fn());
+import { renderWithProviders } from '../../utils/testUtils';
 
 vi.mock('../../services/userService', () => ({
   userService: {
-    getAll: mockGetAll,
-    createUser: mockCreateUser,
-    updateUser: vi.fn(),
-    rejectUser: vi.fn(),
-    activateUser: vi.fn(),
+    createUser: vi.fn(),
+    getAll: vi.fn(),
     resetPassword: vi.fn(),
     toggleStatus: vi.fn(),
+    updateUser: vi.fn(),
   },
 }));
 
-const mockGetGroups = vi.hoisted(() => vi.fn());
+const mockUserService = vi.mocked(userService);
 
-vi.mock('../../services/researchService', () => ({
-  researchService: {
-    getGroups: mockGetGroups,
-    getGroupByUser: vi.fn(),
-    addMember: vi.fn(),
-    removeMember: vi.fn(),
-  },
-}));
-
-const authValue = {
-  user: { id: 1, firstNames: 'Admin', lastNames: 'Istrador', email: 'a@unas.edu.pe' },
-  currentRole: 'ADMIN',
-  isAuthenticated: true,
-  roles: ['ADMIN'],
-  loading: false,
-  error: null,
-  login: vi.fn(),
-  logout: vi.fn(),
-  switchRole: vi.fn(),
-  clearError: vi.fn(),
-  completeRegistration: vi.fn(),
-};
-
-const renderPage = () =>
-  render(
-    <AuthContext.Provider value={authValue as any}>
-      <ToastProvider>
-        <ConfirmProvider>
-          <MemoryRouter>
-            <CreateUser />
-          </MemoryRouter>
-        </ConfirmProvider>
-      </ToastProvider>
-    </AuthContext.Provider>
-  );
-
-describe('CreateUser', () => {
+describe('CreateUser page', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockGetAll.mockResolvedValue([]);
-    mockGetGroups.mockResolvedValue([
-      { id: 1, groupCode: 'GINSOFT', groupName: 'Grupo de Investigación en Software', active: true },
-    ]);
+    vi.resetAllMocks();
+
+    mockUserService.getAll.mockResolvedValue([
+      {
+        id: 10,
+        dni: '12345678',
+        firstNames: 'Juan',
+        lastNames: 'Perez',
+        institutionalEmail: 'juan@unas.edu.pe',
+        phone: '999999999',
+        roleCode: 'ESTUDIANTE',
+        active: true,
+      },
+    ] as any);
+
+    mockUserService.createUser.mockResolvedValue({
+      id: 11,
+      institutionalEmail: 'newuser@unas.edu.pe',
+      temporaryPassword: 'tempPassword123',
+    } as any);
   });
 
-  it('renders the management title', async () => {
-    renderPage();
-    expect(await screen.findByText('Gestión de Usuarios')).toBeDefined();
+  it('renders form fields on the create tab', () => {
+    renderWithProviders(<CreateUser />);
+
+    expect(screen.getByPlaceholderText('8 caracteres')).toBeDefined();
+    expect(screen.getByPlaceholderText('Nombres completos')).toBeDefined();
+    expect(screen.getByPlaceholderText('Apellidos completos')).toBeDefined();
+    expect(screen.getByPlaceholderText('ejemplo@unas.edu.pe')).toBeDefined();
+    expect(screen.getByPlaceholderText('Ej. +51 987654321')).toBeDefined();
+    expect(screen.getByText('Registrar Usuario')).toBeDefined();
   });
 
-  it('creates a user via the form', async () => {
-    mockCreateUser.mockResolvedValue({
-      id: 9,
+  it('allows filling out all form inputs', () => {
+    renderWithProviders(<CreateUser />);
+
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+    const phoneInput = screen.getByPlaceholderText('Ej. +51 987654321');
+
+    fireEvent.change(dniInput, { target: { value: '87654321' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
+    fireEvent.change(phoneInput, { target: { value: '987654321' } });
+
+    expect((dniInput as HTMLInputElement).value).toBe('87654321');
+    expect((firstNamesInput as HTMLInputElement).value).toBe('Juan');
+    expect((lastNamesInput as HTMLInputElement).value).toBe('Perez');
+    expect((phoneInput as HTMLInputElement).value).toBe('987654321');
+  });
+
+  it('allows selecting a role from the dropdown', () => {
+    renderWithProviders(<CreateUser />);
+
+    const roleSelect = screen.getAllByRole('combobox')[0];
+    expect((roleSelect as HTMLSelectElement).value).toBe('ESTUDIANTE');
+
+    fireEvent.change(roleSelect, { target: { value: 'DOCENTE_INVESTIGADOR' } });
+    expect((roleSelect as HTMLSelectElement).value).toBe('DOCENTE_INVESTIGADOR');
+  });
+
+  it('shows validation error when submitting with empty required fields', async () => {
+    renderWithProviders(<CreateUser />);
+
+    const submitBtn = screen.getByText('Registrar Usuario');
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(mockUserService.createUser).not.toHaveBeenCalled();
+  });
+
+  it('shows validation error when email does not end with .edu.pe', async () => {
+    renderWithProviders(<CreateUser />);
+
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+    const emailInput = screen.getByPlaceholderText('ejemplo@unas.edu.pe');
+
+    fireEvent.change(dniInput, { target: { value: '87654321' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
+    fireEvent.change(emailInput, { target: { value: 'juan@gmail.com' } });
+
+    const submitBtn = screen.getByText('Registrar Usuario');
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(mockUserService.createUser).not.toHaveBeenCalled();
+  });
+
+  it('shows validation error when DNI is not 8 digits', async () => {
+    renderWithProviders(<CreateUser />);
+
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+
+    fireEvent.change(dniInput, { target: { value: '12345' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
+
+    const submitBtn = screen.getByText('Registrar Usuario');
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(mockUserService.createUser).not.toHaveBeenCalled();
+  });
+
+  it('submits the form successfully with valid data', async () => {
+    renderWithProviders(<CreateUser />);
+
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+    const phoneInput = screen.getByPlaceholderText('Ej. +51 987654321');
+    const submitBtn = screen.getByText('Registrar Usuario');
+
+    fireEvent.change(dniInput, { target: { value: '87654321' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
+    fireEvent.change(phoneInput, { target: { value: '987654321' } });
+
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(mockUserService.createUser).toHaveBeenCalledWith({
+      dni: '87654321',
       firstNames: 'Juan',
       lastNames: 'Perez',
-      institutionalEmail: 'juan@unas.edu.pe',
-      temporaryPassword: 'temp123',
-      roleDescription: 'Estudiante',
+      institutionalEmail: 'juan.perez@unas.edu.pe',
+      phone: '987654321',
+      roleCode: 'ESTUDIANTE',
     });
-    renderPage();
 
-    await screen.findByLabelText(/DNI/i);
-
-    fireEvent.change(screen.getByLabelText(/DNI/i), { target: { value: '12345678' } });
-    fireEvent.change(screen.getByLabelText(/Nombres/i), { target: { value: 'Juan' } });
-    fireEvent.change(screen.getByLabelText(/Apellidos/i), { target: { value: 'Perez' } });
-    fireEvent.change(screen.getByLabelText(/Correo/i), { target: { value: 'juan@unas.edu.pe' } });
-    fireEvent.change(screen.getByLabelText(/Rol/i), { target: { value: 'ESTUDIANTE' } });
-
-    // Select a research group (required for non-ADMIN roles)
-    const groupSelect = screen.getByLabelText(/Grupo de Investigación/i);
-    await waitFor(() => {
-      expect(groupSelect.querySelector('option[value="1"]')).toBeTruthy();
-    });
-    fireEvent.change(groupSelect, { target: { value: '1' } });
-
-    fireEvent.submit(document.querySelector('form')!);
-
-    await waitFor(() => expect(mockCreateUser).toHaveBeenCalled());
-    const payload = mockCreateUser.mock.calls[0][0];
-    expect(payload.dni).toBe('12345678');
-    expect(payload.firstNames).toBe('Juan');
-    expect(payload.roleCode).toBe('ESTUDIANTE');
+    expect(screen.getByText('Credenciales Temporales de Acceso')).toBeDefined();
+    expect(screen.getByText('tempPassword123')).toBeDefined();
   });
 
-  it('shows a validation error for a short DNI', async () => {
-    renderPage();
-    await screen.findByLabelText(/DNI/i);
+  it('displays error message when createUser fails', async () => {
+    mockUserService.createUser.mockRejectedValue(new Error('El DNI ya está registrado'));
 
-    fireEvent.change(screen.getByLabelText(/DNI/i), { target: { value: '123' } });
-    fireEvent.change(screen.getByLabelText(/Nombres/i), { target: { value: 'Juan' } });
-    fireEvent.change(screen.getByLabelText(/Apellidos/i), { target: { value: 'Perez' } });
+    renderWithProviders(<CreateUser />);
 
-    fireEvent.submit(document.querySelector('form')!);
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+    const submitBtn = screen.getByText('Registrar Usuario');
 
-    expect(await screen.findByText(/DNI debe tener exactamente 8/i)).toBeDefined();
-    expect(mockCreateUser).not.toHaveBeenCalled();
+    fireEvent.change(dniInput, { target: { value: '87654321' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
+
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(screen.getByText('El DNI ya está registrado')).toBeDefined();
+  });
+
+  it('navigates back to create form after successful registration', async () => {
+    renderWithProviders(<CreateUser />);
+
+    const dniInput = screen.getByPlaceholderText('8 caracteres');
+    const firstNamesInput = screen.getByPlaceholderText('Nombres completos');
+    const lastNamesInput = screen.getByPlaceholderText('Apellidos completos');
+    const submitBtn = screen.getByText('Registrar Usuario');
+
+    fireEvent.change(dniInput, { target: { value: '87654321' } });
+    fireEvent.change(firstNamesInput, { target: { value: 'Juan' } });
+    fireEvent.change(lastNamesInput, { target: { value: 'Perez' } });
+
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(screen.getByText('Credenciales Temporales de Acceso')).toBeDefined();
+
+    const registerAnotherBtn = screen.getByText('Registrar otro usuario');
+    await act(async () => {
+      fireEvent.click(registerAnotherBtn);
+    });
+
+    expect(screen.getByPlaceholderText('8 caracteres')).toBeDefined();
   });
 });

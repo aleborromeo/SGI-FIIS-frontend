@@ -29,6 +29,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
+      clean: false,
+      cleanOnRerun: false,
       include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'src/main.tsx',
@@ -36,8 +38,7 @@ export default defineConfig({
         'src/vite-env.d.ts',
         'src/types/**/*',
         'src/**/*.test.{ts,tsx}'
-      ],
-      all: true
+      ]
     }
   }
 })

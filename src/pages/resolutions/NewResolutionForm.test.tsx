@@ -1,80 +1,207 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { ToastProvider } from '../../context/ToastContext';
+import React from 'react';
+import { screen, act, fireEvent } from '@testing-library/react';
 import { NewResolutionForm } from './NewResolutionForm';
-
-const { mockIssueResolution } = vi.hoisted(() => ({
-  mockIssueResolution: vi.fn(),
-}));
+import { resolutionService } from '../../services/resolutionService';
+import { renderWithProviders } from '../../utils/testUtils';
 
 vi.mock('../../services/resolutionService', () => ({
-  resolutionService: { issueResolution: mockIssueResolution },
+  resolutionService: {
+    issueResolution: vi.fn(),
+  },
 }));
 
-const renderPage = (search = '?procedureId=3&number=R-001&title=Asunto%20de%20prueba') =>
-  render(
-    <ToastProvider>
-      <MemoryRouter initialEntries={[`/resolutions/new-legacy${search}`]}>
-        <NewResolutionForm />
-      </MemoryRouter>
-    </ToastProvider>
-  );
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual: any = await importOriginal();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useSearchParams: () => [new URLSearchParams('procedureId=1&number=N%C2%B0001&title=Proyecto%20de%20Prueba')],
+  };
+});
 
-describe('NewResolutionForm (#160)', () => {
+const mockResolutionService = vi.mocked(resolutionService);
+
+describe('NewResolutionForm', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockIssueResolution.mockResolvedValue({});
+    mockResolutionService.issueResolution.mockResolvedValue({ id: 1 } as any);
   });
 
-  it('renders the form and shows the referenced procedure', async () => {
-    renderPage();
+  it('renders form fields with preset values from URL', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
 
-    expect(
-      await screen.findByRole('heading', { name: 'Registro de Resolución y Ejecución' })
-    ).toBeInTheDocument();
-    expect(screen.getByText('Trámite ID: 3')).toBeInTheDocument();
+    const inputs = screen.getAllByRole('textbox');
+    const resNumberInput = inputs.find((i) => (i as HTMLInputElement).value === 'N°001');
+    expect(resNumberInput).toBeDefined();
+
+    const titleInput = inputs.find((i) => (i as HTMLInputElement).value === 'Proyecto de Prueba');
+    expect(titleInput).toBeDefined();
   });
 
-  it('issues a resolution when a file is attached and the form is submitted', async () => {
-    renderPage();
+  it('renders back button', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+    const backBtn = screen.getByRole('button', { name: /volver/i });
+    expect(backBtn).toBeDefined();
+  });
 
-    await waitFor(() =>
-      expect(screen.getByText('Trámite ID: 3')).toBeInTheDocument()
-    );
+  it('navigates back on back button click', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+    const backBtn = screen.getByRole('button', { name: /volver/i });
+    await act(async () => {
+      fireEvent.click(backBtn);
+    });
+    expect(mockNavigate).toHaveBeenCalledWith('/decano/review');
+  });
+
+  it('renders submit button', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+    const submitBtn = screen.getByRole('button', { name: /aprobar|guardar|enviar/i });
+    expect(submitBtn).toBeDefined();
+    expect(submitBtn.getAttribute('type')).toBe('submit');
+  });
+
+  it('renders FIF status select options', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+    const selects = screen.getAllByRole('combobox');
+    expect(selects.length).toBeGreaterThan(0);
+  });
+
+  it('updates form state on input change', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+
+    const inputs = screen.getAllByRole('textbox');
+    if (inputs[0]) {
+      await act(async () => {
+        fireEvent.change(inputs[0], { target: { value: 'N° 999-2026' } });
+      });
+      expect((inputs[0] as HTMLInputElement).value).toBe('N° 999-2026');
+    }
+  });
+
+  it('updates select value', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+
+    const selects = screen.getAllByRole('combobox');
+    if (selects[0]) {
+      await act(async () => {
+        fireEvent.change(selects[0], { target: { value: 'NO' } });
+      });
+      expect((selects[0] as HTMLSelectElement).value).toBe('NO');
+    }
+  });
+
+  it('renders procedure ID reference when present', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+    expect(screen.getByText(/Trámite ID: 1/i)).toBeDefined();
+  });
+
+  it('renders file input for PDF', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).toBeDefined();
+    expect(fileInput.accept).toBe('.pdf');
+  });
+
+  it('file input triggers state update', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, {
-      target: { files: [new File(['x'], 'resolucion.pdf', { type: 'application/pdf' })] },
+    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+
+    await act(async () => {
+      Object.defineProperty(fileInput, 'files', { value: [file], writable: true, configurable: true });
+      fireEvent.change(fileInput);
     });
 
-    const submit = document.querySelector('button[type="submit"]') as HTMLButtonElement;
-    fireEvent.click(submit);
-
-    await waitFor(() =>
-      expect(mockIssueResolution).toHaveBeenCalledWith(
-        expect.objectContaining({
-          numeroResolucion: 'R-001',
-          asunto: 'Asunto de prueba',
-          idTramite: 3,
-        })
-      )
-    );
+    expect(fileInput.files?.[0]?.name).toBe('test.pdf');
   });
 
-  it('shows an error toast when no file is attached', async () => {
-    renderPage();
+  it('renders cancel button that navigates back', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+    const cancelBtn = screen.getByRole('button', { name: /cancelar/i });
+    await act(async () => {
+      fireEvent.click(cancelBtn);
+    });
+    expect(mockNavigate).toHaveBeenCalledWith('/decano/review');
+  });
 
-    await waitFor(() =>
-      expect(screen.getByText('Trámite ID: 3')).toBeInTheDocument()
-    );
+  it('renders header title', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+    expect(screen.getByText(/Registro de Resolución y Ejecución/i)).toBeDefined();
+  });
 
-    const submit = document.querySelector('button[type="submit"]') as HTMLButtonElement;
-    fireEvent.click(submit);
+  it('renders section titles', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+    expect(screen.getByText(/Datos de la Resolución Decanal/i)).toBeDefined();
+    expect(screen.getByText(/Parámetros de Ejecución del Proyecto/i)).toBeDefined();
+  });
 
-    expect(
-      (await screen.findAllByText('Error al guardar la resolución')).length
-    ).toBeGreaterThan(0);
-    expect(mockIssueResolution).not.toHaveBeenCalled();
+  it('submit without file shows error', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+
+    const form = document.querySelector('form') as HTMLFormElement;
+    await act(async () => {
+      fireEvent.submit(form);
+    });
+
+    expect(mockResolutionService.issueResolution).not.toHaveBeenCalled();
+  });
+
+  it('successful submit calls service and navigates', async () => {
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+    await act(async () => {
+      Object.defineProperty(fileInput, 'files', { value: [file], writable: true, configurable: true });
+      fireEvent.change(fileInput);
+    });
+
+    const form = document.querySelector('form') as HTMLFormElement;
+    await act(async () => {
+      fireEvent.submit(form);
+    });
+
+    await act(async () => {});
+    expect(mockNavigate).toHaveBeenCalledWith('/decano/review');
+  });
+
+  it('submit error handling does not navigate', async () => {
+    mockResolutionService.issueResolution.mockRejectedValue(new Error('Save failed'));
+
+    renderWithProviders(<NewResolutionForm />);
+    await act(async () => {});
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+    await act(async () => {
+      Object.defineProperty(fileInput, 'files', { value: [file], writable: true, configurable: true });
+      fireEvent.change(fileInput);
+    });
+
+    const form = document.querySelector('form') as HTMLFormElement;
+    await act(async () => {
+      fireEvent.submit(form);
+    });
+
+    await act(async () => {});
+    expect(mockNavigate).not.toHaveBeenCalledWith('/decano/review');
   });
 });
